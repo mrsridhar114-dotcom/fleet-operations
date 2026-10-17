@@ -2303,8 +2303,9 @@ const DOC_DETAILS = {
   ],
   taxExp: [{ k: "taxType", label: "Tax type", full: "Tax type", opts: ["Quarterly", "Half-yearly", "Annual", "Lifetime"] }],
   permitExp: [
+    { k: "permitFrom", label: "Valid from", full: "Permit valid from", date: true, before: true },
     { k: "permitNo", label: "Permit number", full: "Permit number" },
-    { k: "permitType", label: "Permit type", full: "Permit type", opts: ["Stage carriage", "Contract carriage", "All India tourist", "National permit (goods)", "State goods permit", "Private service vehicle"] }
+    { k: "permitType", label: "Permit type", full: "Permit type", opts: ["Stage Carriage", "Stage Carriage (Spare)", "Contract Carriage", "All India Tourist", "National Permit (Goods)", "State Goods Permit", "Private Service Vehicle"] }
   ],
   speedGovExp: [{ k: "speedGovCertNo", label: "Certificate number", full: "Speed governor certificate number" }],
   gpsExp: [
@@ -2312,7 +2313,22 @@ const DOC_DETAILS = {
     { k: "gpsCertNo", label: "Certificate number", full: "GPS certificate number" }
   ]
 };
-const isIdField = d => !d.opts && !d.num && /number|ID/.test(d.label);
+const isIdField = d => !d.opts && !d.num && !d.date && /number|ID/.test(d.label);
+// Permit types offered depend on the vehicle class and usage category.
+function permitTypes(type, usage) {
+  if (type === "Bus") return usage === "Private use" ? ["Private Service Vehicle"] : usage === "Public service" ? ["Stage Carriage", "Stage Carriage (Spare)", "Contract Carriage", "All India Tourist"] : ["Stage Carriage", "Stage Carriage (Spare)", "Contract Carriage", "All India Tourist", "Private Service Vehicle"];
+  if (/Truck/.test(type || "")) return ["National Permit (Goods)", "State Goods Permit"];
+  return DOC_DETAILS.permitExp.find(d => d.k === "permitType").opts;
+}
+function syncPermitTypes(keep) {
+  const sel = $("permitType"); if (!sel) return;
+  const cur = keep !== undefined ? keep : sel.value, opts = permitTypes($("type").value, curUsage());
+  const match = opts.find(o => o.toLowerCase() === String(cur || "").toLowerCase());
+  const extra = cur && !match ? [cur] : [];
+  sel.innerHTML = `<option value="">Choose…</option>` + [...opts, ...extra].map(o => `<option${extra.includes(o) ? ' data-old="1"' : ""}>${esc(o)}</option>`).join("");
+  sel.value = match || cur || "";
+  $("e-permitType").textContent = extra.length ? `"${cur}" doesn't match this vehicle class and usage. Choose a permit type.` : "";
+}
 const BODY_TYPES = ["Seater", "Semi-sleeper", "Sleeper", "Open body (cargo)", "Closed body / container", "Tanker", "Tipper", "Trailer", "Sedan", "SUV", "Hatchback", "MUV / MPV"];
 const DETAIL_FIELDS = DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => ({ ...d, doc: k })));
 const FIN_FIELDS = [
@@ -2454,7 +2470,7 @@ const TRACKED = [
 ];
 const FIELD_INFO = Object.fromEntries([
   ...TRACKED.map(([k, label, fmt]) => [k, { label, fmt }]),
-  ...DETAIL_FIELDS.map(d => [d.k, { label: d.full, fmt: d.num ? "inr" : undefined }]),
+  ...DETAIL_FIELDS.map(d => [d.k, { label: d.full, fmt: d.num ? "inr" : d.date ? "date" : undefined }]),
   ...DOCS.map(([k, , short]) => [k + "FileName", { label: `${short} copy`, fmt: "file" }]),
   ...FIN_FIELDS.map(([k, label, fmt]) => [k, { label, fmt }]),
   ...DOCS.map(([k, , short]) => [k, { label: short, fmt: "date", doc: true }])
@@ -3008,7 +3024,7 @@ function earlierHtml(vid, k) {
     `<li>${fileLink(c)}<span class="sub">${c.removed ? "Removed" : "Replaced"} ${fmtStamp(c.at)} by ${esc(c.by)}</span></li>`).join("")}</ul></details>`;
 }
 function docExtra(v, k) {
-  const parts = (DOC_DETAILS[k] || []).filter(d => v[d.k] != null && v[d.k] !== "").map(d => `${d.label.replace(" (₹)", "")}: <b>${esc(d.num ? inr(v[d.k]) : v[d.k])}</b>`);
+  const parts = (DOC_DETAILS[k] || []).filter(d => v[d.k] != null && v[d.k] !== "").map(d => `${d.label.replace(" (₹)", "")}: <b>${esc(d.num ? inr(v[d.k]) : d.date ? fmtDate(v[d.k]) : v[d.k])}</b>`);
   const f = fileOf(v, k); if (f) parts.push(`${fileLink(f)} <span class="sub">current copy</span>`);
   const older = earlierHtml(v.id, k); if (older) parts.push(older);
   return parts.length ? `<span class="docx">${parts.join("<br>")}</span>` : "";
@@ -3177,14 +3193,17 @@ function buildForm() {
   $("emission").innerHTML = `<option value="">Choose emission norms</option>` + EMISSIONS.map(([c, l]) => `<option value="${c}">${l} (${c})</option>`).join("");
   $("type").innerHTML = `<option value="">Choose a vehicle class</option>` + TYPES.map(t => `<option>${t}</option>`).join("");
   $("opType").innerHTML = `<option value="">Choose an operation type</option>` + OP_TYPES.map(o => `<option>${o}</option>`).join("");
+  const detailField = d => `<div class="field"><label for="${d.k}">${d.label}</label>${d.opts
+          ? `<select id="${d.k}"><option value="">Choose…</option>${d.opts.map(o => `<option>${o}</option>`).join("")}</select>`
+          : d.num ? `<input id="${d.k}" type="number" inputmode="numeric" min="0">`
+          : d.date ? `<input id="${d.k}" type="date">`
+          : `<input id="${d.k}" autocomplete="off" maxlength="60"${isIdField(d) ? ' style="text-transform:uppercase;font-family:var(--mono)"' : ""}>`}<span class="err" id="e-${d.k}"></span></div>`;
   $("docFields").innerHTML = DOCS.map(([k, label, short]) => `<div class="docblock" id="f-${k}">
       <div class="lblrow"><span class="dbh">${short}${DOC_RULES[k] ? ` <span class="hint" style="font-weight:400">· ${DOC_RULES[k].note.toLowerCase()}</span>` : ""}</span><button type="button" class="hicon" data-hist="${k}" id="hb-${k}" title="View ${short.toLowerCase()} history" aria-label="View ${short} history">${HIST_SVG}</button></div>
       <div class="two">
-        <div class="field"><label for="${k}">${label.replace(/^.*?(expiry|date)$/i, m => /expiry$/i.test(m) ? "Expiry date" : "FC date")}</label><input id="${k}" type="date"><span class="lastchg" id="h-${k}"></span><span class="err" id="e-${k}"></span></div>
-        ${(DOC_DETAILS[k] || []).map(d => `<div class="field"><label for="${d.k}">${d.label}</label>${d.opts
-          ? `<select id="${d.k}"><option value="">Choose…</option>${d.opts.map(o => `<option>${o}</option>`).join("")}</select>`
-          : d.num ? `<input id="${d.k}" type="number" inputmode="numeric" min="0">`
-          : `<input id="${d.k}" autocomplete="off" maxlength="60"${isIdField(d) ? ' style="text-transform:uppercase;font-family:var(--mono)"' : ""}>`}</div>`).join("")}
+        ${(DOC_DETAILS[k] || []).filter(d => d.before).map(detailField).join("")}
+        <div class="field"><label for="${k}">${k === "permitExp" ? "Valid to" : label.replace(/^.*?(expiry|date)$/i, m => /expiry$/i.test(m) ? "Expiry date" : "FC date")}</label><input id="${k}" type="date"><span class="lastchg" id="h-${k}"></span><span class="err" id="e-${k}"></span></div>
+        ${(DOC_DETAILS[k] || []).filter(d => !d.before).map(detailField).join("")}
       </div>
       <div class="fileline" data-file="${k}"></div>
     </div>`).join("");
@@ -3227,6 +3246,7 @@ function syncOp() {
   if (t === "Auto") { $("model").value = ""; $("e-model").textContent = ""; $("model").removeAttribute("aria-invalid"); }
   if (NO_BODY_TYPES.includes(t)) $("bodyType").value = "";
   DOCS.forEach(([k]) => { const f = $("f-" + k); if (f) f.hidden = !docApplies(k, $("type").value, curUsage()); });
+  syncPermitTypes();
   const isBus = $("type").value === "Bus";
   $("opField").hidden = !isBus;
   if (!isBus) { $("opType").value = ""; $("e-opType").textContent = ""; $("opType").removeAttribute("aria-invalid"); }
@@ -3242,6 +3262,7 @@ function openDrawer(v, focusKey) {
   $("mfgYear").value = v?.mfgMonth ?? "";
   $("mfgOld").hidden = !(v?.mfgYear && !v?.mfgMonth); $("mfgOld").textContent = v?.mfgYear && !v?.mfgMonth ? `Saved earlier as ${v.mfgYear} only. Pick the month.` : "";
   DETAIL_FIELDS.forEach(d => $(d.k).value = v?.[d.k] ?? "");
+  syncPermitTypes(v?.permitType ?? "");
   ["rto", "fastag", "bodyType", "bodyColour", "fuelTank", "tyreCount", "tyreSize", "batteryMake", "batteryDate", "odoStart", "remarks"].forEach(id => $(id).value = v?.[id] ?? "");
   pendingFiles = {}; renderFileLines();
   $("finYes").checked = v?.financed === "yes"; $("finNo").checked = v?.financed === "no";
@@ -3270,7 +3291,7 @@ function openDrawer(v, focusKey) {
   }, 30);
 }
 function closeDrawer() { $("drawer").hidden = true; editingId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
-function clearErrors() { ["fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
+function clearErrors() { ["permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
 function setErr(k, msg) { $("e-" + k).textContent = msg; $(k)?.setAttribute("aria-invalid", "true"); }
 
 $("form").addEventListener("submit", async e => {
@@ -3343,6 +3364,7 @@ $("form").addEventListener("submit", async e => {
     (DOC_DETAILS[k] || []).forEach(d => {
       const x = $(d.k).value.trim(); if (!x) return;
       if (d.num) { const n = Number(x); if (n >= 0 && n <= 1e9) v[d.k] = Math.round(n); }
+      else if (d.date) { if (x < "1900-01-01" || x > "2100-12-31") { setErr(d.k, "Enter a valid date."); ok = false; } else v[d.k] = x; }
       else v[d.k] = isIdField(d) ? x.toUpperCase().replace(/\s+/g, " ") : x.replace(/\s+/g, " ");
     });
   });
@@ -3374,6 +3396,10 @@ $("form").addEventListener("submit", async e => {
     if (le) v.loanEndDate = le;
   }
   DOCS.forEach(([k]) => { const val = $(k).value; if (val && docApplies(k, v.type, v.usage)) { if (val < "1900-01-01" || val > "2100-12-31") { setErr(k, "Enter a valid date."); ok = false; } else v[k] = val; } });
+  if (docApplies("permitExp", v.type, v.usage)) {
+    if (v.permitFrom && v.permitExp && v.permitFrom > v.permitExp) { setErr("permitExp", "Valid to can't be before Valid from."); ok = false; }
+    if (v.permitType && !permitTypes(v.type, v.usage).includes(v.permitType)) { setErr("permitType", "Choose a permit type that matches this vehicle class and usage."); ok = false; }
+  }
   if (!ok) return;
   const wasEdit = !!editingId;
   const prev = vehicles.find(x => x.id === v.id) || {};
