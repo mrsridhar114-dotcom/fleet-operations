@@ -11,7 +11,7 @@
   document.documentElement.classList.add("fo-boot");
   const bootCss = document.createElement("style");
   bootCss.textContent = `html.fo-boot,html.fo-boot body{background:#18212b!important}
-html.fo-boot body>*:not(#foLogin){visibility:hidden!important}
+html.fo-boot body>*:not(#foLogin):not(#foPin){visibility:hidden!important}
 html.fo-boot body::before{content:"Fleet Operations";position:fixed;inset:0;z-index:9990;display:grid;place-items:center;color:#dbe4ec;font:700 26px/1 "Barlow Condensed",system-ui,sans-serif;letter-spacing:.02em}
 html.fo-boot.fo-login body::before{content:none}`;
   document.head.appendChild(bootCss);
@@ -32,9 +32,122 @@ html.fo-boot.fo-login body::before{content:none}`;
   /* ---------- sign-in ---------- */
   let me = null;
   const ready = (async () => {
-    try { me = (await api("auth")).user; return me; }
-    catch (e) { if (e.status === 401) { showLogin(); return new Promise(() => {}); } throw e; }
+    await null; // let the rest of this file set up first
+    const pc = pinCfg();
+    try { me = (await api("auth")).user; }
+    catch (e) { if (e.status === 401) { pc ? showPin(pc, { signedOut: true }) : showLogin(); return new Promise(() => {}); } throw e; }
+    if (pc && pc.uid !== me.id) savePin(null);
+    else if (pc && needsUnlock()) { await new Promise(res => showPin(pc, { onOk: res })); document.documentElement.classList.remove("fo-login"); }
+    markUnlocked();
+    return me;
   })();
+
+  /* ---------- quick PIN for phones ----------
+     After the first email sign-in on a phone, the user can set a 4-digit PIN. The phone keeps a random device key;
+     the server keeps only hashes. The app then asks for the PIN when it is opened, after 5 minutes in the background,
+     and after signing out. 5 wrong PINs cancel it. */
+  const PIN_KEY = "fo-pin", UNLOCK_KEY = "fo-unlocked", LOCK_AFTER_MS = 5 * 60 * 1000;
+  const isPhone = () => matchMedia("(pointer: coarse)").matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
+  function pinCfg() { try { const c = JSON.parse(localStorage.getItem(PIN_KEY) || "null"); return c && c.device && c.secret ? c : null; } catch { return null; } }
+  function savePin(c) { try { c ? localStorage.setItem(PIN_KEY, JSON.stringify(c)) : localStorage.removeItem(PIN_KEY); } catch {} }
+  function markUnlocked() { try { sessionStorage.setItem(UNLOCK_KEY, String(Date.now())); } catch {} }
+  function needsUnlock() { let t = 0; try { t = +sessionStorage.getItem(UNLOCK_KEY) || 0; } catch {} return !t || Date.now() - t > LOCK_AFTER_MS; }
+  let hiddenAt = 0;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = Date.now(); if (me && !document.getElementById("foPin")) markUnlocked(); return; }
+    const pc = pinCfg();
+    if (me && pc && hiddenAt && Date.now() - hiddenAt > LOCK_AFTER_MS && !document.getElementById("foPin")) {
+      document.documentElement.classList.add("fo-boot", "fo-login");
+      showPin(pc, { onOk: () => { document.documentElement.classList.remove("fo-boot", "fo-login"); markUnlocked(); } });
+    }
+  });
+  setInterval(() => { if (me && !document.hidden && !document.getElementById("foPin")) markUnlocked(); }, 30000);
+
+  const PIN_CSS = `#foPin{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#18212b;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif;color:#18212b}
+#foPin .card{background:#fff;width:min(360px,100%);border-radius:14px;padding:24px 20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+#foPin h1{margin:0;font:700 26px/1.1 "Barlow Condensed",system-ui,sans-serif;text-align:center}#foPin p{margin:0;color:#5c6977;font-size:14px;text-align:center}
+#foPin .dots{display:flex;gap:16px;margin:10px 0 2px}#foPin .dots i{width:16px;height:16px;border-radius:50%;border:2px solid #1f5f8b;display:block}#foPin .dots i.on{background:#1f5f8b}
+#foPin .err{color:#b42318;font-size:13px;min-height:1.2em;text-align:center}
+#foPin .pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px 22px;margin:4px 0 6px}
+#foPin .pad button{width:72px;height:72px;border-radius:50%;border:0;background:#eef1f4;color:#18212b;font:600 26px/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+#foPin .pad button:active{background:#d9e6f0}#foPin .pad button.ghost{background:none;font-size:15px;color:#1f5f8b}#foPin .pad button:disabled{opacity:.4}
+#foPin .lnk{background:none;border:0;color:#1f5f8b;font:600 14px system-ui,sans-serif;padding:8px;cursor:pointer}
+#foPin .shake{animation:foShake .35s}@keyframes foShake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`;
+  // A 4-digit keypad screen. onDone(pin, ui) runs when four digits are in.
+  function pinPad({ title, sub, onDone, links = [] }) {
+    document.getElementById("foPin")?.remove();
+    const w = document.createElement("div"); w.id = "foPin"; w.setAttribute("role", "dialog"); w.setAttribute("aria-modal", "true");
+    w.innerHTML = `<style>${PIN_CSS}</style><div class="card"><h1></h1><p data-sub></p><div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="err" role="alert"></div><div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-d="${n}">${n}</button>`).join("")}<span></span><button type="button" data-d="0">0</button><button type="button" class="ghost" data-del aria-label="Delete">⌫</button></div>
+      <div data-links style="display:flex;flex-direction:column;align-items:center"></div></div>`;
+    const q1 = sel => w.querySelector(sel);
+    q1("h1").textContent = title; q1("[data-sub]").textContent = sub;
+    links.forEach(([t, f]) => { const b = document.createElement("button"); b.type = "button"; b.className = "lnk"; b.textContent = t; b.onclick = f; q1("[data-links]").appendChild(b); });
+    let pin = "", busy = false;
+    const draw = () => w.querySelectorAll(".dots i").forEach((d, i) => d.classList.toggle("on", i < pin.length));
+    const ui = {
+      setTitle: t => q1("h1").textContent = t, setSub: t => q1("[data-sub]").textContent = t,
+      err: t => { q1(".err").textContent = t || ""; if (t) { const d = q1(".dots"); d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake"); } },
+      clear: () => { pin = ""; draw(); }, busy: b => { busy = b; w.querySelectorAll(".pad button").forEach(x => x.disabled = b); },
+      close: () => { w.remove(); document.removeEventListener("keydown", key); }
+    };
+    const press = async d => {
+      if (busy) return;
+      if (d === "del") { pin = pin.slice(0, -1); draw(); return; }
+      if (pin.length >= 4) return;
+      pin += d; draw(); q1(".err").textContent = "";
+      if (pin.length === 4) { const v = pin; ui.busy(true); try { await onDone(v, ui); } finally { if (document.body.contains(w)) ui.busy(false); } }
+    };
+    w.addEventListener("click", e => { const b = e.target.closest(".pad button"); if (b) press(b.hasAttribute("data-del") ? "del" : b.dataset.d); });
+    const key = e => { if (!document.body.contains(w)) return document.removeEventListener("keydown", key); if (/^\d$/.test(e.key)) press(e.key); else if (e.key === "Backspace") press("del"); };
+    document.addEventListener("keydown", key);
+    const add = () => document.body.appendChild(w);
+    document.body ? add() : document.addEventListener("DOMContentLoaded", add);
+    return ui;
+  }
+  // Enter the PIN to sign in (signed out) or to unlock (still signed in).
+  function showPin(cfg, { signedOut = false, onOk } = {}) {
+    document.documentElement.classList.add("fo-login");
+    const first = String(cfg.name || "").trim().split(/\s+/)[0];
+    const toEmail = forget => () => { if (forget) savePin(null); document.getElementById("foPin")?.remove(); showLogin(); };
+    pinPad({
+      title: first ? `Welcome back, ${first}` : "Welcome back", sub: "Enter your 4-digit PIN",
+      links: [["Forgot PIN?", toEmail(true)], ["Use email and password", toEmail(false)]],
+      onDone: async (pin, ui) => {
+        try {
+          await api("auth", { action: "pinlogin", device: cfg.device, secret: cfg.secret, pin });
+          markUnlocked();
+          if (signedOut || !onOk) { location.reload(); return; }
+          ui.close(); onOk();
+        } catch (e) {
+          ui.clear();
+          if (e.code === "pin_gone" || /Too many|isn't set up/.test(e.message)) { savePin(null); ui.err(e.message); setTimeout(toEmail(false), 1800); }
+          else ui.err(e.message || "Couldn't check the PIN. Check your connection.");
+        }
+      }
+    });
+  }
+  // Choose a new PIN (twice). Used after the first email sign-in on a phone, and from the side menu.
+  function pinSetup({ after, skip }) {
+    let first = "";
+    const old = pinCfg();
+    pinPad({
+      title: old ? "Change your PIN" : "Set up a quick PIN", sub: "Choose 4 digits to open the app on this phone",
+      links: [[skip ? "Skip for now" : "Cancel", () => { document.getElementById("foPin")?.remove(); (skip || after)(false); }]],
+      onDone: async (pin, ui) => {
+        if (!first) {
+          if (/^(\d)\1{3}$/.test(pin) || ["1234", "2345", "3456", "4567", "5678", "6789", "4321", "9876", "0123"].includes(pin)) { ui.clear(); ui.err("That PIN is too easy to guess. Avoid 1234 or the same digit four times."); return; }
+          first = pin; ui.clear(); ui.setSub("Enter the same 4 digits again"); return;
+        }
+        if (pin !== first) { first = ""; ui.clear(); ui.setSub("Choose 4 digits to open the app on this phone"); ui.err("The PINs didn't match. Try again."); return; }
+        try {
+          const r = await api("auth", { action: "pinset", pin, device: old?.device || "" });
+          savePin({ device: r.device, secret: r.secret, uid: r.user.id, name: r.user.name, email: r.user.email });
+          markUnlocked(); ui.close(); after(true);
+        } catch (e) { first = ""; ui.clear(); ui.setSub("Choose 4 digits to open the app on this phone"); ui.err(e.message); }
+      }
+    });
+  }
 
   function showLogin() {
     document.documentElement.classList.add("fo-login");
@@ -72,9 +185,12 @@ html.fo-boot.fo-login body::before{content:none}`;
         try {
           await api("auth", { action: signup ? "signup" : "login", name: $("foName").value, email, password: $("foPw").value, remember: keep });
           try { keep ? localStorage.setItem(LS, email) : localStorage.removeItem(LS); } catch {}
+          markUnlocked();
+          const pc = pinCfg();
+          if (isPhone() && !signup && !(pc && pc.email === email.toLowerCase())) { wrap.remove(); pinSetup({ after: () => location.reload(), skip: () => location.reload() }); return; }
           location.reload();
         }
-        catch (er) { $("foErr").textContent = er.message; } finally { $("foGo").disabled = false; }
+        catch (er) { $("foErr").textContent = er.message; } finally { if ($("foGo")) $("foGo").disabled = false; }
       };
       setTimeout(() => ($("foEmail").value ? $("foPw") : $("foEmail")).focus(), 50);
     };
@@ -87,11 +203,14 @@ html.fo-boot.fo-login body::before{content:none}`;
     const box = document.createElement("div"); box.id = "foAcct"; box.style.cssText = "display:flex;gap:10px;margin:4px 0 6px;font-size:12px";
     const btn = (t, f) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.style.cssText = "background:none;border:0;padding:0;color:inherit;opacity:.8;text-decoration:underline;cursor:pointer;font:inherit"; b.onclick = f; box.appendChild(b); };
     btn("Change password", changePassword);
+    if (isPhone() || pinCfg()) btn(pinCfg() ? "Change PIN" : "Set up PIN", () => pinSetup({ after: ok => { if (ok) { alertBox("PIN saved. Use it to open the app on this phone."); } refreshAcct(); } }));
+    if (pinCfg()) btn("Remove PIN", async () => { const c = pinCfg(); try { await api("auth", { action: "pinoff", device: c.device }); } catch {} savePin(null); alertBox("PIN removed from this phone."); refreshAcct(); });
     if (me.admin) btn("Reset a password", () => dialog(`<b style="font-size:16px">Reset someone's password</b><p style="margin:0;color:var(--muted,#5c6977)">Give them this temporary password; they can change it after signing in.</p>${fld("foRe", "Their email", "email")}${fld("foRp", "Temporary password (8 characters or more)", "text")}`,
       async d => { await api("auth", { action: "reset", email: d.querySelector("#foRe").value, password: d.querySelector("#foRp").value }); alertBox("Password reset."); }));
     who.after(box);
     powerButtons();
   }
+  function refreshAcct() { document.getElementById("foAcct")?.remove(); accountMenu(); }
 
   // Sign out: a power icon at the top of the side menu, next to "Fleet Operations" (on phones, seen when the menu is open). Asks first.
   const POWER_SVG = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>`;
@@ -99,7 +218,7 @@ html.fo-boot.fo-login body::before{content:none}`;
     const d = document.createElement("div");
     d.style.cssText = "position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px";
     d.innerHTML = `<div role="dialog" aria-modal="true" aria-label="Sign out" style="background:var(--surface,#fff);color:var(--ink,#18212b);border-radius:12px;padding:20px;width:min(340px,100%);display:flex;flex-direction:column;gap:14px;font-size:15px">
-      <b style="font-size:17px">Sign out?</b><span style="color:var(--muted,#5c6977);font-size:14px">You'll need your email and password to sign in again on this device.</span>
+      <b style="font-size:17px">Sign out?</b><span style="color:var(--muted,#5c6977);font-size:14px">${pinCfg() ? "Next time, sign in with your PIN." : "You'll need your email and password to sign in again on this device."}</span>
       <div style="display:flex;gap:8px"><button type="button" class="btn" data-x style="flex:1">Cancel</button><button type="button" class="btn danger" data-ok style="flex:1">Sign out</button></div></div>`;
     document.body.appendChild(d);
     d.onclick = e => { if (e.target === d) d.remove(); };
@@ -133,7 +252,7 @@ html.fo-boot.fo-login body::before{content:none}`;
   const fld = (id, label, type = "password") => `<label style="display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:13px">${label}<input id="${id}" type="${type}" style="font:inherit;padding:8px 10px;border:1px solid var(--line,#d9dfe5);border-radius:6px"></label>`;
   function changePassword() {
     dialog(`<b style="font-size:16px">Change password</b>${fld("foCur", "Current password")}${fld("foNew", "New password (8 characters or more)")}`, async d => {
-      await api("auth", { action: "password", current: d.querySelector("#foCur").value, next: d.querySelector("#foNew").value }); alertBox("Password changed.");
+      await api("auth", { action: "password", current: d.querySelector("#foCur").value, next: d.querySelector("#foNew").value, device: pinCfg()?.device || "" }); alertBox("Password changed.");
     });
   }
   function alertBox(t) { const n = document.createElement("div"); n.textContent = t; n.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#18212b;color:#fff;padding:10px 16px;border-radius:8px;z-index:9999;font-size:14px"; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
