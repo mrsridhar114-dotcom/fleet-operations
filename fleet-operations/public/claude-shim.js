@@ -66,7 +66,7 @@ html.fo-boot.fo-login body::before{content:none}`;
   const PIN_CSS = `#foPin{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#18212b;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif;color:#18212b}
 #foPin .card{background:#fff;width:min(360px,100%);border-radius:14px;padding:24px 20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 #foPin h1{margin:0;font:700 26px/1.1 "Barlow Condensed",system-ui,sans-serif;text-align:center}#foPin p{margin:0;color:#5c6977;font-size:14px;text-align:center}
-#foPin .dots{display:flex;gap:16px;margin:10px 0 2px}#foPin .dots i{width:16px;height:16px;border-radius:50%;border:2px solid #1f5f8b;display:block}#foPin .dots i.on{background:#1f5f8b}
+#foPin .dots{display:flex;gap:16px;margin:10px 0 2px}#foPin .dots:has(i:nth-child(5)){gap:10px}#foPin .dots i{width:16px;height:16px;border-radius:50%;border:2px solid #1f5f8b;display:block}#foPin .dots i.on{background:#1f5f8b}
 #foPin .err{color:#b42318;font-size:13px;min-height:1.2em;text-align:center}
 #foPin .pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px 22px;margin:4px 0 6px}
 #foPin .pad button{width:72px;height:72px;border-radius:50%;border:0;background:#eef1f4;color:#18212b;font:600 26px/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
@@ -74,10 +74,10 @@ html.fo-boot.fo-login body::before{content:none}`;
 #foPin .lnk{background:none;border:0;color:#1f5f8b;font:600 14px system-ui,sans-serif;padding:8px;cursor:pointer}
 #foPin .shake{animation:foShake .35s}@keyframes foShake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`;
   // A 4-digit keypad screen. onDone(pin, ui) runs when four digits are in.
-  function pinPad({ title, sub, onDone, links = [] }) {
+  function pinPad({ title, sub, onDone, links = [], len = 4 }) {
     document.getElementById("foPin")?.remove();
     const w = document.createElement("div"); w.id = "foPin"; w.setAttribute("role", "dialog"); w.setAttribute("aria-modal", "true");
-    w.innerHTML = `<style>${PIN_CSS}</style><div class="card"><h1></h1><p data-sub></p><div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    w.innerHTML = `<style>${PIN_CSS}</style><div class="card"><h1></h1><p data-sub></p><div class="dots" aria-hidden="true">${"<i></i>".repeat(len)}</div>
       <div class="err" role="alert"></div><div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-d="${n}">${n}</button>`).join("")}<span></span><button type="button" data-d="0">0</button><button type="button" class="ghost" data-del aria-label="Delete">⌫</button></div>
       <div data-links style="display:flex;flex-direction:column;align-items:center"></div></div>`;
     const q1 = sel => w.querySelector(sel);
@@ -94,9 +94,9 @@ html.fo-boot.fo-login body::before{content:none}`;
     const press = async d => {
       if (busy) return;
       if (d === "del") { pin = pin.slice(0, -1); draw(); return; }
-      if (pin.length >= 4) return;
+      if (pin.length >= len) return;
       pin += d; draw(); q1(".err").textContent = "";
-      if (pin.length === 4) { const v = pin; ui.busy(true); try { await onDone(v, ui); } finally { if (document.body.contains(w)) ui.busy(false); } }
+      if (pin.length === len) { const v = pin; ui.busy(true); try { await onDone(v, ui); } finally { if (document.body.contains(w)) ui.busy(false); } }
     };
     w.addEventListener("click", e => { const b = e.target.closest(".pad button"); if (b) press(b.hasAttribute("data-del") ? "del" : b.dataset.d); });
     const key = e => { if (!document.body.contains(w)) return document.removeEventListener("keydown", key); if (/^\d$/.test(e.key)) press(e.key); else if (e.key === "Backspace") press("del"); };
@@ -112,7 +112,7 @@ html.fo-boot.fo-login body::before{content:none}`;
     const toEmail = forget => () => { if (forget) savePin(null); document.getElementById("foPin")?.remove(); showLogin(); };
     pinPad({
       title: first ? `Welcome back, ${first}` : "Welcome back", sub: "Enter your 4-digit PIN",
-      links: [["Forgot PIN?", toEmail(true)], ["Use email and password", toEmail(false)]],
+      links: [["Forgot PIN?", () => pinForgot(cfg, toEmail)], ["Use email and password", toEmail(false)]],
       onDone: async (pin, ui) => {
         try {
           await api("auth", { action: "pinlogin", device: cfg.device, secret: cfg.secret, pin });
@@ -126,6 +126,40 @@ html.fo-boot.fo-login body::before{content:none}`;
         }
       }
     });
+  }
+  // "Forgot PIN?": a code goes to the person's email; with it they choose a new PIN. No password needed.
+  async function pinForgot(cfg, toEmail) {
+    const ask = () => api("auth", { action: "pinforgot", device: cfg.device, secret: cfg.secret });
+    let masked = "", note = "";
+    try { masked = (await ask()).email; }
+    catch (e) {
+      if (e.code === "pin_gone") { savePin(null); return toEmail(false)(); }
+      if (e.code === "too_soon") note = e.message; else { alertBox(e.message); return toEmail(true)(); }
+    }
+    const codeUi = pinPad({
+      len: 6, title: "Enter the code", sub: masked ? `We sent a 6-digit code to ${masked}. Check your inbox and spam folder.` : "Enter the 6-digit code we emailed you.",
+      links: [["Send a new code", async () => { try { const r = await ask(); codeUi.err(""); codeUi.setSub(`New code sent to ${r.email}.`); } catch (e) { codeUi.err(e.message); } }], ["Use email and password", toEmail(false)]],
+      onDone: async (code, ui) => {
+        let key;
+        try { key = (await api("auth", { action: "pinverify", device: cfg.device, secret: cfg.secret, code })).key; }
+        catch (e) { ui.clear(); ui.err(e.message); return; }
+        let first = "";
+        pinPad({
+          title: "Choose a new PIN", sub: "Choose 4 digits to open the app on this phone",
+          links: [["Cancel", toEmail(false)]],
+          onDone: async (pin, ui2) => {
+            if (!first) {
+              if (/^(\d)\1{3}$/.test(pin) || ["1234", "2345", "3456", "4567", "5678", "6789", "4321", "9876", "0123"].includes(pin)) { ui2.clear(); ui2.err("That PIN is too easy to guess. Avoid 1234 or the same digit four times."); return; }
+              first = pin; ui2.clear(); ui2.setSub("Enter the same 4 digits again"); return;
+            }
+            if (pin !== first) { first = ""; ui2.clear(); ui2.setSub("Choose 4 digits to open the app on this phone"); ui2.err("The PINs didn't match. Try again."); return; }
+            try { await api("auth", { action: "pinreset", device: cfg.device, secret: cfg.secret, key, pin }); markUnlocked(); location.reload(); }
+            catch (e) { first = ""; ui2.clear(); ui2.err(e.message); if (e.code === "code_expired" || e.code === "pin_gone") setTimeout(toEmail(false), 2000); }
+          }
+        });
+      }
+    });
+    if (note) codeUi.err(note);
   }
   // Choose a new PIN (twice). Used after the first email sign-in on a phone, and from the side menu.
   function pinSetup({ after, skip }) {
