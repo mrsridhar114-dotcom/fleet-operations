@@ -66,7 +66,7 @@ export async function who(req) {
   await ensureSchema();
   const uid = readSession(req)?.u;
   if (!uid) return null;
-  const rows = await q(`select id, email, name from fleet_users where id = $1`, [uid]);
+  const rows = await q(`select id, email, name, must_change from fleet_users where id = $1`, [uid]);
   const user = rows[0];
   if (!user) return null;
   const owner = ownerEmails().includes(user.email);
