@@ -49,7 +49,7 @@ html.fo-boot.fo-login body::before{content:none}`;
 #foLogin .pw .show{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;color:#1f5f8b;padding:6px 8px;font-size:13px}
 #foLogin label.keep{flex-direction:row;align-items:center;gap:10px;font-weight:500;font-size:14px;cursor:pointer}#foLogin label.keep input{width:20px;height:20px;margin:0;accent-color:#1f5f8b}`;
       const wrap = document.createElement("div"); wrap.id = "foLogin";
-      wrap.innerHTML = `<style>${css}</style><form novalidate><h1>Fleet Operations</h1><p id="foSub">Sign in to continue.</p>
+      wrap.innerHTML = `<style>${css}</style><form novalidate><h1>Welcome to VBS</h1><p id="foSub">Sign in to manage your fleet</p>
         <label id="foNameL" hidden>Your name<input id="foName" autocomplete="name" maxlength="80"></label>
         <label>Email<input id="foEmail" type="email" autocomplete="username" required></label>
         <label>Password<span class="pw"><input id="foPw" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required minlength="8"><button type="button" class="show" id="foShow" aria-label="Show password">Show</button></span></label>
@@ -64,7 +64,7 @@ html.fo-boot.fo-login body::before{content:none}`;
       $("foEmail").setAttribute("autocapitalize", "off");
       $("foShow").onclick = () => { const on = $("foPw").type === "password"; $("foPw").type = on ? "text" : "password"; $("foShow").textContent = on ? "Hide" : "Show"; $("foShow").setAttribute("aria-label", on ? "Hide password" : "Show password"); $("foPw").focus(); };
       $("foSwap").onclick = () => { signup = !signup; $("foNameL").hidden = !signup; $("foGo").textContent = signup ? "Create account" : "Sign in";
-        $("foSwap").textContent = signup ? "Have an account? Sign in" : "New here? Create an account"; $("foSub").textContent = signup ? "Create your login. An admin then gives you access." : "Sign in to continue.";
+        $("foSwap").textContent = signup ? "Have an account? Sign in" : "New here? Create an account"; $("foSub").textContent = signup ? "Create your login. An admin then gives you access." : "Sign in to manage your fleet";
         $("foPw").autocomplete = signup ? "new-password" : "current-password"; $("foErr").textContent = ""; };
       wrap.querySelector("form").onsubmit = async e => {
         e.preventDefault(); $("foErr").textContent = ""; $("foGo").disabled = true;
