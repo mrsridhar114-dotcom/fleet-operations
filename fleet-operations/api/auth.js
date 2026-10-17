@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       const me = await who(req);
       if (!me) return fail(res, 401, "unauthenticated", "Not signed in");
       renewSession(req, res);
-      return send(res, 200, { user: { id: me.id, name: me.name, email: me.email, isOwner: me.owner, member: me.member, admin: me.admin } });
+      return send(res, 200, { user: { id: me.id, name: me.name, email: me.email, isOwner: me.owner, member: me.member, admin: me.admin, mustChange: !!me.must_change } });
     }
     if (req.method !== "POST") return fail(res, 405, "bad_request", "Method not allowed");
     const body = await readBody(req), action = body.action;
@@ -61,6 +61,15 @@ export default async function handler(req, res) {
       setSession(res, row.user_id, true);
       return send(res, 200, { ok: true });
     }
+    // "Forgot password?": leave a request for an admin. The reply never says whether the email has an account.
+    if (action === "forgot") {
+      await who(req);
+      const email = String(body.email || "").trim().toLowerCase();
+      if (!EMAIL.test(email)) return fail(res, 400, "bad_request", "Enter a valid email address.");
+      const u = await q(`select name from fleet_users where email = $1`, [email]);
+      if (u[0]) await q(`insert into fleet_pw_requests (email, name) values ($1, $2) on conflict (email) do update set requested_at = now()`, [email, u[0].name]);
+      return send(res, 200, { ok: true });
+    }
     if (action === "logout") { clearSession(res); return send(res, 200, { ok: true }); }
 
     const me = await who(req);
@@ -81,9 +90,10 @@ export default async function handler(req, res) {
     }
     if (action === "password") {
       const rows = await q(`select pass from fleet_users where id = $1`, [me.id]);
-      if (!(await checkPassword(String(body.current || ""), rows[0]?.pass))) return fail(res, 400, "bad_login", "The current password is wrong.");
+      // After a temporary password the person is already signed in with it, so it isn't asked again.
+      if (!me.must_change && !(await checkPassword(String(body.current || ""), rows[0]?.pass))) return fail(res, 400, "bad_login", "The current password is wrong.");
       if (String(body.next || "").length < 8) return fail(res, 400, "bad_request", "Use a new password of at least 8 characters.");
-      await q(`update fleet_users set pass = $2 where id = $1`, [me.id, await hashPassword(String(body.next))]);
+      await q(`update fleet_users set pass = $2, must_change = false where id = $1`, [me.id, await hashPassword(String(body.next))]);
       await q(`delete from fleet_pins where user_id = $1 and id <> $2`, [me.id, String(body.device || "")]); // other phones must sign in again
       return send(res, 200, { ok: true });
     }
@@ -91,9 +101,21 @@ export default async function handler(req, res) {
     if (action === "reset") {
       if (!me.admin) return fail(res, 403, "permission_denied", "Only an admin can reset passwords.");
       if (String(body.password || "").length < 8) return fail(res, 400, "bad_request", "Use a password of at least 8 characters.");
-      const r = await q(`update fleet_users set pass = $2 where email = $1 returning id`, [String(body.email || "").trim().toLowerCase(), await hashPassword(String(body.password))]);
+      const email = String(body.email || "").trim().toLowerCase();
+      const r = await q(`update fleet_users set pass = $2, must_change = true where email = $1 returning id`, [email, await hashPassword(String(body.password))]);
       if (!r.length) return fail(res, 404, "not_found", "No account with that email.");
+      await q(`delete from fleet_pw_requests where email = $1`, [email]);
       await q(`delete from fleet_pins where user_id = $1`, [r[0].id]); // a lost phone's PIN stops working too
+      return send(res, 200, { ok: true });
+    }
+    if (action === "resetrequests") {
+      if (!me.admin) return send(res, 200, { requests: [] });
+      const rows = await q(`select r.email, coalesce(u.name, r.name) as name, r.requested_at from fleet_pw_requests r left join fleet_users u on u.email = r.email order by r.requested_at desc`);
+      return send(res, 200, { requests: rows });
+    }
+    if (action === "resetdismiss") {
+      if (!me.admin) return fail(res, 403, "permission_denied", "Only an admin can do this.");
+      await q(`delete from fleet_pw_requests where email = $1`, [String(body.email || "").trim().toLowerCase()]);
       return send(res, 200, { ok: true });
     }
     if (action === "profiles") {
