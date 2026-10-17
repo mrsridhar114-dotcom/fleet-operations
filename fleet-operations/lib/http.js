@@ -4,7 +4,8 @@ import { q, ensureSchema } from "./db.js";
 
 const scrypt = promisify(crypto.scrypt);
 const COOKIE = "fo_session";
-const DAYS = 30;
+const DAYS = 180;          // "Keep me signed in": renewed on every visit, so an active phone stays signed in
+const SHORT_HOURS = 12;    // not ticked: ends when the app or browser closes, and after 12 hours at most
 
 export function send(res, status, body) {
   res.statusCode = status;
@@ -22,10 +23,15 @@ function secret() {
 const b64u = b => Buffer.from(b).toString("base64url");
 const sign = v => crypto.createHmac("sha256", secret()).update(v).digest("base64url");
 
-export function setSession(res, userId) {
-  const body = b64u(JSON.stringify({ u: userId, e: Date.now() + DAYS * 864e5 }));
+export function setSession(res, userId, remember = true) {
+  const body = b64u(JSON.stringify({ u: userId, e: Date.now() + (remember ? DAYS * 864e5 : SHORT_HOURS * 36e5), r: remember ? 1 : 0 }));
   const secure = process.env.VERCEL ? "; Secure" : "";
-  res.setHeader("Set-Cookie", `${COOKIE}=${body}.${sign(body)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${DAYS * 86400}${secure}`);
+  res.setHeader("Set-Cookie", `${COOKIE}=${body}.${sign(body)}; Path=/; HttpOnly; SameSite=Lax${remember ? `; Max-Age=${DAYS * 86400}` : ""}${secure}`);
+}
+// Push a remembered sign-in forward when it is more than a day old, so people who use the app keep their sign-in.
+export function renewSession(req, res) {
+  const s = readSession(req);
+  if (s && s.r !== 0 && s.e - Date.now() < (DAYS - 1) * 864e5) setSession(res, s.u, true);
 }
 export function clearSession(res) {
   res.setHeader("Set-Cookie", `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
@@ -37,7 +43,7 @@ function readSession(req) {
   if (!body || !mac) return null;
   const want = sign(body);
   if (want.length !== mac.length || !crypto.timingSafeEqual(Buffer.from(want), Buffer.from(mac))) return null;
-  try { const s = JSON.parse(Buffer.from(body, "base64url").toString()); return s.e > Date.now() ? s.u : null; } catch { return null; }
+  try { const s = JSON.parse(Buffer.from(body, "base64url").toString()); return s.e > Date.now() && s.u ? s : null; } catch { return null; }
 }
 
 export async function hashPassword(pw) {
@@ -58,7 +64,7 @@ export const ownerEmails = () => (process.env.OWNER_EMAILS || "").split(",").map
 // User master linked to their login; until then they can only read the user list and send an access request.
 export async function who(req) {
   await ensureSchema();
-  const uid = readSession(req);
+  const uid = readSession(req)?.u;
   if (!uid) return null;
   const rows = await q(`select id, email, name from fleet_users where id = $1`, [uid]);
   const user = rows[0];
