@@ -1086,9 +1086,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
     <section class="wrap" id="view-renewals" hidden>
       <header class="top">
         <div>
-          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span>Home</span></nav>
           <h1>Dashboard</h1>
-          <p class="sync" id="asOf"></p>
         </div>
       </header>
 
@@ -2710,7 +2708,6 @@ function renderDash() {
   items.forEach(i => c[i.band]++);
   const missing = total - items.length;
   const vehAffected = b => new Set(items.filter(i => b.includes(i.band)).map(i => i.v.id)).size;
-  $("asOf").textContent = `As of ${fmtDate(todayISO())} · ${inService().length} vehicle${inService().length === 1 ? "" : "s"} in service, ${items.length} renewal date${items.length === 1 ? "" : "s"} recorded`;
 
   const win = $("rWin").value;
   const kpi = (key, label, n, sub, color) =>
