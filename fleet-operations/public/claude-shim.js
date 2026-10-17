@@ -160,28 +160,69 @@ html.fo-boot.fo-login body::before{content:none}`;
 #foLogin .err{color:#b42318;font-size:13px;min-height:1em}
 #foLogin .pw{position:relative;display:flex}#foLogin .pw input{flex:1;padding-right:64px;min-width:0}
 #foLogin .pw .show{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;color:#1f5f8b;padding:6px 8px;font-size:13px}
+#foLogin .fgt{align-self:flex-end;margin-top:-6px;font-size:13px!important;padding:2px 0!important}#foLogin .ok{color:#2e7d4f;font-size:14px;background:#e4f3ea;border-radius:8px;padding:10px 12px}
 #foLogin label.keep{flex-direction:row;align-items:center;gap:10px;font-weight:500;font-size:14px;cursor:pointer}#foLogin label.keep input{width:20px;height:20px;margin:0;accent-color:#1f5f8b}`;
       const wrap = document.createElement("div"); wrap.id = "foLogin";
       wrap.innerHTML = `<style>${css}</style><form novalidate><h1>Welcome to VBS</h1><p id="foSub">Sign in to manage your fleet</p>
         <label id="foNameL" hidden>Your name<input id="foName" autocomplete="name" maxlength="80"></label>
         <label>Email<input id="foEmail" type="email" autocomplete="username" required></label>
-        <label>Password<span class="pw"><input id="foPw" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required minlength="8"><button type="button" class="show" id="foShow" aria-label="Show password">Show</button></span></label>
-        <label class="keep"><input type="checkbox" id="foKeep" checked>Keep me signed in on this device</label>
+        <label id="foPwL">Password<span class="pw"><input id="foPw" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required minlength="8"><button type="button" class="show" id="foShow" aria-label="Show password">Show</button></span></label>
+        <button type="button" class="lnk fgt" id="foForgot">Forgot password?</button>
+        <label id="foCodeL" hidden>6-digit code from your email<input id="foCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" style="letter-spacing:6px;font-size:20px;text-align:center"></label>
+        <label id="foNewL" hidden>New password (8 characters or more)<input id="foNew" type="password" autocomplete="new-password" autocapitalize="off"></label>
+        <label id="foNew2L" hidden>Enter the new password again<input id="foNew2" type="password" autocomplete="new-password" autocapitalize="off"></label>
+        <label class="keep" id="foKeepL"><input type="checkbox" id="foKeep" checked>Keep me signed in on this device</label>
+        <div class="ok" id="foOk" role="status" hidden></div>
         <div class="err" id="foErr" role="alert"></div><button type="submit" id="foGo">Sign in</button>
+        <button type="button" class="lnk" id="foResend" hidden>Send a new code</button>
         <button type="button" class="lnk" id="foSwap">New here? Create an account</button></form>`;
       document.body.appendChild(wrap);
-      let signup = false;
+      let signup = false, mode = "login";
       const $ = id => document.getElementById(id);
       const LS = "fo-login-email";
       try { const em = localStorage.getItem(LS); if (em) $("foEmail").value = em; } catch {}
       $("foEmail").setAttribute("autocapitalize", "off");
       $("foShow").onclick = () => { const on = $("foPw").type === "password"; $("foPw").type = on ? "text" : "password"; $("foShow").textContent = on ? "Hide" : "Show"; $("foShow").setAttribute("aria-label", on ? "Hide password" : "Show password"); $("foPw").focus(); };
-      $("foSwap").onclick = () => { signup = !signup; $("foNameL").hidden = !signup; $("foGo").textContent = signup ? "Create account" : "Sign in";
-        $("foSwap").textContent = signup ? "Have an account? Sign in" : "New here? Create an account"; $("foSub").textContent = signup ? "Create your login. An admin then gives you access." : "Sign in to manage your fleet";
-        $("foPw").autocomplete = signup ? "new-password" : "current-password"; $("foErr").textContent = ""; };
+      // Modes on one card: sign in, create an account, forgot password (email), and reset with the emailed code.
+      const setMode = m => {
+        mode = m; signup = m === "signup";
+        const show = (id, on) => $(id).hidden = !on;
+        show("foNameL", m === "signup"); show("foPwL", m === "login" || m === "signup"); show("foKeepL", m !== "forgot");
+        show("foForgot", m === "login"); show("foCodeL", m === "code"); show("foNewL", m === "code"); show("foNew2L", m === "code"); show("foResend", m === "code");
+        $("foEmail").readOnly = m === "code";
+        $("foGo").textContent = { signup: "Create account", forgot: "Send code", code: "Reset password" }[m] || "Sign in";
+        $("foSwap").textContent = m === "login" ? "New here? Create an account" : "Back to sign in";
+        $("foSub").textContent = { signup: "Create your login. An admin then gives you access.", forgot: "Enter your email and we'll send you a 6-digit code.", code: `We sent a 6-digit code to ${$("foEmail").value.trim()}. Check your inbox and spam folder.` }[m] || "Sign in to manage your fleet";
+        $("foPw").autocomplete = m === "signup" ? "new-password" : "current-password"; $("foErr").textContent = ""; $("foOk").hidden = true; $("foGo").hidden = false;
+      };
+      $("foSwap").onclick = () => setMode(mode === "login" ? "signup" : "login");
+      $("foForgot").onclick = () => { setMode("forgot"); $("foEmail").focus(); };
+      const sendCode = async () => {
+        await api("auth", { action: "forgot", email: $("foEmail").value.trim() });
+        setMode("code"); setTimeout(() => $("foCode").focus(), 30);
+      };
+      $("foResend").onclick = async () => { $("foErr").textContent = ""; try { await sendCode(); $("foOk").textContent = "A new code is on its way."; $("foOk").hidden = false; } catch (er) { $("foErr").textContent = er.message; } };
       wrap.querySelector("form").onsubmit = async e => {
         e.preventDefault(); $("foErr").textContent = ""; $("foGo").disabled = true;
         const keep = $("foKeep").checked, email = $("foEmail").value.trim();
+        if (mode === "forgot") {
+          try { await sendCode(); } catch (er) { $("foErr").textContent = er.message; } finally { $("foGo").disabled = false; }
+          return;
+        }
+        if (mode === "code") {
+          try {
+            const code = $("foCode").value.trim(), a = $("foNew").value, b = $("foNew2").value;
+            if (!/^\d{6}$/.test(code)) throw new Error("Enter the 6-digit code from the email.");
+            if (a.length < 8) throw new Error("Use a new password of at least 8 characters.");
+            if (a !== b) throw new Error("The two passwords don't match.");
+            await api("auth", { action: "resetcode", email, code, password: a, remember: keep });
+            try { keep ? localStorage.setItem(LS, email) : localStorage.removeItem(LS); } catch {}
+            savePin(null); markUnlocked();
+            if (isPhone()) { wrap.remove(); pinSetup({ after: () => location.reload(), skip: () => location.reload() }); return; }
+            location.reload();
+          } catch (er) { $("foErr").textContent = er.message; } finally { if ($("foGo")) $("foGo").disabled = false; }
+          return;
+        }
         try {
           await api("auth", { action: signup ? "signup" : "login", name: $("foName").value, email, password: $("foPw").value, remember: keep });
           try { keep ? localStorage.setItem(LS, email) : localStorage.removeItem(LS); } catch {}
@@ -209,6 +250,30 @@ html.fo-boot.fo-login body::before{content:none}`;
       async d => { await api("auth", { action: "reset", email: d.querySelector("#foRe").value, password: d.querySelector("#foRp").value }); alertBox("Password reset."); }));
     who.after(box);
     powerButtons();
+  }
+  // Signed in with a temporary password: choose a new one before using the app.
+  function forceNewPassword() {
+    const d = document.createElement("div"); d.id = "foMust";
+    d.style.cssText = "position:fixed;inset:0;z-index:9999;background:#18212b;display:grid;place-items:center;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif";
+    const inp = id => `<input id="${id}" type="password" autocomplete="new-password" autocapitalize="off" style="font:inherit;padding:10px 12px;border:1px solid #d9dfe5;border-radius:8px">`;
+    d.innerHTML = `<form style="background:#fff;color:#18212b;width:min(380px,100%);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:12px">
+      <b style="font:700 26px/1.1 'Barlow Condensed',system-ui,sans-serif">Choose a new password</b>
+      <span style="color:#5c6977;font-size:14px">You signed in with a temporary password. Set your own to continue.</span>
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600">New password (8 characters or more)${inp("foN1")}</label>
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600">Enter it again${inp("foN2")}</label>
+      <div data-err style="color:#b42318;font-size:13px;min-height:1em"></div>
+      <button style="font:inherit;font-weight:600;padding:11px;border-radius:8px;border:0;background:#1f5f8b;color:#fff">Save and continue</button></form>`;
+    document.body.appendChild(d);
+    const err = d.querySelector("[data-err]");
+    d.querySelector("form").onsubmit = async e => {
+      e.preventDefault(); err.textContent = "";
+      const a = d.querySelector("#foN1").value, b = d.querySelector("#foN2").value;
+      if (a.length < 8) return err.textContent = "Use at least 8 characters.";
+      if (a !== b) return err.textContent = "The two passwords don't match.";
+      try { await api("auth", { action: "password", next: a, device: pinCfg()?.device || "" }); me.mustChange = false; d.remove(); alertBox("Password saved."); }
+      catch (er) { err.textContent = er.message; }
+    };
+    setTimeout(() => d.querySelector("#foN1").focus(), 50);
   }
   function refreshAcct() { document.getElementById("foAcct")?.remove(); accountMenu(); }
 
@@ -399,6 +464,7 @@ html.fo-boot.fo-login body::before{content:none}`;
     const wait = () => store.loaded ? store.loaded.then(() => setTimeout(() => { clearTimeout(cap); reveal(); }, 250), () => reveal()) : setTimeout(wait, 50);
     wait();
   }, () => reveal());
+  ready.then(() => { if (me?.mustChange) forceNewPassword(); });
   ready.then(() => { const t = setInterval(() => { accountMenu(); if (document.getElementById("foAcct")) clearInterval(t); }, 300); restoreButton(); });
 
   /* ---------- owner: load a backup file into the database ---------- */
