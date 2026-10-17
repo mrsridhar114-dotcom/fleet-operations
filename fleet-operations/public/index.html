@@ -156,6 +156,16 @@ tr.retired td { opacity: .55; }
 .idno { font-size: 12px; letter-spacing: .02em; white-space: nowrap; }
 @media (max-width: 720px) { .idno { white-space: normal; overflow-wrap: anywhere; } }
 tr.retired td.c-act { opacity: 1; }
+tr.rowlink { cursor: pointer; }
+tr.rowlink:active { background: var(--accent-soft); }
+.drawer footer .fdel { margin-right: auto; display: flex; align-items: center; min-width: 0; }
+.btn.dline { color: var(--danger); }
+.btn.dline:hover { border-color: var(--danger); }
+.delq { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; color: var(--danger); font-weight: 600; font-size: 14px; }
+.delq > span { flex: 1 1 100%; }
+.delq .btn { flex: 1; }
+.drawer footer.asking > :not(.fdel) { display: none; }
+.drawer footer.asking .fdel { margin-right: 0; flex: 1; }
 
 /* ---------- toolbars & tables ---------- */
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
@@ -206,8 +216,14 @@ tbody tr:hover { background: var(--accent-soft); }
   .register tbody tr { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
   .register tbody tr:hover { background: var(--surface); }
   .register tbody td { padding: 0; border: 0; min-width: 0; }
-  td.c-name { grid-column: 1; }
-  td.c-act { grid-column: 2; grid-row: 1; }
+  td.c-name { grid-column: 1 / -1; }
+  td.c-act { grid-column: 1 / -1; grid-row: auto; order: 99; border-top: 1px solid var(--line) !important; padding-top: 10px !important; margin-top: 2px; }
+  td.c-act .rowact { justify-content: stretch; gap: 8px; }
+  td.c-act .rowact .icon { flex: 1; border-color: var(--line); background: var(--bg); padding: 8px 6px; font-size: 14px; text-align: center; }
+  td.c-act .rowact .icon.del { color: var(--danger); }
+  td.c-act .confirm { justify-content: space-between; white-space: normal; flex-wrap: wrap; }
+  td.c-act .confirm .btn { flex: 1; padding: 8px 10px; font-size: 14px; }
+  td.c-name .vid { flex-wrap: wrap; }
   td[data-label] { grid-column: 1 / -1; display: grid; grid-template-columns: 9.5em minmax(0, 1fr); align-items: baseline; gap: 12px; font-size: 14px; text-align: left; }
   td[data-label]::before { content: attr(data-label); color: var(--muted); font-size: 13px; }
   td[data-label] > * { min-width: 0; overflow-wrap: anywhere; }
@@ -1154,7 +1170,6 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
             <th data-k="emission"><button type="button">Emission norms <span class="arr">↕</span></button></th>
             <th data-k="make"><button type="button">Make <span class="arr">↕</span></button></th>
             <th data-k="nextDue"><button type="button">Next renewal <span class="arr">↕</span></button></th>
-            <th><span class="vh">Actions</span></th>
           </tr></thead>
           <tbody id="rows"></tbody>
         </table>
@@ -1174,7 +1189,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
       <div class="toolbar"><span class="count" id="dCount"></span></div>
       <section class="register">
         <table>
-          <thead><tr><th>Driver</th><th>Licence number</th><th>Mobile</th><th>Age</th><th>Blood group</th><th>Licence validity</th><th>Status</th><th><span class="vh">Actions</span></th></tr></thead>
+          <thead><tr><th>Driver</th><th>Licence number</th><th>Mobile</th><th>Age</th><th>Blood group</th><th>Licence validity</th><th>Status</th></tr></thead>
           <tbody id="dRows"></tbody>
         </table>
       </section>
@@ -1194,7 +1209,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
       <div class="toolbar"><span class="count" id="cCount"></span></div>
       <section class="register">
         <table>
-          <thead><tr><th>Conductor</th><th>Licence number</th><th>Badge number</th><th>Mobile</th><th>Age</th><th>Validity</th><th>Status</th><th><span class="vh">Actions</span></th></tr></thead>
+          <thead><tr><th>Conductor</th><th>Licence number</th><th>Badge number</th><th>Mobile</th><th>Age</th><th>Validity</th><th>Status</th></tr></thead>
           <tbody id="cRows"></tbody>
         </table>
       </section>
@@ -1591,7 +1606,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
       </div>
       <div class="two">
         <div class="field" id="modelField"><label for="model">Model</label><input id="model" autocomplete="off" placeholder="e.g. Viking"><span class="err" id="e-model"></span></div>
-        <div class="field"><label for="mfgYear">Manufacturing year</label><input id="mfgYear" type="number" inputmode="numeric" min="1980" placeholder="e.g. 2021"><span class="err" id="e-mfgYear"></span></div>
+        <div class="field"><label for="mfgYear">Manufacturing month &amp; year</label><input id="mfgYear" type="month" min="1980-01" placeholder="YYYY-MM, e.g. 2021-03"><small class="hint" id="mfgOld" hidden></small><span class="err" id="e-mfgYear"></span></div>
       </div>
       <div class="two">
         <div class="field" id="bodyTypeField"><label for="bodyType">Body type</label><select id="bodyType"></select><span class="err" id="e-bodyType"></span></div>
@@ -1688,6 +1703,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
     <section id="vRemSec"><h3>Remarks</h3><div class="vremarks" id="vRemarks"></div></section>
   </div>
   <footer>
+    <div class="fdel" id="vDelWrap"><button class="btn dline" type="button" id="vDelBtn">Delete</button><span class="delq" id="vDelQ" hidden><span>Delete this vehicle? This can't be undone.</span><button class="btn" type="button" id="vDelNo">Keep</button><button class="btn danger" type="button" id="vDelYes">Delete</button></span></div>
     <button class="btn" type="button" id="vDoneBtn">Close</button>
     <button class="btn primary" type="button" id="vEditBtn">Edit vehicle</button>
   </footer>
@@ -1830,6 +1846,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
     <section><h3>Status &amp; remarks</h3><dl class="dl" id="dvStatus"></dl></section>
   </div>
   <footer>
+    <div class="fdel" id="dvDelWrap"><button class="btn dline" type="button" id="dvDelBtn">Delete</button><span class="delq" id="dvDelQ" hidden><span>Delete this driver? This can't be undone.</span><button class="btn" type="button" id="dvDelNo">Keep</button><button class="btn danger" type="button" id="dvDelYes">Delete</button></span></div>
     <button class="btn" type="button" id="dvDone">Close</button>
     <button class="btn primary" type="button" id="dvEdit">Edit driver</button>
   </footer>
@@ -1907,6 +1924,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
     <section><h3>Status &amp; remarks</h3><dl class="dl" id="cvStatus"></dl></section>
   </div>
   <footer>
+    <div class="fdel" id="cvDelWrap"><button class="btn dline" type="button" id="cvDelBtn">Delete</button><span class="delq" id="cvDelQ" hidden><span>Delete this conductor? This can't be undone.</span><button class="btn" type="button" id="cvDelNo">Keep</button><button class="btn danger" type="button" id="cvDelYes">Delete</button></span></div>
     <button class="btn" type="button" id="cvDone">Close</button>
     <button class="btn primary" type="button" id="cvEdit">Edit conductor</button>
   </footer>
@@ -2427,7 +2445,7 @@ const byName = h => users.find(u => u.id === h.byUser)?.name || (h.byAccount && 
 const TRACKED = [
   ["photoFileName", "Vehicle photo", "file"], ["plateNo", "Plate number"], ["status", "Vehicle status"], ["regDate", "Registration date", "date"],
   ["rto", "Registering RTO"], ["chassisNo", "Chassis number"], ["engineNo", "Engine number"], ["fastag", "FASTag ID"], ["rcFileName", "RC copy", "file"],
-  ["type", "Vehicle class"], ["make", "Make"], ["model", "Model"], ["mfgYear", "Manufacturing year"],
+  ["type", "Vehicle class"], ["make", "Make"], ["model", "Model"], ["mfgMonth", "Manufacturing month & year", "mfg"],
   ["bodyType", "Body type"], ["bodyColour", "Body colour"], ["fuel", "Fuel type"], ["emission", "Emission norms", "emission"],
   ["seats", "Seating capacity"], ["gvw", "Gross vehicle weight", "kg"], ["ulw", "Unladen weight", "kg"], ["fuelTank", "Fuel tank capacity", "litres"],
   ["tyreCount", "No. of tyres"], ["tyreSize", "Tyre size"], ["batteryMake", "Battery make & model"], ["batteryDate", "Battery installed on", "date"],
@@ -2447,6 +2465,8 @@ const COMPLIANCE_KEYS = () => DOCS.flatMap(([k]) => [k, ...(DOC_DETAILS[k] || []
 const ALL_KEYS = () => [...TRACKED.map(t => t[0]), ...COMPLIANCE_KEYS(), ...FIN_FIELDS.map(f => f[0])];
 const fieldLabel = (k, info = FIELD_INFO) => k === "_created" ? "Record" : info[k]?.label || k;
 const histVal = v => v == null ? "" : String(v);
+const MON_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function fmtMfg(v) { const m = v?.mfgMonth; if (m && /^\d{4}-\d{2}$/.test(m)) return `${MON_SHORT[Number(m.slice(5)) - 1] || ""} ${m.slice(0, 4)}`.trim(); return v?.mfgYear ? String(v.mfgYear) : ""; }
 function fmtVal(field, val, info = FIELD_INFO) {
   if (val === "" || val == null) return "—";
   const f = info[field]?.fmt;
@@ -2462,6 +2482,7 @@ function fmtVal(field, val, info = FIELD_INFO) {
   if (f === "stage") return BK_STAGES[val] || val;
   if (f === "rentType") return val === "day" ? "Day rent" : "Empty rent";
   if (f === "emission") return emissionLabel(val);
+  if (f === "mfg") return fmtMfg({ mfgMonth: val });
   if (f === "usage") return val === "Public service" ? "Public service vehicle" : val;
   return String(val);
 }
@@ -2812,10 +2833,7 @@ function renderMaster() {
   if (!vehicles.length) { $("rows").innerHTML = `<tr><td colspan="10"><div class="empty"><strong>No vehicles yet</strong>${canWrite ? "Use “Add vehicle” to register the first one." : "Vehicles will appear here once they're added."}</div></td></tr>`; return; }
   if (!list.length) { $("rows").innerHTML = `<tr><td colspan="10"><div class="empty"><strong>No matches</strong>Try a different search or clear the filters.</div></td></tr>`; return; }
   $("rows").innerHTML = list.map(v => {
-    const act = canWrite && confirmId === v.id
-      ? `<div class="confirm">Delete? <button class="btn" data-act="no">Keep</button><button class="btn danger" data-act="yes" data-id="${v.id}">Delete</button></div>`
-      : `<div class="rowact"><button class="icon" data-act="view" data-id="${v.id}">View</button>${canWrite ? `<button class="icon" data-act="edit" data-id="${v.id}">Edit</button><button class="icon del" data-act="del" data-id="${v.id}">Delete</button>` : ""}</div>`;
-    return `<tr${v.status === "Sold / Scrapped" ? ' class="retired"' : ""}>
+    return `<tr class="rowlink${v.status === "Sold / Scrapped" ? " retired" : ""}" data-open="${v.id}">
       <td class="c-name"><button type="button" class="linkbtn" data-act="view" data-id="${v.id}" aria-label="View ${esc(vFull(v))}"><span class="vid">${listThumb(v)}${plateHtml(v)}</span></button>${v.status && v.status !== "Active" ? `<div><span class="pill ${STATUS_CLS[v.status]}" style="margin-top:4px">${esc(v.status)}</span></div>` : ""}</td>
       <td data-label="Vehicle class"><span>${esc(v.type)}${v.type === "Bus" && v.opType ? ` <span class="sub">· ${esc(v.opType)}</span>` : ""}</span></td>
       <td data-label="Registration date"><span><span class="num">${fmtDate(v.regDate)}</span> <span class="sub">${age(v.regDate)}</span></span></td>
@@ -2824,8 +2842,7 @@ function renderMaster() {
       <td data-label="Owner name">${v.ownerName ? `<span>${esc(v.ownerName)}</span>` : `<span class="sub">Not recorded</span>`}</td>
       <td data-label="Emission norms">${v.emission ? `<span class="num" title="${esc(emissionLabel(v.emission))}">${esc(v.emission)}</span>` : `<span class="sub">Not recorded</span>`}</td>
       <td data-label="Make"><span><span class="mk">${esc(v.make)}</span>${v.model ? ` <span class="sub">${esc(v.model)}</span>` : ""}</span></td>
-      <td data-label="Next renewal">${renewCell(v)}</td>
-      <td class="c-act">${act}</td></tr>`;
+      <td data-label="Next renewal">${renewCell(v)}</td></tr>`;
   }).join("");
 }
 
@@ -2834,7 +2851,7 @@ function render() { renderDash(); renderMaster(); renderUsers(); refreshVDrawer(
 /* ---------- read-only vehicle view ---------- */
 function openVDrawer(v) {
   if (!v) return;
-  vViewId = v.id; fillVDrawer(v);
+  vViewId = v.id; delReset("v"); fillVDrawer(v);
   $("scrim").hidden = false; $("vDrawer").hidden = false;
   setTimeout(() => $("vCloseBtn").focus(), 30);
 }
@@ -2855,7 +2872,7 @@ function fillVDrawer(v) {
   $("vSpec").innerHTML =
     row("Vehicle class", esc(v.type)) +
     row("Make", esc(v.make)) + (v.type === "Auto" ? "" : row("Model", esc(v.model))) +
-    row("Manufacturing year", v.mfgYear ? `<span class="num">${v.mfgYear}</span>` : null) +
+    row("Manufacturing month & year", fmtMfg(v) ? `<span class="num">${fmtMfg(v)}</span>` : null) +
     (NO_BODY_TYPES.includes(v.type) ? "" : row("Body type", v.bodyType ? esc(v.bodyType) : null)) +
     row("Body colour", v.bodyColour ? esc(v.bodyColour) : null) +
     row("Fuel type", v.fuel ? `<span class="chip"><i style="background:${fuelColor(v.fuel)}"></i>${esc(v.fuel)}</span>` : null) +
@@ -2895,7 +2912,7 @@ function fillVDrawer(v) {
     (v.financed === "yes" ? row("Loan end date", v.loanEndDate ? `<span class="num">${fmtDate(v.loanEndDate)}</span> <span class="sub">· ${loanLeft < 0 ? "ended, collect the NOC" : `${loanLeft} days left`}</span>` : null) : "");
   const total = histFor(v.id).length;
   $("vHistCount").textContent = total; $("vHistCount").hidden = !total;
-  $("vEditBtn").hidden = !canWrite;
+  $("vEditBtn").hidden = !canWrite; $("vDelWrap").hidden = !canWrite;
 }
 async function addHistory(entries) {
   if (histRef) { await Promise.all(entries.map(e => histRef.add(e))); return; }
@@ -3154,7 +3171,7 @@ function buildForm() {
   $("statusSeg").innerHTML = STATUSES.map((s, i) => `<label><input type="radio" name="vstatus" id="vstatus-${i}" value="${s}"><span>${s}</span></label>`).join("");
   $("statusSeg").addEventListener("change", syncStatus);
   ["gvw", "ulw"].forEach(id => $(id).addEventListener("input", syncPayload));
-  $("mfgYear").max = new Date().getFullYear();
+  $("mfgYear").max = new Date().toISOString().slice(0, 7);
   $("bodyType").innerHTML = `<option value="">Choose a body type</option>` + BODY_TYPES.map(b => `<option>${b}</option>`).join("");
   $("form").addEventListener("change", e => { const i = e.target.closest("input[data-up]"); if (i) { handleUpload(i.dataset.up, i.files[0]); i.value = ""; } });
   $("form").addEventListener("click", e => { const b = e.target.closest("button[data-rm]"); if (b) { pendingFiles[b.dataset.rm] = null; renderFileLines(); } });
@@ -3223,7 +3240,8 @@ function openDrawer(v, focusKey) {
   $("chassisNo").value = v?.chassisNo || ""; $("engineNo").value = v?.engineNo || "";
   document.querySelectorAll('input[name="vstatus"]').forEach(r => r.checked = r.value === (v?.status || "Active"));
   $("seats").value = v?.seats ?? ""; $("gvw").value = v?.gvw ?? ""; $("ulw").value = v?.ulw ?? "";
-  $("mfgYear").value = v?.mfgYear ?? "";
+  $("mfgYear").value = v?.mfgMonth ?? "";
+  $("mfgOld").hidden = !(v?.mfgYear && !v?.mfgMonth); $("mfgOld").textContent = v?.mfgYear && !v?.mfgMonth ? `Saved earlier as ${v.mfgYear} only. Pick the month.` : "";
   DETAIL_FIELDS.forEach(d => $(d.k).value = v?.[d.k] ?? "");
   ["rto", "fastag", "bodyType", "bodyColour", "fuelTank", "tyreCount", "tyreSize", "batteryMake", "batteryDate", "odoStart", "remarks"].forEach(id => $(id).value = v?.[id] ?? "");
   pendingFiles = {}; renderFileLines();
@@ -3264,7 +3282,8 @@ $("form").addEventListener("submit", async e => {
     status: document.querySelector('input[name="vstatus"]:checked')?.value || "Active",
     chassisNo: $("chassisNo").value.toUpperCase().replace(/\s+/g, ""),
     engineNo: $("engineNo").value.toUpperCase().replace(/\s+/g, ""),
-    mfgYear: $("mfgYear").value ? Number($("mfgYear").value) : null,
+    mfgMonth: /^\d{4}-\d{2}$/.test($("mfgYear").value.trim()) ? $("mfgYear").value.trim() : null,
+    mfgYear: /^\d{4}-\d{2}$/.test($("mfgYear").value.trim()) ? Number($("mfgYear").value.slice(0, 4)) : null,
     ownerName: $("ownerName").value.trim().replace(/\s+/g, " "),
     ownerAddress: $("ownerAddress").value.trim().replace(/\n{3,}/g, "\n\n"),
     make: $("make").value, model: $("model").value.trim(),
@@ -3296,10 +3315,10 @@ $("form").addEventListener("submit", async e => {
   if (!v.engineNo) { setErr("engineNo", "Enter the engine number."); ok = false; }
   else if (!/^[A-Z0-9]{5,25}$/.test(v.engineNo)) { setErr("engineNo", "Use letters and digits only, at least 5 characters."); ok = false; }
   // Manufacturing year
-  const thisYear = new Date().getFullYear();
-  if (!v.mfgYear) { setErr("mfgYear", "Enter the manufacturing year."); ok = false; }
-  else if (!Number.isInteger(v.mfgYear) || v.mfgYear < 1980 || v.mfgYear > thisYear) { setErr("mfgYear", `Enter a year between 1980 and ${thisYear}.`); ok = false; }
-  else if (v.regDate && v.mfgYear > Number(v.regDate.slice(0, 4))) { setErr("mfgYear", "Manufacturing year can't be after the registration year."); ok = false; }
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  if (!v.mfgMonth) { setErr("mfgYear", $("mfgYear").value.trim() ? "Enter the month and year as YYYY-MM, for example 2021-03." : "Enter the manufacturing month and year."); ok = false; }
+  else if (Number(v.mfgMonth.slice(5)) < 1 || Number(v.mfgMonth.slice(5)) > 12 || v.mfgMonth < "1980-01" || v.mfgMonth > thisMonth) { setErr("mfgYear", `Enter a month between Jan 1980 and ${fmtMfg({ mfgMonth: thisMonth })}.`); ok = false; }
+  else if (v.regDate && v.mfgMonth > v.regDate.slice(0, 7)) { setErr("mfgYear", "Manufacturing month can't be after the registration date."); ok = false; }
   // Capacity, by class
   if (SEAT_TYPES.includes(v.type)) {
     const s = Number($("seats").value);
@@ -3416,18 +3435,20 @@ document.querySelectorAll("#view-vehicles thead th[data-k] button").forEach(b =>
   else sort = { k, dir: k === "regDate" || k === "cylinders" ? "desc" : "asc" };
   renderMaster();
 });
-$("rows").addEventListener("click", async e => {
-  const b = e.target.closest("button[data-act]"); if (!b) return;
-  const act = b.dataset.act, id = b.dataset.id;
-  if (act === "view") openVDrawer(vehicles.find(v => v.id === id));
-  if (act === "edit" && canWrite) openDrawer(vehicles.find(v => v.id === id));
-  if (act === "del") { confirmId = id; renderMaster(); }
-  if (act === "no") { confirmId = null; renderMaster(); }
-  if (act === "yes") {
-    const v = vehicles.find(x => x.id === id); confirmId = null;
-    try { await removeVehicle(id); toast(`${v ? vName(v) : "Vehicle"} deleted`); }
-    catch { toast("Couldn't delete. Try again."); renderMaster(); }
-  }
+// Tapping anywhere on a row (or card, on phones) opens that record; Edit and Delete live inside the record.
+const rowOpen = (e, open) => { if (e.target.closest("a, input, select, textarea")) return; const tr = e.target.closest("tr[data-open]"); if (tr) open(tr.dataset.open); };
+$("rows").addEventListener("click", e => rowOpen(e, id => openVDrawer(vehicles.find(v => v.id === id))));
+// Delete from inside a record: the footer asks first, then removes and closes.
+function delAsk(prefix, can, remove) {
+  const foot = $(prefix + "DelWrap").closest("footer");
+  $(prefix + "DelBtn").onclick = () => { if (!can()) return; foot.classList.add("asking"); $(prefix + "DelQ").hidden = false; $(prefix + "DelBtn").hidden = true; $(prefix + "DelNo").focus(); };
+  $(prefix + "DelNo").onclick = () => delReset(prefix);
+  $(prefix + "DelYes").onclick = async () => { if (!can()) return; $(prefix + "DelYes").disabled = true; try { await remove(); } finally { $(prefix + "DelYes").disabled = false; delReset(prefix); } };
+}
+function delReset(prefix) { const w = $(prefix + "DelWrap"); if (!w) return; w.closest("footer").classList.remove("asking"); $(prefix + "DelQ").hidden = true; $(prefix + "DelBtn").hidden = false; }
+delAsk("v", () => canWrite, async () => {
+  const id = vViewId, v = vehicles.find(x => x.id === id); if (!id) return;
+  try { await removeVehicle(id); closeVDrawer(); toast(`${v ? vName(v) : "Vehicle"} deleted`); } catch { toast("Couldn't delete. Try again."); }
 });
 $("rRows").addEventListener("click", e => {
   const b = e.target.closest("button[data-act]"); if (!b) return;
@@ -3539,18 +3560,14 @@ function renderDrivers() {
   } else {
     $("dRows").innerHTML = list.map(d => {
       const st = d.status || "Active";
-      const act = canDrivers && dConfirmId === d.id
-        ? `<div class="confirm">Delete? <button class="btn" data-dact="no">Keep</button><button class="btn danger" data-dact="yes" data-id="${d.id}">Delete</button></div>`
-        : `<div class="rowact"><button class="icon" data-dact="view" data-id="${d.id}">View</button>${canDrivers ? `<button class="icon" data-dact="edit" data-id="${d.id}">Edit</button><button class="icon del" data-dact="del" data-id="${d.id}">Delete</button>` : ""}</div>`;
-      return `<tr${st === "Inactive" ? ' class="retired"' : ""}>
+      return `<tr class="rowlink${st === "Inactive" ? " retired" : ""}" data-open="${d.id}">
         <td class="c-name"><button type="button" class="linkbtn" data-dact="view" data-id="${d.id}" aria-label="View ${esc(d.name)}"><span class="vid">${dThumb(d)}<span class="dname"><span class="mk">${esc(d.name)}</span>${d.relation ? `<span class="sub">S/D/W of ${esc(d.relation)}</span>` : ""}</span></span></button></td>
         <td data-label="Licence number"><span class="num idno">${esc(fmtDl(d.dlNo))}</span></td>
         <td data-label="Mobile">${d.mobile ? `<span class="num">${esc(fmtMobile(d.mobile))}</span>` : `<span class="sub">Not recorded</span>`}</td>
         <td data-label="Age">${d.dob ? `<span class="num">${yearsBetween(d.dob, todayISO())}</span> <span class="sub">yrs</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Blood group">${d.blood ? `<span class="chip">${esc(d.blood)}</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Licence validity"><div class="renew">${validityPill(d.valTR, "Transport")}${validityPill(d.valNT, "Non-transport")}</div></td>
-        <td data-label="Status"><span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span></td>
-        <td class="c-act">${act}</td></tr>`;
+        <td data-label="Status"><span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span></td></tr>`;
     }).join("");
   }
   refreshDvDrawer();
@@ -3664,7 +3681,7 @@ $("dForm").addEventListener("submit", async e => {
 });
 
 /* view */
-function openDvDrawer(d) { if (!d) return; dViewId = d.id; fillDv(d); $("scrim").hidden = false; $("dvDrawer").hidden = false; setTimeout(() => $("dvClose").focus(), 30); }
+function openDvDrawer(d) { if (!d) return; dViewId = d.id; delReset("dv"); fillDv(d); $("scrim").hidden = false; $("dvDrawer").hidden = false; setTimeout(() => $("dvClose").focus(), 30); }
 function closeDvDrawer() { $("dvDrawer").hidden = true; dViewId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function refreshDvDrawer() {
   if (!dViewId || $("dvDrawer").hidden) return;
@@ -3703,7 +3720,7 @@ function fillDv(d) {
   const total = dHistFor(d.id).length;
   $("dvHistCount").textContent = total; $("dvHistCount").hidden = !total;
   $("dvStatus").innerHTML = row("Status", `<span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span>`) + (d.remarks ? `<dt>Remarks</dt><dd class="addr">${esc(d.remarks)}</dd>` : row("Remarks", null));
-  $("dvEdit").hidden = !canDrivers;
+  $("dvEdit").hidden = !canDrivers; $("dvDelWrap").hidden = !canDrivers;
 }
 
 /* events */
@@ -3713,14 +3730,10 @@ $("dvClose").onclick = $("dvDone").onclick = closeDvDrawer;
 $("dvHistBtn").onclick = () => openHDrawer(dViewId, "", "driver");
 $("dvDrawer").addEventListener("click", e => { const b = e.target.closest("button[data-dhist]"); if (b) openHDrawer(dViewId, b.dataset.dhist, "driver"); });
 $("dvEdit").onclick = () => { const d = drivers.find(x => x.id === dViewId); closeDvDrawer(); if (d && canDrivers) openDfDrawer(d); };
-$("dRows").addEventListener("click", async e => {
-  const b = e.target.closest("button[data-dact]"); if (!b) return;
-  const act = b.dataset.dact, id = b.dataset.id, d = drivers.find(x => x.id === id);
-  if (act === "view") openDvDrawer(d);
-  if (act === "edit" && canDrivers) openDfDrawer(d);
-  if (act === "del") { dConfirmId = id; renderDrivers(); }
-  if (act === "no") { dConfirmId = null; renderDrivers(); }
-  if (act === "yes") { dConfirmId = null; try { await removeDriver(id); toast(`${d?.name || "Driver"} deleted`); } catch { toast("Couldn't delete. Try again."); renderDrivers(); } }
+$("dRows").addEventListener("click", e => rowOpen(e, id => openDvDrawer(drivers.find(x => x.id === id))));
+delAsk("dv", () => canDrivers, async () => {
+  const id = dViewId, d = drivers.find(x => x.id === id); if (!id) return;
+  try { await removeDriver(id); closeDvDrawer(); toast(`${d?.name || "Driver"} deleted`); } catch { toast("Couldn't delete. Try again."); }
 });
 
 /* ================= Conductor master ================= */
@@ -3804,18 +3817,14 @@ function renderConductors() {
   } else {
     $("cRows").innerHTML = list.map(c => {
       const st = c.status || "Active";
-      const act = canConductors && cConfirmId === c.id
-        ? `<div class="confirm">Delete? <button class="btn" data-cact="no">Keep</button><button class="btn danger" data-cact="yes" data-id="${c.id}">Delete</button></div>`
-        : `<div class="rowact"><button class="icon" data-cact="view" data-id="${c.id}">View</button>${canConductors ? `<button class="icon" data-cact="edit" data-id="${c.id}">Edit</button><button class="icon del" data-cact="del" data-id="${c.id}">Delete</button>` : ""}</div>`;
-      return `<tr${st === "Inactive" ? ' class="retired"' : ""}>
+      return `<tr class="rowlink${st === "Inactive" ? " retired" : ""}" data-open="${c.id}">
         <td class="c-name"><button type="button" class="linkbtn" data-cact="view" data-id="${c.id}" aria-label="View ${esc(c.name)}"><span class="vid">${cThumb(c)}<span class="dname"><span class="mk">${esc(c.name)}</span>${c.relation ? `<span class="sub">S/D/W of ${esc(c.relation)}</span>` : ""}</span></span></button></td>
         <td data-label="Licence number"><span class="num idno">${esc(c.clNo || "")}</span></td>
         <td data-label="Badge number">${c.badgeNo ? `<span class="num idno">${esc(c.badgeNo)}</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Mobile">${c.mobile ? `<span class="num">${esc(fmtMobile(c.mobile))}</span>` : `<span class="sub">Not recorded</span>`}</td>
         <td data-label="Age">${c.dob ? `<span class="num">${yearsBetween(c.dob, todayISO())}</span> <span class="sub">yrs</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Validity"><div class="renew">${validityPill(c.clValid, "Licence")}${validityPill(c.faValid, "First-aid")}</div></td>
-        <td data-label="Status"><span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span></td>
-        <td class="c-act">${act}</td></tr>`;
+        <td data-label="Status"><span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span></td></tr>`;
     }).join("");
   }
   refreshCvDrawer();
@@ -3928,7 +3937,7 @@ $("cForm").addEventListener("submit", async e => {
 });
 
 /* view */
-function openCvDrawer(c) { if (!c) return; cViewId = c.id; fillCv(c); $("scrim").hidden = false; $("cvDrawer").hidden = false; setTimeout(() => $("cvClose").focus(), 30); }
+function openCvDrawer(c) { if (!c) return; cViewId = c.id; delReset("cv"); fillCv(c); $("scrim").hidden = false; $("cvDrawer").hidden = false; setTimeout(() => $("cvClose").focus(), 30); }
 function closeCvDrawer() { $("cvDrawer").hidden = true; cViewId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function refreshCvDrawer() {
   if (!cViewId || $("cvDrawer").hidden) return;
@@ -3962,7 +3971,7 @@ function fillCv(c) {
   $("cvStatus").innerHTML = row("Status", `<span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span>`) + (c.remarks ? `<dt>Remarks</dt><dd class="addr">${esc(c.remarks)}</dd>` : row("Remarks", null));
   const total = cHistFor(c.id).length;
   $("cvHistCount").textContent = total; $("cvHistCount").hidden = !total;
-  $("cvEdit").hidden = !canConductors;
+  $("cvEdit").hidden = !canConductors; $("cvDelWrap").hidden = !canConductors;
 }
 
 /* events */
@@ -3972,14 +3981,10 @@ $("cvClose").onclick = $("cvDone").onclick = closeCvDrawer;
 $("cvEdit").onclick = () => { const c = conductors.find(x => x.id === cViewId); closeCvDrawer(); if (c && canConductors) openCfDrawer(c); };
 $("cvHistBtn").onclick = () => openHDrawer(cViewId, "", "conductor");
 $("cvDrawer").addEventListener("click", e => { const b = e.target.closest("button[data-chist]"); if (b) openHDrawer(cViewId, b.dataset.chist, "conductor"); });
-$("cRows").addEventListener("click", async e => {
-  const b = e.target.closest("button[data-cact]"); if (!b) return;
-  const act = b.dataset.cact, id = b.dataset.id, c = conductors.find(x => x.id === id);
-  if (act === "view") openCvDrawer(c);
-  if (act === "edit" && canConductors) openCfDrawer(c);
-  if (act === "del") { cConfirmId = id; renderConductors(); }
-  if (act === "no") { cConfirmId = null; renderConductors(); }
-  if (act === "yes") { cConfirmId = null; try { await removeConductor(id); toast(`${c?.name || "Conductor"} deleted`); } catch { toast("Couldn't delete. Try again."); renderConductors(); } }
+$("cRows").addEventListener("click", e => rowOpen(e, id => openCvDrawer(conductors.find(x => x.id === id))));
+delAsk("cv", () => canConductors, async () => {
+  const id = cViewId, c = conductors.find(x => x.id === id); if (!id) return;
+  try { await removeConductor(id); closeCvDrawer(); toast(`${c?.name || "Conductor"} deleted`); } catch { toast("Couldn't delete. Try again."); }
 });
 
 /* ================= Trip sheet ================= */
