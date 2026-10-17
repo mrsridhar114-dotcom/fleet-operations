@@ -241,6 +241,9 @@ tbody tr:hover { background: var(--accent-soft); }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field label, .field .lbl { font-size: 13px; font-weight: 600; }
 .hint { font-size: 12px; color: var(--muted); }
+.seatpair { display: flex; align-items: center; gap: 10px; }
+.seatpair input { width: 6.5em !important; text-align: center; font-family: var(--mono); }
+.seatpair span { font-weight: 700; font-size: 18px; color: var(--muted); }
 .field input, .field select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; width: 100%; }
 .field input[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: var(--danger); }
 .field .err { font-size: 12px; color: var(--danger); }
@@ -1617,7 +1620,10 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
     </fieldset>
     <fieldset class="docs" id="capSet" hidden>
       <legend>Capacity</legend>
-      <div class="field" id="seatField" hidden><label for="seats">Seating capacity</label><input id="seats" type="number" inputmode="numeric" min="1" max="120" placeholder="Excluding driver, as on the RC"><span class="err" id="e-seats"></span></div>
+      <div class="field" id="seatField" hidden><label for="seats">Seating capacity</label>
+        <div class="seatpair"><input id="seats" type="number" inputmode="numeric" min="1" max="120" placeholder="54" aria-label="Passenger seats"><span aria-hidden="true">+</span><input id="staffSeats" type="number" inputmode="numeric" min="0" max="10" placeholder="2" aria-label="Staff seats"></div>
+        <span class="err" id="e-seats"></span><span class="err" id="e-staffSeats"></span>
+      </div>
       <div id="weightFields" hidden style="display:flex;flex-direction:column;gap:12px">
         <div class="two">
           <div class="field"><label for="gvw">Gross vehicle weight (kg)</label><input id="gvw" type="number" inputmode="numeric" min="1" max="100000" placeholder="e.g. 35000"><span class="err" id="e-gvw"></span></div>
@@ -2463,7 +2469,7 @@ const TRACKED = [
   ["rto", "Registering RTO"], ["chassisNo", "Chassis number"], ["engineNo", "Engine number"], ["fastag", "FASTag ID"], ["rcFileName", "RC copy", "file"],
   ["type", "Vehicle class"], ["make", "Make"], ["model", "Model"], ["mfgMonth", "Manufacturing month & year", "mfg"],
   ["bodyType", "Body type"], ["bodyColour", "Body colour"], ["fuel", "Fuel type"], ["emission", "Emission norms", "emission"],
-  ["seats", "Seating capacity"], ["gvw", "Gross vehicle weight", "kg"], ["ulw", "Unladen weight", "kg"], ["fuelTank", "Fuel tank capacity", "litres"],
+  ["seats", "Seating capacity"], ["staffSeats", "Seating capacity (+ staff)"], ["gvw", "Gross vehicle weight", "kg"], ["ulw", "Unladen weight", "kg"], ["fuelTank", "Fuel tank capacity", "litres"],
   ["tyreCount", "No. of tyres"], ["tyreSize", "Tyre size"], ["batteryMake", "Battery make & model"], ["batteryDate", "Battery installed on", "date"],
   ["usage", "Usage category", "usage"], ["opType", "Operation type"], ["odoStart", "Odometer when added", "km"],
   ["ownerName", "Owner name"], ["ownerAddress", "Owner address", "text"], ["remarks", "Remarks", "text"]
@@ -2892,7 +2898,7 @@ function fillVDrawer(v) {
     row("Body colour", v.bodyColour ? esc(v.bodyColour) : null) +
     row("Fuel type", v.fuel ? `<span class="chip"><i style="background:${fuelColor(v.fuel)}"></i>${esc(v.fuel)}</span>` : null) +
     row("Emission norms", v.emission ? `${esc(emissionLabel(v.emission))} <span class="sub">(${esc(v.emission)})</span>` : null);
-  const cap = (SEAT_TYPES.includes(v.type) ? row("Seating capacity", v.seats ? `<span class="num">${v.seats}</span> <span class="sub">seats</span>` : null) : "") +
+  const cap = (SEAT_TYPES.includes(v.type) ? row("Seating capacity", v.seats ? `<span class="num">${v.seats}${v.staffSeats != null ? ` + ${v.staffSeats}` : ""}</span>` : null) : "") +
     (WEIGHT_TYPES.includes(v.type)
       ? row("Gross vehicle weight", v.gvw ? `<span class="num">${kg(v.gvw)}</span>` : null) +
         row("Unladen weight", v.ulw ? `<span class="num">${kg(v.ulw)}</span>` : null) +
@@ -3258,7 +3264,7 @@ function openDrawer(v, focusKey) {
   $("plateNo").value = v?.plateNo || "";
   $("chassisNo").value = v?.chassisNo || ""; $("engineNo").value = v?.engineNo || "";
   document.querySelectorAll('input[name="vstatus"]').forEach(r => r.checked = r.value === (v?.status || "Active"));
-  $("seats").value = v?.seats ?? ""; $("gvw").value = v?.gvw ?? ""; $("ulw").value = v?.ulw ?? "";
+  $("seats").value = v?.seats ?? ""; $("staffSeats").value = v?.staffSeats ?? ""; $("gvw").value = v?.gvw ?? ""; $("ulw").value = v?.ulw ?? "";
   $("mfgYear").value = v?.mfgMonth ?? "";
   $("mfgOld").hidden = !(v?.mfgYear && !v?.mfgMonth); $("mfgOld").textContent = v?.mfgYear && !v?.mfgMonth ? `Saved earlier as ${v.mfgYear} only. Pick the month.` : "";
   DETAIL_FIELDS.forEach(d => $(d.k).value = v?.[d.k] ?? "");
@@ -3291,7 +3297,7 @@ function openDrawer(v, focusKey) {
   }, 30);
 }
 function closeDrawer() { $("drawer").hidden = true; editingId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
-function clearErrors() { ["permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
+function clearErrors() { ["staffSeats", "permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
 function setErr(k, msg) { $("e-" + k).textContent = msg; $(k)?.setAttribute("aria-invalid", "true"); }
 
 $("form").addEventListener("submit", async e => {
@@ -3345,6 +3351,8 @@ $("form").addEventListener("submit", async e => {
     if (!$("seats").value) { setErr("seats", "Enter the seating capacity."); ok = false; }
     else if (!Number.isInteger(s) || s < 1 || s > 120) { setErr("seats", "Enter a whole number between 1 and 120."); ok = false; }
     else v.seats = s;
+    const st = $("staffSeats").value.trim();
+    if (st !== "") { const n = Number(st); if (!Number.isInteger(n) || n < 0 || n > 10) { setErr("staffSeats", "Enter a whole number between 0 and 10."); ok = false; } else v.staffSeats = n; }
   }
   if (WEIGHT_TYPES.includes(v.type)) {
     const g = Number($("gvw").value), u = Number($("ulw").value);
