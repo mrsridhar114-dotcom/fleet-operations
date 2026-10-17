@@ -5,6 +5,19 @@
   "use strict";
   const POLL_MS = 4000, POLL_HIDDEN_MS = 20000;
 
+  /* ---------- start-up cover ----------
+     The app's screens stay hidden behind a plain "Fleet Operations" cover until we know who is signed in and their
+     records (and permissions) have loaded, so nobody sees the full menu flash up before the sign-in screen. */
+  document.documentElement.classList.add("fo-boot");
+  const bootCss = document.createElement("style");
+  bootCss.textContent = `html.fo-boot,html.fo-boot body{background:#18212b!important}
+html.fo-boot body>*:not(#foLogin){visibility:hidden!important}
+html.fo-boot body::before{content:"Fleet Operations";position:fixed;inset:0;z-index:9990;display:grid;place-items:center;color:#dbe4ec;font:700 26px/1 "Barlow Condensed",system-ui,sans-serif;letter-spacing:.02em}
+html.fo-boot.fo-login body::before{content:none}`;
+  document.head.appendChild(bootCss);
+  let bootDone = false;
+  const reveal = () => { if (bootDone) return; bootDone = true; requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove("fo-boot"))); };
+
   async function api(path, body, opts = {}) {
     const r = await fetch("/api/" + path, {
       method: opts.method || (body !== undefined ? "POST" : "GET"), credentials: "same-origin",
@@ -24,6 +37,7 @@
   })();
 
   function showLogin() {
+    document.documentElement.classList.add("fo-login");
     const go = () => {
       const css = `#foLogin{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#18212b;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif}
 #foLogin form{background:#fff;color:#18212b;width:min(380px,100%);border-radius:12px;padding:26px 24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
@@ -261,6 +275,11 @@
       return null;
     }
   };
+  ready.then(() => {
+    const cap = setTimeout(reveal, 6000);
+    const wait = () => store.loaded ? store.loaded.then(() => setTimeout(() => { clearTimeout(cap); reveal(); }, 250), () => reveal()) : setTimeout(wait, 50);
+    wait();
+  }, () => reveal());
   ready.then(() => { const t = setInterval(() => { accountMenu(); if (document.getElementById("foAcct")) clearInterval(t); }, 300); restoreButton(); });
 
   /* ---------- owner: load a backup file into the database ---------- */
