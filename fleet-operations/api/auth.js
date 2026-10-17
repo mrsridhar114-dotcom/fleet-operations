@@ -10,6 +10,40 @@ const sha = s => crypto.createHash("sha256").update(String(s)).digest("base64url
 const sameHash = (a, b) => a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 const weakPin = p => /^(\d)\1{3}$/.test(p) || ["1234", "2345", "3456", "4567", "5678", "6789", "4321", "9876", "0123"].includes(p);
 
+// Emailed 6-digit codes, shared by "Forgot password?" and "Forgot PIN?". One live code per person, 15 minutes, 5 tries.
+async function sendCode(res, email, name, what) {
+  const last = await q(`select extract(epoch from (now() - sent_at)) as age from fleet_pw_codes where email = $1`, [email]);
+  if (last[0] && Number(last[0].age) < 60) { fail(res, 429, "too_soon", "A code was just sent. Wait a minute before asking for another."); return false; }
+  const code = String(crypto.randomInt(0, 1e6)).padStart(6, "0");
+  await q(`insert into fleet_pw_codes (email, code_hash, expires_at, tries, sent_at) values ($1, $2, now() + interval '15 minutes', 0, now())
+           on conflict (email) do update set code_hash = excluded.code_hash, expires_at = excluded.expires_at, tries = 0, sent_at = now()`, [email, await hashPassword(code)]);
+  const first = String(name || "").split(/\s+/)[0];
+  await sendMail({
+    to: email, subject: `${code} is your VBS ${what} reset code`,
+    text: `Hi ${first},\n\nYour code to reset your VBS fleet app ${what} is ${code}. It works for 15 minutes.\n\nIf you didn't ask for this, ignore this email; nothing changes.`,
+    html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#18212b"><p>Hi ${first.replace(/[<>&]/g, "")},</p><p>Your code to reset your VBS fleet app ${what} is:</p><p style="font-size:30px;font-weight:bold;letter-spacing:6px;margin:16px 0">${code}</p><p>It works for 15 minutes.</p><p style="color:#5c6977">If you didn't ask for this, ignore this email; nothing changes.</p></div>`
+  });
+  return true;
+}
+// Checks a code; on a wrong one counts the try. Returns null when it is right, or [status, code, message].
+async function checkCode(email, code) {
+  const rows = await q(`select code_hash, tries, expires_at > now() as live from fleet_pw_codes where email = $1`, [email]);
+  const row = rows[0];
+  if (!row || !row.live) return [400, "code_expired", "This code has expired. Ask for a new one."];
+  if (await checkPassword(String(code || ""), row.code_hash)) return null;
+  const left = 5 - (row.tries + 1);
+  if (left <= 0) { await q(`delete from fleet_pw_codes where email = $1`, [email]); return [400, "code_expired", "Too many wrong codes. Ask for a new one."]; }
+  await q(`update fleet_pw_codes set tries = tries + 1 where email = $1`, [email]);
+  return [400, "bad_code", `Wrong code. ${left} ${left === 1 ? "try" : "tries"} left.`];
+}
+const maskEmail = e => e.replace(/^(.)(.*)(.@.*)$/, (m, a, mid, b) => a + "*".repeat(Math.min(mid.length, 6)) + b);
+// The PIN row for this phone, checked against the phone's secret.
+async function pinRow(body) {
+  const rows = await q(`select p.id, p.user_id, p.secret_hash, u.email, u.name from fleet_pins p join fleet_users u on u.id = p.user_id where p.id = $1`, [String(body.device || "")]);
+  const row = rows[0];
+  return row && sameHash(sha(body.secret || ""), row.secret_hash) ? row : null;
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
@@ -70,17 +104,7 @@ export default async function handler(req, res) {
       if (!mailReady()) return fail(res, 503, "mail_off", "Password reset by email isn't set up yet. Ask your admin to reset your password.");
       const u = await q(`select name from fleet_users where email = $1`, [email]);
       if (!u[0]) return send(res, 200, { ok: true });
-      const last = await q(`select extract(epoch from (now() - sent_at)) as age from fleet_pw_codes where email = $1`, [email]);
-      if (last[0] && Number(last[0].age) < 60) return fail(res, 429, "too_soon", "A code was just sent. Wait a minute before asking for another.");
-      const code = String(crypto.randomInt(0, 1e6)).padStart(6, "0");
-      await q(`insert into fleet_pw_codes (email, code_hash, expires_at, tries, sent_at) values ($1, $2, now() + interval '15 minutes', 0, now())
-               on conflict (email) do update set code_hash = excluded.code_hash, expires_at = excluded.expires_at, tries = 0, sent_at = now()`, [email, await hashPassword(code)]);
-      const first = String(u[0].name || "").split(/\s+/)[0];
-      await sendMail({
-        to: email, subject: `${code} is your VBS password reset code`,
-        text: `Hi ${first},\n\nYour code to reset your VBS fleet app password is ${code}. It works for 15 minutes.\n\nIf you didn't ask for this, ignore this email; your password stays the same.`,
-        html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#18212b"><p>Hi ${first.replace(/[<>&]/g, "")},</p><p>Your code to reset your VBS fleet app password is:</p><p style="font-size:30px;font-weight:bold;letter-spacing:6px;margin:16px 0">${code}</p><p>It works for 15 minutes.</p><p style="color:#5c6977">If you didn't ask for this, ignore this email; your password stays the same.</p></div>`
-      });
+      if (!(await sendCode(res, email, u[0].name, "password"))) return;
       return send(res, 200, { ok: true });
     }
     // Step 2: the code plus a new password. Signs the person in.
@@ -88,20 +112,47 @@ export default async function handler(req, res) {
       await who(req);
       const email = String(body.email || "").trim().toLowerCase(), code = String(body.code || "").trim(), next = String(body.password || "");
       if (next.length < 8) return fail(res, 400, "bad_request", "Use a new password of at least 8 characters.");
-      const rows = await q(`select code_hash, tries, expires_at > now() as live from fleet_pw_codes where email = $1`, [email]);
-      const row = rows[0];
-      if (!row || !row.live) return fail(res, 400, "code_expired", "This code has expired. Ask for a new one.");
-      if (!(await checkPassword(code, row.code_hash))) {
-        const left = 5 - (row.tries + 1);
-        if (left <= 0) { await q(`delete from fleet_pw_codes where email = $1`, [email]); return fail(res, 400, "code_expired", "Too many wrong codes. Ask for a new one."); }
-        await q(`update fleet_pw_codes set tries = tries + 1 where email = $1`, [email]);
-        return fail(res, 400, "bad_code", `Wrong code. ${left} ${left === 1 ? "try" : "tries"} left.`);
-      }
+      const bad = await checkCode(email, code);
+      if (bad) return fail(res, ...bad);
       const u = await q(`update fleet_users set pass = $2, must_change = false where email = $1 returning id`, [email, await hashPassword(next)]);
       await q(`delete from fleet_pw_codes where email = $1`, [email]);
       if (!u[0]) return fail(res, 400, "code_expired", "This code has expired. Ask for a new one.");
       await q(`delete from fleet_pins where user_id = $1`, [u[0].id]); // PINs set with the old password stop working
       setSession(res, u[0].id, body.remember !== false);
+      return send(res, 200, { ok: true });
+    }
+    // "Forgot PIN?" on a phone that has a PIN: email a code to the PIN's owner (no password needed).
+    if (action === "pinforgot") {
+      await who(req);
+      const row = await pinRow(body);
+      if (!row) return fail(res, 404, "pin_gone", "PIN sign-in isn't set up on this phone. Sign in with your email and password.");
+      if (!mailReady()) return fail(res, 503, "mail_off", "PIN reset by email isn't set up yet. Sign in with your email and password.");
+      if (!(await sendCode(res, row.email, row.name, "PIN"))) return;
+      return send(res, 200, { ok: true, email: maskEmail(row.email) });
+    }
+    // Check the emailed code; if right, swap it for a one-time key that allows choosing the new PIN within 10 minutes.
+    if (action === "pinverify") {
+      await who(req);
+      const row = await pinRow(body);
+      if (!row) return fail(res, 404, "pin_gone", "PIN sign-in isn't set up on this phone. Sign in with your email and password.");
+      const bad = await checkCode(row.email, String(body.code || "").trim());
+      if (bad) return fail(res, ...bad);
+      const key = newId(40);
+      await q(`update fleet_pw_codes set code_hash = $2, tries = 0, expires_at = now() + interval '10 minutes' where email = $1`, [row.email, await hashPassword(key)]);
+      return send(res, 200, { key });
+    }
+    if (action === "pinreset") {
+      await who(req);
+      const row = await pinRow(body);
+      if (!row) return fail(res, 404, "pin_gone", "PIN sign-in isn't set up on this phone. Sign in with your email and password.");
+      const pin = String(body.pin || "");
+      if (!/^\d{4}$/.test(pin)) return fail(res, 400, "bad_request", "The PIN must be 4 digits.");
+      if (weakPin(pin)) return fail(res, 400, "bad_request", "That PIN is too easy to guess. Avoid 1234 or the same digit four times.");
+      const bad = await checkCode(row.email, String(body.key || ""));
+      if (bad) return fail(res, 400, "code_expired", "This reset has expired. Tap Forgot PIN? again.");
+      await q(`delete from fleet_pw_codes where email = $1`, [row.email]);
+      await q(`update fleet_pins set pin_hash = $2, fails = 0, used_at = now() where id = $1`, [row.id, await hashPassword(pin)]);
+      setSession(res, row.user_id, true);
       return send(res, 200, { ok: true });
     }
     if (action === "logout") { clearSession(res); return send(res, 200, { ok: true }); }
