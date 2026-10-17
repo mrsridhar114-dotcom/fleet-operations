@@ -30,26 +30,39 @@
 #foLogin h1{margin:0;font:700 28px "Barlow Condensed",system-ui,sans-serif}#foLogin p{margin:0;color:#5c6977;font-size:14px}
 #foLogin label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}#foLogin input{font:inherit;padding:10px 12px;border:1px solid #d9dfe5;border-radius:8px}
 #foLogin button{font:inherit;font-weight:600;padding:11px;border-radius:8px;border:0;background:#1f5f8b;color:#fff;cursor:pointer}#foLogin .lnk{background:none;color:#1f5f8b;padding:4px;font-weight:600}
-#foLogin .err{color:#b42318;font-size:13px;min-height:1em}`;
+#foLogin .err{color:#b42318;font-size:13px;min-height:1em}
+#foLogin .pw{position:relative;display:flex}#foLogin .pw input{flex:1;padding-right:64px;min-width:0}
+#foLogin .pw .show{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;color:#1f5f8b;padding:6px 8px;font-size:13px}
+#foLogin label.keep{flex-direction:row;align-items:center;gap:10px;font-weight:500;font-size:14px;cursor:pointer}#foLogin label.keep input{width:20px;height:20px;margin:0;accent-color:#1f5f8b}`;
       const wrap = document.createElement("div"); wrap.id = "foLogin";
       wrap.innerHTML = `<style>${css}</style><form novalidate><h1>Fleet Operations</h1><p id="foSub">Sign in to continue.</p>
         <label id="foNameL" hidden>Your name<input id="foName" autocomplete="name" maxlength="80"></label>
         <label>Email<input id="foEmail" type="email" autocomplete="username" required></label>
-        <label>Password<input id="foPw" type="password" autocomplete="current-password" required minlength="8"></label>
+        <label>Password<span class="pw"><input id="foPw" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required minlength="8"><button type="button" class="show" id="foShow" aria-label="Show password">Show</button></span></label>
+        <label class="keep"><input type="checkbox" id="foKeep" checked>Keep me signed in on this device</label>
         <div class="err" id="foErr" role="alert"></div><button type="submit" id="foGo">Sign in</button>
         <button type="button" class="lnk" id="foSwap">New here? Create an account</button></form>`;
       document.body.appendChild(wrap);
       let signup = false;
       const $ = id => document.getElementById(id);
+      const LS = "fo-login-email";
+      try { const em = localStorage.getItem(LS); if (em) $("foEmail").value = em; } catch {}
+      $("foEmail").setAttribute("autocapitalize", "off");
+      $("foShow").onclick = () => { const on = $("foPw").type === "password"; $("foPw").type = on ? "text" : "password"; $("foShow").textContent = on ? "Hide" : "Show"; $("foShow").setAttribute("aria-label", on ? "Hide password" : "Show password"); $("foPw").focus(); };
       $("foSwap").onclick = () => { signup = !signup; $("foNameL").hidden = !signup; $("foGo").textContent = signup ? "Create account" : "Sign in";
         $("foSwap").textContent = signup ? "Have an account? Sign in" : "New here? Create an account"; $("foSub").textContent = signup ? "Create your login. An admin then gives you access." : "Sign in to continue.";
         $("foPw").autocomplete = signup ? "new-password" : "current-password"; $("foErr").textContent = ""; };
       wrap.querySelector("form").onsubmit = async e => {
         e.preventDefault(); $("foErr").textContent = ""; $("foGo").disabled = true;
-        try { await api("auth", { action: signup ? "signup" : "login", name: $("foName").value, email: $("foEmail").value, password: $("foPw").value }); location.reload(); }
+        const keep = $("foKeep").checked, email = $("foEmail").value.trim();
+        try {
+          await api("auth", { action: signup ? "signup" : "login", name: $("foName").value, email, password: $("foPw").value, remember: keep });
+          try { keep ? localStorage.setItem(LS, email) : localStorage.removeItem(LS); } catch {}
+          location.reload();
+        }
         catch (er) { $("foErr").textContent = er.message; } finally { $("foGo").disabled = false; }
       };
-      setTimeout(() => $("foEmail").focus(), 50);
+      setTimeout(() => ($("foEmail").value ? $("foPw") : $("foEmail")).focus(), 50);
     };
     document.body ? go() : document.addEventListener("DOMContentLoaded", go);
   }
@@ -59,11 +72,41 @@
     const who = document.getElementById("who"); if (!who || document.getElementById("foAcct")) return;
     const box = document.createElement("div"); box.id = "foAcct"; box.style.cssText = "display:flex;gap:10px;margin:4px 0 6px;font-size:12px";
     const btn = (t, f) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.style.cssText = "background:none;border:0;padding:0;color:inherit;opacity:.8;text-decoration:underline;cursor:pointer;font:inherit"; b.onclick = f; box.appendChild(b); };
-    btn("Sign out", async () => { try { await api("auth", { action: "logout" }); } catch {} location.reload(); });
     btn("Change password", changePassword);
     if (me.admin) btn("Reset a password", () => dialog(`<b style="font-size:16px">Reset someone's password</b><p style="margin:0;color:var(--muted,#5c6977)">Give them this temporary password; they can change it after signing in.</p>${fld("foRe", "Their email", "email")}${fld("foRp", "Temporary password (8 characters or more)", "text")}`,
       async d => { await api("auth", { action: "reset", email: d.querySelector("#foRe").value, password: d.querySelector("#foRp").value }); alertBox("Password reset."); }));
     who.after(box);
+    powerButtons();
+  }
+
+  // Sign out: a power icon at the top, next to "Fleet Operations" (phone top bar and computer side menu). Asks first.
+  const POWER_SVG = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>`;
+  function signOutAsk() {
+    const d = document.createElement("div");
+    d.style.cssText = "position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px";
+    d.innerHTML = `<div role="dialog" aria-modal="true" aria-label="Sign out" style="background:var(--surface,#fff);color:var(--ink,#18212b);border-radius:12px;padding:20px;width:min(340px,100%);display:flex;flex-direction:column;gap:14px;font-size:15px">
+      <b style="font-size:17px">Sign out?</b><span style="color:var(--muted,#5c6977);font-size:14px">You'll need your email and password to sign in again on this device.</span>
+      <div style="display:flex;gap:8px"><button type="button" class="btn" data-x style="flex:1">Cancel</button><button type="button" class="btn danger" data-ok style="flex:1">Sign out</button></div></div>`;
+    document.body.appendChild(d);
+    d.onclick = e => { if (e.target === d) d.remove(); };
+    d.querySelector("[data-x]").onclick = () => d.remove();
+    d.querySelector("[data-ok]").onclick = async e => { e.target.disabled = true; try { await api("auth", { action: "logout" }); } catch {} location.reload(); };
+    setTimeout(() => d.querySelector("[data-x]").focus(), 30);
+  }
+  function powerButtons() {
+    if (document.getElementById("foPowerCss")) return;
+    const st = document.createElement("style"); st.id = "foPowerCss";
+    st.textContent = `.fo-power{display:inline-grid;place-items:center;width:38px;height:38px;padding:0!important;border-radius:8px;border:1px solid var(--side-line,#24323f)!important;background:none;color:var(--side-ink,#dbe4ec)!important;cursor:pointer;flex:none}
+.fo-power:hover,.fo-power:focus-visible{border-color:var(--danger,#b3261e)!important;color:#ff8a80!important}
+.topbar .fo-power{margin-left:auto}
+.side .fo-power{position:absolute;top:calc(17px + env(safe-area-inset-top,0px));right:10px;z-index:2;width:32px;height:32px}
+.side .fo-power svg{width:17px;height:17px}
+.side .brand{padding-right:46px}.side .brand .mark{white-space:nowrap;font-size:21px}
+@media (max-width:860px){.side .fo-power{display:none}}`;
+    document.head.appendChild(st);
+    const mk = () => { const b = document.createElement("button"); b.type = "button"; b.className = "fo-power"; b.title = "Sign out"; b.setAttribute("aria-label", "Sign out"); b.innerHTML = POWER_SVG; b.onclick = signOutAsk; return b; };
+    document.querySelector(".topbar")?.appendChild(mk());
+    const side = document.getElementById("side"); if (side) side.prepend(mk());
   }
   function dialog(html, onOk) {
     const d = document.createElement("div");

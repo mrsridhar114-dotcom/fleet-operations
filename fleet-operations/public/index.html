@@ -265,7 +265,7 @@ fieldset.docs legend { font-family: var(--mono); font-size: 11px; letter-spacing
 .linkbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
 .vbody { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 .vbody h3 { font-family: var(--mono); font-weight: 600; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
-.dl { display: grid; grid-template-columns: minmax(8.5em, max-content) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 0; }
+.dl { display: grid; grid-template-columns: fit-content(42%) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 0; }
 .dl dt, .dl dd { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; min-width: 0; }
 .dl dt { color: var(--muted); background: var(--bg); }
 .dl dd { font-weight: 600; overflow-wrap: anywhere; }
@@ -483,6 +483,8 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .hicon { display: inline-flex; align-items: center; gap: 3px; border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 5px; padding: 3px 5px; font: 600 11px var(--mono); line-height: 1; }
 .hicon:hover { border-color: var(--line); color: var(--accent); background: var(--surface); }
 .dl dt.docdt { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.dl dt.docdt > span { min-width: 0; overflow-wrap: anywhere; }
+.dl dt.docdt .hicon { flex: none; }
 .lblrow { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .lblrow label { font-size: 13px; font-weight: 600; }
 .hdrawer { z-index: 43; width: min(680px, 100%); }
