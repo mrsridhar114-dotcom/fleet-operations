@@ -334,6 +334,8 @@ details.older { font-size: 12px; margin-top: 2px; }
 .dvphoto .nophoto { width: 140px; }
 .dname { min-width: 11em; }
 .dname .sub { display: block; }
+.nmrow { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.agetag { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; padding: 1px 7px; border-radius: 999px; background: var(--chip-bg); }
 /* trip sheet */
 .twrap { max-width: 1400px; }
 .tcontrols { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
@@ -1194,7 +1196,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
       <div class="toolbar"><span class="count" id="dCount"></span></div>
       <section class="register">
         <table>
-          <thead><tr><th>Driver</th><th>Licence number</th><th>Mobile</th><th>Age</th><th>Blood group</th><th>Licence validity</th><th>Status</th></tr></thead>
+          <thead><tr><th>Driver</th><th>Licence number</th><th>Mobile</th><th>Licence validity</th><th>Status</th></tr></thead>
           <tbody id="dRows"></tbody>
         </table>
       </section>
@@ -1214,7 +1216,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
       <div class="toolbar"><span class="count" id="cCount"></span></div>
       <section class="register">
         <table>
-          <thead><tr><th>Conductor</th><th>Licence number</th><th>Badge number</th><th>Mobile</th><th>Age</th><th>Validity</th><th>Status</th></tr></thead>
+          <thead><tr><th>Conductor</th><th>Licence number</th><th>Badge number</th><th>Mobile</th><th>Validity</th><th>Status</th></tr></thead>
           <tbody id="cRows"></tbody>
         </table>
       </section>
@@ -3565,6 +3567,7 @@ function dThumb(d) {
   const p = dFile(d, "photo");
   return p ? `<img class="lthumb dthumb" src="/_blob/${encodeURIComponent(p.id)}" alt="" loading="lazy">` : `<span class="lthumb dthumb none" title="No photo">${PERSON_SVG}</span>`;
 }
+const ageTag = dob => dob ? `<span class="agetag">${yearsBetween(dob, todayISO())} yrs</span>` : "";
 function validityPill(iso, label) {
   if (!iso) return `<span class="sub">${label}: not recorded</span>`;
   const n = daysUntil(iso);
@@ -3615,11 +3618,9 @@ function renderDrivers() {
     $("dRows").innerHTML = list.map(d => {
       const st = d.status || "Active";
       return `<tr class="rowlink${st === "Inactive" ? " retired" : ""}" data-open="${d.id}">
-        <td class="c-name"><button type="button" class="linkbtn" data-dact="view" data-id="${d.id}" aria-label="View ${esc(d.name)}"><span class="vid">${dThumb(d)}<span class="dname"><span class="mk">${esc(d.name)}</span>${d.relation ? `<span class="sub">${relShort(d)} ${esc(d.relation)}</span>` : ""}</span></span></button></td>
+        <td class="c-name"><button type="button" class="linkbtn" data-dact="view" data-id="${d.id}" aria-label="View ${esc(d.name)}"><span class="vid">${dThumb(d)}<span class="dname"><span class="nmrow"><span class="mk">${esc(d.name)}</span>${ageTag(d.dob)}</span>${d.relation ? `<span class="sub">${relShort(d)} ${esc(d.relation)}</span>` : ""}</span></span></button></td>
         <td data-label="Licence number"><span class="num idno">${esc(fmtDl(d.dlNo))}</span></td>
         <td data-label="Mobile">${d.mobile ? `<span class="num">${esc(fmtMobile(d.mobile))}</span>` : `<span class="sub">Not recorded</span>`}</td>
-        <td data-label="Age">${d.dob ? `<span style="white-space:nowrap"><span class="num">${yearsBetween(d.dob, todayISO())}</span> <span class="sub">yrs</span></span>` : `<span class="sub">—</span>`}</td>
-        <td data-label="Blood group">${d.blood ? `<span class="chip">${esc(d.blood)}</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Licence validity"><div class="renew">${validityPill(d.valTR, "Transport")}${validityPill(d.valNT, "Non-transport")}</div></td>
         <td data-label="Status"><span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span></td></tr>`;
     }).join("");
@@ -3877,11 +3878,10 @@ function renderConductors() {
     $("cRows").innerHTML = list.map(c => {
       const st = c.status || "Active";
       return `<tr class="rowlink${st === "Inactive" ? " retired" : ""}" data-open="${c.id}">
-        <td class="c-name"><button type="button" class="linkbtn" data-cact="view" data-id="${c.id}" aria-label="View ${esc(c.name)}"><span class="vid">${cThumb(c)}<span class="dname"><span class="mk">${esc(c.name)}</span>${c.relation ? `<span class="sub">${relShort(c)} ${esc(c.relation)}</span>` : ""}</span></span></button></td>
+        <td class="c-name"><button type="button" class="linkbtn" data-cact="view" data-id="${c.id}" aria-label="View ${esc(c.name)}"><span class="vid">${cThumb(c)}<span class="dname"><span class="nmrow"><span class="mk">${esc(c.name)}</span>${ageTag(c.dob)}</span>${c.relation ? `<span class="sub">${relShort(c)} ${esc(c.relation)}</span>` : ""}</span></span></button></td>
         <td data-label="Licence number"><span class="num idno">${esc(c.clNo || "")}</span></td>
         <td data-label="Badge number">${c.badgeNo ? `<span class="num idno">${esc(c.badgeNo)}</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Mobile">${c.mobile ? `<span class="num">${esc(fmtMobile(c.mobile))}</span>` : `<span class="sub">Not recorded</span>`}</td>
-        <td data-label="Age">${c.dob ? `<span style="white-space:nowrap"><span class="num">${yearsBetween(c.dob, todayISO())}</span> <span class="sub">yrs</span></span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Validity"><div class="renew">${validityPill(c.clValid, "Licence")}${validityPill(c.faValid, "First-aid")}</div></td>
         <td data-label="Status"><span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span></td></tr>`;
     }).join("");
