@@ -79,7 +79,7 @@
     powerButtons();
   }
 
-  // Sign out: a power icon at the top, next to "Fleet Operations" (phone top bar and computer side menu). Asks first.
+  // Sign out: a power icon at the top of the side menu, next to "Fleet Operations" (on phones, seen when the menu is open). Asks first.
   const POWER_SVG = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>`;
   function signOutAsk() {
     const d = document.createElement("div");
@@ -98,14 +98,12 @@
     const st = document.createElement("style"); st.id = "foPowerCss";
     st.textContent = `.fo-power{display:inline-grid;place-items:center;width:38px;height:38px;padding:0!important;border-radius:8px;border:1px solid var(--side-line,#24323f)!important;background:none;color:var(--side-ink,#dbe4ec)!important;cursor:pointer;flex:none}
 .fo-power:hover,.fo-power:focus-visible{border-color:var(--danger,#b3261e)!important;color:#ff8a80!important}
-.topbar .fo-power{margin-left:auto}
 .side .fo-power{position:absolute;top:calc(17px + env(safe-area-inset-top,0px));right:10px;z-index:2;width:32px;height:32px}
 .side .fo-power svg{width:17px;height:17px}
 .side .brand{padding-right:46px}.side .brand .mark{white-space:nowrap;font-size:21px}
-@media (max-width:860px){.side .fo-power{display:none}}`;
+@media (max-width:860px){.side .fo-power{top:calc(17px + env(safe-area-inset-top,0px))}}`;
     document.head.appendChild(st);
     const mk = () => { const b = document.createElement("button"); b.type = "button"; b.className = "fo-power"; b.title = "Sign out"; b.setAttribute("aria-label", "Sign out"); b.innerHTML = POWER_SVG; b.onclick = signOutAsk; return b; };
-    document.querySelector(".topbar")?.appendChild(mk());
     const side = document.getElementById("side"); if (side) side.prepend(mk());
   }
   function dialog(html, onOk) {
