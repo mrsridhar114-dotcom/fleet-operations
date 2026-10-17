@@ -243,6 +243,7 @@ tbody tr:hover { background: var(--accent-soft); }
 .hint { font-size: 12px; color: var(--muted); }
 .seatpair { display: flex; align-items: center; gap: 10px; }
 .seatpair input { width: 6.5em !important; text-align: center; font-family: var(--mono); }
+.seatpair input::placeholder { font-family: var(--body); font-size: 13px; }
 .seatpair span { font-weight: 700; font-size: 18px; color: var(--muted); }
 .field input, .field select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; width: 100%; }
 .field input[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: var(--danger); }
@@ -1621,7 +1622,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
     <fieldset class="docs" id="capSet" hidden>
       <legend>Capacity</legend>
       <div class="field" id="seatField" hidden><label for="seats">Seating capacity</label>
-        <div class="seatpair"><input id="seats" type="number" inputmode="numeric" min="1" max="120" placeholder="54" aria-label="Passenger seats"><span aria-hidden="true">+</span><input id="staffSeats" type="number" inputmode="numeric" min="0" max="10" placeholder="2" aria-label="Staff seats"></div>
+        <div class="seatpair"><input id="seats" type="number" inputmode="numeric" min="1" max="120" placeholder="Seats" aria-label="Passenger seats"><span aria-hidden="true">+</span><input id="staffSeats" type="number" inputmode="numeric" min="0" max="10" placeholder="Staff" aria-label="Staff seats"></div>
         <span class="err" id="e-seats"></span><span class="err" id="e-staffSeats"></span>
       </div>
       <div id="weightFields" hidden style="display:flex;flex-direction:column;gap:12px">
@@ -1792,6 +1793,10 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
         <div class="field"><label for="dDob">Date of birth</label><input id="dDob" type="date"><span class="err" id="e-dDob"></span></div>
         <div class="field"><label for="dBlood">Blood group</label><select id="dBlood"></select></div>
       </div>
+      <div class="two">
+        <div class="field"><label for="dDoj">Date of joining</label><input id="dDoj" type="date"><span class="err" id="e-dDoj"></span></div>
+        <div></div>
+      </div>
       <div class="field"><span class="lbl">Organ donor</span><div class="seg" role="radiogroup" aria-label="Organ donor">
         <label><input type="radio" name="dOrgan" id="dOrganY" value="Yes"><span>Yes</span></label>
         <label><input type="radio" name="dOrgan" id="dOrganN" value="No"><span>No</span></label>
@@ -1871,6 +1876,10 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
       <div class="two">
         <div class="field"><label for="cDob">Date of birth</label><input id="cDob" type="date"><span class="err" id="e-cDob"></span></div>
         <div class="field"><label for="cBlood">Blood group</label><select id="cBlood"></select></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="cDoj">Date of joining</label><input id="cDoj" type="date"><span class="err" id="e-cDoj"></span></div>
+        <div></div>
       </div>
     </fieldset>
     <fieldset class="docs">
@@ -3491,8 +3500,16 @@ $("rRows").addEventListener("click", e => {
 });
 /* ================= Driver master ================= */
 // Driver change history: one entry per changed field, like vehicles.
+// "3 years 4 months with us" from a joining date.
+function serviceText(doj) {
+  const a = new Date(doj + "T00:00:00"), b = new Date(todayISO() + "T00:00:00");
+  let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()); if (b.getDate() < a.getDate()) m--;
+  if (m < 1) return "joined this month";
+  const y = Math.floor(m / 12), r = m % 12;
+  return [y ? `${y} year${y === 1 ? "" : "s"}` : "", r ? `${r} month${r === 1 ? "" : "s"}` : ""].filter(Boolean).join(" ") + " with us";
+}
 const D_TRACKED = [
-  ["photoFileName", "Driver photo", "file"], ["name", "Name"], ["relation", "Son / Daughter / Wife of"], ["dob", "Date of birth", "date"],
+  ["photoFileName", "Driver photo", "file"], ["name", "Name"], ["relation", "Son / Daughter / Wife of"], ["dob", "Date of birth", "date"], ["doj", "Date of joining", "date"],
   ["blood", "Blood group"], ["organDonor", "Organ donor"], ["mobile", "Mobile number", "mobile"], ["address", "Address", "text"],
   ["dlNo", "Licence number", "dl"], ["state", "Issued by"], ["firstIssue", "Date of first issue", "date"], ["issueDate", "Issue date", "date"],
   ["valNT", "Validity (NT), non-transport", "date", true], ["valTR", "Validity (TR), transport", "date", true],
@@ -3559,7 +3576,7 @@ function buildDriverForm() {
     if (!dStateTouched && STATE_CODES[code]) $("dState").value = STATE_CODES[code];
   });
   $("dState").addEventListener("change", () => { dStateTouched = true; });
-  ["dDob", "dFirstIssue", "dIssue"].forEach(id => $(id).max = todayISO());
+  ["dDob", "dDoj", "dFirstIssue", "dIssue"].forEach(id => $(id).max = todayISO());
 }
 
 /* storage */
@@ -3632,7 +3649,7 @@ async function dUpload(k, file) {
 }
 
 /* form */
-const D_FIELDS = ["dName", "dRelation", "dDob", "dMobile", "dDlNo", "dState", "dFirstIssue", "dIssue", "dValNT", "dValTR"];
+const D_FIELDS = ["dName", "dRelation", "dDob", "dDoj", "dMobile", "dDlNo", "dState", "dFirstIssue", "dIssue", "dValNT", "dValTR"];
 function dClearErrors() { D_FIELDS.forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
 function dErr(k, m) { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); }
 function anyDrawerOpen() { return ["drawer", "vDrawer", "uDrawer", "hDrawer", "dfDrawer", "dvDrawer", "cfDrawer", "cvDrawer", "tfDrawer", "bkDrawer", "lgDrawer", "flDrawer"].some(id => !$(id).hidden); }
@@ -3640,7 +3657,7 @@ function openDfDrawer(d) {
   dEditingId = d?.id || null; dPending = {}; dStateTouched = !!d?.state;
   $("dfTitle").textContent = d ? "Edit driver" : "Add driver";
   $("dfSave").textContent = d ? "Save changes" : "Save driver";
-  const map = { dName: "name", dRelation: "relation", dDob: "dob", dBlood: "blood", dMobile: "mobile", dAddress: "address", dDlNo: "dlNo", dState: "state",
+  const map = { dName: "name", dRelation: "relation", dDob: "dob", dDoj: "doj", dBlood: "blood", dMobile: "mobile", dAddress: "address", dDlNo: "dlNo", dState: "state",
     dFirstIssue: "firstIssue", dIssue: "issueDate", dValNT: "valNT", dValTR: "valTR", dRemarks: "remarks" };
   Object.entries(map).forEach(([id, key]) => $(id).value = key === "dlNo" ? fmtDl(d?.[key]) : (d?.[key] ?? ""));
   $("dOrganY").checked = d?.organDonor === "Yes"; $("dOrganN").checked = d?.organDonor === "No";
@@ -3666,6 +3683,8 @@ $("dForm").addEventListener("submit", async e => {
   if (!dob) { dErr("dDob", "Enter the date of birth."); ok = false; }
   else if (dob > today) { dErr("dDob", "The date of birth can't be in the future."); ok = false; }
   else { const age = yearsBetween(dob, today); if (age < 18 || age > 85) { dErr("dDob", "The driver must be between 18 and 85 years old."); ok = false; } else d.dob = dob; }
+  const doj = $("dDoj").value;
+  if (doj) { if (doj > today) { dErr("dDoj", "The date of joining can't be in the future."); ok = false; } else if (doj < "1950-01-01") { dErr("dDoj", "Enter a valid date."); ok = false; } else if (d.dob && yearsBetween(d.dob, doj) < 18) { dErr("dDoj", "This is before the driver turned 18."); ok = false; } else d.doj = doj; }
   if ($("dBlood").value) d.blood = $("dBlood").value;
   const organ = document.querySelector('input[name="dOrgan"]:checked')?.value; if (organ) d.organDonor = organ;
   const mob = $("dMobile").value.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
@@ -3738,6 +3757,7 @@ function fillDv(d) {
     (dEarlierHtml(d.id, "photo", "photos") ? `<figcaption>${dEarlierHtml(d.id, "photo", "photos")}</figcaption>` : "");
   $("dvPersonal").innerHTML = row("Name", esc(d.name)) + row("Son / Daughter / Wife of", d.relation ? esc(d.relation) : null) +
     dateRow("Date of birth", d.dob, d.dob ? ` <span class="sub">· ${yearsBetween(d.dob, todayISO())} years old</span>` : "") +
+    dateRow("Date of joining", d.doj, d.doj ? ` <span class="sub">· ${serviceText(d.doj)}</span>` : "") +
     row("Blood group", d.blood ? esc(d.blood) : null) + row("Organ donor", d.organDonor ? esc(d.organDonor) : null);
   $("dvContact").innerHTML = row("Mobile number", d.mobile ? `<span class="num">${esc(fmtMobile(d.mobile))}</span>` : null) +
     (d.address ? `<dt>Address</dt><dd class="addr">${esc(d.address)}</dd>` : row("Address", null));
@@ -3771,7 +3791,7 @@ delAsk("dv", () => canDrivers, async () => {
 
 /* ================= Conductor master ================= */
 const C_TRACKED = [
-  ["photoFileName", "Conductor photo", "file"], ["name", "Name"], ["relation", "Son / Daughter / Wife of"], ["dob", "Date of birth", "date"],
+  ["photoFileName", "Conductor photo", "file"], ["name", "Name"], ["relation", "Son / Daughter / Wife of"], ["dob", "Date of birth", "date"], ["doj", "Date of joining", "date"],
   ["blood", "Blood group"], ["mobile", "Mobile number", "mobile"], ["address", "Address", "text"],
   ["clNo", "Licence number"], ["badgeNo", "Badge number"], ["state", "Issued by"], ["rto", "Issuing RTO"], ["issueDate", "Issue date", "date"],
   ["clValid", "Licence valid until", "date", true], ["clCopyFileName", "Licence copy", "file"],
@@ -3815,7 +3835,7 @@ function buildConductorForm() {
   $("cStatusSeg").innerHTML = D_STATUS.map((st, i) => `<label><input type="radio" name="cStatus" id="cStatus-${i}" value="${st}"><span>${st}</span></label>`).join("");
   $("cClNo").addEventListener("input", () => { const code = normDl($("cClNo").value).slice(0, 2); if (!cStateTouched && STATE_CODES[code]) $("cState").value = STATE_CODES[code]; });
   $("cState").addEventListener("change", () => { cStateTouched = true; });
-  ["cDob", "cIssue"].forEach(id => $(id).max = todayISO());
+  ["cDob", "cDoj", "cIssue"].forEach(id => $(id).max = todayISO());
 }
 function cSaveLocal() { try { localStorage.setItem(CLS, JSON.stringify(conductors)); } catch {} }
 async function saveConductor(c) {
@@ -3890,14 +3910,14 @@ async function cUpload(k, file) {
 }
 
 /* form */
-const C_ERR = ["cName", "cDob", "cMobile", "cClNo", "cBadge", "cState", "cIssue", "cValid", "cFaValid"];
+const C_ERR = ["cName", "cDob", "cDoj", "cMobile", "cClNo", "cBadge", "cState", "cIssue", "cValid", "cFaValid"];
 function cClearErrors() { C_ERR.forEach(k => { $("e-" + k).textContent = ""; $(k).removeAttribute("aria-invalid"); }); }
 function cErr(k, m) { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); }
 function openCfDrawer(c) {
   cEditingId = c?.id || null; cPending = {}; cStateTouched = !!c?.state;
   $("cfTitle").textContent = c ? "Edit conductor" : "Add conductor";
   $("cfSave").textContent = c ? "Save changes" : "Save conductor";
-  const map = { cName: "name", cRelation: "relation", cDob: "dob", cBlood: "blood", cMobile: "mobile", cAddress: "address", cClNo: "clNo", cBadge: "badgeNo",
+  const map = { cName: "name", cRelation: "relation", cDob: "dob", cDoj: "doj", cBlood: "blood", cMobile: "mobile", cAddress: "address", cClNo: "clNo", cBadge: "badgeNo",
     cState: "state", cRto: "rto", cIssue: "issueDate", cValid: "clValid", cFaNo: "faNo", cFaValid: "faValid", cRemarks: "remarks" };
   Object.entries(map).forEach(([id, key]) => $(id).value = c?.[key] ?? "");
   document.querySelectorAll('input[name="cStatus"]').forEach(r => r.checked = r.value === (c?.status || "Active"));
@@ -3922,6 +3942,8 @@ $("cForm").addEventListener("submit", async e => {
   if (!dob) { cErr("cDob", "Enter the date of birth."); ok = false; }
   else if (dob > today) { cErr("cDob", "The date of birth can't be in the future."); ok = false; }
   else { const age = yearsBetween(dob, today); if (age < 18 || age > 75) { cErr("cDob", "The conductor must be between 18 and 75 years old."); ok = false; } else c.dob = dob; }
+  const doj = $("cDoj").value;
+  if (doj) { if (doj > today) { cErr("cDoj", "The date of joining can't be in the future."); ok = false; } else if (doj < "1950-01-01") { cErr("cDoj", "Enter a valid date."); ok = false; } else if (c.dob && yearsBetween(c.dob, doj) < 18) { cErr("cDoj", "This is before the conductor turned 18."); ok = false; } else c.doj = doj; }
   if ($("cBlood").value) c.blood = $("cBlood").value;
   const mob = $("cMobile").value.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
   if ($("cMobile").value.trim()) { if (!/^[6-9]\d{9}$/.test(mob)) { cErr("cMobile", "Enter a 10-digit mobile number starting with 6, 7, 8 or 9."); ok = false; } else c.mobile = mob; }
@@ -3992,6 +4014,7 @@ function fillCv(c) {
   $("cvPhoto").innerHTML = (ph ? `<a href="/_blob/${encodeURIComponent(ph.id)}" target="_blank" rel="noopener" title="Open full size"><img src="/_blob/${encodeURIComponent(ph.id)}" alt="Photo of ${esc(c.name)}"></a>` : `<div class="nophoto">No photo</div>`) + (olderPh ? `<figcaption>${olderPh}</figcaption>` : "");
   $("cvPersonal").innerHTML = row("Name", esc(c.name)) + row("Son / Daughter / Wife of", c.relation ? esc(c.relation) : null) +
     row("Date of birth", c.dob ? `<span class="num">${fmtDate(c.dob)}</span> <span class="sub">· ${yearsBetween(c.dob, todayISO())} years old</span>` : null) +
+    row("Date of joining", c.doj ? `<span class="num">${fmtDate(c.doj)}</span> <span class="sub">· ${serviceText(c.doj)}</span>` : null) +
     row("Blood group", c.blood ? esc(c.blood) : null);
   $("cvContact").innerHTML = row("Mobile number", c.mobile ? `<span class="num">${esc(fmtMobile(c.mobile))}</span>` : null) +
     (c.address ? `<dt>Address</dt><dd class="addr">${esc(c.address)}</dd>` : row("Address", null));
