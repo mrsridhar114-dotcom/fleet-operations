@@ -1,0 +1,16 @@
+{
+  "name": "fleet-operations",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fleet Operations: vehicles, drivers, trip sheets and spare bus bookings. Runs on Vercel with a Neon Postgres database.",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0"
+  }
+}
