@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.fleetops.app",
+        "sha256_cert_fingerprints": ["69:A8:82:CF:08:9F:C2:1A:6B:0B:76:A2:C3:C2:C1:32:77:C0:CF:45:F3:19:57:2B:D6:2D:03:29:59:8D:98:0C"]
+      }
+    }]
