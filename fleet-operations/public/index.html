@@ -642,6 +642,8 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
 .paylist { display: flex; flex-direction: column; gap: 8px; }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
 .chk input { width: auto; }
+.vcls { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 4px 0; }
+.vcls .chk { font-weight: 500; }
 .crumbs a:not(.home) { color: inherit; text-decoration: none; }
 .crumbs a:not(.home):hover { color: var(--accent); text-decoration: underline; }
 .ta { font-size: 11px; color: var(--muted); font-weight: 400; }
@@ -1824,6 +1826,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
         <div class="field"><label for="dValNT">Validity (NT), non-transport</label><input id="dValNT" type="date"><span class="err" id="e-dValNT"></span></div>
         <div class="field"><label for="dValTR">Validity (TR), transport</label><input id="dValTR" type="date"><span class="hint">Needed to drive buses, trucks and taxis.</span><span class="err" id="e-dValTR"></span></div>
       </div>
+      <div class="field"><span class="lbl">Vehicle class</span><div class="vcls" id="dVClass" role="group" aria-label="Vehicle class"></div><span class="hint">The vehicles this driver drives. In trip sheets, only drivers for that vehicle class are offered. Leave all unticked to offer the driver for every vehicle.</span></div>
       <div class="two">
         <div class="field"><span class="lbl">Licence copy, front</span><div class="fileline" data-dfile="dlFront"></div></div>
         <div class="field"><span class="lbl">Licence copy, back</span><div class="fileline" data-dfile="dlBack"></div></div>
@@ -3518,16 +3521,16 @@ const D_TRACKED = [
   ["photoFileName", "Driver photo", "file"], ["name", "Name"], ["relType", "Relation"], ["relation", "Relation's name"], ["dob", "Date of birth", "date"], ["doj", "Date of joining", "date"],
   ["blood", "Blood group"], ["organDonor", "Organ donor"], ["mobile", "Mobile number", "mobile"], ["address", "Address", "text"],
   ["dlNo", "Licence number", "dl"], ["state", "Issued by"], ["firstIssue", "Date of first issue", "date"], ["issueDate", "Issue date", "date"],
-  ["valNT", "Validity (NT), non-transport", "date", true], ["valTR", "Validity (TR), transport", "date", true],
+  ["valNT", "Validity (NT), non-transport", "date", true], ["valTR", "Validity (TR), transport", "date", true], ["vClass", "Vehicle class"],
   ["dlFrontFileName", "Licence copy, front", "file"], ["dlBackFileName", "Licence copy, back", "file"],
   ["status", "Status"], ["remarks", "Remarks", "text"]
 ];
 const D_FIELD_INFO = Object.fromEntries(D_TRACKED.map(([k, label, fmt, doc]) => [k, { label, fmt, doc: !!doc }]));
 const D_KEYS = D_TRACKED.map(t => t[0]);
 const D_HIST_OPTS = () => `<option value="">All fields</option>` +
-  `<optgroup label="Personal & contact">${D_TRACKED.slice(0, 8).map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>` +
-  `<optgroup label="Driving licence">${D_TRACKED.slice(8, 16).map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>` +
-  `<optgroup label="Status &amp; remarks">${D_TRACKED.slice(16).map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>`;
+  `<optgroup label="Personal & contact">${D_TRACKED.slice(0, 10).map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>` +
+  `<optgroup label="Driving licence">${D_TRACKED.slice(10, 19).map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>` +
+  `<optgroup label="Status &amp; remarks">${D_TRACKED.slice(19).map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>`;
 let dHistory = [], dHistRef = null;
 const DHLS = "fleet-dhistory.v1";
 const dHistFor = (id, k) => dHistory.filter(h => h.driverId === id && (!k || h.field === k)).sort((a, b) => String(b.at).localeCompare(String(a.at)));
@@ -3576,6 +3579,7 @@ function validityPill(iso, label) {
 
 function buildDriverForm() {
   $("dBlood").innerHTML = `<option value="">Choose…</option>` + BLOOD.map(b => `<option>${b}</option>`).join("");
+  $("dVClass").innerHTML = TYPES.map(t => `<label class="chk"><input type="checkbox" data-vcls="${esc(t)}"> ${esc(t)}</label>`).join("");
   $("dState").innerHTML = `<option value="">Choose the state</option>` + STATES.map(st => `<option>${st}</option>`).join("");
   $("dStatusSeg").innerHTML = D_STATUS.map((st, i) => `<label><input type="radio" name="dStatus" id="dStatus-${i}" value="${st}"><span>${st}</span></label>`).join("");
   $("dDlNo").addEventListener("input", () => {
@@ -3665,6 +3669,7 @@ function openDfDrawer(d) {
   const map = { dName: "name", dRelation: "relation", dRelType: "relType", dDob: "dob", dDoj: "doj", dBlood: "blood", dMobile: "mobile", dAddress: "address", dDlNo: "dlNo", dState: "state",
     dFirstIssue: "firstIssue", dIssue: "issueDate", dValNT: "valNT", dValTR: "valTR", dRemarks: "remarks" };
   Object.entries(map).forEach(([id, key]) => $(id).value = key === "dlNo" ? fmtDl(d?.[key]) : (d?.[key] ?? ""));
+  const vc = vClassesOf(d); document.querySelectorAll("#dVClass input[data-vcls]").forEach(i => i.checked = vc.includes(i.dataset.vcls));
   $("dOrganY").checked = d?.organDonor === "Yes"; $("dOrganN").checked = d?.organDonor === "No";
   document.querySelectorAll('input[name="dStatus"]').forEach(r => r.checked = r.value === (d?.status || "Active"));
   $("dNote").value = "";
@@ -3708,6 +3713,7 @@ $("dForm").addEventListener("submit", async e => {
   if (!nt) { dErr("dValNT", "Enter the non-transport validity date."); ok = false; }
   else if (iss && nt <= iss) { dErr("dValNT", "Validity must be after the issue date."); ok = false; } else d.valNT = nt;
   if (tr) { if (iss && tr <= iss) { dErr("dValTR", "Validity must be after the issue date."); ok = false; } else d.valTR = tr; }
+  const vcl = [...document.querySelectorAll("#dVClass input[data-vcls]:checked")].map(i => i.dataset.vcls); if (vcl.length) d.vClass = vcl.join(", ");
   ["photo", "dlFront", "dlBack"].forEach(k => { const f = dCur(k); if (f) { d[k + "File"] = f.id; d[k + "FileName"] = f.name; } });
   const rem = $("dRemarks").value.trim(); if (rem) d.remarks = rem;
   if (!ok) { document.querySelector('#dForm [aria-invalid="true"]')?.focus(); return; }
@@ -3775,7 +3781,7 @@ function fillDv(d) {
   };
   $("dvLicence").innerHTML = row("Licence number", `<span class="num">${esc(fmtDl(d.dlNo))}</span>`) + row("Issued by", d.state ? `Government of ${esc(d.state)}` : null) +
     dateRow("Date of first issue", d.firstIssue, d.firstIssue ? ` <span class="sub">· ${yearsBetween(d.firstIssue, todayISO())} years driving</span>` : "") +
-    dateRow("Issue date", d.issueDate) + val("Validity (NT), non-transport", d.valNT, "valNT") + val("Validity (TR), transport", d.valTR, "valTR") +
+    dateRow("Issue date", d.issueDate) + val("Validity (NT), non-transport", d.valNT, "valNT") + val("Validity (TR), transport", d.valTR, "valTR") + row("Vehicle class", d.vClass ? esc(d.vClass) : `<span class="sub">All vehicles</span>`) +
     hrow("Licence copy, front", "dlFrontFileName", copy("dlFront")) + hrow("Licence copy, back", "dlBackFileName", copy("dlBack"));
   const total = dHistFor(d.id).length;
   $("dvHistCount").textContent = total; $("dvHistCount").hidden = !total;
@@ -4415,8 +4421,11 @@ function renderTripYear() {
 }
 
 /* trip form */
-function crewOptions(kind, current, src = trips) {
-  const list = (kind === "driver" ? drivers : conductors).filter(p => p.status !== "Inactive" || p.id === current?.id);
+const vClassesOf = d => String(d?.vClass || "").split(",").map(x => x.trim()).filter(Boolean);
+// Drivers with a vehicle class are offered only for vehicles of that class; the driver already on the entry stays listed.
+const drivesClass = (d, vType) => !vType || !vClassesOf(d).length || vClassesOf(d).includes(vType);
+function crewOptions(kind, current, src = trips, vType = "", keep = []) {
+  const list = (kind === "driver" ? drivers : conductors).filter(p => (p.status !== "Inactive" || p.id === current?.id) && (kind !== "driver" || keep.includes(p.id) || drivesClass(p, vType)));
   const legacy = [...new Set(src.filter(t => !t[kind + "Id"] && t[kind + "Name"]).map(t => t[kind + "Name"].toUpperCase()))];
   if (kind === "conductor") src.filter(t => !t.checkerId && t.checkerName).forEach(t => legacy.includes(t.checkerName.toUpperCase()) || legacy.push(t.checkerName.toUpperCase()));
   return list.map(p => `<option value="id:${p.id}">${esc(p.name)}</option>`).join("") +
@@ -4441,7 +4450,7 @@ function openTfDrawer(date, mode) {
   $("tfSub").textContent = bus ? `${bus.plateNo || ""} · ${vName(bus)}` : "";
   const starts = [...new Set(trips.map(x => x.start).filter(Boolean))];
   $("tStarts").innerHTML = starts.map(x => `<option value="${esc(x)}">`).join("");
-  $("tDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver");
+  $("tDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, trips, bus?.type, [t?.driverId]);
   $("tConductor").innerHTML = `<option value="">Choose the conductor</option>` + crewOptions("conductor");
   $("tChecker").innerHTML = `<option value="">No checker</option>` + crewOptions("conductor");
   $("tDriver").value = crewValue("driver", t); $("tConductor").value = crewValue("conductor", t); $("tChecker").value = crewValue("checker", t);
@@ -5433,7 +5442,7 @@ function fillDayForm() {
   const idle = !!t?.notRun;
   $("dbModeIdle").checked = idle; $("dbModeRan").checked = !idle; $("dbIdleReason").value = t?.idleReason || "";
   $("dbStarts").innerHTML = [...new Set(bw.map(x => x.start).filter(Boolean))].map(x => `<option value="${esc(x)}">`).join("");
-  $("dbDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, bw);
+  $("dbDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, bw, bus?.type, [t?.driverId]);
   $("dbConductor").innerHTML = `<option value="">Choose the conductor</option>` + crewOptions("conductor", null, bw);
   $("dbChecker").innerHTML = `<option value="">No checker</option>` + crewOptions("conductor", null, bw);
   const src = t || last;
@@ -5817,7 +5826,7 @@ function openBooking(id, preset) {
   bkRentTouched = !!b && num(b.rent) !== Math.round(num(b.rate) * num(b.days));
   const pp = b?.partyPays || ppDefaults(rt);
   $("bkPP").innerHTML = PARTY_ITEMS.map(([k, l]) => `<label class="chk"><input type="checkbox" data-pp="${k}"${pp[k] ? " checked" : ""}> ${l}</label>`).join("");
-  $("bkDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, ops.bookings);
+  $("bkDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, ops.bookings, "Bus", [b?.driverId]);
   $("bkDriver").value = b ? crewValue("driver", b) : "";
   $("bkBookedBy").innerHTML = `<option value="">Choose the driver</option>` + drivers.filter(d => d.status !== "Inactive" || d.id === b?.bookedById).map(d => `<option value="id:${d.id}">${esc(d.name)}</option>`).join("") +
     (b?.bookedByName && !b.bookedById ? `<option value="name:${esc(b.bookedByName)}">${esc(b.bookedByName)}</option>` : "");
@@ -6740,7 +6749,7 @@ function openLeg(id, roundId) {
     .map(r => `<option value="${r.id}">From ${fmtShort(r.from)} · ${esc(r.path)}${r.status === "Closed" ? " (closed)" : ""}</option>`).join("");
   $("lgRound").value = pick;
   const own = ops.truckTrips.filter(x => x.vehicleId === vid).map(x => ({ driverId: x.driver1Id, driverName: x.driver1Name })).concat(ops.truckTrips.filter(x => x.vehicleId === vid).map(x => ({ driverId: x.driver2Id, driverName: x.driver2Name })));
-  const opts = crewOptions("driver", null, own);
+  const opts = crewOptions("driver", null, own, bus?.type, [l?.driver1Id, l?.driver2Id]);
   $("lgDriver1").innerHTML = `<option value="">Choose the driver</option>` + opts; $("lgDriver2").innerHTML = `<option value="">No second driver</option>` + opts;
   $("lgPlaces").innerHTML = [...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean))].sort().map(p => `<option value="${esc(p)}">`).join("");
   const src = l || {};
