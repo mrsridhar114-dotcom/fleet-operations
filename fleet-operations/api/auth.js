@@ -36,6 +36,38 @@ async function checkCode(email, code) {
   await q(`update fleet_pw_codes set tries = tries + 1 where email = $1`, [email]);
   return [400, "bad_code", `Wrong code. ${left} ${left === 1 ? "try" : "tries"} left.`];
 }
+// Wrong-password limit: after LOGIN_TRIES wrong passwords in a row, sign-in for that email is paused for LOCK_MINUTES.
+const LOGIN_TRIES = 8, LOCK_MINUTES = 15;
+async function loginLocked(email) {
+  const r = await q(`select ceil(extract(epoch from (locked_until - now())) / 60) as mins from fleet_login_fails where email = $1 and locked_until > now()`, [email]);
+  return r[0] ? Math.max(1, Number(r[0].mins)) : 0;
+}
+async function loginFailed(email) {
+  // Counts reset if the last wrong try was more than an hour ago.
+  const r = await q(`insert into fleet_login_fails (email, fails, last_at) values ($1, 1, now())
+    on conflict (email) do update set fails = case when fleet_login_fails.last_at < now() - interval '1 hour' then 1 else fleet_login_fails.fails + 1 end, last_at = now()
+    returning fails`, [email]);
+  const fails = Number(r[0].fails);
+  if (fails >= LOGIN_TRIES) {
+    await q(`update fleet_login_fails set fails = 0, locked_until = now() + interval '${LOCK_MINUTES} minutes' where email = $1`, [email]);
+    return -1;
+  }
+  return LOGIN_TRIES - fails;
+}
+const clearLoginFails = email => q(`delete from fleet_login_fails where email = $1`, [email]);
+
+// Security emails: tell the person when their password or PIN changes, or when sign-in gets locked. Never blocks the action.
+async function securityMail(email, name, subject, line) {
+  if (!mailReady() || !email) return;
+  const when = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  const first = String(name || "").split(/\s+/)[0].replace(/[<>&]/g, "");
+  const tail = "If this was you, there's nothing to do. If it wasn't, reset your password from the sign-in page (Forgot password?) and tell your admin straight away.";
+  try {
+    await sendMail({ to: email, subject: `VBS fleet app: ${subject}`,
+      text: `Hi ${first},\n\n${line} (${when} IST)\n\n${tail}`,
+      html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#18212b"><p>Hi ${first},</p><p>${line} <span style="color:#5c6977">(${when} IST)</span></p><p style="color:#5c6977">${tail}</p></div>` });
+  } catch (e) { console.error("security mail", e); }
+}
 const maskEmail = e => e.replace(/^(.)(.*)(.@.*)$/, (m, a, mid, b) => a + "*".repeat(Math.min(mid.length, 6)) + b);
 // The PIN row for this phone, checked against the phone's secret.
 async function pinRow(body) {
@@ -72,8 +104,18 @@ export default async function handler(req, res) {
     if (action === "login") {
       await who(req);
       const email = String(body.email || "").trim().toLowerCase(), pw = String(body.password || "");
-      const rows = await q(`select id, pass from fleet_users where email = $1`, [email]);
-      if (!rows[0] || !(await checkPassword(pw, rows[0].pass))) return fail(res, 401, "bad_login", "Email or password is wrong.");
+      const lockedFor = await loginLocked(email);
+      if (lockedFor) return fail(res, 429, "locked", `Too many wrong passwords. Try again in ${lockedFor} minute${lockedFor === 1 ? "" : "s"}, or tap "Forgot password?".`);
+      const rows = await q(`select id, name, pass from fleet_users where email = $1`, [email]);
+      if (!rows[0] || !(await checkPassword(pw, rows[0].pass))) {
+        const left = await loginFailed(email);
+        if (left < 0) {
+          if (rows[0]) await securityMail(email, rows[0].name, "sign-in paused after wrong passwords", `Someone entered a wrong password for your account ${LOGIN_TRIES} times, so sign-in is paused for ${LOCK_MINUTES} minutes.`);
+          return fail(res, 429, "locked", `Too many wrong passwords. Sign-in is paused for ${LOCK_MINUTES} minutes. Tap "Forgot password?" to reset it.`);
+        }
+        return fail(res, 401, "bad_login", left <= 3 ? `Email or password is wrong. ${left} ${left === 1 ? "try" : "tries"} left before sign-in is paused.` : "Email or password is wrong.");
+      }
+      await clearLoginFails(email);
       setSession(res, rows[0].id, body.remember !== false);
       return send(res, 200, { ok: true });
     }
@@ -114,10 +156,12 @@ export default async function handler(req, res) {
       if (next.length < 8) return fail(res, 400, "bad_request", "Use a new password of at least 8 characters.");
       const bad = await checkCode(email, code);
       if (bad) return fail(res, ...bad);
-      const u = await q(`update fleet_users set pass = $2, must_change = false where email = $1 returning id`, [email, await hashPassword(next)]);
+      const u = await q(`update fleet_users set pass = $2, must_change = false where email = $1 returning id, name`, [email, await hashPassword(next)]);
       await q(`delete from fleet_pw_codes where email = $1`, [email]);
       if (!u[0]) return fail(res, 400, "code_expired", "This code has expired. Ask for a new one.");
       await q(`delete from fleet_pins where user_id = $1`, [u[0].id]); // PINs set with the old password stop working
+      await clearLoginFails(email);
+      await securityMail(email, u[0].name, "your password was changed", "Your password was reset using a code sent to this email. Any PIN set on your phones was removed.");
       setSession(res, u[0].id, body.remember !== false);
       return send(res, 200, { ok: true });
     }
@@ -152,6 +196,7 @@ export default async function handler(req, res) {
       if (bad) return fail(res, 400, "code_expired", "This reset has expired. Tap Forgot PIN? again.");
       await q(`delete from fleet_pw_codes where email = $1`, [row.email]);
       await q(`update fleet_pins set pin_hash = $2, fails = 0, used_at = now() where id = $1`, [row.id, await hashPassword(pin)]);
+      await securityMail(row.email, row.name, "your PIN was changed", "The PIN for the VBS fleet app on one of your phones was reset using a code sent to this email.");
       setSession(res, row.user_id, true);
       return send(res, 200, { ok: true });
     }
@@ -180,6 +225,8 @@ export default async function handler(req, res) {
       if (String(body.next || "").length < 8) return fail(res, 400, "bad_request", "Use a new password of at least 8 characters.");
       await q(`update fleet_users set pass = $2, must_change = false where id = $1`, [me.id, await hashPassword(String(body.next))]);
       await q(`delete from fleet_pins where user_id = $1 and id <> $2`, [me.id, String(body.device || "")]); // other phones must sign in again
+      await clearLoginFails(me.email);
+      await securityMail(me.email, me.name, "your password was changed", "Your password was changed from inside the app. PINs on your other phones were removed.");
       return send(res, 200, { ok: true });
     }
     // An admin sets a temporary password for someone who forgot theirs.
@@ -187,9 +234,11 @@ export default async function handler(req, res) {
       if (!me.admin) return fail(res, 403, "permission_denied", "Only an admin can reset passwords.");
       if (String(body.password || "").length < 8) return fail(res, 400, "bad_request", "Use a password of at least 8 characters.");
       const email = String(body.email || "").trim().toLowerCase();
-      const r = await q(`update fleet_users set pass = $2, must_change = true where email = $1 returning id`, [email, await hashPassword(String(body.password))]);
+      const r = await q(`update fleet_users set pass = $2, must_change = true where email = $1 returning id, name`, [email, await hashPassword(String(body.password))]);
       if (!r.length) return fail(res, 404, "not_found", "No account with that email.");
       await q(`delete from fleet_pins where user_id = $1`, [r[0].id]); // a lost phone's PIN stops working too
+      await clearLoginFails(email);
+      await securityMail(email, r[0].name, "an admin reset your password", `${String(me.name || "An admin").replace(/[<>&]/g, "")} set a temporary password for your account. You'll be asked to choose a new one when you sign in. Any PIN on your phones was removed.`);
       return send(res, 200, { ok: true });
     }
     if (action === "profiles") {
