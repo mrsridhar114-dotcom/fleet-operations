@@ -1,6 +1,7 @@
 // Sign up, sign in, sign out, change password, and the current login.
 import crypto from "node:crypto";
 import { q } from "../lib/db.js";
+import { sendMail, mailReady } from "../lib/mail.js";
 import { send, fail, who, setSession, renewSession, clearSession, hashPassword, checkPassword, ownerEmails, newId, readBody } from "../lib/http.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,13 +62,46 @@ export default async function handler(req, res) {
       setSession(res, row.user_id, true);
       return send(res, 200, { ok: true });
     }
-    // "Forgot password?": leave a request for an admin. The reply never says whether the email has an account.
+    // "Forgot password?" step 1: email a 6-digit code. The reply never says whether the email has an account.
     if (action === "forgot") {
       await who(req);
       const email = String(body.email || "").trim().toLowerCase();
       if (!EMAIL.test(email)) return fail(res, 400, "bad_request", "Enter a valid email address.");
+      if (!mailReady()) return fail(res, 503, "mail_off", "Password reset by email isn't set up yet. Ask your admin to reset your password.");
       const u = await q(`select name from fleet_users where email = $1`, [email]);
-      if (u[0]) await q(`insert into fleet_pw_requests (email, name) values ($1, $2) on conflict (email) do update set requested_at = now()`, [email, u[0].name]);
+      if (!u[0]) return send(res, 200, { ok: true });
+      const last = await q(`select extract(epoch from (now() - sent_at)) as age from fleet_pw_codes where email = $1`, [email]);
+      if (last[0] && Number(last[0].age) < 60) return fail(res, 429, "too_soon", "A code was just sent. Wait a minute before asking for another.");
+      const code = String(crypto.randomInt(0, 1e6)).padStart(6, "0");
+      await q(`insert into fleet_pw_codes (email, code_hash, expires_at, tries, sent_at) values ($1, $2, now() + interval '15 minutes', 0, now())
+               on conflict (email) do update set code_hash = excluded.code_hash, expires_at = excluded.expires_at, tries = 0, sent_at = now()`, [email, await hashPassword(code)]);
+      const first = String(u[0].name || "").split(/\s+/)[0];
+      await sendMail({
+        to: email, subject: `${code} is your VBS password reset code`,
+        text: `Hi ${first},\n\nYour code to reset your VBS fleet app password is ${code}. It works for 15 minutes.\n\nIf you didn't ask for this, ignore this email; your password stays the same.`,
+        html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#18212b"><p>Hi ${first.replace(/[<>&]/g, "")},</p><p>Your code to reset your VBS fleet app password is:</p><p style="font-size:30px;font-weight:bold;letter-spacing:6px;margin:16px 0">${code}</p><p>It works for 15 minutes.</p><p style="color:#5c6977">If you didn't ask for this, ignore this email; your password stays the same.</p></div>`
+      });
+      return send(res, 200, { ok: true });
+    }
+    // Step 2: the code plus a new password. Signs the person in.
+    if (action === "resetcode") {
+      await who(req);
+      const email = String(body.email || "").trim().toLowerCase(), code = String(body.code || "").trim(), next = String(body.password || "");
+      if (next.length < 8) return fail(res, 400, "bad_request", "Use a new password of at least 8 characters.");
+      const rows = await q(`select code_hash, tries, expires_at > now() as live from fleet_pw_codes where email = $1`, [email]);
+      const row = rows[0];
+      if (!row || !row.live) return fail(res, 400, "code_expired", "This code has expired. Ask for a new one.");
+      if (!(await checkPassword(code, row.code_hash))) {
+        const left = 5 - (row.tries + 1);
+        if (left <= 0) { await q(`delete from fleet_pw_codes where email = $1`, [email]); return fail(res, 400, "code_expired", "Too many wrong codes. Ask for a new one."); }
+        await q(`update fleet_pw_codes set tries = tries + 1 where email = $1`, [email]);
+        return fail(res, 400, "bad_code", `Wrong code. ${left} ${left === 1 ? "try" : "tries"} left.`);
+      }
+      const u = await q(`update fleet_users set pass = $2, must_change = false where email = $1 returning id`, [email, await hashPassword(next)]);
+      await q(`delete from fleet_pw_codes where email = $1`, [email]);
+      if (!u[0]) return fail(res, 400, "code_expired", "This code has expired. Ask for a new one.");
+      await q(`delete from fleet_pins where user_id = $1`, [u[0].id]); // PINs set with the old password stop working
+      setSession(res, u[0].id, body.remember !== false);
       return send(res, 200, { ok: true });
     }
     if (action === "logout") { clearSession(res); return send(res, 200, { ok: true }); }
@@ -104,18 +138,7 @@ export default async function handler(req, res) {
       const email = String(body.email || "").trim().toLowerCase();
       const r = await q(`update fleet_users set pass = $2, must_change = true where email = $1 returning id`, [email, await hashPassword(String(body.password))]);
       if (!r.length) return fail(res, 404, "not_found", "No account with that email.");
-      await q(`delete from fleet_pw_requests where email = $1`, [email]);
       await q(`delete from fleet_pins where user_id = $1`, [r[0].id]); // a lost phone's PIN stops working too
-      return send(res, 200, { ok: true });
-    }
-    if (action === "resetrequests") {
-      if (!me.admin) return send(res, 200, { requests: [] });
-      const rows = await q(`select r.email, coalesce(u.name, r.name) as name, r.requested_at from fleet_pw_requests r left join fleet_users u on u.email = r.email order by r.requested_at desc`);
-      return send(res, 200, { requests: rows });
-    }
-    if (action === "resetdismiss") {
-      if (!me.admin) return fail(res, 403, "permission_denied", "Only an admin can do this.");
-      await q(`delete from fleet_pw_requests where email = $1`, [String(body.email || "").trim().toLowerCase()]);
       return send(res, 200, { ok: true });
     }
     if (action === "profiles") {
