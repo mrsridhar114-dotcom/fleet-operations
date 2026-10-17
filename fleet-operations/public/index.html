@@ -3618,7 +3618,7 @@ function renderDrivers() {
         <td class="c-name"><button type="button" class="linkbtn" data-dact="view" data-id="${d.id}" aria-label="View ${esc(d.name)}"><span class="vid">${dThumb(d)}<span class="dname"><span class="mk">${esc(d.name)}</span>${d.relation ? `<span class="sub">${relShort(d)} ${esc(d.relation)}</span>` : ""}</span></span></button></td>
         <td data-label="Licence number"><span class="num idno">${esc(fmtDl(d.dlNo))}</span></td>
         <td data-label="Mobile">${d.mobile ? `<span class="num">${esc(fmtMobile(d.mobile))}</span>` : `<span class="sub">Not recorded</span>`}</td>
-        <td data-label="Age">${d.dob ? `<span class="num">${yearsBetween(d.dob, todayISO())}</span> <span class="sub">yrs</span>` : `<span class="sub">—</span>`}</td>
+        <td data-label="Age">${d.dob ? `<span style="white-space:nowrap"><span class="num">${yearsBetween(d.dob, todayISO())}</span> <span class="sub">yrs</span></span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Blood group">${d.blood ? `<span class="chip">${esc(d.blood)}</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Licence validity"><div class="renew">${validityPill(d.valTR, "Transport")}${validityPill(d.valNT, "Non-transport")}</div></td>
         <td data-label="Status"><span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span></td></tr>`;
@@ -3881,7 +3881,7 @@ function renderConductors() {
         <td data-label="Licence number"><span class="num idno">${esc(c.clNo || "")}</span></td>
         <td data-label="Badge number">${c.badgeNo ? `<span class="num idno">${esc(c.badgeNo)}</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Mobile">${c.mobile ? `<span class="num">${esc(fmtMobile(c.mobile))}</span>` : `<span class="sub">Not recorded</span>`}</td>
-        <td data-label="Age">${c.dob ? `<span class="num">${yearsBetween(c.dob, todayISO())}</span> <span class="sub">yrs</span>` : `<span class="sub">—</span>`}</td>
+        <td data-label="Age">${c.dob ? `<span style="white-space:nowrap"><span class="num">${yearsBetween(c.dob, todayISO())}</span> <span class="sub">yrs</span></span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Validity"><div class="renew">${validityPill(c.clValid, "Licence")}${validityPill(c.faValid, "First-aid")}</div></td>
         <td data-label="Status"><span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span></td></tr>`;
     }).join("");
