@@ -19,6 +19,7 @@ export function ensureSchema() {
       `create table if not exists fleet_users (id text primary key, email text not null unique, name text not null, pass text not null, created_at timestamptz not null default now())`,
       `alter table fleet_users add column if not exists must_change boolean not null default false`,
       `create table if not exists fleet_pw_codes (email text primary key, code_hash text not null, expires_at timestamptz not null, tries integer not null default 0, sent_at timestamptz not null default now())`,
+      `create table if not exists fleet_login_fails (email text primary key, fails integer not null default 0, locked_until timestamptz, last_at timestamptz not null default now())`,
       `create table if not exists fleet_pins (id text primary key, user_id text not null, secret_hash text not null, pin_hash text not null, fails integer not null default 0, created_at timestamptz not null default now(), used_at timestamptz)`,
       `create index if not exists fleet_pins_user_idx on fleet_pins (user_id)`,
       `create table if not exists fleet_blobs (id text primary key, type text not null, name text, size integer not null, data text not null, owner text, created_at timestamptz not null default now())`
