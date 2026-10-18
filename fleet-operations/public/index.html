@@ -915,7 +915,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .cprint { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
 .cprint:hover { background: var(--chip-bg); }
 .cprint[disabled] { opacity: .5; }
-@media (max-width: 760px) { #view-vehicles td.c-name { padding-right: 48px !important; } .cacts { top: 0; right: 0; transform: none; } .cdue { top: -27px; left: auto; right: -27px; } #rows tr { margin-bottom: 16px; } }
+@media (max-width: 760px) { #view-vehicles td.c-name { padding-right: 84px !important; } .cacts { top: 18px; right: 34px; transform: none; } .cdue { top: -27px; left: auto; right: -27px; } #rows tr { margin-bottom: 16px; } }
 @media print {
   body > *:not(#printArea) { display: none !important; }
   #printArea { display: block !important; color: #000; background: #fff; }
@@ -6755,7 +6755,11 @@ function dueSoonBtn(v) {
   return `<button type="button" class="cdue" data-vdue="${v.id}" aria-label="${n} renewal${n === 1 ? "" : "s"} due within a month" title="${n} renewal${n === 1 ? "" : "s"} due within a month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>${n}</button>`;
 }
 function closeDuePop() { document.querySelector(".duepop")?.remove(); }
-document.addEventListener("click", e => { if (!e.target.closest(".duepop, .cdue")) closeDuePop(); });
+// While the popup is open, a tap outside it only closes it: the tap is caught here and goes no further.
+document.addEventListener("click", e => {
+  if (!document.querySelector(".duepop") || e.target.closest(".duepop, .cdue")) return;
+  closeDuePop(); e.preventDefault(); e.stopPropagation();
+}, true);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDuePop(); });
 let duePopY = 0;
 window.addEventListener("scroll", () => { if (document.querySelector(".duepop") && Math.abs(window.scrollY - duePopY) > 40) closeDuePop(); }, true);
