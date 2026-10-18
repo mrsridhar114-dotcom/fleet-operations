@@ -900,6 +900,13 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   .payrow.bk { grid-template-columns: 1fr 1fr; }
 }
 #printArea { display: none; }
+.hbtns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+#vPrintBtn { display: inline-flex; align-items: center; gap: 6px; }
+#view-vehicles td.c-name { position: relative; padding-right: 52px; }
+.cprint { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
+.cprint:hover { background: var(--chip-bg); }
+.cprint[disabled] { opacity: .5; }
+@media (max-width: 760px) { #view-vehicles td.c-name { padding-right: 48px !important; } .cprint { top: 0; right: 0; transform: none; } }
 @media print {
   body > *:not(#printArea) { display: none !important; }
   #printArea { display: block !important; color: #000; background: #fff; }
@@ -1168,7 +1175,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
           <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Masters</span><span class="slash">/</span><span>Vehicle</span></nav>
           <h1>Vehicle<span class="ro-tag" id="roTag" hidden>View only</span></h1>
         </div>
-        <button class="btn primary" id="addBtn" type="button">+ Add vehicle</button>
+        <div class="hbtns"><button class="btn" id="vPrintBtn" type="button" title="Save a PDF of every vehicle's renewal dates"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg> Print dates</button><button class="btn primary" id="addBtn" type="button">+ Add vehicle</button></div>
       </header>
 
       <div class="ro-banner" id="roBanner" hidden>
@@ -2899,7 +2906,7 @@ function renderMaster() {
   if (!list.length) { $("rows").innerHTML = `<tr><td colspan="11"><div class="empty"><strong>No matches</strong>Try a different search or clear the filters.</div></td></tr>`; return; }
   $("rows").innerHTML = list.map(v => {
     return `<tr class="rowlink${v.status === "Sold / Scrapped" ? " retired" : ""}" data-open="${v.id}">
-      <td class="c-name"><button type="button" class="linkbtn" data-act="view" data-id="${v.id}" aria-label="View ${esc(vFull(v))}"><span class="vid">${listThumb(v)}${plateHtml(v)}</span></button>${v.status && v.status !== "Active" ? `<div><span class="pill ${STATUS_CLS[v.status]}" style="margin-top:4px">${esc(v.status)}</span></div>` : ""}</td>
+      <td class="c-name"><button type="button" class="linkbtn" data-act="view" data-id="${v.id}" aria-label="View ${esc(vFull(v))}"><span class="vid">${listThumb(v)}${plateHtml(v)}</span></button>${v.status !== "Sold / Scrapped" ? `<button type="button" class="cprint" data-vprint="${v.id}" aria-label="Save renewal dates of ${esc(v.plateNo || vName(v))} as an image" title="Save renewal dates as an image"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg></button>` : ""}${v.status && v.status !== "Active" ? `<div><span class="pill ${STATUS_CLS[v.status]}" style="margin-top:4px">${esc(v.status)}</span></div>` : ""}</td>
       <td data-label="Vehicle class"><span>${esc(v.type)}${v.type === "Bus" && v.opType ? ` <span class="sub">· ${esc(v.opType)}</span>` : ""}</span></td>
       <td data-label="Registration date"><span><span class="num">${fmtDate(v.regDate)}</span> <span class="sub">${age(v.regDate)}</span></span></td>
       <td data-label="Chassis number">${v.chassisNo ? `<span class="num idno">${esc(v.chassisNo)}</span>` : `<span class="sub">Not recorded</span>`}</td>
@@ -3516,7 +3523,7 @@ document.querySelectorAll("#view-vehicles thead th[data-k] button").forEach(b =>
   renderMaster();
 });
 // Tapping anywhere on a row (or card, on phones) opens that record; Edit and Delete live inside the record.
-const rowOpen = (e, open) => { if (e.target.closest("a, input, select, textarea")) return; const tr = e.target.closest("tr[data-open]"); if (tr) open(tr.dataset.open); };
+const rowOpen = (e, open) => { if (e.target.closest("a, input, select, textarea, .cprint")) return; const tr = e.target.closest("tr[data-open]"); if (tr) open(tr.dataset.open); };
 $("rows").addEventListener("click", e => rowOpen(e, id => openVDrawer(vehicles.find(v => v.id === id))));
 // Delete from inside a record: the footer asks first, then removes and closes.
 function delAsk(prefix, can, remove) {
@@ -6681,6 +6688,132 @@ async function slipPdf(L, d) {
   text("Party signature", X0, 40, { size: 9.5 }); text("Owner signature", X1, 40, { size: 9.5, align: "right" });
   return new Blob([await pdf.save()], { type: "application/pdf" });
 }
+// Vehicle renewal dates sheet: every vehicle in service with all its renewal dates, as a PDF to print or share.
+// Only admins get full vehicle numbers; for everyone else the number is masked except its last four characters.
+const maskPlate = p => { const k = plateKey(p); return k ? "******" + k.slice(-4) : "-"; };
+async function datesPdf(L, list, masked) {
+  const W = 841.89, H = 595.28, M = 28, pdf = await L.PDFDocument.create();
+  const reg = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
+  const black = L.rgb(0, 0, 0), grey = L.rgb(0.35, 0.35, 0.35), line = L.rgb(0.78, 0.8, 0.83), red = L.rgb(0.75, 0.1, 0.1), amber = L.rgb(0.7, 0.4, 0), head = L.rgb(0.93, 0.94, 0.96);
+  const SHORT = { permitAuthExp: "Permit auth.", rcValidity: "RC renewal", speedGovExp: "Speed gov.", gpsExp: "GPS (AIS-140)" };
+  const cols = [["#", 22], ["Vehicle no.", 92], ["Class", 82], ...DOCS.map(([k, , short]) => [SHORT[k] || short, 0, k])];
+  const fixed = cols.reduce((a, c) => a + c[1], 0), dw = (W - 2 * M - fixed) / DOCS.length;
+  cols.forEach(c => { if (!c[1]) c[1] = dw; });
+  const text = (pg, t, x, y, o = {}) => { const f = o.bold ? bold : reg, sz = o.size || 8.5; pg.drawText(pdfSafe(t), { x, y, size: sz, font: f, color: o.color || black }); };
+  const fit = (t, f, sz, w) => { let s = pdfSafe(t); while (s && f.widthOfTextAtSize(s, sz) > w) s = s.slice(0, -1); return s; };
+  const fdate = iso => iso ? fmtDate(iso) : "";
+  let page, y, pageNo = 0;
+  const header = () => {
+    page = pdf.addPage([W, H]); pageNo++; y = H - M;
+    text(page, "VBS  ·  Vehicle renewal dates", M, y - 4, { size: 15, bold: true });
+    const right = `As on ${fmtDate(todayISO())}  ·  Page ${pageNo}`; text(page, right, W - M - reg.widthOfTextAtSize(pdfSafe(right), 9), y - 2, { size: 9, color: grey });
+    y -= 20;
+    text(page, `${list.length} vehicle${list.length === 1 ? "" : "s"} in service${masked ? "  ·  Vehicle numbers are masked: only the last 4 characters are shown" : ""}  ·  Printed by ${whoAmI()}`, M, y, { size: 8.5, color: grey });
+    y -= 16;
+    page.drawRectangle({ x: M, y: y - 6, width: W - 2 * M, height: 20, color: head });
+    let x = M; cols.forEach(([l, w]) => { text(page, fit(l, bold, 8, w - 6), x + 3, y, { size: 8, bold: true }); x += w; });
+    y -= 22;
+  };
+  header();
+  list.forEach((v, i) => {
+    if (y < M + 20) header();
+    let x = M;
+    const cells = [String(i + 1), masked ? maskPlate(v.plateNo) : (v.plateNo || "-"), v.type || ""];
+    cells.forEach((c, j) => { text(page, fit(c, j === 1 ? bold : reg, 8.5, cols[j][1] - 6), x + 3, y, { bold: j === 1 }); x += cols[j][1]; });
+    DOCS.forEach(([k], j) => {
+      const w = cols[3 + j][1];
+      if (!docApplies(k, v.type, v.usage)) text(page, "N/A", x + 3, y, { color: grey });
+      else if (v[k]) { const n = daysUntil(v[k]); text(page, fit(fdate(v[k]), n <= 30 ? bold : reg, 8.5, w - 6), x + 3, y, { bold: n <= 30, color: n < 0 ? red : n <= 30 ? amber : black }); }
+      else text(page, "-", x + 3, y, { color: grey });
+      x += w;
+    });
+    page.drawLine({ start: { x: M, y: y - 6 }, end: { x: W - M, y: y - 6 }, thickness: 0.5, color: line });
+    y -= 18;
+  });
+  const lastY = Math.max(y - 6, M);
+  text(page, "Red: expired.  Amber (bold): due within 30 days.  N/A: not required for this vehicle class.  -: date not entered.", M, Math.min(lastY, M + 4), { size: 7.5, color: grey });
+  return new Blob([await pdf.save()], { type: "application/pdf" });
+}
+// One vehicle's renewal dates as a JPG, sized for sharing on a phone. Non-admins get a masked vehicle number.
+async function vehicleCardJpg(v, masked) {
+  const W = 1080, PADX = 64, docs = DOCS.filter(([k]) => docApplies(k, v.type, v.usage));
+  const H = 520 + docs.length * 96 + 110, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d"), F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#18212b"; g.fillRect(0, 0, W, 150);
+  g.fillStyle = "#ffffff"; g.font = `700 46px ${F}`; g.textBaseline = "middle"; g.fillText("VBS", PADX, 62);
+  g.fillStyle = "#c9d3dc"; g.font = `500 30px ${F}`; g.fillText("Vehicle renewal dates", PADX, 108);
+  g.textAlign = "right"; g.fillText(`As on ${fmtDate(todayISO())}`, W - PADX, 108); g.textAlign = "left";
+  const plate = masked ? maskPlate(v.plateNo) : (v.plateNo || "No plate number");
+  g.font = `700 64px ${MONO}`; const pw = Math.min(W - 2 * PADX, g.measureText(plate).width + 64);
+  const yellow = /truck|bus/i.test(v.type || "") || /public|commercial/i.test(v.usage || "");
+  rr(PADX, 190, pw, 104, 14); g.fillStyle = yellow ? "#f5c400" : "#ffffff"; g.fill(); g.lineWidth = 5; g.strokeStyle = "#111"; g.stroke();
+  g.fillStyle = "#111"; g.fillText(plate, PADX + 32, 244);
+  g.fillStyle = "#5c6977"; g.font = `500 32px ${F}`;
+  g.fillText([v.type, vName(v), v.regDate ? `Reg. ${fmtDate(v.regDate)}` : ""].filter(Boolean).join("  ·  "), PADX, 345);
+  let y = 410;
+  g.strokeStyle = "#d9dfe5"; g.lineWidth = 2; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke();
+  docs.forEach(([k, label]) => {
+    const iso = v[k], n = iso ? daysUntil(iso) : null;
+    const mid = y + 48;
+    g.fillStyle = "#18212b"; g.font = `600 34px ${F}`; g.fillText(label.replace(/ expiry$/i, "").replace(/^FC date$/, "FC (fitness)"), PADX, mid - 10);
+    g.fillStyle = "#5c6977"; g.font = `400 26px ${F}`; g.fillText(iso ? whenText(n) : "Date not entered", PADX, mid + 26);
+    const [bg, fg, tag] = n == null ? ["#eef1f4", "#5c6977", ""] : n < 0 ? ["#fdecec", "#b71c1c", "EXPIRED"] : n <= 30 ? ["#fff3e0", "#a35a00", "DUE SOON"] : ["#e7f5ec", "#1e7a3c", "VALID"];
+    g.font = `700 36px ${MONO}`; g.textAlign = "right";
+    const dt = iso ? fmtDate(iso) : "—", dw = g.measureText(dt).width;
+    rr(W - PADX - dw - 32, mid - 34, dw + 32, 50, 10); g.fillStyle = bg; g.fill();
+    g.fillStyle = fg; g.fillText(dt, W - PADX - 16, mid - 8);
+    g.font = `700 20px ${F}`; g.fillText(tag, W - PADX - 16, mid + 34); g.textAlign = "left";
+    y += 96; g.strokeStyle = "#e6e9ee"; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke();
+  });
+  g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`;
+  g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Vehicle number masked" : ""}`, PADX, H - 50);
+  return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
+}
+$("rows").addEventListener("click", async e => {
+  const btn = e.target.closest(".cprint"); if (!btn) return;
+  e.stopPropagation();
+  const v = vehicles.find(x => x.id === btn.dataset.vprint); if (!v) return;
+  let downloads = null;
+  try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view."); return; }
+  btn.disabled = true;
+  try {
+    try { await document.fonts?.ready; } catch {}
+    const masked = acc.users !== "edit", blob = await vehicleCardJpg(v, masked);
+    const nm = (masked ? maskPlate(v.plateNo).replace(/\*/g, "x") : plateKey(v.plateNo) || "vehicle");
+    await downloads.save({ filename: `Renewal dates ${nm} ${todayISO()}.jpg`, data: blob });
+    toast("Saved as a JPG image. Open it to print or share.");
+  } catch (er) {
+    if (er?.code === "declined") toast("Image not saved.");
+    else if (er?.code === "rate_limited") toast("A save is already waiting for your answer.");
+    else toast("Couldn't save the image. Try again.");
+  } finally { btn.disabled = false; }
+});
+$("vPrintBtn").onclick = async () => {
+  const btn = $("vPrintBtn"), list = [...inService()].sort((a, b) => {
+    const ca = TYPES.indexOf(a.type), cb = TYPES.indexOf(b.type);
+    return ((ca < 0 ? 99 : ca) - (cb < 0 ? 99 : cb)) || plateKey(a.plateNo).localeCompare(plateKey(b.plateNo));
+  });
+  if (!list.length) { toast("There are no vehicles to print."); return; }
+  const masked = acc.users !== "edit";
+  let downloads = null;
+  try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view."); return; }
+  btn.disabled = true;
+  try {
+    const blob = await datesPdf(await loadPdfLib(), list, masked);
+    await downloads.save({ filename: `Vehicle renewal dates ${todayISO()}.pdf`, data: blob });
+    toast("Saved as a PDF. Open it to print or share.");
+  } catch (e) {
+    const code = e?.code;
+    if (code === "declined") toast("PDF not saved.");
+    else if (code === "rate_limited") toast("A save is already waiting for your answer.");
+    else if (e?.message === "load failed") toast("Couldn't prepare the PDF. Check your internet connection and try again.");
+    else toast("Couldn't save the PDF. Try again.");
+  } finally { btn.disabled = false; }
+};
 $("bkPrint").onclick = async () => {
   const btn = $("bkPrint"), d = slipData(), name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
   let downloads = null;
