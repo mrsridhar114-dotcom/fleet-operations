@@ -537,6 +537,7 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .vtools { display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
 .vtools .btn { display: inline-flex; align-items: center; gap: 8px; }
 .vtools svg, .hicon svg { width: 16px; height: 16px; }
+.vtools .histbtn { gap: 6px; padding-left: 10px; padding-right: 10px; } .histbtn .hcount:empty { display: none; }
 .hcount { font-family: var(--mono); font-size: 11px; background: var(--chip-bg); color: var(--muted); border-radius: 999px; padding: 0 7px; }
 .hicon { display: inline-flex; align-items: center; gap: 3px; border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 5px; padding: 3px 5px; font: 600 11px var(--mono); line-height: 1; }
 .hicon:hover { border-color: var(--line); color: var(--accent); background: var(--surface); }
@@ -1779,9 +1780,9 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
     <div class="vtools">
       <button type="button" class="cdocs attbtn" id="vAttBtn" aria-label="Documents" title="Documents" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><b id="vAttCount" hidden></b></button>
       <button type="button" class="cdocs" id="vDocsBtn" aria-label="Download attached documents" title="Download attached documents" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>
-      <button class="btn" type="button" id="vHistBtn">
+      <button class="btn histbtn" type="button" id="vHistBtn" aria-label="Change history" title="Change history">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
-        Change history <span class="hcount" id="vHistCount"></span>
+        <span class="hcount" id="vHistCount"></span>
       </button>
     </div>
     <figure class="vphoto" id="vPhoto" hidden></figure>
@@ -1933,9 +1934,9 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   </header>
   <div class="vbody">
     <div class="vtools">
-      <button class="btn" type="button" id="dvHistBtn">
+      <button class="btn histbtn" type="button" id="dvHistBtn" aria-label="Change history" title="Change history">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
-        Change history <span class="hcount" id="dvHistCount"></span>
+        <span class="hcount" id="dvHistCount"></span>
       </button>
     </div>
     <figure class="vphoto dvphoto" id="dvPhoto" hidden></figure>
@@ -2017,7 +2018,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
     <button class="xclose" type="button" id="cvClose" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </header>
   <div class="vbody">
-    <div class="vtools"><button class="btn" type="button" id="cvHistBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg> Change history <span class="hcount" id="cvHistCount"></span></button></div>
+    <div class="vtools"><button class="btn histbtn" type="button" id="cvHistBtn" aria-label="Change history" title="Change history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span class="hcount" id="cvHistCount"></span></button></div>
     <figure class="vphoto dvphoto" id="cvPhoto"></figure>
     <section><h3>Personal details</h3><dl class="dl" id="cvPersonal"></dl></section>
     <section><h3>Contact</h3><dl class="dl" id="cvContact"></dl></section>
@@ -2133,7 +2134,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
       <label><input type="radio" name="bkStatus" value="completed"><span>Completed</span></label>
       <label><input type="radio" name="bkStatus" value="cancelled"><span>Cancelled</span></label>
     </div>
-    <span class="bkheadbtns"><button class="btn" type="button" id="bkHistBtn" hidden><span class="hico" aria-hidden="true"></span>History<span class="hcount" id="bkHistCount" hidden></span></button>
+    <span class="bkheadbtns"><button class="btn" type="button" id="bkHistBtn" aria-label="Change history" title="Change history" hidden><span class="hico" aria-hidden="true"></span><span class="hcount" id="bkHistCount" hidden></span></button>
     <button class="icon" type="button" id="bkClose" aria-label="Close">Close ✕</button></span>
   </header>
   <form id="bkForm" novalidate>
@@ -6766,7 +6767,7 @@ $("bkForm").addEventListener("keydown", e => {
   const f = [...$("bkForm").querySelectorAll("input:not([type=radio]):not([type=checkbox]), select")].filter(el => !el.disabled && el.offsetParent !== null), i = f.indexOf(e.target);
   if (i >= 0 && i < f.length - 1) f[i + 1].focus();
 });
-$("bkHistBtn").innerHTML = HIST_SVG + 'History<span class="hcount" id="bkHistCount" hidden></span>';
+$("bkHistBtn").innerHTML = HIST_SVG + '<span class="hcount" id="bkHistCount" hidden></span>';
 $("bkHistBtn").onclick = () => { if (bkEditId) openHDrawer(bkEditId, "", "booking"); };
 $("bkApprove").onclick = () => { if (!canBookings) return; bkApproving = true; $("bkForm").requestSubmit(); };
 $("bkReject").onclick = async () => {
