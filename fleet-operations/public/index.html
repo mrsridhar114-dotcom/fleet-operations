@@ -331,8 +331,9 @@ details.older { font-size: 12px; margin-top: 2px; }
 .lthumb.none { display: grid; place-items: center; color: var(--muted); border-style: dashed; }
 .lthumb.none svg { width: 22px; height: 22px; opacity: .6; }
 .lthumb.dthumb { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-/* A vehicle photo keeps its own shape: fixed height, width follows the picture, so the whole photo shows with no side bands. */
-img.lthumb:not(.dthumb) { width: auto; height: 56px; min-width: 40px; max-width: 100px; object-fit: contain; background: none; }
+/* Vehicle photos fill one upright frame of the same size on every card (most vehicle photos are taken upright, front-on); the full photo is in the vehicle record. */
+img.lthumb:not(.dthumb) { width: 52px; height: 64px; object-fit: cover; object-position: center 55%; background: none; }
+.lthumb.none:not(.dthumb) { width: 52px; height: 64px; }
 img.fthumb { width: auto; max-width: 100px; background: none; }
 .dvphoto img { width: 140px; height: 170px; max-height: none; object-fit: cover; }
 .dvphoto .nophoto { width: 140px; }
