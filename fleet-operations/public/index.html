@@ -496,6 +496,22 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .plate.psv { background: var(--plate-psv); color: var(--plate-ink); border-color: var(--plate-ink); }
 .plate.pvt { background: var(--plate-pvt); color: var(--plate-ink); border-color: var(--plate-ink); }
 .plate.missing { border-style: dashed; border-color: var(--muted); color: var(--muted); font-weight: 400; letter-spacing: 0; }
+.dochead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.dochead h3 { margin: 0; }
+.dochead .btn { padding: 6px 12px; font-size: 13px; }
+.doclist { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.docrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--line); }
+.docrow:first-child { border-top: 0; }
+.docrow .dn { font-weight: 600; font-size: 14px; }
+.docrow .ds { font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 0; }
+.docrow .ds a { overflow-wrap: anywhere; }
+.docrow .miss { color: var(--danger); }
+.docrow .pill { font-size: 12px; }
+.docrow .btn { padding: 6px 12px; font-size: 13px; grid-row: 1 / span 2; grid-column: 2; }
+.sevpanel { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+.sevrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13px; }
+.sevrow .fnm { overflow-wrap: anywhere; }
+.sevpanel .acts { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 .vtools { display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
 .vtools .btn { display: inline-flex; align-items: center; gap: 8px; }
 .vtools svg, .hicon svg { width: 16px; height: 16px; }
@@ -1745,6 +1761,8 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
       </button>
     </div>
     <figure class="vphoto" id="vPhoto" hidden></figure>
+    <section id="vDocSec"><div class="dochead"><h3>Documents</h3><label class="btn" id="vAddSev" hidden>+ Add several<input type="file" id="vAddSevIn" multiple hidden></label></div>
+      <div class="doclist" id="vDocList"></div><div class="sevpanel" id="vSevPanel" hidden></div></section>
     <section><h3>Registration &amp; identification</h3><dl class="dl" id="vReg"></dl></section>
     <section><h3>Vehicle specifications</h3><dl class="dl" id="vSpec"></dl></section>
     <section id="vCapSec"><h3>Capacity</h3><dl class="dl" id="vCap"></dl></section>
@@ -2938,11 +2956,81 @@ function render() { renderDash(); renderMaster(); renderUsers(); refreshVDrawer(
 /* ---------- read-only vehicle view ---------- */
 function openVDrawer(v) {
   if (!v) return;
-  vViewId = v.id; delReset("v"); fillVDrawer(v);
+  vViewId = v.id; delReset("v"); $("vSevPanel").hidden = true; fillVDrawer(v);
   $("scrim").hidden = false; $("vDrawer").hidden = false; viewOpened();
   setTimeout(() => $("vCloseBtn").focus(), 30);
 }
+// Documents section of the vehicle record: every document slot in one list, attachable without opening the form.
+const docSlots = v => [["rc", "RC copy", null], ...DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).map(([k, , short]) => [k, short, k])];
+const DOC_GUESS = [["rcValidity", /rc.?(renew|valid)/], ["permitAuthExp", /auth/], ["rc", /(^|[^a-z])rc([^a-z]|$)|registration|r\.c/], ["fcDate", /(^|[^a-z])fc([^a-z]|$)|fitness/],
+  ["insuranceExp", /insur|policy/], ["taxExp", /(^|[^a-z])tax/], ["permitExp", /permit/], ["pollutionExp", /pollution|puc|emission/],
+  ["speedGovExp", /speed|governor|slg/], ["gpsExp", /gps|ais|tracker|vltd/]];
+const guessSlot = (name, keys) => { const n = String(name).toLowerCase(); const g = DOC_GUESS.find(([k, re]) => keys.includes(k) && re.test(n)); return g ? g[0] : ""; };
+const canAttach = () => canWrite && !!assetsCap;
+function renderDocList(v) {
+  const can = canAttach();
+  $("vAddSev").hidden = !can;
+  $("vDocList").innerHTML = docSlots(v).map(([k, label, dk]) => {
+    const f = fileOf(v, k), date = dk && v[dk];
+    const when = date ? `<span class="pill ${listBand(daysUntil(date))} num">${fmtDate(date)}</span>` : "";
+    return `<div class="docrow" data-slot="${k}"><span class="dn">${esc(label)}</span>
+      ${can ? `<label class="btn">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" hidden></label>` : ""}
+      <span class="ds">${f ? `✔ ${fileLink(f)}` : `<span class="miss">✖ Not attached</span>`}${when}</span></div>`;
+  }).join("");
+}
+async function attachDoc(vid, k, file) {
+  const v0 = vehicles.find(x => x.id === vid); if (!v0) return false;
+  if (!FILE_TYPES.includes(file.type)) { toast("Attach a PDF, JPG or PNG file."); return false; }
+  if (file.size > 20 * 1024 * 1024) { toast("That file is over 20 MB. Attach a smaller scan."); return false; }
+  const r = await assetsCap.upload(file, { type: file.type });
+  const v = vehicles.find(x => x.id === vid) || v0, prevId = v[k + "File"] || "", prevName = v[k + "FileName"] || "";
+  await saveVehicle({ ...v, [k + "File"]: r.id, [k + "FileName"]: file.name });
+  await addHistory([{ vehicleId: vid, field: k + "FileName", from: prevName, to: file.name, fromFileId: prevId, toFileId: r.id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", note: "Attached from Documents" }]).catch(() => {});
+  return true;
+}
+const uploadErr = e => e?.code === "too_large" ? "That file is too large." : e?.code === "unsupported_type" ? "Attach a PDF, JPG or PNG file." : e?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the file. Try again.";
+$("vDocList").addEventListener("change", async e => {
+  const inp = e.target.closest("input[data-attach]"); if (!inp || !inp.files[0] || !vViewId) return;
+  const k = inp.dataset.attach, file = inp.files[0], vid = vViewId, row = inp.closest(".docrow");
+  row.querySelector(".ds").innerHTML = `<span class="sub">Uploading ${esc(file.name)}…</span>`; inp.closest("label").classList.add("disabled");
+  try { if (await attachDoc(vid, k, file)) toast("Document attached."); }
+  catch (er) { toast(uploadErr(er)); }
+  const v = vehicles.find(x => x.id === vid); if (v && vViewId === vid) renderDocList(v);
+});
+let sevFiles = [];
+$("vAddSevIn").addEventListener("change", e => {
+  const v = vehicles.find(x => x.id === vViewId); sevFiles = [...e.target.files]; e.target.value = "";
+  if (!v || !sevFiles.length) return;
+  const slots = docSlots(v), keys = slots.map(x => x[0]), used = new Set();
+  const opts = sel => `<option value="">Choose…</option>${slots.map(([k, l]) => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(l)}</option>`).join("")}<option value="-">Skip this file</option>`;
+  $("vSevPanel").innerHTML = `<b>Which document is each file?</b>${sevFiles.map((f, i) => { let g = guessSlot(f.name, keys); if (used.has(g)) g = ""; if (g) used.add(g);
+      return `<div class="sevrow"><span class="fnm">${esc(f.name)}</span><select data-i="${i}" aria-label="Document for ${esc(f.name)}">${opts(g)}</select></div>`; }).join("")}
+    <span class="err" id="e-sev"></span><div class="acts"><button type="button" class="btn" id="sevCancel">Cancel</button><button type="button" class="btn primary" id="sevSave">Save all</button></div>`;
+  $("vSevPanel").hidden = false;
+  const sync = () => { const n = [...$("vSevPanel").querySelectorAll("select")].filter(s => s.value && s.value !== "-").length; $("sevSave").textContent = n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Save all"; };
+  $("vSevPanel").onchange = sync; sync();
+  $("sevCancel").onclick = () => { $("vSevPanel").hidden = true; sevFiles = []; };
+  $("sevSave").onclick = async () => {
+    const picks = [...$("vSevPanel").querySelectorAll("select")].map(s => [sevFiles[+s.dataset.i], s.value]);
+    if (picks.some(([, k]) => !k)) { $("e-sev").textContent = "Choose a document for every file, or pick “Skip this file”."; return; }
+    const ks = picks.map(p => p[1]).filter(k => k !== "-");
+    if (new Set(ks).size !== ks.length) { $("e-sev").textContent = "Two files are set to the same document. Choose a different one for each."; return; }
+    if (!ks.length) { $("vSevPanel").hidden = true; return; }
+    const btn = $("sevSave"), vid = vViewId; btn.disabled = true; $("e-sev").textContent = "";
+    let ok = 0, failed = [];
+    for (const [f, k] of picks.filter(p => p[1] !== "-")) {
+      btn.textContent = `Uploading ${ok + failed.length + 1} of ${ks.length}…`;
+      try { if (await attachDoc(vid, k, f)) ok++; else failed.push(f.name); } catch (er) { failed.push(f.name); }
+    }
+    btn.disabled = false;
+    if (failed.length) { $("e-sev").textContent = `Couldn't attach: ${failed.join(", ")}. Try those again.`; btn.textContent = "Save all"; }
+    else { $("vSevPanel").hidden = true; sevFiles = []; }
+    if (ok) toast(`${ok} document${ok === 1 ? "" : "s"} attached.`);
+    const v2 = vehicles.find(x => x.id === vid); if (v2 && vViewId === vid) renderDocList(v2);
+  };
+});
 function fillVDrawer(v) {
+  renderDocList(v);
   $("vDocsBtn").hidden = acc.users !== "edit" || !vDocFiles(v).length;
   $("vTitle").textContent = vName(v);
   $("vSub").textContent = (v.plateNo ? v.plateNo + " · " : "") + (v.status && v.status !== "Active" ? v.status + " · " : "") + v.type + (v.type === "Bus" && v.opType ? ` · ${v.opType} operation` : "");
