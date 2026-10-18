@@ -69,3 +69,7 @@ create table if not exists fleet_blobs (
   owner      text,
   created_at timestamptz not null default now()
 );
+
+-- Files over 3 MB are stored in parts (Vercel limits each request to about 4.5 MB).
+alter table fleet_blobs add column if not exists parts integer not null default 0;
+create table if not exists fleet_blob_parts (upload_id text not null, idx integer not null, data text not null, owner text, created_at timestamptz not null default now(), primary key (upload_id, idx));
