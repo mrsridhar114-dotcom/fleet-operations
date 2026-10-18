@@ -497,8 +497,16 @@ html.fo-boot.fo-login body::before{content:none}`;
     async upload(blob, opts = {}) {
       const type = String(opts.type || blob.type || "").toLowerCase();
       if (!OK_TYPES.includes(type)) throw Object.assign(new Error("Attach a PDF or a photo."), { code: "unsupported_type" });
-      if (blob.size > 4 * 1024 * 1024) throw Object.assign(new Error("Files can be up to 4 MB."), { code: "too_large" });
-      return api("blob", undefined, { method: "POST", raw: blob, headers: { "Content-Type": "application/octet-stream", "X-File-Type": type, "X-File-Name": encodeURIComponent(blob.name || "") } });
+      if (blob.size > 20 * 1024 * 1024) throw Object.assign(new Error("Files can be up to 20 MB."), { code: "too_large" });
+      const head = { "Content-Type": "application/octet-stream", "X-File-Type": type, "X-File-Name": encodeURIComponent(blob.name || "") };
+      const PART = 3 * 1024 * 1024; // each request stays under Vercel's 4.5 MB limit
+      if (blob.size <= PART) return api("blob", undefined, { method: "POST", raw: blob, headers: head });
+      const parts = Math.ceil(blob.size / PART); let uploadId = "", r = null;
+      for (let i = 0; i < parts; i++) {
+        r = await api("blob", undefined, { method: "POST", raw: blob.slice(i * PART, (i + 1) * PART), headers: { ...head, "X-Parts": String(parts), "X-Part": String(i), "X-File-Size": String(blob.size), "X-Upload-Id": uploadId } });
+        if (i === 0) uploadId = r.uploadId;
+      }
+      return r;
     },
     list: () => api("blob"),
     delete: async ref => api("blob?id=" + encodeURIComponent(typeof ref === "string" ? ref : ref.id), undefined, { method: "DELETE" })
