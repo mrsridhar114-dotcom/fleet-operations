@@ -326,10 +326,10 @@ fieldset.docs legend { font-family: var(--mono); font-size: 11px; letter-spacing
 details.older { font-size: 12px; margin-top: 2px; }
 .vid { display: flex; align-items: center; gap: 10px; }
 .vid .plate { margin-bottom: 0; }
-.lthumb { width: 56px; height: 40px; flex: none; object-fit: cover; border-radius: 5px; border: 1px solid var(--line); background: var(--bg); display: block; }
+.lthumb { width: 56px; height: 40px; flex: none; object-fit: contain; border-radius: 5px; border: 1px solid var(--line); background: var(--bg); display: block; }
 .lthumb.none { display: grid; place-items: center; color: var(--muted); border-style: dashed; }
 .lthumb.none svg { width: 22px; height: 22px; opacity: .6; }
-.lthumb.dthumb { width: 40px; height: 40px; border-radius: 50%; }
+.lthumb.dthumb { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
 .dvphoto img { width: 140px; height: 170px; max-height: none; object-fit: cover; }
 .dvphoto .nophoto { width: 140px; }
 .dname { min-width: 11em; }
@@ -445,9 +445,9 @@ table.ttable tbody tr[data-tdate]:not([data-tdate=""]) { cursor: pointer; }
 table.ttable tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 table.ttable tbody tr:focus-visible td.sticky { background: var(--accent-soft); }
 #tfDrawer footer { align-items: center; }
-.fthumb { width: 56px; height: 42px; object-fit: cover; border-radius: 5px; border: 1px solid var(--line); background: var(--bg); }
+.fthumb { width: 56px; height: 42px; object-fit: contain; border-radius: 5px; border: 1px solid var(--line); background: var(--bg); }
 .vphoto { margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.vphoto img { display: block; width: 100%; max-height: 260px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
+.vphoto img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: contain; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
 .vphoto .nophoto { border: 1px dashed var(--line); border-radius: 8px; padding: 18px; text-align: center; color: var(--muted); font-size: 13px; }
 .vremarks { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; font-size: 14px; white-space: pre-line; overflow-wrap: anywhere; }
 details.older summary { cursor: pointer; color: var(--muted); font-weight: 600; }
@@ -642,6 +642,8 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
 .paylist { display: flex; flex-direction: column; gap: 8px; }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
 .chk input { width: auto; }
+.exppill { white-space: nowrap; width: fit-content; }
+th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: .7; }
 .vcls { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 4px 0; }
 .vcls .chk { font-weight: 500; }
 .crumbs a:not(.home) { color: inherit; text-decoration: none; }
@@ -1176,9 +1178,11 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
             <th data-k="chassisNo"><button type="button">Chassis number <span class="arr">↕</span></button></th>
             <th data-k="engineNo"><button type="button">Engine number <span class="arr">↕</span></button></th>
             <th data-k="ownerName"><button type="button">Owner name <span class="arr">↕</span></button></th>
-            <th data-k="emission"><button type="button">Emission norms <span class="arr">↕</span></button></th>
-            <th data-k="make"><button type="button">Make <span class="arr">↕</span></button></th>
-            <th data-k="nextDue"><button type="button">Next renewal <span class="arr">↕</span></button></th>
+            <th data-k="fcDate" class="expth" title="FC expiry"><button type="button">FC <span class="arr">↕</span></button></th>
+            <th data-k="insuranceExp" class="expth" title="Insurance expiry"><button type="button">Insurance <span class="arr">↕</span></button></th>
+            <th data-k="taxExp" class="expth" title="Tax expiry"><button type="button">Tax <span class="arr">↕</span></button></th>
+            <th data-k="permitExp" class="expth" title="Permit expiry"><button type="button">Permit <span class="arr">↕</span></button></th>
+            <th data-k="permitAuthExp" class="expth" title="Permit authorization expiry"><button type="button">Permit auth. <span class="arr">↕</span></button></th>
           </tr></thead>
           <tbody id="rows"></tbody>
         </table>
@@ -2844,6 +2848,16 @@ function renewCell(v) {
   const title = docs.map(x => `${x.short}: ${fmtDate(x.date)}`).join("\n");
   return `<div class="renew" title="${esc(title)}"><span class="pill ${b}">${esc(d.short)} · ${whenText(days).toLowerCase()}</span><span class="sub num">${fmtDate(d.date)}${others ? ` · +${others} more due` : ""}</span></div>`;
 }
+// Expiry dates shown in the vehicle list, coloured by how soon they fall due.
+const LIST_DOCS = [["fcDate", "FC expiry"], ["insuranceExp", "Insurance expiry"], ["taxExp", "Tax expiry"], ["permitExp", "Permit expiry"], ["permitAuthExp", "Permit authorization expiry"]];
+function expCell(v, k) {
+  if (!docApplies(k, v.type, v.usage)) return `<span class="sub">Not applicable</span>`;
+  const iso = v[k];
+  if (!iso) return `<span class="sub">Not recorded</span>`;
+  if (v.status === "Sold / Scrapped") return `<span class="num">${fmtDate(iso)}</span>`;
+  const n = daysUntil(iso);
+  return `<span class="pill ${band(n)} num exppill" title="${esc(whenText(n))}">${n < 0 ? "Expired " : ""}${fmtDate(iso)}</span>`;
+}
 function filtered() {
   const q = "", ff = "", ft = "";
   const list = vehicles.filter(v => (!q || vFull(v).toLowerCase().includes(q) || plateKey(v.plateNo).toLowerCase().includes(plateKey(q).toLowerCase() || "\u0000")) && (!ff || v.fuel === ff) && (!ft || v.type === ft));
@@ -2853,6 +2867,7 @@ function filtered() {
     if (k === "make") { x = vName(a); y = vName(b); }
     if (k === "plateNo") { x = plateKey(a.plateNo) || "~"; y = plateKey(b.plateNo) || "~"; }
     if (k === "nextDue") { x = nextDue(a) || "9999"; y = nextDue(b) || "9999"; }
+    if (LIST_DOCS.some(d => d[0] === k)) { x = docApplies(k, a.type, a.usage) && a[k] || "9999"; y = docApplies(k, b.type, b.usage) && b[k] || "9999"; }
     if (typeof x === "number") return (x - y) * s;
     return String(x ?? "").localeCompare(String(y ?? "")) * s;
   });
@@ -2866,8 +2881,8 @@ function renderMaster() {
   });
   const list = filtered();
   $("count").textContent = `Showing ${list.length} of ${vehicles.length}`;
-  if (!vehicles.length) { $("rows").innerHTML = `<tr><td colspan="10"><div class="empty"><strong>No vehicles yet</strong>${canWrite ? "Use “Add vehicle” to register the first one." : "Vehicles will appear here once they're added."}</div></td></tr>`; return; }
-  if (!list.length) { $("rows").innerHTML = `<tr><td colspan="10"><div class="empty"><strong>No matches</strong>Try a different search or clear the filters.</div></td></tr>`; return; }
+  if (!vehicles.length) { $("rows").innerHTML = `<tr><td colspan="11"><div class="empty"><strong>No vehicles yet</strong>${canWrite ? "Use “Add vehicle” to register the first one." : "Vehicles will appear here once they're added."}</div></td></tr>`; return; }
+  if (!list.length) { $("rows").innerHTML = `<tr><td colspan="11"><div class="empty"><strong>No matches</strong>Try a different search or clear the filters.</div></td></tr>`; return; }
   $("rows").innerHTML = list.map(v => {
     return `<tr class="rowlink${v.status === "Sold / Scrapped" ? " retired" : ""}" data-open="${v.id}">
       <td class="c-name"><button type="button" class="linkbtn" data-act="view" data-id="${v.id}" aria-label="View ${esc(vFull(v))}"><span class="vid">${listThumb(v)}${plateHtml(v)}</span></button>${v.status && v.status !== "Active" ? `<div><span class="pill ${STATUS_CLS[v.status]}" style="margin-top:4px">${esc(v.status)}</span></div>` : ""}</td>
@@ -2876,9 +2891,7 @@ function renderMaster() {
       <td data-label="Chassis number">${v.chassisNo ? `<span class="num idno">${esc(v.chassisNo)}</span>` : `<span class="sub">Not recorded</span>`}</td>
       <td data-label="Engine number">${v.engineNo ? `<span class="num idno">${esc(v.engineNo)}</span>` : `<span class="sub">Not recorded</span>`}</td>
       <td data-label="Owner name">${v.ownerName ? `<span>${esc(v.ownerName)}</span>` : `<span class="sub">Not recorded</span>`}</td>
-      <td data-label="Emission norms">${v.emission ? `<span class="num" title="${esc(emissionLabel(v.emission))}">${esc(v.emission)}</span>` : `<span class="sub">Not recorded</span>`}</td>
-      <td data-label="Make"><span><span class="mk">${esc(v.make)}</span>${v.model ? ` <span class="sub">${esc(v.model)}</span>` : ""}</span></td>
-      <td data-label="Next renewal">${renewCell(v)}</td></tr>`;
+      ${LIST_DOCS.map(([k, l]) => `<td data-label="${l}">${expCell(v, k)}</td>`).join("")}</tr>`;
   }).join("");
 }
 
