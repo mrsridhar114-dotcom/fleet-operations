@@ -911,6 +911,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .duepop ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .duepop li { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-top: 1px solid var(--line); padding-top: 8px; }
 .duepop li:first-child { border-top: 0; padding-top: 0; }
+.duepop .duesave { margin-top: 12px; width: 100%; display: flex; gap: 8px; justify-content: center; align-items: center; }
 .duepop .when { font-size: 12px; color: var(--danger); white-space: nowrap; }
 .cprint { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
 .cprint:hover { background: var(--chip-bg); }
@@ -6763,6 +6764,71 @@ document.addEventListener("click", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDuePop(); });
 let duePopY = 0;
 window.addEventListener("scroll", () => { if (document.querySelector(".duepop") && Math.abs(window.scrollY - duePopY) > 40) closeDuePop(); }, true);
+function jpgWatermark(g, W, H, F) {
+  const d = new Date(), p2 = n => String(n).padStart(2, "0");
+  const mark = `${whoAmI()}  ·  ${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  g.save(); g.translate(W / 2, H / 2); g.rotate(-Math.PI / 6);
+  g.font = `700 40px ${F}`; g.fillStyle = "rgba(24, 33, 43, 0.09)"; g.textAlign = "left";
+  const span = Math.hypot(W, H), tw = g.measureText(mark).width + 140;
+  for (let yy = -span / 2, row = 0; yy <= span / 2; yy += 230, row++)
+    for (let xx = -span / 2 - (row % 2) * tw / 2; xx <= span / 2; xx += tw) g.fillText(mark, xx, yy);
+  g.restore(); g.textAlign = "left";
+}
+// File name: last four characters of the plate, an optional tag, then the date and time, e.g. 6097_DUE_18-10-2026_13-43.jpg
+function jpgName(v, tag) {
+  const d = new Date(), p2 = n => String(n).padStart(2, "0");
+  return `${plateKey(v.plateNo).slice(-4) || "0000"}${tag ? "_" + tag : ""}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}_${p2(d.getHours())}-${p2(d.getMinutes())}.jpg`;
+}
+// Only the renewals due within a month (or expired), soonest first, under a red header.
+async function dueCardJpg(v, masked) {
+  const list = dueSoonOf(v), W = 1080, PADX = 64, H = 470 + list.length * 112 + 160;
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d"), F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#b71c1c"; g.fillRect(0, 0, W, 150); g.textBaseline = "middle";
+  g.fillStyle = "#ffffff"; g.font = `700 46px ${F}`; g.fillText("VBS", PADX, 60);
+  g.font = `600 32px ${F}`; g.fillText("Renewals due within a month", PADX, 108);
+  g.textAlign = "right"; g.font = `500 28px ${F}`; g.fillText(`As on ${fmtDate(todayISO())}`, W - PADX, 108); g.textAlign = "left";
+  const plate = masked ? maskPlate(v.plateNo) : (v.plateNo || "No plate number");
+  g.font = `700 64px ${MONO}`; const pw = Math.min(W - 2 * PADX - 220, g.measureText(plate).width + 64);
+  const yellow = /truck|bus/i.test(v.type || "") || /public|commercial/i.test(v.usage || "");
+  rr(PADX, 190, pw, 104, 14); g.fillStyle = yellow ? "#f5c400" : "#ffffff"; g.fill(); g.lineWidth = 5; g.strokeStyle = "#111"; g.stroke();
+  g.fillStyle = "#111"; g.fillText(plate, PADX + 32, 244);
+  g.font = `700 30px ${F}`; const cnt = `${list.length} due`, cw = g.measureText(cnt).width + 40;
+  rr(W - PADX - cw, 214, cw, 56, 28); g.fillStyle = "#b71c1c"; g.fill(); g.fillStyle = "#ffffff"; g.textAlign = "center"; g.fillText(cnt, W - PADX - cw / 2, 243); g.textAlign = "left";
+  g.fillStyle = "#5c6977"; g.font = `500 32px ${F}`; g.fillText([v.type, vName(v)].filter(Boolean).join("  ·  "), PADX, 345);
+  let y = 400; g.strokeStyle = "#d9dfe5"; g.lineWidth = 2; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke();
+  list.forEach(d => {
+    const mid = y + 56;
+    g.fillStyle = "#18212b"; g.font = `600 36px ${F}`; g.fillText(d.label, PADX, mid - 12);
+    g.fillStyle = d.n < 0 ? "#b71c1c" : "#5c6977"; g.font = `${d.n < 0 ? 700 : 400} 28px ${F}`; g.fillText(whenText(d.n), PADX, mid + 28);
+    g.font = `700 38px ${MONO}`; g.textAlign = "right"; const dt = fmtDate(d.date), dw = g.measureText(dt).width;
+    rr(W - PADX - dw - 32, mid - 26, dw + 32, 52, 10); g.fillStyle = "#fdecec"; g.fill(); g.fillStyle = "#b71c1c"; g.fillText(dt, W - PADX - 16, mid + 1); g.textAlign = "left";
+    y += 112; g.strokeStyle = "#e6e9ee"; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke();
+  });
+  if (masked) jpgWatermark(g, W, H, F);
+  g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`;
+  g.fillStyle = "#b71c1c"; g.font = `600 26px ${F}`; g.fillText("Please renew before the dates shown.", PADX, H - 92);
+  g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`; g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Vehicle number masked" : ""}`, PADX, H - 50);
+  return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
+}
+async function saveVehicleJpg(btn, v, make, tag) {
+  let downloads = null;
+  try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view."); return; }
+  btn.disabled = true;
+  try {
+    try { await document.fonts?.ready; } catch {}
+    const blob = await make(v, acc.users !== "edit");
+    await downloads.save({ filename: jpgName(v, tag), data: blob });
+    toast("Saved as a JPG image. Open it to print or share.");
+  } catch (er) {
+    if (er?.code === "declined") toast("Image not saved.");
+    else if (er?.code === "rate_limited") toast("A save is already waiting for your answer.");
+    else toast("Couldn't save the image. Try again.");
+  } finally { btn.disabled = false; }
+}
 const JPG_BANDS = [["#fdecec", "#b71c1c"], ["#fde4cc", "#c45a00"], ["#e7f5ec", "#1e7a3c"]];
 async function vehicleCardJpg(v, masked) {
   const W = 1080, PADX = 64, rank = k => { if (!v[k]) return 3; const n = daysUntil(v[k]); return n <= 30 ? 0 : n <= 90 ? 1 : 2; };
@@ -6803,16 +6869,7 @@ async function vehicleCardJpg(v, masked) {
     g.fillStyle = "#3b4652"; g.fillText(t, lx + 40, ly + 1); lx += 40 + g.measureText(t).width + 44;
   });
   // Staff copies carry a faint diagonal watermark with the name of the person who downloaded it and when.
-  if (masked) {
-    const d = new Date(), p2 = n => String(n).padStart(2, "0");
-    const mark = `${whoAmI()}  ·  ${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
-    g.save(); g.translate(W / 2, H / 2); g.rotate(-Math.PI / 6);
-    g.font = `700 40px ${F}`; g.fillStyle = "rgba(24, 33, 43, 0.09)"; g.textAlign = "left";
-    const span = Math.hypot(W, H), tw = g.measureText(mark).width + 140;
-    for (let yy = -span / 2, row = 0; yy <= span / 2; yy += 230, row++)
-      for (let xx = -span / 2 - (row % 2) * tw / 2; xx <= span / 2; xx += tw) g.fillText(mark, xx, yy);
-    g.restore(); g.textAlign = "left";
-  }
+  if (masked) jpgWatermark(g, W, H, F);
   g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`;
   g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Vehicle number masked" : ""}`, PADX, H - 50);
   return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
@@ -6824,34 +6881,18 @@ $("rows").addEventListener("click", e => {
   const v = vehicles.find(x => x.id === b.dataset.vdue); if (!v) return;
   const list = dueSoonOf(v), pop = document.createElement("div");
   pop.className = "duepop"; pop.dataset.v = v.id; pop.setAttribute("role", "dialog");
-  pop.innerHTML = `<h4>${esc(v.plateNo || vName(v))} · due within a month</h4><ul>${list.map(d => `<li><span><b>${esc(d.label)}</b><br><span class="num">${fmtDate(d.date)}</span></span><span class="when">${esc(whenText(d.n))}</span></li>`).join("")}</ul>`;
+  pop.innerHTML = `<h4>${esc(v.plateNo || vName(v))} · due within a month</h4><ul>${list.map(d => `<li><span><b>${esc(d.label)}</b><br><span class="num">${fmtDate(d.date)}</span></span><span class="when">${esc(whenText(d.n))}</span></li>`).join("")}</ul><button type="button" class="btn duesave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Save as image</button>`;
+  pop.querySelector(".duesave").onclick = ev => { ev.stopPropagation(); saveVehicleJpg(ev.currentTarget, v, dueCardJpg, "DUE"); };
   document.body.appendChild(pop); duePopY = window.scrollY;
   const r = b.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
   let left = Math.min(window.innerWidth - pw - 12, Math.max(12, r.right - pw)), top = r.bottom + 8;
   if (top + ph > window.innerHeight - 12) top = Math.max(12, r.top - ph - 8);
   pop.style.left = left + "px"; pop.style.top = top + "px";
 });
-$("rows").addEventListener("click", async e => {
+$("rows").addEventListener("click", e => {
   const btn = e.target.closest(".cprint"); if (!btn) return;
   e.stopPropagation();
-  const v = vehicles.find(x => x.id === btn.dataset.vprint); if (!v) return;
-  let downloads = null;
-  try { downloads = await auDownloads(); } catch { downloads = null; }
-  if (!downloads) { toast("Saving files isn't available in this view."); return; }
-  btn.disabled = true;
-  try {
-    try { await document.fonts?.ready; } catch {}
-    const masked = acc.users !== "edit", blob = await vehicleCardJpg(v, masked);
-    // File name: last four characters of the plate, then the download date and time, e.g. 6097_18-10-2026_11-09.jpg
-    const d = new Date(), p2 = n => String(n).padStart(2, "0");
-    const nm = `${plateKey(v.plateNo).slice(-4) || "0000"}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}_${p2(d.getHours())}-${p2(d.getMinutes())}`;
-    await downloads.save({ filename: `${nm}.jpg`, data: blob });
-    toast("Saved as a JPG image. Open it to print or share.");
-  } catch (er) {
-    if (er?.code === "declined") toast("Image not saved.");
-    else if (er?.code === "rate_limited") toast("A save is already waiting for your answer.");
-    else toast("Couldn't save the image. Try again.");
-  } finally { btn.disabled = false; }
+  const v = vehicles.find(x => x.id === btn.dataset.vprint); if (v) saveVehicleJpg(btn, v, vehicleCardJpg, "");
 });
 $("vPrintBtn").onclick = async () => {
   const btn = $("vPrintBtn"), list = [...inService()].sort((a, b) => {
