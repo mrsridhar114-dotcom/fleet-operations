@@ -2304,7 +2304,8 @@ const MAKES = ["Ashok Leyland", "TATA", "Eicher", "BharatBenz", "Toyota"];
 const AUTO_MAKES = ["Piaggio", "Bajaj"];
 // Two-wheeler manufacturers selling in India (motorcycles, scooters and electric).
 const TW_MAKES = ["Ampere", "Aprilia", "Ather Energy", "Bajaj", "Benelli", "BMW Motorrad", "Bounce", "BSA", "Ducati", "Harley-Davidson", "Hero Electric", "Hero MotoCorp", "Honda", "Husqvarna", "Jawa", "Kawasaki", "Keeway", "Kinetic Green", "KTM", "Matter", "Okinawa", "Ola Electric", "Pure EV", "Revolt", "River", "Royal Enfield", "Simple Energy", "Suzuki", "Triumph", "TVS", "Ultraviolette", "Vespa", "Yamaha", "Yezdi"];
-const makesFor = t => !t ? [] : t === "Auto" ? AUTO_MAKES : t === TW ? TW_MAKES : MAKES;
+const CAR_MAKES = ["Maruti Suzuki", ...MAKES];
+const makesFor = t => !t ? [] : t === "Auto" ? AUTO_MAKES : t === TW ? TW_MAKES : t === "Car" ? CAR_MAKES : MAKES;
 function syncMakes() {
   const sel = $("make"), t = $("type").value, list = makesFor(t);
   const keep = sel.dataset.want || sel.value; delete sel.dataset.want;
