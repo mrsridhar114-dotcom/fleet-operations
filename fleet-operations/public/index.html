@@ -6782,8 +6782,10 @@ $("rows").addEventListener("click", async e => {
   try {
     try { await document.fonts?.ready; } catch {}
     const masked = acc.users !== "edit", blob = await vehicleCardJpg(v, masked);
-    const nm = (masked ? maskPlate(v.plateNo).replace(/\*/g, "x") : plateKey(v.plateNo) || "vehicle");
-    await downloads.save({ filename: `Renewal dates ${nm} ${todayISO()}.jpg`, data: blob });
+    // File name: last four characters of the plate, then the download date and time, e.g. 6097_18-10-2026_11-09.jpg
+    const d = new Date(), p2 = n => String(n).padStart(2, "0");
+    const nm = `${plateKey(v.plateNo).slice(-4) || "0000"}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}_${p2(d.getHours())}-${p2(d.getMinutes())}`;
+    await downloads.save({ filename: `${nm}.jpg`, data: blob });
     toast("Saved as a JPG image. Open it to print or share.");
   } catch (er) {
     if (er?.code === "declined") toast("Image not saved.");
