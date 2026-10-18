@@ -24,7 +24,9 @@ export function ensureSchema() {
       `create index if not exists fleet_pins_user_idx on fleet_pins (user_id)`,
       `create table if not exists fleet_trash (tid bigserial primary key, coll text not null, id text not null, data jsonb not null, deleted_by text, deleted_by_name text, deleted_at timestamptz not null default now())`,
       `create index if not exists fleet_trash_at_idx on fleet_trash (deleted_at)`,
-      `create table if not exists fleet_blobs (id text primary key, type text not null, name text, size integer not null, data text not null, owner text, created_at timestamptz not null default now())`
+      `create table if not exists fleet_blobs (id text primary key, type text not null, name text, size integer not null, data text not null, owner text, created_at timestamptz not null default now())`,
+      `alter table fleet_blobs add column if not exists parts integer not null default 0`,
+      `create table if not exists fleet_blob_parts (upload_id text not null, idx integer not null, data text not null, owner text, created_at timestamptz not null default now(), primary key (upload_id, idx))`
     ];
     for (const s of stmts) await q(s);
   })().catch(e => { ready = null; throw e; });
