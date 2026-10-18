@@ -512,6 +512,7 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .docrow .ds { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 0; }
 .docrow .ds a { overflow-wrap: anywhere; }
 .docrow .miss { color: var(--danger); }
+.docrow .dold { grid-column: 1 / -1; font-size: 12px; }
 .docrow .pill { font-size: 12px; }
 .docrow .btn { padding: 4px 10px; font-size: 12px; grid-row: 1 / span 2; grid-column: 2; }
 .sevpanel { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
@@ -1740,6 +1741,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
     <fieldset class="docs">
       <legend>Compliance &amp; renewals</legend>
       <span class="hint">Enter each expiry date and certificate details. Leave blank if it doesn't apply.</span>
+      <p class="hint" style="margin:0 0 8px">To attach copies of these documents, open the vehicle and tap the 📎 Documents button.</p>
       <div class="docblocks" id="docFields"></div>
     </fieldset>
     <fieldset class="docs">
@@ -2983,7 +2985,7 @@ function renderDocList(v) {
     const when = date ? `<span class="pill ${listBand(daysUntil(date))} num">${fmtDate(date)}</span>` : "";
     return `<div class="docrow" data-slot="${k}"><span class="dn">${esc(label)}</span>
       ${can ? `<label class="btn">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" hidden></label>` : ""}
-      <span class="ds">${f ? `✔ ${fileLink(f)}` : `<span class="miss">✖ Not attached</span>`}${when}</span></div>`;
+      <span class="ds">${f ? `✔ ${fileLink(f)}` : `<span class="miss">✖ Not attached</span>`}${when}</span>${earlierHtml(v.id, k) ? `<span class="dold">${earlierHtml(v.id, k)}</span>` : ""}</div>`;
   }).join("");
 }
 async function attachDoc(vid, k, file) {
@@ -3199,8 +3201,6 @@ function earlierHtml(vid, k) {
 }
 function docExtra(v, k) {
   const parts = (DOC_DETAILS[k] || []).filter(d => v[d.k] != null && v[d.k] !== "").map(d => `${d.label.replace(" (₹)", "")}: <b>${esc(d.num ? inr(v[d.k]) : d.date ? fmtDate(v[d.k]) : v[d.k])}</b>`);
-  const f = fileOf(v, k); if (f) parts.push(`${fileLink(f)} <span class="sub">current copy</span>`);
-  const older = earlierHtml(v.id, k); if (older) parts.push(older);
   return parts.length ? `<span class="docx">${parts.join("<br>")}</span>` : "";
 }
 function refreshVDrawer() {
@@ -3384,7 +3384,6 @@ function buildForm() {
         <div class="field"><label for="${k}">${k === "permitExp" ? "Valid to" : label.replace(/^.*?(expiry|date)$/i, m => /expiry$/i.test(m) ? "Expiry date" : "FC date")}</label><input id="${k}" type="date"><span class="lastchg" id="h-${k}"></span><span class="err" id="e-${k}"></span></div>
         ${(DOC_DETAILS[k] || []).filter(d => !d.before).map(detailField).join("")}
       </div>
-      <div class="fileline" data-file="${k}"></div>
     </div>`).join("");
   document.querySelectorAll('input[name="usage"]').forEach(r => r.addEventListener("change", syncOp));
   document.querySelectorAll('input[name="financed"]').forEach(r => r.addEventListener("change", syncFin));
