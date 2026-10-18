@@ -505,17 +505,18 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 /* On a computer the vehicle record opens as a full page beside the menu. The sections are shared between two
    columns of about equal height (vLayout), so the page has one scroll and no gaps. */
 @media (min-width: 1024px) {
-  #vDrawer { left: 248px; width: auto; box-shadow: none; border-left: 1px solid var(--line); }
+  .drawer.fullpage { left: 248px; width: auto; box-shadow: none; border-left: 1px solid var(--line); }
   /* While the full-page record is open, the list behind it doesn't scroll, so there is only one scroll bar. */
-  html:has(#vDrawer:not([hidden])), html:has(#vDrawer:not([hidden])) body { overflow: hidden; }
-  #vDrawer header { padding: 22px 40px; }
-  #vDrawer header h2 { font-size: 32px; }
-  #vDrawer .vbody { padding: 24px 40px 32px; }
-  #vDrawer .vbody > .vcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; max-width: 1500px; }
-  #vDrawer .vcol { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
-  #vDrawer .vphoto img { max-height: 340px; }
-  #vDrawer .docpop { left: auto; right: 40px; width: 460px; top: 76px; }
-  #vDrawer footer { padding-left: 40px; padding-right: 40px; }
+  html:has(.fullpage:not([hidden])), html:has(.fullpage:not([hidden])) body { overflow: hidden; }
+  .drawer.fullpage header { padding: 22px 40px; }
+  .drawer.fullpage header h2 { font-size: 32px; }
+  .drawer.fullpage .vbody { padding: 24px 40px 32px; }
+  .drawer.fullpage .vbody > .vcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; max-width: 1500px; }
+  .drawer.fullpage .vcol { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  .drawer.fullpage .vphoto img { max-height: 340px; }
+  .drawer.fullpage .dvphoto img { width: 200px; height: 240px; max-height: none; }
+  .drawer.fullpage .docpop { left: auto; right: 40px; width: 460px; top: 76px; }
+  .drawer.fullpage footer { padding-left: 40px; padding-right: 40px; }
 }
 .dochead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
 .dochead h3 { margin: 0; }
@@ -530,6 +531,32 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .docrow .dold { grid-column: 1 / -1; font-size: 12px; }
 .docrow .pill { font-size: 12px; }
 .docrow .btn { padding: 4px 10px; font-size: 12px; grid-row: 1 / span 2; grid-column: 2; }
+/* Documents pop-up: one short line per document so every document is visible at once. */
+.docpop { display: flex; flex-direction: column; padding: 12px 12px 10px; max-height: calc(100vh - 230px); }
+.docpop .dochead { margin-bottom: 6px; }
+.docpop .doclist { display: block; margin-top: 0; overflow-y: auto; min-height: 0; }
+.pdoclist .docrow { grid-template-columns: 16px minmax(0, 1fr) auto; gap: 0 8px; padding: 5px 8px; min-height: 38px; }
+.pdoclist .dst { font-size: 12px; text-align: center; }
+.pdoclist .dst.ok { color: var(--ok, #1f8a4c); } .pdoclist .dst.no { color: var(--danger); }
+.pdoclist .ds { grid-column: 2; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; text-align: left; }
+.pdoclist .dname { font-weight: 600; font-size: 13px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pdoclist a.dname { text-decoration: underline; }
+.pdoclist .dfile { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.pdoclist .dfile.miss { color: var(--danger); }
+.pdoclist .pill { font-size: 11px; padding: 1px 6px; white-space: nowrap; }
+.pdoclist .btn { grid-row: auto; grid-column: auto; padding: 3px 9px; font-size: 12px; }
+.pdoclist .dold { grid-column: 2 / -1; }
+.pdoclist .dold summary { font-size: 11px; }
+/* On a tablet or computer the pop-up opens wide, across the whole record, with the documents in two columns. */
+@media (min-width: 700px) {
+  .docpop .pdoclist { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .pdoclist .docrow:nth-child(2) { border-top: 0; }
+  .pdoclist .docrow:nth-child(even) { border-left: 1px solid var(--line); }
+  .pdoclist .docrow { padding: 7px 12px; }
+}
+@media (min-width: 1024px) {
+  .drawer.fullpage .docpop { left: 40px; right: 40px; width: auto; max-width: 1500px; padding: 16px 18px 14px; }
+}
 .sevpanel { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
 .sevrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13px; }
 .sevrow .fnm { overflow-wrap: anywhere; }
@@ -941,7 +968,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 #printArea { display: none; }
 .hbtns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 #vPrintBtn { display: inline-flex; align-items: center; gap: 6px; }
-#view-vehicles td.c-name { position: relative; padding-right: 104px; }
+:is(#view-vehicles, #view-drivers, #view-conductors) td.c-name { position: relative; padding-right: 104px; }
 .cacts { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: flex; gap: 8px; align-items: center; }
 .cdue { position: absolute; z-index: 2; top: 2px; left: 2px; display: inline-flex; align-items: center; gap: 3px; height: 26px; padding: 0 9px 0 7px; border-radius: 13px; border: 2px solid var(--surface); background: var(--danger); color: #fff; font: 700 13px/1 var(--body, sans-serif); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
 .cdue svg { width: 14px; height: 14px; }
@@ -960,7 +987,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .duepop .dlist input { width: 18px; height: 18px; flex: none; }
 .duepop .dlist .fn { display: block; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .cprint[disabled] { opacity: .5; }
-@media (max-width: 760px) { #view-vehicles td.c-name { padding-right: 136px !important; } .cacts { top: 18px; right: 34px; transform: none; } .cdue { top: -27px; left: auto; right: -27px; } #rows tr { margin-bottom: 16px; } }
+@media (max-width: 760px) { :is(#view-vehicles, #view-drivers, #view-conductors) td.c-name { padding-right: 136px !important; } .cacts { top: 18px; right: 34px; transform: none; } .cdue { top: -27px; left: auto; right: -27px; } :is(#rows, #dRows, #cRows) tr { margin-bottom: 16px; } }
 @media print {
   body > *:not(#printArea) { display: none !important; }
   #printArea { display: block !important; color: #000; background: #fff; }
@@ -1270,7 +1297,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
           <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Employees</span><span class="slash">/</span><span>Driver</span></nav>
           <h1>Driver<span class="ro-tag" id="dRoTag" hidden>View only</span></h1>
         </div>
-        <button class="btn primary" id="addDriverBtn" type="button">+ Add driver</button>
+        <div class="hbtns"><button class="btn" id="dPrintBtn" type="button" title="Save a PDF of every driver's licence validity dates" style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg> Print dates</button><button class="btn primary" id="addDriverBtn" type="button">+ Add driver</button></div>
       </header>
       <div class="ro-banner" id="dRoBanner" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>You have view-only access. You can open any driver to see their details and licence, but you can't add, edit or delete drivers.</span></div>
       <section class="summary" id="dSummary" aria-label="Driver summary"></section>
@@ -1290,7 +1317,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
           <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Employees</span><span class="slash">/</span><span>Conductor</span></nav>
           <h1>Conductor<span class="ro-tag" id="cRoTag" hidden>View only</span></h1>
         </div>
-        <button class="btn primary" id="addConductorBtn" type="button">+ Add conductor</button>
+        <div class="hbtns"><button class="btn" id="cPrintBtn" type="button" title="Save a PDF of every conductor's validity dates" style="display:inline-flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg> Print dates</button><button class="btn primary" id="addConductorBtn" type="button">+ Add conductor</button></div>
       </header>
       <div class="ro-banner" id="cRoBanner" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>You have view-only access. You can open any conductor to see their details and licence, but you can't add, edit or delete conductors.</span></div>
       <section class="summary" id="cSummary" aria-label="Conductor summary"></section>
@@ -1771,7 +1798,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
     <button class="btn primary" type="submit" form="form" id="saveBtn">Save vehicle</button>
   </footer>
 </aside>
-<aside class="drawer" id="vDrawer" role="dialog" aria-modal="true" aria-labelledby="vTitle" hidden>
+<aside class="drawer fullpage" id="vDrawer" role="dialog" aria-modal="true" aria-labelledby="vTitle" hidden>
   <header>
     <div style="min-width:0"><h2 id="vTitle">Vehicle</h2><div class="vsub" id="vSub"></div></div>
     <button class="xclose" type="button" id="vCloseBtn" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1787,7 +1814,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
     </div>
     <figure class="vphoto" id="vPhoto" hidden></figure>
     <section id="vDocSec" class="docpop" role="dialog" aria-label="Documents" hidden><div class="dochead"><h3>Documents</h3><span class="dacts"><label class="btn" id="vAddSev" hidden>+ Add several<input type="file" id="vAddSevIn" multiple hidden></label><button type="button" class="dclose" id="vDocClose" aria-label="Close documents">✕</button></span></div>
-      <div class="doclist" id="vDocList"></div><div class="sevpanel" id="vSevPanel" hidden></div></section>
+      <div class="doclist pdoclist" id="vDocList"></div><div class="sevpanel" id="vSevPanel" hidden></div></section>
     <section><h3>Registration &amp; identification</h3><dl class="dl" id="vReg"></dl></section>
     <section><h3>Vehicle specifications</h3><dl class="dl" id="vSpec"></dl></section>
     <section id="vCapSec"><h3>Capacity</h3><dl class="dl" id="vCap"></dl></section>
@@ -1910,10 +1937,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
         <div class="field"><label for="dValTR">Validity (TR), transport</label><input id="dValTR" type="date"><span class="hint">Needed to drive buses, trucks and taxis.</span><span class="err" id="e-dValTR"></span></div>
       </div>
       <div class="field"><span class="lbl">Vehicle class</span><div class="vcls" id="dVClass" role="group" aria-label="Vehicle class"></div><span class="hint">The vehicles this driver drives. In trip sheets, only drivers for that vehicle class are offered. Leave all unticked to offer the driver for every vehicle.</span></div>
-      <div class="two">
-        <div class="field"><span class="lbl">Licence copy, front</span><div class="fileline" data-dfile="dlFront"></div></div>
-        <div class="field"><span class="lbl">Licence copy, back</span><div class="fileline" data-dfile="dlBack"></div></div>
-      </div>
+      <span class="hint">To attach the licence copies, open the driver and use the 📎 Documents button.</span>
     </fieldset>
     <fieldset class="docs">
       <legend>Status &amp; remarks</legend>
@@ -1927,18 +1951,21 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
     <button class="btn primary" type="submit" form="dForm" id="dfSave">Save driver</button>
   </footer>
 </aside>
-<aside class="drawer" id="dvDrawer" role="dialog" aria-modal="true" aria-labelledby="dvTitle" hidden>
+<aside class="drawer fullpage" id="dvDrawer" role="dialog" aria-modal="true" aria-labelledby="dvTitle" hidden>
   <header>
     <div style="min-width:0"><h2 id="dvTitle">Driver</h2><div class="vsub" id="dvSub"></div></div>
     <button class="xclose" type="button" id="dvClose" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </header>
   <div class="vbody">
     <div class="vtools">
+      <button type="button" class="cdocs attbtn" id="dvAttBtn" aria-label="Documents" title="Documents" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><b id="dvAttCount" hidden></b></button><button type="button" class="cdocs" id="dvDocsBtn" aria-label="Download attached documents" title="Download attached documents" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>
       <button class="btn histbtn" type="button" id="dvHistBtn" aria-label="Change history" title="Change history">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
         <span class="hcount" id="dvHistCount"></span>
       </button>
     </div>
+    <section id="dvDocSec" class="docpop" role="dialog" aria-label="Documents" hidden><div class="dochead"><h3>Documents</h3><span class="dacts"><label class="btn" id="dvAddSev" hidden>+ Add several<input type="file" id="dvAddSevIn" multiple hidden></label><button type="button" class="dclose" id="dvDocClose" aria-label="Close documents">✕</button></span></div>
+      <div class="doclist pdoclist" id="dvDocList"></div><div class="sevpanel" id="dvSevPanel" hidden></div></section>
     <figure class="vphoto dvphoto" id="dvPhoto" hidden></figure>
     <section><h3>Personal details</h3><dl class="dl" id="dvPersonal"></dl></section>
     <section><h3>Contact</h3><dl class="dl" id="dvContact"></dl></section>
@@ -1989,7 +2016,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
         <div class="field"><label for="cIssue">Issue date</label><input id="cIssue" type="date"><span class="err" id="e-cIssue"></span></div>
         <div class="field"><label for="cValid">Valid until</label><input id="cValid" type="date"><span class="err" id="e-cValid"></span></div>
       </div>
-      <div class="field"><span class="lbl">Licence copy</span><div class="fileline" data-cfile="clCopy"></div></div>
+      <span class="hint">To attach the licence copy, open the conductor and use the 📎 Documents button.</span>
     </fieldset>
     <fieldset class="docs">
       <legend>First-aid certificate</legend>
@@ -1998,7 +2025,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
         <div class="field"><label for="cFaNo">Certificate number</label><input id="cFaNo" autocomplete="off" maxlength="30" style="text-transform:uppercase;font-family:var(--mono)"></div>
         <div class="field"><label for="cFaValid">Valid until</label><input id="cFaValid" type="date"><span class="err" id="e-cFaValid"></span></div>
       </div>
-      <div class="field"><span class="lbl">Certificate copy</span><div class="fileline" data-cfile="faCopy"></div></div>
+      <span class="hint">To attach the certificate copy, open the conductor and use the 📎 Documents button.</span>
     </fieldset>
     <fieldset class="docs">
       <legend>Status &amp; remarks</legend>
@@ -2012,13 +2039,15 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
     <button class="btn primary" type="submit" form="cForm" id="cfSave">Save conductor</button>
   </footer>
 </aside>
-<aside class="drawer" id="cvDrawer" role="dialog" aria-modal="true" aria-labelledby="cvTitle" hidden>
+<aside class="drawer fullpage" id="cvDrawer" role="dialog" aria-modal="true" aria-labelledby="cvTitle" hidden>
   <header>
     <div style="min-width:0"><h2 id="cvTitle">Conductor</h2><div class="vsub" id="cvSub"></div></div>
     <button class="xclose" type="button" id="cvClose" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </header>
   <div class="vbody">
-    <div class="vtools"><button class="btn histbtn" type="button" id="cvHistBtn" aria-label="Change history" title="Change history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span class="hcount" id="cvHistCount"></span></button></div>
+    <div class="vtools"><button type="button" class="cdocs attbtn" id="cvAttBtn" aria-label="Documents" title="Documents" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><b id="cvAttCount" hidden></b></button><button type="button" class="cdocs" id="cvDocsBtn" aria-label="Download attached documents" title="Download attached documents" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button><button class="btn histbtn" type="button" id="cvHistBtn" aria-label="Change history" title="Change history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span class="hcount" id="cvHistCount"></span></button></div>
+    <section id="cvDocSec" class="docpop" role="dialog" aria-label="Documents" hidden><div class="dochead"><h3>Documents</h3><span class="dacts"><label class="btn" id="cvAddSev" hidden>+ Add several<input type="file" id="cvAddSevIn" multiple hidden></label><button type="button" class="dclose" id="cvDocClose" aria-label="Close documents">✕</button></span></div>
+      <div class="doclist pdoclist" id="cvDocList"></div><div class="sevpanel" id="cvSevPanel" hidden></div></section>
     <figure class="vphoto dvphoto" id="cvPhoto"></figure>
     <section><h3>Personal details</h3><dl class="dl" id="cvPersonal"></dl></section>
     <section><h3>Contact</h3><dl class="dl" id="cvContact"></dl></section>
@@ -2999,9 +3028,10 @@ function renderDocList(v) {
   $("vDocList").innerHTML = docSlots(v).map(([k, label, dk]) => {
     const f = fileOf(v, k), date = dk && v[dk];
     const when = date ? `<span class="pill ${listBand(daysUntil(date))} num">${fmtDate(date)}</span>` : "";
-    return `<div class="docrow" data-slot="${k}"><span class="dn">${esc(label)}</span>
-      ${can ? `<label class="btn">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" hidden></label>` : ""}
-      <span class="ds">${f ? `✔ ${fileLink(f)}` : `<span class="miss">✖ Not attached</span>`}${when}</span>${earlierHtml(v.id, k) ? `<span class="dold">${earlierHtml(v.id, k)}</span>` : ""}</div>`;
+    // One compact line per document, so the whole list fits on the screen without scrolling.
+    return `<div class="docrow" data-slot="${k}"><span class="dst ${f ? "ok" : "no"}" title="${f ? "Attached" : "Not attached"}">${f ? "✔" : "✖"}</span>
+      <span class="ds">${f ? `<a class="filelink dname" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(label)}</a><span class="dfile">${esc(f.name)}</span>` : `<span class="dname">${esc(label)}</span><span class="dfile miss">Not attached</span>`}</span>
+      ${can ? `<label class="btn">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" hidden></label>` : ""}${earlierHtml(v.id, k) ? `<span class="dold">${earlierHtml(v.id, k)}</span>` : ""}</div>`;
   }).join("");
 }
 async function attachDoc(vid, k, file) {
@@ -3018,7 +3048,7 @@ const uploadErr = e => e?.code === "too_large" ? "That file is too large." : e?.
 $("vDocList").addEventListener("change", async e => {
   const inp = e.target.closest("input[data-attach]"); if (!inp || !inp.files[0] || !vViewId) return;
   const k = inp.dataset.attach, file = inp.files[0], vid = vViewId, row = inp.closest(".docrow");
-  row.querySelector(".ds").innerHTML = `<span class="sub">Uploading ${esc(file.name)}…</span>`; inp.closest("label").classList.add("disabled");
+  row.querySelector(".dfile").outerHTML = `<span class="dfile sub">Uploading ${esc(file.name)}…</span>`; inp.closest("label").classList.add("disabled");
   try { if (await attachDoc(vid, k, file)) toast("Document attached."); }
   catch (er) { toast(uploadErr(er)); }
   const v = vehicles.find(x => x.id === vid); if (v && vViewId === vid) renderDocList(v);
@@ -3062,23 +3092,24 @@ $("vAddSevIn").addEventListener("change", e => {
 });
 // Desktop layout of the vehicle record: photo first, then the sections split into two balanced columns.
 const V_WIDE = window.matchMedia("(min-width: 1024px)");
-function vLayout() {
-  const body = $("vDrawer").querySelector(".vbody"); if (!body) return;
+function vLayout() { colLayout("vDrawer", "vPhoto", ["photo", "vOwner", "vSpec", "vFin", "vUse"], ["vReg", "vDocs", "vCap", "vTyre", "vRemarks"]); }
+// Fixed placement in two columns on a computer: the photo and the listed sections on the left, the rest on the right.
+const COL_ORDER = {};
+function colLayout(drawerId, photoId, LEFT, RIGHT) {
+  const body = $(drawerId).querySelector(".vbody"); if (!body) return;
   const items = [...body.querySelectorAll(":scope > figure.vphoto, :scope > section:not(.docpop), :scope > .vcols > .vcol > *")];
-  vLayout.order ||= items.slice();
+  const order = COL_ORDER[drawerId] ||= items.slice();
   let wrap = body.querySelector(":scope > .vcols");
-  if (!V_WIDE.matches) { if (wrap) { vLayout.order.forEach(el => body.insertBefore(el, wrap)); wrap.remove(); } return; }
+  if (!V_WIDE.matches) { if (wrap) { order.forEach(el => body.insertBefore(el, wrap)); wrap.remove(); } return; }
   if (!wrap) { wrap = document.createElement("div"); wrap.className = "vcols"; wrap.innerHTML = `<div class="vcol"></div><div class="vcol"></div>`; body.appendChild(wrap); }
-  // Fixed placement: photo, owner and specifications on the left; identity and renewals on the right.
-  const [a, c] = wrap.children, key = el => el.id === "vPhoto" ? "photo" : el.querySelector("dl, .vremarks")?.id || "";
-  const LEFT = ["photo", "vOwner", "vSpec", "vFin", "vUse"], RIGHT = ["vReg", "vDocs", "vCap", "vTyre", "vRemarks"];
-  const pick = ids => ids.map(id => vLayout.order.find(el => key(el) === id)).filter(Boolean);
+  const [a, c] = wrap.children, key = el => el.id === photoId ? "photo" : el.querySelector("dl, .vremarks")?.id || "";
+  const pick = ids => ids.map(id => order.find(el => key(el) === id)).filter(Boolean);
   pick(LEFT).forEach(el => a.appendChild(el)); pick(RIGHT).forEach(el => c.appendChild(el));
-  vLayout.order.filter(el => !el.parentElement.classList.contains("vcol")).forEach(el => (a.children.length <= c.children.length ? a : c).appendChild(el));
+  order.filter(el => !el.parentElement.classList.contains("vcol")).forEach(el => (a.children.length <= c.children.length ? a : c).appendChild(el));
   body.appendChild(wrap);
   // The photo's height is known only once it has loaded; lay out again then.
-  const img = $("vPhoto").querySelector("img");
-  if (img && !img.complete && !img.dataset.lay) { img.dataset.lay = "1"; img.addEventListener("load", () => { if (!$("vDrawer").hidden) vLayout(); }, { once: true }); }
+  const img = $(photoId).querySelector("img");
+  if (img && !img.complete && !img.dataset.lay) { img.dataset.lay = "1"; img.addEventListener("load", () => { if (!$(drawerId).hidden) colLayout(drawerId, photoId, LEFT, RIGHT); }, { once: true }); }
 }
 V_WIDE.addEventListener?.("change", () => { if (!$("vDrawer").hidden) vLayout(); });
 function fillVDrawer(v) {
@@ -3818,7 +3849,7 @@ function renderDrivers() {
     $("dRows").innerHTML = list.map(d => {
       const st = d.status || "Active";
       return `<tr class="rowlink${st === "Inactive" ? " retired" : ""}" data-open="${d.id}">
-        <td class="c-name"><button type="button" class="linkbtn" data-dact="view" data-id="${d.id}" aria-label="View ${esc(d.name)}"><span class="vid">${dThumb(d)}<span class="dname"><span class="nmrow"><span class="mk">${esc(d.name)}</span>${ageTag(d.dob)}</span>${d.relation ? `<span class="sub">${relShort(d)} ${esc(d.relation)}</span>` : ""}</span></span></button></td>
+        <td class="c-name">${pDueBtn(P_CFG.driver, d)}<button type="button" class="linkbtn" data-dact="view" data-id="${d.id}" aria-label="View ${esc(d.name)}"><span class="vid">${dThumb(d)}<span class="dname"><span class="nmrow"><span class="mk">${esc(d.name)}</span>${ageTag(d.dob)}</span>${d.relation ? `<span class="sub">${relShort(d)} ${esc(d.relation)}</span>` : ""}</span></span></button>${pActs(P_CFG.driver, d)}</td>
         <td data-label="Licence number"><span class="num idno">${esc(fmtDl(d.dlNo))}</span></td>
         <td data-label="Mobile">${d.mobile ? `<span class="num">${esc(fmtMobile(d.mobile))}</span>` : `<span class="sub">Not recorded</span>`}</td>
         <td data-label="Licence validity"><div class="renew">${validityPill(d.valTR, "Transport")}${validityPill(d.valNT, "Non-transport")}</div></td>
@@ -3942,7 +3973,7 @@ $("dForm").addEventListener("submit", async e => {
 });
 
 /* view */
-function openDvDrawer(d) { if (!d) return; dViewId = d.id; delReset("dv"); fillDv(d); $("scrim").hidden = false; $("dvDrawer").hidden = false; viewOpened(); setTimeout(() => $("dvClose").focus(), 30); }
+function openDvDrawer(d) { if (!d) return; dViewId = d.id; delReset("dv"); pSetDocPop(P_CFG.driver, false); fillDv(d); $("scrim").hidden = false; $("dvDrawer").hidden = false; viewOpened(); setTimeout(() => $("dvClose").focus(), 30); }
 function closeDvDrawer() { $("dvDrawer").hidden = true; dViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function refreshDvDrawer() {
   if (!dViewId || $("dvDrawer").hidden) return;
@@ -3977,12 +4008,12 @@ function fillDv(d) {
   };
   $("dvLicence").innerHTML = row("Licence number", `<span class="num">${esc(fmtDl(d.dlNo))}</span>`) + row("Issued by", d.state ? `Government of ${esc(d.state)}` : null) +
     dateRow("Date of first issue", d.firstIssue, d.firstIssue ? ` <span class="sub">· ${yearsBetween(d.firstIssue, todayISO())} years driving</span>` : "") +
-    dateRow("Issue date", d.issueDate) + val("Validity (NT), non-transport", d.valNT, "valNT") + val("Validity (TR), transport", d.valTR, "valTR") + row("Vehicle class", d.vClass ? esc(d.vClass) : `<span class="sub">All vehicles</span>`) +
-    hrow("Licence copy, front", "dlFrontFileName", copy("dlFront")) + hrow("Licence copy, back", "dlBackFileName", copy("dlBack"));
+    dateRow("Issue date", d.issueDate) + val("Validity (NT), non-transport", d.valNT, "valNT") + val("Validity (TR), transport", d.valTR, "valTR") + row("Vehicle class", d.vClass ? esc(d.vClass) : `<span class="sub">All vehicles</span>`);
   const total = dHistFor(d.id).length;
   $("dvHistCount").textContent = total; $("dvHistCount").hidden = !total;
   $("dvStatus").innerHTML = row("Status", `<span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span>`) + (d.remarks ? `<dt>Remarks</dt><dd class="addr">${esc(d.remarks)}</dd>` : row("Remarks", null));
   $("dvEdit").hidden = !canDrivers; $("dvDelWrap").hidden = !canDrivers;
+  pRenderDocs(P_CFG.driver, d); pLayout(P_CFG.driver);
 }
 
 /* events */
@@ -4080,7 +4111,7 @@ function renderConductors() {
     $("cRows").innerHTML = list.map(c => {
       const st = c.status || "Active";
       return `<tr class="rowlink${st === "Inactive" ? " retired" : ""}" data-open="${c.id}">
-        <td class="c-name"><button type="button" class="linkbtn" data-cact="view" data-id="${c.id}" aria-label="View ${esc(c.name)}"><span class="vid">${cThumb(c)}<span class="dname"><span class="nmrow"><span class="mk">${esc(c.name)}</span>${ageTag(c.dob)}</span>${c.relation ? `<span class="sub">${relShort(c)} ${esc(c.relation)}</span>` : ""}</span></span></button></td>
+        <td class="c-name">${pDueBtn(P_CFG.conductor, c)}<button type="button" class="linkbtn" data-cact="view" data-id="${c.id}" aria-label="View ${esc(c.name)}"><span class="vid">${cThumb(c)}<span class="dname"><span class="nmrow"><span class="mk">${esc(c.name)}</span>${ageTag(c.dob)}</span>${c.relation ? `<span class="sub">${relShort(c)} ${esc(c.relation)}</span>` : ""}</span></span></button>${pActs(P_CFG.conductor, c)}</td>
         <td data-label="Licence number"><span class="num idno">${esc(c.clNo || "")}</span></td>
         <td data-label="Badge number">${c.badgeNo ? `<span class="num idno">${esc(c.badgeNo)}</span>` : `<span class="sub">—</span>`}</td>
         <td data-label="Mobile">${c.mobile ? `<span class="num">${esc(fmtMobile(c.mobile))}</span>` : `<span class="sub">Not recorded</span>`}</td>
@@ -4202,7 +4233,7 @@ $("cForm").addEventListener("submit", async e => {
 });
 
 /* view */
-function openCvDrawer(c) { if (!c) return; cViewId = c.id; delReset("cv"); fillCv(c); $("scrim").hidden = false; $("cvDrawer").hidden = false; viewOpened(); setTimeout(() => $("cvClose").focus(), 30); }
+function openCvDrawer(c) { if (!c) return; cViewId = c.id; delReset("cv"); pSetDocPop(P_CFG.conductor, false); fillCv(c); $("scrim").hidden = false; $("cvDrawer").hidden = false; viewOpened(); setTimeout(() => $("cvClose").focus(), 30); }
 function closeCvDrawer() { $("cvDrawer").hidden = true; cViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function refreshCvDrawer() {
   if (!cViewId || $("cvDrawer").hidden) return;
@@ -4231,13 +4262,14 @@ function fillCv(c) {
   $("cvLicence").innerHTML = row("Licence number", `<span class="num">${esc(c.clNo || "")}</span>`) + row("Badge number", c.badgeNo ? `<span class="num">${esc(c.badgeNo)}</span>` : null) +
     row("Issued by", c.state ? `Government of ${esc(c.state)}` : null) + row("Issuing RTO", c.rto ? esc(c.rto) : null) +
     row("Issue date", c.issueDate ? `<span class="num">${fmtDate(c.issueDate)}</span> <span class="sub">· ${yearsBetween(c.issueDate, todayISO())} years as conductor</span>` : null) +
-    val("Valid until", c.clValid, "clValid") + hrow("Licence copy", "clCopyFileName", copy("clCopy"));
+    val("Valid until", c.clValid, "clValid");
   $("cvFirstAid").innerHTML = row("Certificate number", c.faNo ? `<span class="num">${esc(c.faNo)}</span>` : null) +
-    val("Valid until", c.faValid, "faValid") + hrow("Certificate copy", "faCopyFileName", copy("faCopy"));
+    val("Valid until", c.faValid, "faValid");
   $("cvStatus").innerHTML = row("Status", `<span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span>`) + (c.remarks ? `<dt>Remarks</dt><dd class="addr">${esc(c.remarks)}</dd>` : row("Remarks", null));
   const total = cHistFor(c.id).length;
   $("cvHistCount").textContent = total; $("cvHistCount").hidden = !total;
   $("cvEdit").hidden = !canConductors; $("cvDelWrap").hidden = !canConductors;
+  pRenderDocs(P_CFG.conductor, c); pLayout(P_CFG.conductor);
 }
 
 /* events */
@@ -6907,11 +6939,11 @@ function docsBtn(v) {
   return `<button type="button" class="cdocs" data-vdocs="${v.id}" aria-label="Download attached documents" title="Download attached documents"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>`;
 }
 const extOf = f => { const m = /\.([a-z0-9]{2,5})$/i.exec(f.name || ""); return m ? m[1].toLowerCase() : "file"; };
-async function downloadVehicleDocs(btn, v, picks) {
+async function downloadVehicleDocs(btn, v, picks, prefix) {
   let downloads = null;
   try { downloads = await auDownloads(); } catch { downloads = null; }
   if (!downloads) { toast("Saving files isn't available in this view."); return; }
-  const last4 = plateKey(v.plateNo).slice(-4) || "0000", label = btn.innerHTML; let ok = 0;
+  const last4 = prefix || plateKey(v.plateNo).slice(-4) || "0000", label = btn.innerHTML; let ok = 0;
   btn.disabled = true;
   try {
     for (const [i, d] of picks.entries()) {
@@ -7116,6 +7148,279 @@ $("vPrintBtn").onclick = async () => {
     else toast("Couldn't save the PDF. Try again.");
   } finally { btn.disabled = false; }
 };
+/* ================= Driver & conductor: documents pop-up, due badge, images, dates PDF ================= */
+// The same tools as the vehicle master, driven by one description per kind of person.
+const P_CFG = {
+  driver: { pre: "dv", Noun: "Driver", nouns: "drivers", rows: "dRows", drawer: "dvDrawer", list: () => drivers, viewId: () => dViewId, can: () => canDrivers,
+    save: d => saveDriver(d), addHist: e => addDHistory(e), histKey: "driverId", earlier: (id, k) => dEarlierHtml(id, k),
+    idNo: d => fmtDl(d.dlNo), idLabel: "Licence no.", title: "Driving licence validity",
+    dates: [["valTR", "Transport licence (TR)"], ["valNT", "Non-transport licence (NT)"]],
+    slots: d => [["dlFront", "Licence, front", d.valTR || d.valNT || null], ["dlBack", "Licence, back", null]],
+    guess: [["dlBack", /back|rear|reverse/], ["dlFront", /front|licen|(^|[^a-z])dl([^a-z]|$)/]],
+    left: ["photo", "dvPersonal", "dvContact"], right: ["dvLicence", "dvStatus"] },
+  conductor: { pre: "cv", Noun: "Conductor", nouns: "conductors", rows: "cRows", drawer: "cvDrawer", list: () => conductors, viewId: () => cViewId, can: () => canConductors,
+    save: c => saveConductor(c), addHist: e => addCHistory(e), histKey: "conductorId", earlier: (id, k) => cEarlierHtml(id, k),
+    idNo: c => c.clNo || "", idLabel: "Licence no.", title: "Conductor licence & first-aid validity",
+    dates: [["clValid", "Conductor licence"], ["faValid", "First-aid certificate"]],
+    slots: c => [["clCopy", "Conductor licence", c.clValid || null], ["faCopy", "First-aid certificate", c.faValid || null]],
+    guess: [["faCopy", /first|aid|(^|[^a-z])fa([^a-z]|$)/], ["clCopy", /licen|conductor|(^|[^a-z])cl([^a-z]|$)|badge/]],
+    left: ["photo", "cvPersonal", "cvContact", "cvStatus"], right: ["cvLicence", "cvFirstAid"] }
+};
+const pActive = p => (p.status || "Active") !== "Inactive";
+const pDueOf = (cfg, p) => !pActive(p) ? [] : cfg.dates.filter(([k]) => p[k] && daysUntil(p[k]) <= 30)
+  .map(([k, label]) => ({ k, label, date: p[k], n: daysUntil(p[k]) })).sort((a, b) => a.n - b.n);
+const pFiles = (cfg, p) => cfg.slots(p).map(([k, label]) => ({ k, tag: label.replace(/[,()]/g, ""), label, f: dFile(p, k) })).filter(x => x.f);
+const pMask = s => { const k = normDl(s); return k ? "******" + k.slice(-4) : "-"; };
+// File names start with the person's first name, e.g. RAMESH_18-10-2026_16-55.jpg
+const pFileBase = p => (String(p.name || "").trim().split(/\s+/)[0] || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase() || "PERSON";
+const ICON_DUE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
+const ICON_DL = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>`;
+const ICON_PRINT = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg>`;
+// Card corner badge and the icons on the right of a driver or conductor card.
+function pDueBtn(cfg, p) {
+  const n = pDueOf(cfg, p).length; if (!n) return "";
+  const t = `${n} renewal${n === 1 ? "" : "s"} due within a month`;
+  return `<button type="button" class="cdue" data-pdue="${p.id}" aria-label="${t}" title="${t}">${ICON_DUE}${n}</button>`;
+}
+function pActs(cfg, p) {
+  if (!pActive(p)) return "";
+  const docs = acc.users === "edit" && pFiles(cfg, p).length ? `<button type="button" class="cdocs" data-pdocs="${p.id}" aria-label="Download attached documents" title="Download attached documents">${ICON_DL}</button>` : "";
+  return `<span class="cacts">${docs}<button type="button" class="cprint" data-pprint="${p.id}" aria-label="Save validity dates of ${esc(p.name)} as an image" title="Save validity dates as an image">${ICON_PRINT}</button></span>`;
+}
+function placePop(pop, b) {
+  document.body.appendChild(pop); duePopY = window.scrollY;
+  const r = b.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = Math.min(window.innerWidth - pw - 12, Math.max(12, r.right - pw)), top = r.bottom + 8;
+  if (top + ph > window.innerHeight - 12) top = Math.max(12, r.top - ph - 8);
+  pop.style.left = left + "px"; pop.style.top = top + "px";
+}
+// Admin's download list for a person's attached documents.
+function pOpenDocsPop(b, cfg, p) {
+  if (acc.users !== "edit") return;
+  const files = pFiles(cfg, p), pop = document.createElement("div");
+  pop.className = "duepop"; pop.dataset.d = p.id; pop.setAttribute("role", "dialog");
+  const sync = () => { const n = pop.querySelectorAll("input:checked").length, go = pop.querySelector(".duesave"); go.disabled = !n; go.lastChild.textContent = n ? `Download ${n} file${n === 1 ? "" : "s"}` : "Choose a document"; };
+  pop.innerHTML = `<h4>${esc(p.name)} · Attached documents</h4><ul class="dlist">${files.map((d, i) => `<li><label><input type="checkbox" data-i="${i}" checked><span><b>${esc(d.label)}</b><span class="fn">${esc(d.f.name)}</span></span></label></li>`).join("")}</ul><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button>`;
+  pop.addEventListener("change", sync);
+  pop.querySelector(".duesave").onclick = ev => { ev.stopPropagation(); downloadVehicleDocs(ev.currentTarget, null, [...pop.querySelectorAll("input:checked")].map(x => files[+x.dataset.i]), pFileBase(p)); };
+  placePop(pop, b); sync();
+}
+function pOpenDuePop(b, cfg, p) {
+  const list = pDueOf(cfg, p), pop = document.createElement("div");
+  pop.className = "duepop"; pop.dataset.p = p.id; pop.setAttribute("role", "dialog");
+  pop.innerHTML = `<h4>${esc(p.name)} · due within a month</h4><ul>${list.map(d => `<li><span><b>${esc(d.label)}</b><br><span class="num">${fmtDate(d.date)}</span></span><span class="when">${esc(whenText(d.n))}</span></li>`).join("")}</ul><button type="button" class="btn duesave">${ICON_DL}Save as image</button>`;
+  pop.querySelector(".duesave").onclick = ev => { ev.stopPropagation(); pSaveJpg(ev.currentTarget, cfg, p, true); };
+  placePop(pop, b);
+}
+// One person's validity dates (or only those due within a month) as a JPG. Staff copies mask the licence number and carry a watermark.
+async function pCardJpg(cfg, p, masked, dueOnly) {
+  const rank = d => d.n == null ? 3 : d.n <= 30 ? 0 : d.n <= 90 ? 1 : 2;
+  const items = dueOnly ? pDueOf(cfg, p) : cfg.dates.map(([k, label]) => ({ k, label, date: p[k], n: p[k] ? daysUntil(p[k]) : null }))
+    .sort((a, b) => (rank(a) - rank(b)) || String(a.date || "").localeCompare(String(b.date || "")));
+  const W = 1080, PADX = 64, ROW = dueOnly ? 112 : 96, H = 440 + items.length * ROW + (dueOnly ? 150 : 170);
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d"), F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H); g.textBaseline = "middle";
+  g.fillStyle = dueOnly ? "#b71c1c" : "#18212b"; g.fillRect(0, 0, W, 150);
+  g.fillStyle = "#ffffff"; g.font = `700 46px ${F}`; g.fillText("VBS", PADX, 60);
+  g.fillStyle = dueOnly ? "#ffffff" : "#c9d3dc"; g.font = `${dueOnly ? 600 : 500} 30px ${F}`; g.fillText(dueOnly ? "Renewals due within a month" : cfg.title, PADX, 108);
+  g.textAlign = "right"; g.font = `500 28px ${F}`; g.fillText(`As on ${fmtDate(todayISO())}`, W - PADX, 60); g.textAlign = "left";
+  let cw = 0;
+  if (dueOnly) { g.font = `700 30px ${F}`; const cnt = `${items.length} due`; cw = g.measureText(cnt).width + 40;
+    rr(W - PADX - cw, 192, cw, 56, 28); g.fillStyle = "#b71c1c"; g.fill(); g.fillStyle = "#ffffff"; g.textAlign = "center"; g.fillText(cnt, W - PADX - cw / 2, 221); g.textAlign = "left"; }
+  let fs = 58; g.font = `700 ${fs}px ${F}`; const maxw = W - 2 * PADX - (cw ? cw + 24 : 0);
+  while (fs > 34 && g.measureText(p.name || "").width > maxw) { fs -= 2; g.font = `700 ${fs}px ${F}`; }
+  g.fillStyle = "#18212b"; g.fillText(p.name || cfg.Noun, PADX, 220);
+  g.font = `700 36px ${MONO}`; g.fillStyle = "#18212b"; g.fillText(`${cfg.idLabel} ${masked ? pMask(cfg.idNo(p)) : (cfg.idNo(p) || "-")}`, PADX, 290);
+  g.fillStyle = "#5c6977"; g.font = `500 30px ${F}`;
+  g.fillText([cfg.Noun, p.dob ? `${yearsBetween(p.dob, todayISO())} years` : "", p.status && p.status !== "Active" ? p.status : ""].filter(Boolean).join("  ·  "), PADX, 345);
+  let y = 390; g.strokeStyle = "#d9dfe5"; g.lineWidth = 2; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke();
+  items.forEach(d => {
+    const mid = y + ROW / 2;
+    g.fillStyle = "#18212b"; g.font = `600 ${dueOnly ? 36 : 34}px ${F}`; g.fillText(d.label, PADX, mid - 12);
+    g.fillStyle = d.n != null && d.n < 0 ? "#b71c1c" : "#5c6977"; g.font = `${d.n != null && d.n < 0 ? 700 : 400} 26px ${F}`; g.fillText(d.date ? whenText(d.n) : "Date not entered", PADX, mid + 26);
+    const [bg, fg] = d.n == null ? ["#eef1f4", "#5c6977"] : d.n <= 30 ? JPG_BANDS[0] : d.n <= 90 ? JPG_BANDS[1] : JPG_BANDS[2];
+    g.font = `700 36px ${MONO}`; g.textAlign = "right"; const dt = d.date ? fmtDate(d.date) : "—", dw = g.measureText(dt).width;
+    rr(W - PADX - dw - 32, mid - 25, dw + 32, 50, 10); g.fillStyle = bg; g.fill(); g.fillStyle = fg; g.fillText(dt, W - PADX - 16, mid + 1); g.textAlign = "left";
+    y += ROW; g.strokeStyle = "#e6e9ee"; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke();
+  });
+  if (dueOnly) { g.fillStyle = "#b71c1c"; g.font = `600 26px ${F}`; g.fillText("Please renew before the dates shown.", PADX, y + 56); }
+  else {
+    let lx = PADX; const ly = y + 56; g.font = `500 24px ${F}`;
+    [[JPG_BANDS[0], "Within 1 month / expired"], [JPG_BANDS[1], "1 to 3 months"], [JPG_BANDS[2], "More than 3 months"]].forEach(([[bg, fg], t]) => {
+      rr(lx, ly - 14, 28, 28, 6); g.fillStyle = bg; g.fill(); g.lineWidth = 3; g.strokeStyle = fg; g.stroke();
+      g.fillStyle = "#3b4652"; g.fillText(t, lx + 40, ly + 1); lx += 40 + g.measureText(t).width + 44;
+    });
+  }
+  if (masked) jpgWatermark(g, W, H, F);
+  g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`; g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Licence number masked" : ""}`, PADX, H - 50);
+  return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
+}
+async function pSaveJpg(btn, cfg, p, dueOnly) {
+  let downloads = null;
+  try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view."); return; }
+  const d = new Date(), p2 = n => String(n).padStart(2, "0");
+  const name = `${pFileBase(p)}${dueOnly ? "_DUE" : ""}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}_${p2(d.getHours())}-${p2(d.getMinutes())}.jpg`;
+  btn.disabled = true;
+  try {
+    try { await document.fonts?.ready; } catch {}
+    await downloads.save({ filename: name, data: await pCardJpg(cfg, p, acc.users !== "edit", dueOnly) });
+    toast("Saved as a JPG image. Open it to print or share.");
+  } catch (er) {
+    if (er?.code === "declined") toast("Image not saved.");
+    else if (er?.code === "rate_limited") toast("A save is already waiting for your answer.");
+    else toast("Couldn't save the image. Try again.");
+  } finally { btn.disabled = false; }
+}
+// Every working driver or conductor with their validity dates, as a PDF. Staff copies mask the licence numbers.
+async function pDatesPdf(L, cfg, list, masked) {
+  const W = 841.89, H = 595.28, M = 28, pdf = await L.PDFDocument.create();
+  const reg = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
+  const black = L.rgb(0, 0, 0), grey = L.rgb(0.35, 0.35, 0.35), line = L.rgb(0.78, 0.8, 0.83), red = L.rgb(0.75, 0.1, 0.1), amber = L.rgb(0.77, 0.35, 0), green = L.rgb(0.12, 0.48, 0.24), head = L.rgb(0.93, 0.94, 0.96);
+  const cols = [["#", 26], ["Name", 210], [cfg.idLabel.replace(" no.", " number"), 150], ...cfg.dates.map(([k, l]) => [l, 0, k]), ["Status", 70]];
+  const fixed = cols.reduce((a, c) => a + c[1], 0), dw = (W - 2 * M - fixed) / cfg.dates.length;
+  cols.forEach(c => { if (!c[1]) c[1] = dw; });
+  const text = (pg, t, x, y, o = {}) => pg.drawText(pdfSafe(t), { x, y, size: o.size || 8.5, font: o.bold ? bold : reg, color: o.color || black });
+  const fit = (t, f, sz, w) => { let s = pdfSafe(t); while (s && f.widthOfTextAtSize(s, sz) > w) s = s.slice(0, -1); return s; };
+  let page, y, pageNo = 0;
+  const header = () => {
+    page = pdf.addPage([W, H]); pageNo++; y = H - M;
+    text(page, `VBS  ·  ${cfg.Noun} validity dates`, M, y - 4, { size: 15, bold: true });
+    const right = `As on ${fmtDate(todayISO())}  ·  Page ${pageNo}`; text(page, right, W - M - reg.widthOfTextAtSize(pdfSafe(right), 9), y - 2, { size: 9, color: grey });
+    y -= 20;
+    text(page, `${list.length} ${list.length === 1 ? cfg.Noun.toLowerCase() : cfg.nouns}${masked ? "  ·  Licence numbers are masked: only the last 4 characters are shown" : ""}  ·  Printed by ${whoAmI()}`, M, y, { size: 8.5, color: grey });
+    y -= 16; page.drawRectangle({ x: M, y: y - 6, width: W - 2 * M, height: 20, color: head });
+    let x = M; cols.forEach(([l, w]) => { text(page, fit(l, bold, 8, w - 6), x + 3, y, { size: 8, bold: true }); x += w; });
+    y -= 22;
+  };
+  header();
+  list.forEach((p, i) => {
+    if (y < M + 20) header();
+    let x = M;
+    [String(i + 1), p.name || "", masked ? pMask(cfg.idNo(p)) : (cfg.idNo(p) || "-")].forEach((t, j) => { text(page, fit(t, j === 1 ? bold : reg, 8.5, cols[j][1] - 6), x + 3, y, { bold: j === 1 }); x += cols[j][1]; });
+    cfg.dates.forEach(([k], j) => {
+      const w = cols[3 + j][1];
+      if (p[k]) { const n = daysUntil(p[k]); text(page, fit(fmtDate(p[k]), n <= 90 ? bold : reg, 8.5, w - 6), x + 3, y, { bold: n <= 90, color: n <= 30 ? red : n <= 90 ? amber : green }); }
+      else text(page, "-", x + 3, y, { color: grey });
+      x += w;
+    });
+    text(page, fit(p.status || "Active", reg, 8.5, 64), x + 3, y);
+    page.drawLine({ start: { x: M, y: y - 6 }, end: { x: W - M, y: y - 6 }, thickness: 0.5, color: line });
+    y -= 18;
+  });
+  text(page, "Red: expired or due within 1 month.  Orange: due within 3 months.  Green: more than 3 months left.  -: date not entered.", M, Math.min(Math.max(y - 6, M), M + 4), { size: 7.5, color: grey });
+  return new Blob([await pdf.save()], { type: "application/pdf" });
+}
+async function pPrintAll(cfg, btn) {
+  const list = cfg.list().filter(pActive).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  if (!list.length) { toast(`There are no ${cfg.nouns} to print.`); return; }
+  let downloads = null;
+  try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view."); return; }
+  btn.disabled = true;
+  try {
+    const blob = await pDatesPdf(await loadPdfLib(), cfg, list, acc.users !== "edit");
+    await downloads.save({ filename: `${cfg.Noun} validity dates ${todayISO()}.pdf`, data: blob });
+    toast("Saved as a PDF. Open it to print or share.");
+  } catch (e) {
+    if (e?.code === "declined") toast("PDF not saved.");
+    else if (e?.code === "rate_limited") toast("A save is already waiting for your answer.");
+    else if (e?.message === "load failed") toast("Couldn't prepare the PDF. Check your internet connection and try again.");
+    else toast("Couldn't save the PDF. Try again.");
+  } finally { btn.disabled = false; }
+}
+/* Documents pop-up on the driver and conductor pages */
+function pRenderDocs(cfg, p) {
+  const pre = cfg.pre, can = cfg.can() && !!assetsCap, slots = cfg.slots(p), n = slots.filter(([k]) => dFile(p, k)).length;
+  $(pre + "AttCount").hidden = !n; $(pre + "AttCount").textContent = n;
+  $(pre + "AddSev").hidden = !can;
+  $(pre + "DocsBtn").hidden = acc.users !== "edit" || !pFiles(cfg, p).length;
+  $(pre + "DocList").innerHTML = slots.map(([k, label, date]) => {
+    const f = dFile(p, k), when = date ? `<span class="pill ${listBand(daysUntil(date))} num">${fmtDate(date)}</span>` : "", older = cfg.earlier(p.id, k);
+    return `<div class="docrow" data-slot="${k}"><span class="dst ${f ? "ok" : "no"}" title="${f ? "Attached" : "Not attached"}">${f ? "✔" : "✖"}</span>
+      <span class="ds">${f ? `<a class="filelink dname" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(label)}</a><span class="dfile">${esc(f.name)}</span>` : `<span class="dname">${esc(label)}</span><span class="dfile miss">Not attached</span>`}</span>
+      ${can ? `<label class="btn">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" hidden></label>` : ""}${older ? `<span class="dold">${older}</span>` : ""}</div>`;
+  }).join("");
+}
+async function pAttach(cfg, id, k, file) {
+  if (!cfg.list().find(x => x.id === id)) return false;
+  if (!FILE_TYPES.includes(file.type)) { toast("Attach a PDF, JPG or PNG file."); return false; }
+  if (file.size > 20 * 1024 * 1024) { toast("That file is over 20 MB. Attach a smaller scan."); return false; }
+  const r = await assetsCap.upload(file, { type: file.type });
+  const p = cfg.list().find(x => x.id === id), prevId = p[k + "File"] || "", prevName = p[k + "FileName"] || "";
+  await cfg.save({ ...p, [k + "File"]: r.id, [k + "FileName"]: file.name });
+  await cfg.addHist([{ [cfg.histKey]: id, field: k + "FileName", from: prevName, to: file.name, fromFileId: prevId, toFileId: r.id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", note: "Attached from Documents" }]).catch(() => {});
+  return true;
+}
+function pSetDocPop(cfg, open) { const pre = cfg.pre; $(pre + "DocSec").hidden = !open; $(pre + "AttBtn").setAttribute("aria-expanded", String(open)); if (!open) $(pre + "SevPanel").hidden = true; }
+function pWire(cfg) {
+  const pre = cfg.pre, cur = () => cfg.list().find(x => x.id === cfg.viewId()), redraw = id => { const p = cfg.list().find(x => x.id === id); if (p && cfg.viewId() === id) pRenderDocs(cfg, p); };
+  $(pre + "AttBtn").onclick = e => { e.stopPropagation(); closeDuePop(); pSetDocPop(cfg, $(pre + "DocSec").hidden); };
+  $(pre + "DocClose").onclick = () => pSetDocPop(cfg, false);
+  $(cfg.drawer).addEventListener("click", e => { if (e.isTrusted && !$(pre + "DocSec").hidden && !e.target.closest(`#${pre}DocSec, #${pre}AttBtn`)) pSetDocPop(cfg, false); });
+  $(pre + "DocList").addEventListener("change", async e => {
+    const inp = e.target.closest("input[data-attach]"), id = cfg.viewId(); if (!inp || !inp.files[0] || !id) return;
+    const k = inp.dataset.attach, file = inp.files[0], row = inp.closest(".docrow");
+    row.querySelector(".dfile").outerHTML = `<span class="dfile sub">Uploading ${esc(file.name)}…</span>`; inp.closest("label").classList.add("disabled");
+    try { if (await pAttach(cfg, id, k, file)) toast("Document attached."); } catch (er) { toast(uploadErr(er)); }
+    redraw(id);
+  });
+  $(pre + "DocsBtn").addEventListener("click", e => {
+    e.stopPropagation();
+    const open = document.querySelector(".duepop"); closeDuePop(); if (open?.dataset.d === cfg.viewId()) return;
+    const p = cur(); if (p) pOpenDocsPop(e.currentTarget, cfg, p);
+  });
+  let files = [];
+  $(pre + "AddSevIn").addEventListener("change", e => {
+    const p = cur(), panel = $(pre + "SevPanel"); files = [...e.target.files]; e.target.value = "";
+    if (!p || !files.length) return;
+    const slots = cfg.slots(p), used = new Set();
+    const guess = name => { const n = String(name).toLowerCase(), g = cfg.guess.find(([, re]) => re.test(n)); return g ? g[0] : ""; };
+    const opts = sel => `<option value="">Choose…</option>${slots.map(([k, l]) => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(l)}</option>`).join("")}<option value="-">Skip this file</option>`;
+    panel.innerHTML = `<b>Which document is each file?</b>${files.map((f, i) => { let g = guess(f.name); if (used.has(g)) g = ""; if (g) used.add(g);
+        return `<div class="sevrow"><span class="fnm">${esc(f.name)}</span><select data-i="${i}" aria-label="Document for ${esc(f.name)}">${opts(g)}</select></div>`; }).join("")}
+      <span class="err" data-err></span><div class="acts"><button type="button" class="btn" data-cancel>Cancel</button><button type="button" class="btn primary" data-save>Save all</button></div>`;
+    panel.hidden = false;
+    const err = panel.querySelector("[data-err]"), save = panel.querySelector("[data-save]");
+    const sync = () => { const n = [...panel.querySelectorAll("select")].filter(s => s.value && s.value !== "-").length; save.textContent = n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Save all"; };
+    panel.onchange = sync; sync();
+    panel.querySelector("[data-cancel]").onclick = () => { panel.hidden = true; files = []; };
+    save.onclick = async () => {
+      const picks = [...panel.querySelectorAll("select")].map(s => [files[+s.dataset.i], s.value]);
+      if (picks.some(([, k]) => !k)) { err.textContent = "Choose a document for every file, or pick “Skip this file”."; return; }
+      const ks = picks.map(x => x[1]).filter(k => k !== "-");
+      if (new Set(ks).size !== ks.length) { err.textContent = "Two files are set to the same document. Choose a different one for each."; return; }
+      if (!ks.length) { panel.hidden = true; return; }
+      const id = cfg.viewId(); save.disabled = true; err.textContent = "";
+      let ok = 0; const failed = [];
+      for (const [f, k] of picks.filter(x => x[1] !== "-")) {
+        save.textContent = `Uploading ${ok + failed.length + 1} of ${ks.length}…`;
+        try { if (await pAttach(cfg, id, k, f)) ok++; else failed.push(f.name); } catch { failed.push(f.name); }
+      }
+      save.disabled = false;
+      if (failed.length) { err.textContent = `Couldn't attach: ${failed.join(", ")}. Try those again.`; save.textContent = "Save all"; }
+      else { panel.hidden = true; files = []; }
+      if (ok) toast(`${ok} document${ok === 1 ? "" : "s"} attached.`);
+      redraw(id);
+    };
+  });
+  // Card icons and corner badge on the list
+  $(cfg.rows).addEventListener("click", e => {
+    const b = e.target.closest(".cdue, .cdocs, .cprint"); if (!b) return;
+    e.stopPropagation();
+    const id = b.dataset.pdue || b.dataset.pdocs || b.dataset.pprint, p = cfg.list().find(x => x.id === id); if (!p) return;
+    if (b.matches(".cprint")) { pSaveJpg(b, cfg, p, false); return; }
+    const open = document.querySelector(".duepop"); closeDuePop();
+    if (b.matches(".cdue")) { if (open?.dataset.p !== id) pOpenDuePop(b, cfg, p); }
+    else if (open?.dataset.d !== id) pOpenDocsPop(b, cfg, p);
+  });
+  $(pre === "dv" ? "dPrintBtn" : "cPrintBtn").onclick = e => pPrintAll(cfg, e.currentTarget);
+}
+pWire(P_CFG.driver); pWire(P_CFG.conductor);
+V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
+function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
 $("bkPrint").onclick = async () => {
   const btn = $("bkPrint"), d = slipData(), name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
   let downloads = null;
