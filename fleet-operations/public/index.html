@@ -502,6 +502,19 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .attbtn { position: relative; }
 .attbtn b { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: #fff; font: 700 11px/18px var(--body, sans-serif); text-align: center; box-shadow: 0 0 0 2px var(--surface); }
 .attbtn[aria-expanded="true"] { background: var(--chip-bg); }
+/* On a computer the vehicle record opens as a full page beside the menu, with the sections in two columns. */
+@media (min-width: 1024px) {
+  #vDrawer { left: 248px; width: auto; box-shadow: none; border-left: 1px solid var(--line); }
+  #vDrawer header { padding: 22px 40px; }
+  #vDrawer header h2 { font-size: 32px; }
+  #vDrawer .vbody { display: block; column-count: 2; column-gap: 32px; padding: 28px 40px; }
+  #vDrawer .vbody > * { break-inside: avoid; margin: 0 0 24px; }
+  #vDrawer .vtools { column-span: all; }
+  #vDrawer .vphoto img { max-height: 320px; }
+  #vDrawer .docpop { left: auto; right: 40px; width: 460px; top: 76px; }
+  #vDrawer footer { padding-left: 40px; padding-right: 40px; }
+}
+@media (min-width: 1600px) { #vDrawer .vbody { column-count: 3; } }
 .dochead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
 .dochead h3 { margin: 0; }
 .dochead .btn { padding: 6px 12px; font-size: 13px; }
@@ -509,7 +522,7 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .docrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding: 7px 10px; border-top: 1px solid var(--line); }
 .docrow:first-child { border-top: 0; }
 .docrow .dn { font-weight: 600; font-size: 13px; }
-.docrow .ds { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 0; }
+.docrow .ds { grid-column: 1; font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 0; }
 .docrow .ds a { overflow-wrap: anywhere; }
 .docrow .miss { color: var(--danger); }
 .docrow .dold { grid-column: 1 / -1; font-size: 12px; }
