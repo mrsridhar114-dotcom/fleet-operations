@@ -2866,7 +2866,10 @@ function filtered() {
   const q = "", ff = "", ft = "";
   const list = vehicles.filter(v => (!q || vFull(v).toLowerCase().includes(q) || plateKey(v.plateNo).toLowerCase().includes(plateKey(q).toLowerCase() || "\u0000")) && (!ff || v.fuel === ff) && (!ft || v.type === ft));
   const { k, dir } = sort, s = dir === "asc" ? 1 : -1;
+  // Vehicles are grouped by class in a fixed order (buses first); the chosen column sorts within each class.
+  const cls = v => { const i = TYPES.indexOf(v.type); return i < 0 ? TYPES.length : i; };
   return list.sort((a, b) => {
+    if (cls(a) !== cls(b)) return cls(a) - cls(b);
     let x = a[k], y = b[k];
     if (k === "make") { x = vName(a); y = vName(b); }
     if (k === "plateNo") { x = plateKey(a.plateNo) || "~"; y = plateKey(b.plateNo) || "~"; }
