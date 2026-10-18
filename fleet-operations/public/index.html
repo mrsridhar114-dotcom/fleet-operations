@@ -2409,7 +2409,7 @@ const band = days => days < 0 ? "expired" : days <= 7 ? "d7" : days <= 30 ? "d30
 // Which documents apply to which vehicles; everything not listed applies to all.
 const transportVehicle = (t, u) => t === "Auto" || t === TW ? false : t !== "Car" || u === "Public service";
 const DOC_RULES = {
-  permitExp: { test: t => t !== TW, note: "All except two wheelers" },
+  permitExp: { test: t => t !== TW && t !== "Car", note: "All except cars and two wheelers" },
   permitAuthExp: { test: t => t === "12 Wheeler Truck", note: "Trucks only" },
   speedGovExp: { test: transportVehicle, note: "Transport vehicles" },
   gpsExp: { test: transportVehicle, note: "Transport vehicles" },
