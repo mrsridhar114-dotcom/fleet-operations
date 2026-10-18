@@ -158,6 +158,11 @@ tr.retired td { opacity: .55; }
 tr.retired td.c-act { opacity: 1; }
 tr.rowlink { cursor: pointer; }
 tr.rowlink:active { background: var(--accent-soft); }
+.xclose { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; background: #fdecec; color: #c62828; cursor: pointer; }
+.xclose:hover { background: #f9d6d6; }
+.xclose:focus-visible { outline: none; background: #f6c9c9; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .xclose { background: #3a1f22; color: #ff8a80; } }
+:root[data-theme="dark"] .xclose { background: #3a1f22; color: #ff8a80; }
 .drawer footer .fdel { margin-right: auto; display: flex; align-items: center; min-width: 0; }
 .btn.dline { color: var(--danger); }
 .btn.dline:hover { border-color: var(--danger); }
@@ -1706,7 +1711,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 <aside class="drawer" id="vDrawer" role="dialog" aria-modal="true" aria-labelledby="vTitle" hidden>
   <header>
     <div style="min-width:0"><h2 id="vTitle">Vehicle</h2><div class="vsub" id="vSub"></div></div>
-    <button class="icon" type="button" id="vCloseBtn" aria-label="Close">Close ✕</button>
+    <button class="xclose" type="button" id="vCloseBtn" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </header>
   <div class="vbody">
     <div class="vtools">
@@ -1728,7 +1733,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   </div>
   <footer>
     <div class="fdel" id="vDelWrap"><button class="btn dline" type="button" id="vDelBtn">Delete</button><span class="delq" id="vDelQ" hidden><span>Delete this vehicle? This can't be undone.</span><button class="btn" type="button" id="vDelNo">Keep</button><button class="btn danger" type="button" id="vDelYes">Delete</button></span></div>
-    <button class="btn" type="button" id="vDoneBtn">Close</button>
     <button class="btn primary" type="button" id="vEditBtn">Edit vehicle</button>
   </footer>
 </aside>
@@ -1859,7 +1863,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 <aside class="drawer" id="dvDrawer" role="dialog" aria-modal="true" aria-labelledby="dvTitle" hidden>
   <header>
     <div style="min-width:0"><h2 id="dvTitle">Driver</h2><div class="vsub" id="dvSub"></div></div>
-    <button class="icon" type="button" id="dvClose" aria-label="Close">Close ✕</button>
+    <button class="xclose" type="button" id="dvClose" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </header>
   <div class="vbody">
     <div class="vtools">
@@ -1876,7 +1880,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   </div>
   <footer>
     <div class="fdel" id="dvDelWrap"><button class="btn dline" type="button" id="dvDelBtn">Delete</button><span class="delq" id="dvDelQ" hidden><span>Delete this driver? This can't be undone.</span><button class="btn" type="button" id="dvDelNo">Keep</button><button class="btn danger" type="button" id="dvDelYes">Delete</button></span></div>
-    <button class="btn" type="button" id="dvDone">Close</button>
     <button class="btn primary" type="button" id="dvEdit">Edit driver</button>
   </footer>
 </aside>
@@ -1945,7 +1948,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 <aside class="drawer" id="cvDrawer" role="dialog" aria-modal="true" aria-labelledby="cvTitle" hidden>
   <header>
     <div style="min-width:0"><h2 id="cvTitle">Conductor</h2><div class="vsub" id="cvSub"></div></div>
-    <button class="icon" type="button" id="cvClose" aria-label="Close">Close ✕</button>
+    <button class="xclose" type="button" id="cvClose" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </header>
   <div class="vbody">
     <div class="vtools"><button class="btn" type="button" id="cvHistBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg> Change history <span class="hcount" id="cvHistCount"></span></button></div>
@@ -1958,7 +1961,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   </div>
   <footer>
     <div class="fdel" id="cvDelWrap"><button class="btn dline" type="button" id="cvDelBtn">Delete</button><span class="delq" id="cvDelQ" hidden><span>Delete this conductor? This can't be undone.</span><button class="btn" type="button" id="cvDelNo">Keep</button><button class="btn danger" type="button" id="cvDelYes">Delete</button></span></div>
-    <button class="btn" type="button" id="cvDone">Close</button>
     <button class="btn primary" type="button" id="cvEdit">Edit conductor</button>
   </footer>
 </aside>
@@ -2913,7 +2915,7 @@ function render() { renderDash(); renderMaster(); renderUsers(); refreshVDrawer(
 function openVDrawer(v) {
   if (!v) return;
   vViewId = v.id; delReset("v"); fillVDrawer(v);
-  $("scrim").hidden = false; $("vDrawer").hidden = false;
+  $("scrim").hidden = false; $("vDrawer").hidden = false; viewOpened();
   setTimeout(() => $("vCloseBtn").focus(), 30);
 }
 function fillVDrawer(v) {
@@ -3082,8 +3084,13 @@ function refreshVDrawer() {
   if (!v) { closeVDrawer(); toast("This vehicle was deleted"); return; }
   fillVDrawer(v);
 }
-function closeVDrawer() { $("vDrawer").hidden = true; vViewId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
-$("vCloseBtn").onclick = $("vDoneBtn").onclick = closeVDrawer;
+// The phone's Back button closes a record view instead of leaving the page.
+const VIEW_DRAWERS = ["vDrawer", "dvDrawer", "cvDrawer"];
+function viewOpened() { try { if (window.history.state?.foView !== 1) window.history.pushState({ ...(window.history.state || {}), foView: 1 }, ""); } catch {} }
+function viewClosed() { try { if (window.history.state?.foView === 1 && !VIEW_DRAWERS.some(id => !$(id).hidden)) window.history.back(); } catch {} }
+window.addEventListener("popstate", () => { if (!$("vDrawer").hidden) closeVDrawer(); if (!$("dvDrawer").hidden) closeDvDrawer(); if (!$("cvDrawer").hidden) closeCvDrawer(); });
+function closeVDrawer() { $("vDrawer").hidden = true; vViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
+$("vCloseBtn").onclick = closeVDrawer;
 $("vHistBtn").onclick = () => openHDrawer(vViewId, "");
 $("vDocs").addEventListener("click", e => { const b = e.target.closest("button[data-hist]"); if (b) openHDrawer(vViewId, b.dataset.hist); });
 $("hBackBtn").onclick = $("hCloseBtn").onclick = closeHDrawer;
@@ -3771,8 +3778,8 @@ $("dForm").addEventListener("submit", async e => {
 });
 
 /* view */
-function openDvDrawer(d) { if (!d) return; dViewId = d.id; delReset("dv"); fillDv(d); $("scrim").hidden = false; $("dvDrawer").hidden = false; setTimeout(() => $("dvClose").focus(), 30); }
-function closeDvDrawer() { $("dvDrawer").hidden = true; dViewId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
+function openDvDrawer(d) { if (!d) return; dViewId = d.id; delReset("dv"); fillDv(d); $("scrim").hidden = false; $("dvDrawer").hidden = false; viewOpened(); setTimeout(() => $("dvClose").focus(), 30); }
+function closeDvDrawer() { $("dvDrawer").hidden = true; dViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function refreshDvDrawer() {
   if (!dViewId || $("dvDrawer").hidden) return;
   const d = drivers.find(x => x.id === dViewId);
@@ -3817,7 +3824,7 @@ function fillDv(d) {
 /* events */
 $("addDriverBtn").onclick = () => openDfDrawer(null);
 $("dfClose").onclick = $("dfCancel").onclick = closeDfDrawer;
-$("dvClose").onclick = $("dvDone").onclick = closeDvDrawer;
+$("dvClose").onclick = closeDvDrawer;
 $("dvHistBtn").onclick = () => openHDrawer(dViewId, "", "driver");
 $("dvDrawer").addEventListener("click", e => { const b = e.target.closest("button[data-dhist]"); if (b) openHDrawer(dViewId, b.dataset.dhist, "driver"); });
 $("dvEdit").onclick = () => { const d = drivers.find(x => x.id === dViewId); closeDvDrawer(); if (d && canDrivers) openDfDrawer(d); };
@@ -4031,8 +4038,8 @@ $("cForm").addEventListener("submit", async e => {
 });
 
 /* view */
-function openCvDrawer(c) { if (!c) return; cViewId = c.id; delReset("cv"); fillCv(c); $("scrim").hidden = false; $("cvDrawer").hidden = false; setTimeout(() => $("cvClose").focus(), 30); }
-function closeCvDrawer() { $("cvDrawer").hidden = true; cViewId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
+function openCvDrawer(c) { if (!c) return; cViewId = c.id; delReset("cv"); fillCv(c); $("scrim").hidden = false; $("cvDrawer").hidden = false; viewOpened(); setTimeout(() => $("cvClose").focus(), 30); }
+function closeCvDrawer() { $("cvDrawer").hidden = true; cViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function refreshCvDrawer() {
   if (!cViewId || $("cvDrawer").hidden) return;
   const c = conductors.find(x => x.id === cViewId);
@@ -4072,7 +4079,7 @@ function fillCv(c) {
 /* events */
 $("addConductorBtn").onclick = () => openCfDrawer(null);
 $("cfClose").onclick = $("cfCancel").onclick = closeCfDrawer;
-$("cvClose").onclick = $("cvDone").onclick = closeCvDrawer;
+$("cvClose").onclick = closeCvDrawer;
 $("cvEdit").onclick = () => { const c = conductors.find(x => x.id === cViewId); closeCvDrawer(); if (c && canConductors) openCfDrawer(c); };
 $("cvHistBtn").onclick = () => openHDrawer(cViewId, "", "conductor");
 $("cvDrawer").addEventListener("click", e => { const b = e.target.closest("button[data-chist]"); if (b) openHDrawer(cViewId, b.dataset.chist, "conductor"); });
