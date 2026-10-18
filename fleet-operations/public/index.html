@@ -3068,9 +3068,9 @@ function vLayout() {
   let wrap = body.querySelector(":scope > .vcols");
   if (!V_WIDE.matches) { if (wrap) { vLayout.order.forEach(el => body.insertBefore(el, wrap)); wrap.remove(); } return; }
   if (!wrap) { wrap = document.createElement("div"); wrap.className = "vcols"; wrap.innerHTML = `<div class="vcol"></div><div class="vcol"></div>`; body.appendChild(wrap); }
-  // Fixed, logical placement: photo and renewals on the left, identity and specifications on the right.
+  // Fixed placement: photo, owner and specifications on the left; identity and renewals on the right.
   const [a, c] = wrap.children, key = el => el.id === "vPhoto" ? "photo" : el.querySelector("dl, .vremarks")?.id || "";
-  const LEFT = ["photo", "vDocs", "vOwner", "vFin", "vUse"], RIGHT = ["vReg", "vSpec", "vCap", "vTyre", "vRemarks"];
+  const LEFT = ["photo", "vOwner", "vSpec", "vFin", "vUse"], RIGHT = ["vReg", "vDocs", "vCap", "vTyre", "vRemarks"];
   const pick = ids => ids.map(id => vLayout.order.find(el => key(el) === id)).filter(Boolean);
   pick(LEFT).forEach(el => a.appendChild(el)); pick(RIGHT).forEach(el => c.appendChild(el));
   vLayout.order.filter(el => !el.parentElement.classList.contains("vcol")).forEach(el => (a.children.length <= c.children.length ? a : c).appendChild(el));
