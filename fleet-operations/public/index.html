@@ -6758,7 +6758,8 @@ function dueSoonBtn(v) {
 function closeDuePop() { document.querySelector(".duepop")?.remove(); }
 // While the popup is open, a tap outside it only closes it: the tap is caught here and goes no further.
 document.addEventListener("click", e => {
-  if (!document.querySelector(".duepop") || e.target.closest(".duepop, .cdue")) return;
+  // Only real taps count: the hidden link the app clicks to start a download must not be stopped here.
+  if (!e.isTrusted || !document.querySelector(".duepop") || e.target.closest(".duepop, .cdue")) return;
   closeDuePop(); e.preventDefault(); e.stopPropagation();
 }, true);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDuePop(); });
