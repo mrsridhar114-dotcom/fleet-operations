@@ -506,6 +506,8 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
    columns of about equal height (vLayout), so the page has one scroll and no gaps. */
 @media (min-width: 1024px) {
   #vDrawer { left: 248px; width: auto; box-shadow: none; border-left: 1px solid var(--line); }
+  /* While the full-page record is open, the list behind it doesn't scroll, so there is only one scroll bar. */
+  html:has(#vDrawer:not([hidden])), html:has(#vDrawer:not([hidden])) body { overflow: hidden; }
   #vDrawer header { padding: 22px 40px; }
   #vDrawer header h2 { font-size: 32px; }
   #vDrawer .vbody { padding: 24px 40px 32px; }
@@ -3066,9 +3068,9 @@ function vLayout() {
   let wrap = body.querySelector(":scope > .vcols");
   if (!V_WIDE.matches) { if (wrap) { vLayout.order.forEach(el => body.insertBefore(el, wrap)); wrap.remove(); } return; }
   if (!wrap) { wrap = document.createElement("div"); wrap.className = "vcols"; wrap.innerHTML = `<div class="vcol"></div><div class="vcol"></div>`; body.appendChild(wrap); }
-  // Fixed, logical placement: identity on the left under the photo, renewals and specifications on the right.
+  // Fixed, logical placement: photo and renewals on the left, identity and specifications on the right.
   const [a, c] = wrap.children, key = el => el.id === "vPhoto" ? "photo" : el.querySelector("dl, .vremarks")?.id || "";
-  const LEFT = ["photo", "vReg", "vOwner", "vFin", "vTyre", "vUse"], RIGHT = ["vDocs", "vSpec", "vCap", "vRemarks"];
+  const LEFT = ["photo", "vDocs", "vOwner", "vFin", "vUse"], RIGHT = ["vReg", "vSpec", "vCap", "vTyre", "vRemarks"];
   const pick = ids => ids.map(id => vLayout.order.find(el => key(el) === id)).filter(Boolean);
   pick(LEFT).forEach(el => a.appendChild(el)); pick(RIGHT).forEach(el => c.appendChild(el));
   vLayout.order.filter(el => !el.parentElement.classList.contains("vcol")).forEach(el => (a.children.length <= c.children.length ? a : c).appendChild(el));
