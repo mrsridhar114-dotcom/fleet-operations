@@ -496,7 +496,7 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .plate.psv { background: var(--plate-psv); color: var(--plate-ink); border-color: var(--plate-ink); }
 .plate.pvt { background: var(--plate-pvt); color: var(--plate-ink); border-color: var(--plate-ink); }
 .plate.missing { border-style: dashed; border-color: var(--muted); color: var(--muted); font-weight: 400; letter-spacing: 0; }
-.vtools { display: flex; justify-content: flex-end; }
+.vtools { display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
 .vtools .btn { display: inline-flex; align-items: center; gap: 8px; }
 .vtools svg, .hicon svg { width: 16px; height: 16px; }
 .hcount { font-family: var(--mono); font-size: 11px; background: var(--chip-bg); color: var(--muted); border-radius: 999px; padding: 0 7px; }
@@ -1738,6 +1738,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   </header>
   <div class="vbody">
     <div class="vtools">
+      <button type="button" class="cdocs" id="vDocsBtn" aria-label="Download attached documents" title="Download attached documents" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>
       <button class="btn" type="button" id="vHistBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
         Change history <span class="hcount" id="vHistCount"></span>
@@ -2942,6 +2943,7 @@ function openVDrawer(v) {
   setTimeout(() => $("vCloseBtn").focus(), 30);
 }
 function fillVDrawer(v) {
+  $("vDocsBtn").hidden = acc.users !== "edit" || !vDocFiles(v).length;
   $("vTitle").textContent = vName(v);
   $("vSub").textContent = (v.plateNo ? v.plateNo + " · " : "") + (v.status && v.status !== "Active" ? v.status + " · " : "") + v.type + (v.type === "Bus" && v.opType ? ` · ${v.opType} operation` : "");
   const row = (label, html) => `<dt>${label}</dt>${html == null ? `<dd class="nr">Not recorded</dd>` : `<dd>${html}</dd>`}`;
@@ -3112,7 +3114,7 @@ const VIEW_DRAWERS = ["vDrawer", "dvDrawer", "cvDrawer"];
 function viewOpened() { try { if (window.history.state?.foView !== 1) window.history.pushState({ ...(window.history.state || {}), foView: 1 }, ""); } catch {} }
 function viewClosed() { try { if (window.history.state?.foView === 1 && !VIEW_DRAWERS.some(id => !$(id).hidden)) window.history.back(); } catch {} }
 window.addEventListener("popstate", () => { if (!$("vDrawer").hidden) closeVDrawer(); if (!$("dvDrawer").hidden) closeDvDrawer(); if (!$("cvDrawer").hidden) closeCvDrawer(); });
-function closeVDrawer() { $("vDrawer").hidden = true; vViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
+function closeVDrawer() { closeDuePop(); $("vDrawer").hidden = true; vViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
 $("vCloseBtn").onclick = closeVDrawer;
 $("vHistBtn").onclick = () => openHDrawer(vViewId, "");
 $("vDocs").addEventListener("click", e => { const b = e.target.closest("button[data-hist]"); if (b) openHDrawer(vViewId, b.dataset.hist); });
@@ -6798,7 +6800,7 @@ document.addEventListener("click", e => {
 }, true);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDuePop(); });
 let duePopY = 0;
-window.addEventListener("scroll", () => { if (document.querySelector(".duepop") && Math.abs(window.scrollY - duePopY) > 40) closeDuePop(); }, true);
+window.addEventListener("scroll", e => { if (!document.querySelector(".duepop") || e.target?.closest?.(".duepop")) return; if (e.target !== document || Math.abs(window.scrollY - duePopY) > 40) closeDuePop(); }, true);
 function jpgWatermark(g, W, H, F) {
   const d = new Date(), p2 = n => String(n).padStart(2, "0");
   const mark = `${whoAmI()}  ·  ${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
@@ -6913,7 +6915,15 @@ $("rows").addEventListener("click", e => {
   const b = e.target.closest(".cdocs"); if (!b) return;
   e.stopPropagation();
   const open = document.querySelector(".duepop"); closeDuePop(); if (open?.dataset.d === b.dataset.vdocs) return;
-  const v = vehicles.find(x => x.id === b.dataset.vdocs); if (!v || acc.users !== "edit") return;
+  const v = vehicles.find(x => x.id === b.dataset.vdocs); if (v) openDocsPop(b, v);
+});
+$("vDocsBtn").addEventListener("click", e => {
+  e.stopPropagation();
+  const b = e.currentTarget, open = document.querySelector(".duepop"); closeDuePop(); if (open?.dataset.d === vViewId) return;
+  const v = vehicles.find(x => x.id === vViewId); if (v) openDocsPop(b, v);
+});
+function openDocsPop(b, v) {
+  if (acc.users !== "edit") return;
   const files = vDocFiles(v), pop = document.createElement("div");
   pop.className = "duepop"; pop.dataset.d = v.id; pop.setAttribute("role", "dialog");
   const sync = () => { const n = pop.querySelectorAll("input:checked").length, go = pop.querySelector(".duesave"); go.disabled = !n; go.lastChild.textContent = n ? `Download ${n} file${n === 1 ? "" : "s"}` : "Choose a document"; };
@@ -6925,7 +6935,7 @@ $("rows").addEventListener("click", e => {
   let left = Math.min(window.innerWidth - pw - 12, Math.max(12, r.right - pw)), top = r.bottom + 8;
   if (top + ph > window.innerHeight - 12) top = Math.max(12, r.top - ph - 8);
   pop.style.left = left + "px"; pop.style.top = top + "px";
-});
+}
 $("rows").addEventListener("click", e => {
   const b = e.target.closest(".cdue"); if (!b) return;
   e.stopPropagation();
