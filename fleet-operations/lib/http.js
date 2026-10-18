@@ -1,3 +1,4 @@
+import { accessOf } from "./access.js";
 import crypto from "node:crypto";
 import { promisify } from "node:util";
 import { q, ensureSchema } from "./db.js";
@@ -70,12 +71,13 @@ export async function who(req) {
   const user = rows[0];
   if (!user) return null;
   const owner = ownerEmails().includes(user.email);
-  let member = owner, admin = owner;
+  let member = owner, admin = owner, rec = null;
   if (!owner) {
-    const r = await q(`select data->>'role' as role from fleet_docs where coll = 'appUsers' and not deleted and data->>'accountId' = $1 and data->>'status' = 'Active' limit 1`, [user.id]);
-    member = r.length > 0; admin = r[0]?.role === "Admin";
+    const r = await q(`select data from fleet_docs where coll = 'appUsers' and not deleted and data->>'accountId' = $1 and data->>'status' = 'Active' limit 1`, [user.id]);
+    rec = r[0]?.data || null;
+    member = !!rec; admin = rec?.role === "Admin";
   }
-  return { ...user, owner, member, admin };
+  return { ...user, owner, member, admin, access: accessOf(owner, rec) };
 }
 
 export function newId(n = 20) { return crypto.randomBytes(Math.max(16, n)).toString("base64url").replace(/[-_]/g, "").slice(0, n).padEnd(n, "0"); }
