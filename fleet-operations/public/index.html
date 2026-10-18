@@ -902,11 +902,20 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 #printArea { display: none; }
 .hbtns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 #vPrintBtn { display: inline-flex; align-items: center; gap: 6px; }
-#view-vehicles td.c-name { position: relative; padding-right: 52px; }
-.cprint { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
+#view-vehicles td.c-name { position: relative; padding-right: 100px; }
+.cacts { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: flex; gap: 8px; align-items: center; }
+.cdue { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--danger-soft); color: var(--danger); display: grid; place-items: center; padding: 0; cursor: pointer; }
+.cdue b { position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--danger); color: #fff; font: 700 12px/20px var(--body, sans-serif); text-align: center; box-shadow: 0 0 0 2px var(--surface); }
+.duepop { position: fixed; z-index: 60; width: min(320px, calc(100vw - 24px)); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 12px 14px; font-size: 14px; }
+.duepop h4 { margin: 0 0 8px; font-size: 14px; }
+.duepop ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.duepop li { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-top: 1px solid var(--line); padding-top: 8px; }
+.duepop li:first-child { border-top: 0; padding-top: 0; }
+.duepop .when { font-size: 12px; color: var(--danger); white-space: nowrap; }
+.cprint { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
 .cprint:hover { background: var(--chip-bg); }
 .cprint[disabled] { opacity: .5; }
-@media (max-width: 760px) { #view-vehicles td.c-name { padding-right: 48px !important; } .cprint { top: 0; right: 0; transform: none; } }
+@media (max-width: 760px) { #view-vehicles td.c-name { padding-right: 96px !important; } .cacts { top: 0; right: 0; transform: none; } }
 @media print {
   body > *:not(#printArea) { display: none !important; }
   #printArea { display: block !important; color: #000; background: #fff; }
@@ -1203,6 +1212,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
             <th data-k="taxExp" class="expth" title="Tax expiry"><button type="button">Tax <span class="arr">↕</span></button></th>
             <th data-k="permitExp" class="expth" title="Permit expiry"><button type="button">Permit <span class="arr">↕</span></button></th>
             <th data-k="permitAuthExp" class="expth" title="Permit authorization expiry"><button type="button">Permit auth. <span class="arr">↕</span></button></th>
+            <th data-k="pollutionExp" class="expth" title="Pollution expiry"><button type="button">Pollution <span class="arr">↕</span></button></th>
           </tr></thead>
           <tbody id="rows"></tbody>
         </table>
@@ -2867,7 +2877,7 @@ function renewCell(v) {
   return `<div class="renew" title="${esc(title)}"><span class="pill ${b}">${esc(d.short)} · ${whenText(days).toLowerCase()}</span><span class="sub num">${fmtDate(d.date)}${others ? ` · +${others} more due` : ""}</span></div>`;
 }
 // Expiry dates shown in the vehicle list, coloured by how soon they fall due.
-const LIST_DOCS = [["fcDate", "FC expiry"], ["insuranceExp", "Insurance expiry"], ["taxExp", "Tax expiry"], ["permitExp", "Permit expiry"], ["permitAuthExp", "Permit authorization expiry"]];
+const LIST_DOCS = [["fcDate", "FC expiry"], ["insuranceExp", "Insurance expiry"], ["taxExp", "Tax expiry"], ["permitExp", "Permit expiry"], ["permitAuthExp", "Permit authorization expiry"], ["pollutionExp", "Pollution expiry"]];
 function expCell(v, k) {
   if (!docApplies(k, v.type, v.usage)) return `<span class="sub">Not applicable</span>`;
   const iso = v[k];
@@ -2902,11 +2912,11 @@ function renderMaster() {
   });
   const list = filtered();
   $("count").textContent = `Showing ${list.length} of ${vehicles.length}`;
-  if (!vehicles.length) { $("rows").innerHTML = `<tr><td colspan="11"><div class="empty"><strong>No vehicles yet</strong>${canWrite ? "Use “Add vehicle” to register the first one." : "Vehicles will appear here once they're added."}</div></td></tr>`; return; }
-  if (!list.length) { $("rows").innerHTML = `<tr><td colspan="11"><div class="empty"><strong>No matches</strong>Try a different search or clear the filters.</div></td></tr>`; return; }
+  if (!vehicles.length) { $("rows").innerHTML = `<tr><td colspan="12"><div class="empty"><strong>No vehicles yet</strong>${canWrite ? "Use “Add vehicle” to register the first one." : "Vehicles will appear here once they're added."}</div></td></tr>`; return; }
+  if (!list.length) { $("rows").innerHTML = `<tr><td colspan="12"><div class="empty"><strong>No matches</strong>Try a different search or clear the filters.</div></td></tr>`; return; }
   $("rows").innerHTML = list.map(v => {
     return `<tr class="rowlink${v.status === "Sold / Scrapped" ? " retired" : ""}" data-open="${v.id}">
-      <td class="c-name"><button type="button" class="linkbtn" data-act="view" data-id="${v.id}" aria-label="View ${esc(vFull(v))}"><span class="vid">${listThumb(v)}${plateHtml(v)}</span></button>${v.status !== "Sold / Scrapped" ? `<button type="button" class="cprint" data-vprint="${v.id}" aria-label="Save renewal dates of ${esc(v.plateNo || vName(v))} as an image" title="Save renewal dates as an image"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg></button>` : ""}${v.status && v.status !== "Active" ? `<div><span class="pill ${STATUS_CLS[v.status]}" style="margin-top:4px">${esc(v.status)}</span></div>` : ""}</td>
+      <td class="c-name"><button type="button" class="linkbtn" data-act="view" data-id="${v.id}" aria-label="View ${esc(vFull(v))}"><span class="vid">${listThumb(v)}${plateHtml(v)}</span></button>${v.status !== "Sold / Scrapped" ? `<span class="cacts">${dueSoonBtn(v)}<button type="button" class="cprint" data-vprint="${v.id}" aria-label="Save renewal dates of ${esc(v.plateNo || vName(v))} as an image" title="Save renewal dates as an image"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg></button></span>` : ""}${v.status && v.status !== "Active" ? `<div><span class="pill ${STATUS_CLS[v.status]}" style="margin-top:4px">${esc(v.status)}</span></div>` : ""}</td>
       <td data-label="Vehicle class"><span>${esc(v.type)}${v.type === "Bus" && v.opType ? ` <span class="sub">· ${esc(v.opType)}</span>` : ""}</span></td>
       <td data-label="Registration date"><span><span class="num">${fmtDate(v.regDate)}</span> <span class="sub">${age(v.regDate)}</span></span></td>
       <td data-label="Chassis number">${v.chassisNo ? `<span class="num idno">${esc(v.chassisNo)}</span>` : `<span class="sub">Not recorded</span>`}</td>
@@ -3523,7 +3533,7 @@ document.querySelectorAll("#view-vehicles thead th[data-k] button").forEach(b =>
   renderMaster();
 });
 // Tapping anywhere on a row (or card, on phones) opens that record; Edit and Delete live inside the record.
-const rowOpen = (e, open) => { if (e.target.closest("a, input, select, textarea, .cprint")) return; const tr = e.target.closest("tr[data-open]"); if (tr) open(tr.dataset.open); };
+const rowOpen = (e, open) => { if (e.target.closest("a, input, select, textarea, .cprint, .cdue")) return; const tr = e.target.closest("tr[data-open]"); if (tr) open(tr.dataset.open); };
 $("rows").addEventListener("click", e => rowOpen(e, id => openVDrawer(vehicles.find(v => v.id === id))));
 // Delete from inside a record: the footer asks first, then removes and closes.
 function delAsk(prefix, can, remove) {
@@ -6737,6 +6747,18 @@ async function datesPdf(L, list, masked) {
   return new Blob([await pdf.save()], { type: "application/pdf" });
 }
 // One vehicle's renewal dates as a JPG, sized for sharing on a phone. Non-admins get a masked vehicle number.
+// Renewals due within a month (or already expired) for one vehicle, soonest first.
+const dueSoonOf = v => v.status === "Sold / Scrapped" ? [] : DOCS.filter(([k]) => v[k] && docApplies(k, v.type, v.usage) && daysUntil(v[k]) <= 30)
+  .map(([k, label]) => ({ k, label: label.replace(/ expiry$/i, "").replace(/^FC date$/, "FC (fitness)"), date: v[k], n: daysUntil(v[k]) })).sort((a, b) => a.n - b.n);
+function dueSoonBtn(v) {
+  const n = dueSoonOf(v).length; if (!n) return "";
+  return `<button type="button" class="cdue" data-vdue="${v.id}" aria-label="${n} renewal${n === 1 ? "" : "s"} due within a month" title="${n} renewal${n === 1 ? "" : "s"} due within a month"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><b>${n}</b></button>`;
+}
+function closeDuePop() { document.querySelector(".duepop")?.remove(); }
+document.addEventListener("click", e => { if (!e.target.closest(".duepop, .cdue")) closeDuePop(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDuePop(); });
+let duePopY = 0;
+window.addEventListener("scroll", () => { if (document.querySelector(".duepop") && Math.abs(window.scrollY - duePopY) > 40) closeDuePop(); }, true);
 const JPG_BANDS = [["#fdecec", "#b71c1c"], ["#fde4cc", "#c45a00"], ["#e7f5ec", "#1e7a3c"]];
 async function vehicleCardJpg(v, masked) {
   const W = 1080, PADX = 64, rank = k => { if (!v[k]) return 3; const n = daysUntil(v[k]); return n <= 30 ? 0 : n <= 90 ? 1 : 2; };
@@ -6791,6 +6813,20 @@ async function vehicleCardJpg(v, masked) {
   g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Vehicle number masked" : ""}`, PADX, H - 50);
   return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
 }
+$("rows").addEventListener("click", e => {
+  const b = e.target.closest(".cdue"); if (!b) return;
+  e.stopPropagation();
+  const open = document.querySelector(".duepop"); closeDuePop(); if (open?.dataset.v === b.dataset.vdue) return;
+  const v = vehicles.find(x => x.id === b.dataset.vdue); if (!v) return;
+  const list = dueSoonOf(v), pop = document.createElement("div");
+  pop.className = "duepop"; pop.dataset.v = v.id; pop.setAttribute("role", "dialog");
+  pop.innerHTML = `<h4>${esc(v.plateNo || vName(v))} · due within a month</h4><ul>${list.map(d => `<li><span><b>${esc(d.label)}</b><br><span class="num">${fmtDate(d.date)}</span></span><span class="when">${esc(whenText(d.n))}</span></li>`).join("")}</ul>`;
+  document.body.appendChild(pop); duePopY = window.scrollY;
+  const r = b.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = Math.min(window.innerWidth - pw - 12, Math.max(12, r.right - pw)), top = r.bottom + 8;
+  if (top + ph > window.innerHeight - 12) top = Math.max(12, r.top - ph - 8);
+  pop.style.left = left + "px"; pop.style.top = top + "px";
+});
 $("rows").addEventListener("click", async e => {
   const btn = e.target.closest(".cprint"); if (!btn) return;
   e.stopPropagation();
