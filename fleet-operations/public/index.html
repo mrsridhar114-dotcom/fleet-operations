@@ -274,7 +274,7 @@ fieldset.docs legend { font-family: var(--mono); font-size: 11px; letter-spacing
 .linkbtn { all: unset; cursor: pointer; display: block; }
 .linkbtn:hover .mk { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .linkbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
-.vbody { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.vbody { position: relative; flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 .vbody h3 { font-family: var(--mono); font-weight: 600; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
 .dl { display: grid; grid-template-columns: fit-content(42%) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 0; }
 .dl dt, .dl dd { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; min-width: 0; }
@@ -496,18 +496,24 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .plate.psv { background: var(--plate-psv); color: var(--plate-ink); border-color: var(--plate-ink); }
 .plate.pvt { background: var(--plate-pvt); color: var(--plate-ink); border-color: var(--plate-ink); }
 .plate.missing { border-style: dashed; border-color: var(--muted); color: var(--muted); font-weight: 400; letter-spacing: 0; }
+.docpop { position: absolute; z-index: 6; top: 72px; left: 12px; right: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 34px rgba(0,0,0,.22); padding: 14px; }
+.dacts { display: flex; gap: 8px; align-items: center; }
+.dclose { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--chip-bg); color: var(--ink); cursor: pointer; font-size: 14px; }
+.attbtn { position: relative; }
+.attbtn b { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: #fff; font: 700 11px/18px var(--body, sans-serif); text-align: center; box-shadow: 0 0 0 2px var(--surface); }
+.attbtn[aria-expanded="true"] { background: var(--chip-bg); }
 .dochead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
 .dochead h3 { margin: 0; }
 .dochead .btn { padding: 6px 12px; font-size: 13px; }
 .doclist { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.docrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--line); }
+.docrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding: 7px 10px; border-top: 1px solid var(--line); }
 .docrow:first-child { border-top: 0; }
-.docrow .dn { font-weight: 600; font-size: 14px; }
-.docrow .ds { font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 0; }
+.docrow .dn { font-weight: 600; font-size: 13px; }
+.docrow .ds { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 0; }
 .docrow .ds a { overflow-wrap: anywhere; }
 .docrow .miss { color: var(--danger); }
 .docrow .pill { font-size: 12px; }
-.docrow .btn { padding: 6px 12px; font-size: 13px; grid-row: 1 / span 2; grid-column: 2; }
+.docrow .btn { padding: 4px 10px; font-size: 12px; grid-row: 1 / span 2; grid-column: 2; }
 .sevpanel { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
 .sevrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13px; }
 .sevrow .fnm { overflow-wrap: anywhere; }
@@ -1754,6 +1760,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   </header>
   <div class="vbody">
     <div class="vtools">
+      <button type="button" class="cdocs attbtn" id="vAttBtn" aria-label="Documents" title="Documents" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><b id="vAttCount" hidden></b></button>
       <button type="button" class="cdocs" id="vDocsBtn" aria-label="Download attached documents" title="Download attached documents" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>
       <button class="btn" type="button" id="vHistBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
@@ -1761,7 +1768,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
       </button>
     </div>
     <figure class="vphoto" id="vPhoto" hidden></figure>
-    <section id="vDocSec"><div class="dochead"><h3>Documents</h3><label class="btn" id="vAddSev" hidden>+ Add several<input type="file" id="vAddSevIn" multiple hidden></label></div>
+    <section id="vDocSec" class="docpop" role="dialog" aria-label="Documents" hidden><div class="dochead"><h3>Documents</h3><span class="dacts"><label class="btn" id="vAddSev" hidden>+ Add several<input type="file" id="vAddSevIn" multiple hidden></label><button type="button" class="dclose" id="vDocClose" aria-label="Close documents">✕</button></span></div>
       <div class="doclist" id="vDocList"></div><div class="sevpanel" id="vSevPanel" hidden></div></section>
     <section><h3>Registration &amp; identification</h3><dl class="dl" id="vReg"></dl></section>
     <section><h3>Vehicle specifications</h3><dl class="dl" id="vSpec"></dl></section>
@@ -2956,7 +2963,7 @@ function render() { renderDash(); renderMaster(); renderUsers(); refreshVDrawer(
 /* ---------- read-only vehicle view ---------- */
 function openVDrawer(v) {
   if (!v) return;
-  vViewId = v.id; delReset("v"); $("vSevPanel").hidden = true; fillVDrawer(v);
+  vViewId = v.id; delReset("v"); setDocPop(false); fillVDrawer(v);
   $("scrim").hidden = false; $("vDrawer").hidden = false; viewOpened();
   setTimeout(() => $("vCloseBtn").focus(), 30);
 }
@@ -2968,7 +2975,8 @@ const DOC_GUESS = [["rcValidity", /rc.?(renew|valid)/], ["permitAuthExp", /auth/
 const guessSlot = (name, keys) => { const n = String(name).toLowerCase(); const g = DOC_GUESS.find(([k, re]) => keys.includes(k) && re.test(n)); return g ? g[0] : ""; };
 const canAttach = () => canWrite && !!assetsCap;
 function renderDocList(v) {
-  const can = canAttach();
+  const can = canAttach(), n = docSlots(v).filter(([k]) => fileOf(v, k)).length;
+  $("vAttCount").hidden = !n; $("vAttCount").textContent = n;
   $("vAddSev").hidden = !can;
   $("vDocList").innerHTML = docSlots(v).map(([k, label, dk]) => {
     const f = fileOf(v, k), date = dk && v[dk];
@@ -2997,6 +3005,11 @@ $("vDocList").addEventListener("change", async e => {
   catch (er) { toast(uploadErr(er)); }
   const v = vehicles.find(x => x.id === vid); if (v && vViewId === vid) renderDocList(v);
 });
+function setDocPop(open) { $("vDocSec").hidden = !open; $("vAttBtn").setAttribute("aria-expanded", String(open)); if (!open) $("vSevPanel").hidden = true; }
+$("vAttBtn").onclick = e => { e.stopPropagation(); closeDuePop(); setDocPop($("vDocSec").hidden); };
+$("vDocClose").onclick = () => setDocPop(false);
+// A real tap elsewhere in the record closes the documents pop-up (file pickers and downloads don't count).
+$("vDrawer").addEventListener("click", e => { if (e.isTrusted && !$("vDocSec").hidden && !e.target.closest("#vDocSec, #vAttBtn")) setDocPop(false); });
 let sevFiles = [];
 $("vAddSevIn").addEventListener("change", e => {
   const v = vehicles.find(x => x.id === vViewId); sevFiles = [...e.target.files]; e.target.value = "";
