@@ -502,19 +502,19 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .attbtn { position: relative; }
 .attbtn b { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: #fff; font: 700 11px/18px var(--body, sans-serif); text-align: center; box-shadow: 0 0 0 2px var(--surface); }
 .attbtn[aria-expanded="true"] { background: var(--chip-bg); }
-/* On a computer the vehicle record opens as a full page beside the menu, with the sections in two columns. */
+/* On a computer the vehicle record opens as a full page beside the menu. The sections are shared between two
+   columns of about equal height (vLayout), so the page has one scroll and no gaps. */
 @media (min-width: 1024px) {
   #vDrawer { left: 248px; width: auto; box-shadow: none; border-left: 1px solid var(--line); }
   #vDrawer header { padding: 22px 40px; }
   #vDrawer header h2 { font-size: 32px; }
-  #vDrawer .vbody { display: block; column-count: 2; column-gap: 32px; padding: 28px 40px; }
-  #vDrawer .vbody > * { break-inside: avoid; margin: 0 0 24px; }
-  #vDrawer .vtools { column-span: all; }
-  #vDrawer .vphoto img { max-height: 320px; }
+  #vDrawer .vbody { padding: 24px 40px 32px; }
+  #vDrawer .vbody > .vcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; max-width: 1500px; }
+  #vDrawer .vcol { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  #vDrawer .vphoto img { max-height: 340px; }
   #vDrawer .docpop { left: auto; right: 40px; width: 460px; top: 76px; }
   #vDrawer footer { padding-left: 40px; padding-right: 40px; }
 }
-@media (min-width: 1600px) { #vDrawer .vbody { column-count: 3; } }
 .dochead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
 .dochead h3 { margin: 0; }
 .dochead .btn { padding: 6px 12px; font-size: 13px; }
@@ -2979,7 +2979,7 @@ function render() { renderDash(); renderMaster(); renderUsers(); refreshVDrawer(
 function openVDrawer(v) {
   if (!v) return;
   vViewId = v.id; delReset("v"); setDocPop(false); fillVDrawer(v);
-  $("scrim").hidden = false; $("vDrawer").hidden = false; viewOpened();
+  $("scrim").hidden = false; $("vDrawer").hidden = false; viewOpened(); vLayout();
   setTimeout(() => $("vCloseBtn").focus(), 30);
 }
 // Documents section of the vehicle record: every document slot in one list, attachable without opening the form.
@@ -3057,6 +3057,27 @@ $("vAddSevIn").addEventListener("change", e => {
     const v2 = vehicles.find(x => x.id === vid); if (v2 && vViewId === vid) renderDocList(v2);
   };
 });
+// Desktop layout of the vehicle record: photo first, then the sections split into two balanced columns.
+const V_WIDE = window.matchMedia("(min-width: 1024px)");
+function vLayout() {
+  const body = $("vDrawer").querySelector(".vbody"); if (!body) return;
+  const items = [...body.querySelectorAll(":scope > figure.vphoto, :scope > section:not(.docpop), :scope > .vcols > .vcol > *")];
+  vLayout.order ||= items.slice();
+  let wrap = body.querySelector(":scope > .vcols");
+  if (!V_WIDE.matches) { if (wrap) { vLayout.order.forEach(el => body.insertBefore(el, wrap)); wrap.remove(); } return; }
+  if (!wrap) { wrap = document.createElement("div"); wrap.className = "vcols"; wrap.innerHTML = `<div class="vcol"></div><div class="vcol"></div>`; body.appendChild(wrap); }
+  // Fixed, logical placement: identity on the left under the photo, renewals and specifications on the right.
+  const [a, c] = wrap.children, key = el => el.id === "vPhoto" ? "photo" : el.querySelector("dl, .vremarks")?.id || "";
+  const LEFT = ["photo", "vReg", "vOwner", "vFin", "vTyre", "vUse"], RIGHT = ["vDocs", "vSpec", "vCap", "vRemarks"];
+  const pick = ids => ids.map(id => vLayout.order.find(el => key(el) === id)).filter(Boolean);
+  pick(LEFT).forEach(el => a.appendChild(el)); pick(RIGHT).forEach(el => c.appendChild(el));
+  vLayout.order.filter(el => !el.parentElement.classList.contains("vcol")).forEach(el => (a.children.length <= c.children.length ? a : c).appendChild(el));
+  body.appendChild(wrap);
+  // The photo's height is known only once it has loaded; lay out again then.
+  const img = $("vPhoto").querySelector("img");
+  if (img && !img.complete && !img.dataset.lay) { img.dataset.lay = "1"; img.addEventListener("load", () => { if (!$("vDrawer").hidden) vLayout(); }, { once: true }); }
+}
+V_WIDE.addEventListener?.("change", () => { if (!$("vDrawer").hidden) vLayout(); });
 function fillVDrawer(v) {
   renderDocList(v);
   $("vDocsBtn").hidden = acc.users !== "edit" || !vDocFiles(v).length;
@@ -3221,7 +3242,7 @@ function refreshVDrawer() {
   if (!vViewId || $("vDrawer").hidden) return;
   const v = vehicles.find(x => x.id === vViewId);
   if (!v) { closeVDrawer(); toast("This vehicle was deleted"); return; }
-  fillVDrawer(v);
+  fillVDrawer(v); vLayout();
 }
 // The phone's Back button closes a record view instead of leaving the page.
 const VIEW_DRAWERS = ["vDrawer", "dvDrawer", "cvDrawer"];
