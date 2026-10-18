@@ -282,6 +282,7 @@ html.fo-boot.fo-login body::before{content:none}`;
     if (pinCfg()) btn("Remove PIN", async () => { const c = pinCfg(); try { await api("auth", { action: "pinoff", device: c.device }); } catch {} savePin(null); alertBox("PIN removed from this phone."); refreshAcct(); });
     if (me.admin) btn("Reset a password", () => dialog(`<b style="font-size:16px">Reset someone's password</b><p style="margin:0;color:var(--muted,#5c6977)">Give them this temporary password; they can change it after signing in.</p>${fld("foRe", "Their email", "email")}${fld("foRp", "Temporary password (8 characters or more)", "text")}`,
       async d => { await api("auth", { action: "reset", email: d.querySelector("#foRe").value, password: d.querySelector("#foRp").value }); alertBox("Password reset."); }));
+    if (me.admin) btn("Recently deleted", recycleBin);
     who.after(box);
     powerButtons();
   }
@@ -353,6 +354,38 @@ html.fo-boot.fo-login body::before{content:none}`;
     dialog(`<b style="font-size:16px">Change password</b>${fld("foCur", "Current password")}${fld("foNew", "New password (8 characters or more)")}`, async d => {
       await api("auth", { action: "password", current: d.querySelector("#foCur").value, next: d.querySelector("#foNew").value, device: pinCfg()?.device || "" }); alertBox("Password changed.");
     });
+  }
+  // Admins: records deleted in the last 30 days, each with a button to put it back.
+  const BIN_NAMES = { vehicles: "Vehicle", drivers: "Driver", conductors: "Conductor", trips: "Route bus trip", tripMonths: "Trip sheet month", tripYears: "Trip sheet year",
+    truckTrips: "Truck trip", truckRounds: "Truck round trip", bookings: "Booking", fuelLog: "Fuel entry", appUsers: "User", accessRequests: "Access request" };
+  const binTitle = (c, d) => d.plateNo || d.name || (d.no ? "No. " + d.no : "") || d.party || d.date || d.from || "";
+  async function recycleBin() {
+    const d = document.createElement("div");
+    d.style.cssText = "position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px";
+    d.innerHTML = `<div style="background:var(--surface,#fff);color:var(--ink,#18212b);border-radius:12px;padding:20px;width:min(560px,100%);max-height:85vh;display:flex;flex-direction:column;gap:10px;font-size:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><b style="font-size:16px">Recently deleted</b><button type="button" class="btn" data-x>Close</button></div>
+      <p style="margin:0;color:var(--muted,#5c6977)">Deleted records are kept for 30 days. Restore puts a record back exactly as it was.</p>
+      <div data-list style="overflow:auto;display:flex;flex-direction:column;gap:6px;min-height:60px">Loading…</div></div>`;
+    document.body.appendChild(d);
+    d.querySelector("[data-x]").onclick = () => d.remove();
+    d.addEventListener("click", e => { if (e.target === d) d.remove(); });
+    const list = d.querySelector("[data-list]");
+    const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const load = async () => {
+      let r; try { r = await api("db", { op: "trash" }); } catch (e) { list.textContent = e.message; return; }
+      const items = r.items.filter(x => !/History$|^audit|^appMeta$/.test(x.coll));
+      if (!items.length) { list.innerHTML = `<span style="color:var(--muted,#5c6977)">Nothing deleted in the last 30 days.</span>`; return; }
+      list.innerHTML = items.map(x => `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line,#d9dfe5);border-radius:8px;padding:8px 10px">
+        <div style="min-width:0"><b>${esc(BIN_NAMES[x.coll] || x.coll)}</b> ${esc(binTitle(x.coll, x.data))}<div style="color:var(--muted,#5c6977);font-size:12px">Deleted ${new Date(x.at).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}${x.by ? " by " + esc(x.by) : ""}</div></div>
+        <button type="button" class="btn" data-tid="${x.tid}">Restore</button></div>`).join("");
+    };
+    list.addEventListener("click", async e => {
+      const b = e.target.closest("[data-tid]"); if (!b) return;
+      b.disabled = true; b.textContent = "Restoring…";
+      try { await api("db", { op: "restore", tid: Number(b.dataset.tid) }); alertBox("Restored."); await sync(); await load(); }
+      catch (er) { b.disabled = false; b.textContent = "Restore"; alertBox(er.message); }
+    });
+    load();
   }
   function alertBox(t) { const n = document.createElement("div"); n.textContent = t; n.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#18212b;color:#fff;padding:10px 16px;border-radius:8px;z-index:9999;font-size:14px"; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
 
