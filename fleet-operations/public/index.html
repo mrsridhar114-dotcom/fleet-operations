@@ -226,6 +226,7 @@ tbody tr:hover { background: var(--accent-soft); }
   td.c-name .vid { flex-wrap: wrap; }
   td[data-label] { grid-column: 1 / -1; display: grid; grid-template-columns: 9.5em minmax(0, 1fr); align-items: baseline; gap: 12px; font-size: 14px; text-align: left; }
   td[data-label]::before { content: attr(data-label); color: var(--muted); font-size: 13px; }
+  td.na { display: none; }
   td[data-label] > * { min-width: 0; overflow-wrap: anywhere; }
   td[data-label] .renew { align-items: flex-start; }
   .register tbody tr { gap: 8px 12px; }
@@ -2894,7 +2895,7 @@ function renderMaster() {
       <td data-label="Chassis number">${v.chassisNo ? `<span class="num idno">${esc(v.chassisNo)}</span>` : `<span class="sub">Not recorded</span>`}</td>
       <td data-label="Engine number">${v.engineNo ? `<span class="num idno">${esc(v.engineNo)}</span>` : `<span class="sub">Not recorded</span>`}</td>
       <td data-label="Owner name">${v.ownerName ? `<span>${esc(v.ownerName)}</span>` : `<span class="sub">Not recorded</span>`}</td>
-      ${LIST_DOCS.map(([k, l]) => `<td data-label="${l}">${expCell(v, k)}</td>`).join("")}</tr>`;
+      ${LIST_DOCS.map(([k, l]) => docApplies(k, v.type, v.usage) ? `<td data-label="${l}">${expCell(v, k)}</td>` : `<td class="na" data-label="${l}"><span class="sub" aria-label="Not applicable">—</span></td>`).join("")}</tr>`;
   }).join("");
 }
 
