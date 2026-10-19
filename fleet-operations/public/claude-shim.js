@@ -10,7 +10,7 @@
      records (and permissions) have loaded, so nobody sees the full menu flash up before the sign-in screen. */
   document.documentElement.classList.add("fo-boot");
   const bootCss = document.createElement("style");
-  bootCss.textContent = `html.fo-boot,html.fo-boot body{background:#18212b!important}
+  bootCss.textContent = `html.fo-boot,html.fo-boot body{background:#0a1f16!important}
 html.fo-boot body>*:not(#foLogin):not(#foPin){visibility:hidden!important}
 html.fo-boot body::before{content:"Fleet Operations";position:fixed;inset:0;z-index:9990;display:grid;place-items:center;color:#dbe4ec;font:700 26px/1 "Barlow Condensed",system-ui,sans-serif;letter-spacing:.02em}
 html.fo-boot.fo-login body::before{content:none}`;
@@ -63,15 +63,15 @@ html.fo-boot.fo-login body::before{content:none}`;
   });
   setInterval(() => { if (me && !document.hidden && !document.getElementById("foPin")) markUnlocked(); }, 30000);
 
-  const PIN_CSS = `#foPin{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#18212b;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif;color:#18212b}
+  const PIN_CSS = `#foPin{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#0a1f16;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif;color:#18212b}
 #foPin .card{background:#fff;width:min(360px,100%);border-radius:14px;padding:24px 20px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 #foPin h1{margin:0;font:700 26px/1.1 "Barlow Condensed",system-ui,sans-serif;text-align:center}#foPin p{margin:0;color:#5c6977;font-size:14px;text-align:center}
-#foPin .dots{display:flex;gap:16px;margin:10px 0 2px}#foPin .dots:has(i:nth-child(5)){gap:10px}#foPin .dots i{width:16px;height:16px;border-radius:50%;border:2px solid #1f5f8b;display:block}#foPin .dots i.on{background:#1f5f8b}
+#foPin .dots{display:flex;gap:16px;margin:10px 0 2px}#foPin .dots:has(i:nth-child(5)){gap:10px}#foPin .dots i{width:16px;height:16px;border-radius:50%;border:2px solid #3b7d1e;display:block}#foPin .dots i.on{background:#3b7d1e}
 #foPin .err{color:#b42318;font-size:13px;min-height:1.2em;text-align:center}
 #foPin .pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px 22px;margin:4px 0 6px}
-#foPin .pad button{width:72px;height:72px;border-radius:50%;border:0;background:#eef1f4;color:#18212b;font:600 26px/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
-#foPin .pad button:active{background:#d9e6f0}#foPin .pad button.ghost{background:none;font-size:15px;color:#1f5f8b}#foPin .pad button:disabled{opacity:.4}
-#foPin .lnk{background:none;border:0;color:#1f5f8b;font:600 14px system-ui,sans-serif;padding:8px;cursor:pointer}
+#foPin .pad button{width:72px;height:72px;border-radius:50%;border:0;background:#e8efe5;color:#18212b;font:600 26px/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+#foPin .pad button:active{background:#d8e8d0}#foPin .pad button.ghost{background:none;font-size:15px;color:#3b7d1e}#foPin .pad button:disabled{opacity:.4}
+#foPin .lnk{background:none;border:0;color:#3b7d1e;font:600 14px system-ui,sans-serif;padding:8px;cursor:pointer}
 #foPin .shake{animation:foShake .35s}@keyframes foShake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`;
   // A 4-digit keypad screen. onDone(pin, ui) runs when four digits are in.
   function pinPad({ title, sub, onDone, links = [], len = 4 }) {
@@ -186,16 +186,16 @@ html.fo-boot.fo-login body::before{content:none}`;
   function showLogin() {
     document.documentElement.classList.add("fo-login");
     const go = () => {
-      const css = `#foLogin{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#18212b;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif}
+      const css = `#foLogin{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#0a1f16;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif}
 #foLogin form{background:#fff;color:#18212b;width:min(380px,100%);border-radius:12px;padding:26px 24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 #foLogin h1{margin:0;font:700 28px "Barlow Condensed",system-ui,sans-serif}#foLogin p{margin:0;color:#5c6977;font-size:14px}
 #foLogin label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}#foLogin input{font:inherit;padding:10px 12px;border:1px solid #d9dfe5;border-radius:8px}
-#foLogin button{font:inherit;font-weight:600;padding:11px;border-radius:8px;border:0;background:#1f5f8b;color:#fff;cursor:pointer}#foLogin .lnk{background:none;color:#1f5f8b;padding:4px;font-weight:600}
+#foLogin button{font:inherit;font-weight:600;padding:11px;border-radius:8px;border:0;background:#3b7d1e;color:#fff;cursor:pointer}#foLogin .lnk{background:none;color:#3b7d1e;padding:4px;font-weight:600}
 #foLogin .err{color:#b42318;font-size:13px;min-height:1em}
 #foLogin .pw{position:relative;display:flex}#foLogin .pw input{flex:1;padding-right:64px;min-width:0}
-#foLogin .pw .show{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;color:#1f5f8b;padding:6px 8px;font-size:13px}
+#foLogin .pw .show{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;color:#3b7d1e;padding:6px 8px;font-size:13px}
 #foLogin .fgt{align-self:flex-end;margin-top:-6px;font-size:13px!important;padding:2px 0!important}#foLogin .ok{color:#2e7d4f;font-size:14px;background:#e4f3ea;border-radius:8px;padding:10px 12px}
-#foLogin label.keep{flex-direction:row;align-items:center;gap:10px;font-weight:500;font-size:14px;cursor:pointer}#foLogin label.keep input{width:20px;height:20px;margin:0;accent-color:#1f5f8b}`;
+#foLogin label.keep{flex-direction:row;align-items:center;gap:10px;font-weight:500;font-size:14px;cursor:pointer}#foLogin label.keep input{width:20px;height:20px;margin:0;accent-color:#3b7d1e}`;
       const wrap = document.createElement("div"); wrap.id = "foLogin";
       wrap.innerHTML = `<style>${css}</style><form novalidate><h1>Welcome to VBS</h1><p id="foSub">Sign in to manage your fleet</p>
         <label id="foNameL" hidden>Your name<input id="foName" autocomplete="name" maxlength="80"></label>
@@ -289,7 +289,7 @@ html.fo-boot.fo-login body::before{content:none}`;
   // Signed in with a temporary password: choose a new one before using the app.
   function forceNewPassword() {
     const d = document.createElement("div"); d.id = "foMust";
-    d.style.cssText = "position:fixed;inset:0;z-index:9999;background:#18212b;display:grid;place-items:center;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif";
+    d.style.cssText = "position:fixed;inset:0;z-index:9999;background:#0a1f16;display:grid;place-items:center;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif";
     const inp = id => `<input id="${id}" type="password" autocomplete="new-password" autocapitalize="off" style="font:inherit;padding:10px 12px;border:1px solid #d9dfe5;border-radius:8px">`;
     d.innerHTML = `<form style="background:#fff;color:#18212b;width:min(380px,100%);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:12px">
       <b style="font:700 26px/1.1 'Barlow Condensed',system-ui,sans-serif">Choose a new password</b>
@@ -297,7 +297,7 @@ html.fo-boot.fo-login body::before{content:none}`;
       <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600">New password (8 characters or more)${inp("foN1")}</label>
       <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600">Enter it again${inp("foN2")}</label>
       <div data-err style="color:#b42318;font-size:13px;min-height:1em"></div>
-      <button style="font:inherit;font-weight:600;padding:11px;border-radius:8px;border:0;background:#1f5f8b;color:#fff">Save and continue</button></form>`;
+      <button style="font:inherit;font-weight:600;padding:11px;border-radius:8px;border:0;background:#3b7d1e;color:#fff">Save and continue</button></form>`;
     document.body.appendChild(d);
     const err = d.querySelector("[data-err]");
     d.querySelector("form").onsubmit = async e => {
@@ -387,7 +387,7 @@ html.fo-boot.fo-login body::before{content:none}`;
     });
     load();
   }
-  function alertBox(t) { const n = document.createElement("div"); n.textContent = t; n.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#18212b;color:#fff;padding:10px 16px;border-radius:8px;z-index:9999;font-size:14px"; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
+  function alertBox(t) { const n = document.createElement("div"); n.textContent = t; n.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0a1f16;color:#fff;padding:10px 16px;border-radius:8px;z-index:9999;font-size:14px"; document.body.appendChild(n); setTimeout(() => n.remove(), 3500); }
 
   /* ---------- shared records: a local copy kept in step with the server ---------- */
   const store = { colls: new Map(), ver: 0, scope: "", subs: new Set(), pending: new Map(), loaded: null, timer: null, syncing: null };

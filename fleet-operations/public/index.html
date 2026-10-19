@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#18212b">
+<meta name="theme-color" content="#0a1f16">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -18,33 +18,33 @@
 <style>
 /* Layout: app shell — dark steel left rail with module paths; main area swaps between Renewals dashboard and Vehicle master */
 :root {
-  --bg: #f3f5f7; --surface: #ffffff; --ink: #18212b; --muted: #5c6977; --line: #d9dfe5;
-  --accent: #1f5f8b; --accent-ink: #ffffff; --accent-soft: #e3eef6;
+  --bg: #f1f6f0; --surface: #ffffff; --ink: #142019; --muted: #586a5f; --line: #d5e2d2;
+  --accent: #3b7d1e; --accent-ink: #ffffff; --accent-soft: #e4f1dc;
   --danger: #b3261e; --danger-soft: #fbe9e7; --warn: #9a5b00; --warn-soft: #fdf1dc; --hot: #c45a00; --hot-soft: #fde4cc;
   --ok: #2e7d4f; --ok-soft: #e4f3ea; --none: #c3cbd3;
   --f-petrol: #b5651d; --f-diesel: #4a5560; --f-gas: #7b4fa3;
-  --chip-bg: #eef1f4;
-  --side-bg: #16212c; --side-ink: #dbe4ec; --side-muted: #8597a8; --side-line: #24323f; --side-active: #22384b;
+  --chip-bg: #e6efe4;
+  --side-bg: #0a1f16; --side-ink: #e3efe6; --side-muted: #8fb3a0; --side-line: #163024; --side-active: #17402b;
   --shadow: 0 10px 40px rgba(16, 32, 48, .18);
   --display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #11161c; --surface: #19212a; --ink: #e6ebf0; --muted: #93a1af; --line: #2b3641;
-  --accent: #6fb0e0; --accent-ink: #0d1822; --accent-soft: #1d3446;
+  --bg: #0c1611; --surface: #13211a; --ink: #e5efe8; --muted: #9db2a5; --line: #24392d;
+  --accent: #8ccf5e; --accent-ink: #0a1f16; --accent-soft: #1d3a24;
   --danger: #ff8a80; --danger-soft: #3a1f1d; --warn: #f0b45a; --warn-soft: #3a2c14; --hot: #ff9f5a; --hot-soft: #40260f;
   --ok: #6cc993; --ok-soft: #173326; --none: #3a4653;
-  --f-petrol: #e39a55; --f-diesel: #a9b6c2; --f-gas: #c19ae6; --chip-bg: #222c37;
-  --side-bg: #0b1016; --side-ink: #dbe4ec; --side-muted: #7f8f9f; --side-line: #1c2630; --side-active: #1b2c3b;
+  --f-petrol: #e39a55; --f-diesel: #a9b6c2; --f-gas: #c19ae6; --chip-bg: #1b2d22;
+  --side-bg: #07150f; --side-ink: #e3efe6; --side-muted: #86a594; --side-line: #142a1e; --side-active: #17402b;
   --shadow: 0 10px 40px rgba(0,0,0,.5); color-scheme: dark; } }
 :root[data-theme="dark"] {
-  --bg: #11161c; --surface: #19212a; --ink: #e6ebf0; --muted: #93a1af; --line: #2b3641;
-  --accent: #6fb0e0; --accent-ink: #0d1822; --accent-soft: #1d3446;
+  --bg: #0c1611; --surface: #13211a; --ink: #e5efe8; --muted: #9db2a5; --line: #24392d;
+  --accent: #8ccf5e; --accent-ink: #0a1f16; --accent-soft: #1d3a24;
   --danger: #ff8a80; --danger-soft: #3a1f1d; --warn: #f0b45a; --warn-soft: #3a2c14; --hot: #ff9f5a; --hot-soft: #40260f;
   --ok: #6cc993; --ok-soft: #173326; --none: #3a4653;
-  --f-petrol: #e39a55; --f-diesel: #a9b6c2; --f-gas: #c19ae6; --chip-bg: #222c37;
-  --side-bg: #0b1016; --side-ink: #dbe4ec; --side-muted: #7f8f9f; --side-line: #1c2630; --side-active: #1b2c3b;
+  --f-petrol: #e39a55; --f-diesel: #a9b6c2; --f-gas: #c19ae6; --chip-bg: #1b2d22;
+  --side-bg: #07150f; --side-ink: #e3efe6; --side-muted: #86a594; --side-line: #142a1e; --side-active: #17402b;
   --shadow: 0 10px 40px rgba(0,0,0,.5); color-scheme: dark; }
 
 * { box-sizing: border-box; }
