@@ -1234,6 +1234,12 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwdone p { margin: 0; font-size: 17px; color: var(--muted); line-height: 1.4; } .bwdone .bwno { font-size: 20px; font-weight: 600; color: var(--ink); }
 .bwwa { background: #1f8f4e; color: #fff; margin-top: 14px; }
 .bwbar.c5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.bwtiles { display: flex; flex-direction: column; gap: 8px; }
+.bwtile { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 60px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.bwtile b { font-size: 18px; flex: none; } .bwtile span { flex: 1; text-align: right; font-size: 15px; font-weight: 600; color: var(--muted); } .bwtile span.due { color: var(--danger); } .bwtile span.ok { color: var(--ok); }
+.bwtile svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
+a.twmain { text-decoration: none; color: inherit; }
+.bwchips.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .bwchips.c3 button { min-height: 46px; font-size: 14px; padding: 4px; }
 .tws { gap: 12px; } .tws .bwhint { margin-top: -6px; font-size: 16px; }
 .twrow { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px; }
 .twrow > b { flex: 1; min-width: 0; font-size: 18px; line-height: 1.15; } .twrow .bwin { width: 132px; flex: none; height: 54px; padding: 0 10px; } .twrow .bwin b { font-size: 18px; }
@@ -6205,12 +6211,15 @@ function bwOpen(preset, bk, readOnly) {
   if (!$("bw")) {
     document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="bw" role="dialog" aria-modal="true" aria-labelledby="bwTitle" hidden></div>');
     $("bw").addEventListener("click", bwClick);
+    document.body.insertAdjacentHTML("beforeend", '<input type="file" id="bwFileIn" accept="image/*,application/pdf" hidden multiple><input type="file" id="bwFileCam" accept="image/*" capture="environment" hidden>');
+    $("bwFileIn").addEventListener("change", bwFileUp); $("bwFileCam").addEventListener("change", bwFileUp);
     $("bw").addEventListener("input", bwInput);
     // Swipe left for the next step, right for the previous one, same as the Next and back buttons.
     let sx = 0, sy = 0, sOk = false;
     $("bw").addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; sOk = e.touches.length === 1 && !e.target.closest("input, textarea, .bwhalf, .bwseg"); }, { passive: true });
     $("bw").addEventListener("touchend", e => {
-      if (!sOk || !bw || bw.done || bw.saving || bw.sheet || bw.pay) return; sOk = false;
+      if (!sOk || !bw || bw.done || bw.saving || bw.sheet || bw.pay) return;
+      if (bw.sub) { const t = e.changedTouches[0]; if (t.clientX - sx > 80 && Math.abs(t.clientX - sx) > Math.abs(t.clientY - sy) * 1.5) { bw.sub = ""; bw.slide = "r"; bwRender(true); } return; } sOk = false;
       const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
       const b = $("bw").querySelector(dx < 0 ? '.bwgo[data-bw="next"]' : '.bwh [data-bw="back"]');
@@ -6235,6 +6244,7 @@ const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) &
 function bwRender(top) {
   const el = $("bw"), s = bw.step, bk = s > 0 && !bw.readOnly;  // an opened booking starts on its summary and can still be stepped through
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
+  if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
   el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="${bk ? "back" : "close"}" aria-label="${bk ? "Back" : "Close"}">${bk ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div>${bk ? `<button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
     `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
     `<div class="bwb s${s}" id="bwBody"><h2>${s === 5 && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
@@ -6300,7 +6310,7 @@ function bwMoneyHtml() {
     `<small class="bwsm">Driver padi is not added to the rent.</small><div class="bwtot" id="bwTot">${bwTotHtml()}</div>` +
     `<div class="bwf1"><span>Advance received</span><div class="bwbox"><span class="bwin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="adv" value="${esc(bw.adv)}" placeholder="Amount" aria-label="Advance amount"></span>` +
     `<div class="bwseg c4" role="group" aria-label="Paid by">${PAY_MODES.map(m => `<button type="button" data-mode="${esc(m)}" aria-pressed="${bw.mode === m}">${m === "Bank transfer" ? "Bank" : esc(m)}</button>`).join("")}</div></div>` +
-    `<small>${num(bw.extraPaid) ? `First payment. Other payments (${rs(num(bw.extraPaid))}) are under Payments, trip sheet and files.` : "An advance is needed to hold the bus."}</small></div>` +
+    `<small>${num(bw.extraPaid) ? `First payment. Other payments (${rs(num(bw.extraPaid))}) are under Payments on the last step.` : "An advance is needed to hold the bus."}</small></div>` +
     (bw.showRem ? `<label class="bwf1"><span>Remarks</span><textarea rows="2" data-k="remarks" maxlength="300">${esc(bw.remarks)}</textarea></label>` : `<button type="button" class="bwlink" data-bw="rem">+ Add remarks</button>`);
 }
 function bwCheckHtml() {
@@ -6313,9 +6323,9 @@ function bwCheckHtml() {
     row("Bus", v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : "<b>—</b>", 1) +
     row("Party", `<b>${esc(bw.party.trim() || "—")}${bw.phone.trim() ? ` · ${esc(bw.phone.trim())}` : ""}</b>${bb ? `<span>Booked by ${esc(bb)}</span>` : ""}`, 2) +
     row("Going to", `<b>${esc(bw.places.trim() || "—")}</b>${bw.address.trim() ? `<span>Pick-up: ${esc(bw.address.trim())}</span>` : ""}`, 3) +
-    row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span>${(bw.pays || []).map(p => `<span class="bwm"><span>${p.date ? fmtShort(p.date) : "Payment"} · ${esc(p.mode || "Cash")}${p.note ? ` · ${esc(p.note)}` : ""}</span><b>${rs(num(p.amount))}</b></span>`).join("")}<span class="bwm bal"><span>Balance</span><b>${rs(rent - adv - more)}</b></span>` +
+    row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span>${(bw.pays || []).map(p => `<span class="bwm"><span>${p.date ? fmtShort(p.date) : "Payment"} · ${esc(p.mode || "Cash")}${p.note ? ` · ${esc(p.note)}` : ""}</span><b>${rs(num(p.amount))}</b></span>`).join("")}${bwToll() ? `<span class="bwm"><span>Toll (collected from the party)</span><b>${rs(bwToll())}</b></span>` : ""}<span class="bwm bal"><span>Balance</span><b>${rs(rent + bwToll() - adv - more)}</b></span>` +
       (padi ? `<span class="bwm padi"><span>Driver padi (paid to driver, not office)</span><b>${rs(padi)}</b></span>` : "") + (bw.remarks.trim() ? `<span>Remarks: ${esc(bw.remarks.trim())}</span>` : ""), 4) +
-    `</div>` + (bw.editId && canPayAdd(ops.bookings.find(x => x.id === bw.editId)) ? `<button type="button" class="twadd" data-bw="payadd">${TW_PLUS} Add payment</button>` : "") + (bw.editId && !bw.readOnly && (canBookings || (canTsUpd && ["booked", "ontrip", "completed"].includes(bw.status))) ? `<button type="button" class="bwlink" data-bw="trip">Trip sheet ›</button>` : "") + (bw.editId ? `<button type="button" class="bwlink" data-bw="full">Payments, trip sheet and files ›</button>` : "") +
+    `</div>` + (bw.editId ? bwTilesHtml() : "") +
     (bw.editId && canBookings && !["cancelled", "completed", "pending"].includes(bw.status) ? (bw.askCancel
       ? `<div class="bwcancel"><p><b>Cancel booking ${esc(bw.no || "")}?</b> The bus becomes free on these days. Money already received stays on record.</p><div class="bwseg c2"><button type="button" data-bw="keep">No, keep it</button><button type="button" class="bwdanger" data-bw="cancelyes">Yes, cancel</button></div></div>`
       : `<button type="button" class="bwlink bwdangerlink" data-bw="cancel">Cancel this booking</button>`) : "") + (canBookings || bw.readOnly ? "" : (m => m.length ? `<p class="bwnote"><b>Still needed to send for approval:</b> ${m.join(", ")}. Save draft now and finish it later.</p>` : `<p class="bwnote">Save draft to finish later, or send it to the admin for approval.</p>`)(bwMissing()));
@@ -6401,7 +6411,12 @@ function bwClick(e) {
   if (a === "cancel") { bw.askCancel = true; bwRender(); $("bw").querySelector(".bwcancel")?.scrollIntoView({ block: "nearest" }); return; }
   if (a === "keep") { bw.askCancel = false; bwRender(); return; }
   if (a === "cancelyes") { bwCancel(); return; }
-  if (a === "full") { const id = bw.editId; bwClose(); openBooking(id, null, true); return; }
+  if (a === "sub") { bw.sub = t.dataset.sub; bw.slide = "l"; bwRender(true); return; }
+  if (a === "subback") { bw.sub = ""; bw.slide = "r"; bwRender(true); return; }
+  if (t.dataset.payrm != null) { bwPayRemove(+t.dataset.payrm); return; }
+  if (t.dataset.fkind) { bw.fkind = t.dataset.fkind; bwRender(); return; }
+  if (a === "fcam" || a === "fpick") { if (!assetsCap) { toast("Attaching files isn't available in this view."); return; } $(a === "fcam" ? "bwFileCam" : "bwFileIn").click(); return; }
+  if (t.dataset.frm != null) { bwFileRemove(+t.dataset.frm); return; }
   if (a === "trip") { const id = bw.editId; bwClose(); twOpen(ops.bookings.find(x => x.id === id)); return; }
   if (t.dataset.day) { const v = t.dataset.day; if (!bw.from || bw.to) { bw.from = v; bw.to = ""; bw.half = "none"; } else if (v < bw.from) bw.from = v; else bw.to = v; bwRender(); return; }
   if (t.dataset.half) { bw.half = t.dataset.half; bwRender(); return; }
@@ -6570,7 +6585,7 @@ function twCheckHtml() {
     row("Km meter", m(`${s ? nf(s) : "—"} → ${e ? nf(e) : "—"}`, s && e > s ? `${nf(e - s)} km` : "—"), 3) +
     `<div class="bwrow"><div>${m("<b style='font-size:19px;color:var(--ink)'>Total spent</b>", `<span style="font-size:20px">${rs(total)}</span>`)}</div></div></div>` +
     (tw.edit && !tw.admin ? `<p class="bwnote">${twMissing().length ? `<b>Still needed to send:</b> ${twMissing().join(", ")}. Save for later and finish it after the trip.` : "Save to finish later, or send it to the office when the trip is over."}</p>` : "") +
-    (tw.admin ? `<button type="button" class="bwlink" data-tw="full">Open the full trip sheet ›</button>` : "");
+    "";
 }
 const twMissing = () => { const s = num(tw.startKm), e = num(tw.endKm); return [!s && "start km", !e && "end km", s && e && e <= s && "end km more than start km"].filter(Boolean); };
 function twSheetHtml() {
@@ -6769,10 +6784,10 @@ const bwPaySheetHtml = () => { const s = bw.pay; return `<div class="twsheet" da
   `<div class="bwseg c4" role="group" aria-label="Paid by">${PAY_MODES.map(m => `<button type="button" data-pmode="${esc(m)}" aria-pressed="${s.mode === m}">${m === "Bank transfer" ? "Bank" : esc(m)}</button>`).join("")}</div>` +
   `<label class="bwf1"><input type="text" data-k="pay.note" maxlength="60" value="${esc(s.note)}" placeholder="Note (optional), e.g. 2nd payment" aria-label="Note"></label><span class="bwerr" id="bwPayErr"></span>` +
   `<div class="bwseg c2"><button type="button" data-bw="payclose">Cancel</button><button type="button" class="twsave" data-bw="paysave"${s.saving ? " disabled" : ""}>${s.saving ? "Saving…" : "Save payment"}</button></div></div></div>`; };
-function bwSyncPays(bk) {
+function bwSyncPays(bk, force) {
   const p1 = bk.payments?.[0];
   bw.pays = (bk.payments || []).slice(1); bw.extraPaid = bw.pays.reduce((a, p) => a + num(p.amount), 0);
-  if (!num(bw.adv) && p1) { bw.adv = String(p1.amount); bw.mode = p1.mode || "Cash"; }
+  if (force || (!num(bw.adv) && p1)) { bw.adv = p1 ? String(p1.amount) : ""; bw.mode = p1?.mode || "Cash"; }
 }
 async function bwPaySave() {
   const s = bw.pay, amt = Math.round(num(s.amount));
@@ -6784,6 +6799,78 @@ async function bwPaySave() {
     if (bw && next) { bwSyncPays(next); bw.pay = null; toast(`Payment saved · ${rs(amt)}`); }
   } catch { toast("Couldn't save. Check your connection and try again."); if (bw?.pay) bw.pay.saving = false; }
   if (bw) bwRender();
+}
+
+/* ---------- phone: Payments and Files screens of a booking (no jump to the desktop form) ---------- */
+const BW_FILE_KINDS = ["ID proof", "Signed slip", "Payment proof", "Trip bills", "Other"];
+const bwToll = () => bw?.editId ? num(ops.bookings.find(x => x.id === bw.editId)?.toll) : 0;
+const bwBkNow = () => ops.bookings.find(x => x.id === bw.editId);
+const bwCanFiles = b => !!b && platformWrite && (canBookings || canBookReq || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status))) && b.status !== "cancelled";
+function bwTilesHtml() {
+  const b = bwBkNow(); if (!b) return "";
+  const c = bkCalc(b), n = (b.attachments || []).length;
+  const tripOk = !bw.readOnly && (canBookings || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status)));
+  const tile = (sub, title, line, cls = "") => `<button type="button" class="bwtile" data-bw="sub" data-sub="${sub}"><b>${title}</b><span class="${cls}">${line}</span>${BW_ICON.next}</button>`;
+  return `<div class="bwtiles">` +
+    tile("pay", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok") +
+    (tripOk ? `<button type="button" class="bwtile" data-bw="trip"><b>Trip sheet</b><span>${esc(TS_STAGES[b.tsStatus] || "Not started")}</span>${BW_ICON.next}</button>` : "") +
+    tile("files", "Files", n ? `${n} file${n === 1 ? "" : "s"}` : "None yet") + `</div>`;
+}
+function bwSubHtml() {
+  const b = bwBkNow(); if (!b) { bw.sub = ""; return ""; }
+  const head = t => `<header class="bwh"><button type="button" class="bwx" data-bw="subback" aria-label="Back">${BW_ICON.back}</button><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div><button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button></header>`;
+  if (bw.sub === "pay") {
+    const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite;
+    const card = (p, i) => `<div class="twcard"><span class="twmain" style="cursor:default"><span class="twn twk" aria-hidden="true">₹</span><span class="twci"><b>${rs(num(p.amount))}</b><span>${[p.date ? fmtDate(p.date) : "", p.mode || "Cash", i === 0 && !p.note ? "Advance" : p.note].filter(Boolean).map(esc).join(" · ")}</span>${p.byName ? `<span>By ${esc(p.byName)}</span>` : ""}</span></span>` +
+      (canRm ? `<button type="button" class="twdel" data-payrm="${i}" aria-label="Remove this payment"${bw.paySaving ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
+    return head("Payments") + `<div class="bwb tws" id="bwBody">` +
+      `<div class="bwcard"><div class="bwrow"><div><span class="bwm"><span>Rent${num(b.toll) ? " + toll" : ""}</span><b>${rs(c.due)}</b></span><span class="bwm"><span>Received (${pays.length} payment${pays.length === 1 ? "" : "s"})</span><b>${rs(c.received)}</b></span>` +
+      `<span class="bwm bal"><span>${c.balance > 0 ? "Still to collect" : c.balance < 0 ? "Paid extra" : "Balance"}</span><b>${rs(Math.abs(c.balance))}</b></span></div></div></div>` +
+      (pays.length ? pays.map(card).join("") : `<p class="bwnote">No payments yet.</p>`) +
+      (canAdd ? `<button type="button" class="twadd" data-bw="payadd">${TW_PLUS} Add payment</button>` : "") +
+      (num(b.padi) ? `<p class="bwnote">Driver padi from the party (${rs(num(b.padi))}) goes to the driver and is not counted here.</p>` : "") + `</div>`;
+  }
+  const files = b.attachments || [], canAdd = bwCanFiles(b), canRm = canBookings && platformWrite;
+  const card = (f, i) => `<div class="twcard"><a class="twmain" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener"><span class="twn twk" aria-hidden="true">${/image/.test(f.type || "") || /\.(jpe?g|png|webp|heic)$/i.test(f.name || "") ? "🖼️" : "📄"}</span><span class="twci"><b>${esc(f.kind || "File")}</b><span>${esc(f.name || "")}</span><span>${[f.at ? fmtDate(f.at.slice(0, 10)) : "", f.byName].filter(Boolean).map(esc).join(" · ")}</span></span></a>` +
+    (canRm ? `<button type="button" class="twdel" data-frm="${i}" aria-label="Remove this file"${bw.fileBusy ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
+  return head("Files") + `<div class="bwb tws" id="bwBody">` +
+    (canAdd ? `<div class="bwbox"><span style="font-weight:600;font-size:17px">What is it?</span><div class="bwchips c3">${BW_FILE_KINDS.map(k => `<button type="button" data-fkind="${esc(k)}" aria-pressed="${(bw.fkind || "Payment proof") === k}">${esc(k)}</button>`).join("")}</div>` +
+      `<div class="bwseg c2"><button type="button" class="twsave" data-bw="fcam"${bw.fileBusy ? " disabled" : ""}>📷 Take photo</button><button type="button" data-bw="fpick"${bw.fileBusy ? " disabled" : ""}>+ Choose file</button></div>${bw.fileBusy ? `<small>Uploading…</small>` : ""}</div>` : "") +
+    (files.length ? files.map(card).join("") : `<p class="bwnote">No files yet.</p>`) + `<p class="bwnote">Tap a file to open it.</p></div>`;
+}
+async function bwBkSave(next, action) {
+  const cur = bwBkNow(); if (!cur) return false;
+  const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
+  await opsSave("bookings", next);
+  const i = ops.bookings.findIndex(x => x.id === next.id); if (i >= 0) ops.bookings[i] = next;
+  await addBHistory(bookingChanges(cur, next, action)).catch(() => {});
+  return true;
+}
+async function bwPayRemove(i) {
+  const cur = bwBkNow(), p = cur?.payments?.[i]; if (!p || bw.paySaving) return;
+  bw.paySaving = true; bwRender();
+  try { const next = { ...cur, payments: cur.payments.filter((_, k) => k !== i) }; await bwBkSave(next, `Payment removed · ${rs(num(p.amount))}`); if (bw) { bwSyncPays(next, true); toast("Payment removed"); } }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+  finally { if (bw) { bw.paySaving = false; bwRender(); } }
+}
+async function bwFileUp(e) {
+  const list = [...e.target.files]; e.target.value = ""; if (!list.length || !bw || !assetsCap) return;
+  bw.fileBusy = true; bwRender();
+  const added = [];
+  for (const file of list) {
+    try { const r = await assetsCap.upload(file, { type: file.type }); added.push({ id: r.id, name: file.name, kind: bw.fkind || "Payment proof", type: file.type, at: new Date().toISOString(), byName: whoAmI() }); }
+    catch (er) { toast(er?.code === "too_large" ? "That file is too large." : er?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the file. Try again."); }
+  }
+  try { const cur = bwBkNow(); if (added.length && cur) { await bwBkSave({ ...cur, attachments: [...(cur.attachments || []), ...added] }, added.length === 1 ? `File added · ${added[0].kind}` : `${added.length} files added`); toast(added.length === 1 ? "File added" : `${added.length} files added`); } }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+  finally { if (bw) { bw.fileBusy = false; bwRender(); } }
+}
+async function bwFileRemove(i) {
+  const cur = bwBkNow(), f = cur?.attachments?.[i]; if (!f || bw.fileBusy) return;
+  bw.fileBusy = true; bwRender();
+  try { const att = cur.attachments.filter((_, k) => k !== i), next = { ...cur }; if (att.length) next.attachments = att; else delete next.attachments; await bwBkSave(next, `File removed · ${f.kind || f.name}`); toast("File removed"); }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+  finally { if (bw) { bw.fileBusy = false; bwRender(); } }
 }
 
 function bkPayRow(p = {}) {
