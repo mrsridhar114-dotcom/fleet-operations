@@ -70,6 +70,10 @@ export function canWrite(a, me, op, coll, id, prev, next) {
   }
   if (coll === "bookings") return bookingRule(a, op, prev, next) ? "" : no;
 
+  // Trip sheet diesel: someone who fills in trip sheets may add, change and delete fills linked to a booking.
+  if (coll === "fuelLog" && a.fuel !== "edit" && (a.tripsheets === "update" || a.tripsheets === "edit"))
+    return (op === "delete" ? !!prev?.bookingId : !!next?.bookingId && (!prev || prev.bookingId === next.bookingId)) ? "" : no;
+
   const m = MOD_OF[coll];
   if (!m) return no; // anything new is admin-only until a rule is added here
   return a[m] === "edit" ? "" : no;
@@ -78,6 +82,9 @@ export function canWrite(a, me, op, coll, id, prev, next) {
 function bookingRule(a, op, prev, next) {
   if (a.bookings === "edit") return true;
   if (op === "delete") return a.bookings === "request" && !!prev && ["draft", "rejected"].includes(prev.status);
+  // Booking planner: add payments to any booking that isn't cancelled (parties pay in parts). Earlier payments and
+  // everything else on the booking stay exactly as they were; only the totals worked out from the payments change.
+  if (a.bookings === "request" && prev && prev.status !== "cancelled" && paymentsAdded(prev, next)) return true;
   // Booking planner: their own drafts and requests, which an admin then approves.
   if (a.bookings === "request" && (!prev || OPEN_STATUS.includes(prev.status)) && OPEN_STATUS.includes(next.status)) return true;
   // Trip update: fills in the trip sheet of an existing booking without changing the booking itself.
@@ -90,4 +97,10 @@ function bookingRule(a, op, prev, next) {
   if (a.bookings !== "none" && prev && prev.status === "booked" && next.status === "ontrip" && prev.from && prev.from <= today()
     && sameExcept(prev, next, ["status", "autoOnTripOn"])) return true;
   return false;
+}
+
+function paymentsAdded(prev, next) {
+  const p = prev.payments || [], n = next.payments || [];
+  return n.length > p.length && JSON.stringify(n.slice(0, p.length)) === JSON.stringify(p)
+    && sameExcept(prev, next, ["payments", "due", "received", "balance", "expense", "profit"]);
 }
