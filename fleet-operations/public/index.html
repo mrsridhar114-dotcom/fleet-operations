@@ -6192,7 +6192,7 @@ function bwOpen(preset, bk, readOnly) {
     Object.assign(bw, { editId: bk.id, vehicleId: bk.vehicleId || "", phone: bk.phone || "", party: bk.party || "", bookedBy: bk.bookedById || "", places: bk.places || "", address: bk.address || "",
       rate: bk.rate ? String(bk.rate) : "", padi: bk.padi ? String(bk.padi) : "", adv: p1?.amount ? String(p1.amount) : "", mode: p1?.mode || "Cash", remarks: bk.remarks || "", showRem: !!bk.remarks,
       half: w && num(bk.days) === w - .5 ? (bk.halfDay || "last") : "none", step: 5, status: bk.status, readOnly: !!readOnly,
-      orig: { rate: bk.rate ? String(bk.rate) : "", days: num(bk.days), rent: num(bk.rent) }, extraPaid: (bk.payments || []).slice(1).reduce((a, p) => a + num(p.amount), 0), rejectReason: bk.status === "rejected" ? (bk.rejectReason || bk.rejections?.[bk.rejections.length - 1]?.reason || "") : "", no: bk.no });
+      orig: { rate: bk.rate ? String(bk.rate) : "", days: num(bk.days), rent: num(bk.rent) }, extraPaid: (bk.payments || []).slice(1).reduce((a, p) => a + num(p.amount), 0), pays: (bk.payments || []).slice(1), rejectReason: bk.status === "rejected" ? (bk.rejectReason || bk.rejections?.[bk.rejections.length - 1]?.reason || "") : "", no: bk.no });
   }
   if (!$("bw")) {
     document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="bw" role="dialog" aria-modal="true" aria-labelledby="bwTitle" hidden></div>');
@@ -6202,7 +6202,7 @@ function bwOpen(preset, bk, readOnly) {
     let sx = 0, sy = 0, sOk = false;
     $("bw").addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; sOk = e.touches.length === 1 && !e.target.closest("input, textarea, .bwhalf, .bwseg"); }, { passive: true });
     $("bw").addEventListener("touchend", e => {
-      if (!sOk || !bw || bw.done || bw.saving || bw.sheet) return; sOk = false;
+      if (!sOk || !bw || bw.done || bw.saving || bw.sheet || bw.pay) return; sOk = false;
       const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
       const b = $("bw").querySelector(dx < 0 ? '.bwgo[data-bw="next"]' : '.bwh [data-bw="back"]');
@@ -6235,6 +6235,7 @@ function bwRender(top) {
       : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
       : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`;
   if (bw.sheet) el.insertAdjacentHTML("beforeend", bwSheetHtml());
+  if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml());
   if (top) $("bwBody").scrollTop = 0;
   if (bw.slide) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; }
 }
@@ -6304,9 +6305,9 @@ function bwCheckHtml() {
     row("Bus", v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : "<b>—</b>", 1) +
     row("Party", `<b>${esc(bw.party.trim() || "—")}${bw.phone.trim() ? ` · ${esc(bw.phone.trim())}` : ""}</b>${bb ? `<span>Booked by ${esc(bb)}</span>` : ""}`, 2) +
     row("Going to", `<b>${esc(bw.places.trim() || "—")}</b>${bw.address.trim() ? `<span>Pick-up: ${esc(bw.address.trim())}</span>` : ""}`, 3) +
-    row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span>${more ? `<span class="bwm"><span>Other payments</span><b>${rs(more)}</b></span>` : ""}<span class="bwm bal"><span>Balance</span><b>${rs(rent - adv - more)}</b></span>` +
+    row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span>${(bw.pays || []).map(p => `<span class="bwm"><span>${p.date ? fmtShort(p.date) : "Payment"} · ${esc(p.mode || "Cash")}${p.note ? ` · ${esc(p.note)}` : ""}</span><b>${rs(num(p.amount))}</b></span>`).join("")}<span class="bwm bal"><span>Balance</span><b>${rs(rent - adv - more)}</b></span>` +
       (padi ? `<span class="bwm padi"><span>Driver padi (paid to driver, not office)</span><b>${rs(padi)}</b></span>` : "") + (bw.remarks.trim() ? `<span>Remarks: ${esc(bw.remarks.trim())}</span>` : ""), 4) +
-    `</div>` + (bw.editId && !bw.readOnly && (canBookings || (canTsUpd && ["booked", "ontrip", "completed"].includes(bw.status))) ? `<button type="button" class="bwlink" data-bw="trip">Trip sheet ›</button>` : "") + (bw.editId ? `<button type="button" class="bwlink" data-bw="full">Payments, trip sheet and files ›</button>` : "") +
+    `</div>` + (bw.editId && canPayAdd(ops.bookings.find(x => x.id === bw.editId)) ? `<button type="button" class="twadd" data-bw="payadd">${TW_PLUS} Add payment</button>` : "") + (bw.editId && !bw.readOnly && (canBookings || (canTsUpd && ["booked", "ontrip", "completed"].includes(bw.status))) ? `<button type="button" class="bwlink" data-bw="trip">Trip sheet ›</button>` : "") + (bw.editId ? `<button type="button" class="bwlink" data-bw="full">Payments, trip sheet and files ›</button>` : "") +
     (bw.editId && canBookings && !["cancelled", "completed", "pending"].includes(bw.status) ? (bw.askCancel
       ? `<div class="bwcancel"><p><b>Cancel booking ${esc(bw.no || "")}?</b> The bus becomes free on these days. Money already received stays on record.</p><div class="bwseg c2"><button type="button" data-bw="keep">No, keep it</button><button type="button" class="bwdanger" data-bw="cancelyes">Yes, cancel</button></div></div>`
       : `<button type="button" class="bwlink bwdangerlink" data-bw="cancel">Cancel this booking</button>`) : "") + (canBookings || bw.readOnly ? "" : (m => m.length ? `<p class="bwnote"><b>Still needed to send for approval:</b> ${m.join(", ")}. Save draft now and finish it later.</p>` : `<p class="bwnote">Save draft to finish later, or send it to the admin for approval.</p>`)(bwMissing()));
@@ -6343,6 +6344,7 @@ const bwSheetHtml = () => `<div class="bwsheet" role="dialog" aria-modal="true" 
 function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext(); }
 function bwInput(e) {
   const k = e.target.dataset.k; if (!k || !bw) return;
+  if (k.startsWith("pay.")) { bw.pay[k.slice(4)] = e.target.value; return; }
   bw[k] = e.target.value;
   if (k === "q") { bw[k] = e.target.value; $("bwPl").innerHTML = bwPartyRows(); return; }
   if (k === "party" && bw.fromContact) bw.fromContact = false;
@@ -6364,9 +6366,14 @@ async function bwPickContact() {
 }
 function bwClick(e) {
   if (!bw) return;
-  const t = e.target.closest("button, a"); if (!t || t.disabled) return;
+  const t = e.target.closest("button, a, [data-bw=\"paybg\"]"); if (!t || t.disabled) return;
   const a = t.dataset.bw;
   if (a === "close") { bwClose(); return; }
+  if (a === "paybg") { if (e.target.closest("[data-bw]") === t && e.target === t) { bw.pay = null; bwRender(); } return; }
+  if (a === "payadd") { bw.pay = { amount: "", date: todayISO(), mode: "Cash", note: "" }; bwRender(); $("bw").querySelector('[data-k="pay.amount"]')?.focus(); return; }
+  if (a === "payclose") { bw.pay = null; bwRender(); return; }
+  if (a === "paysave") { bwPaySave(); return; }
+  if (t.dataset.pmode) { bw.pay.mode = t.dataset.pmode; bwRender(); return; }
   if (a === "again") { bwOpen(); return; }
   if (a === "back") { if (bw.fromCheck) { bw.step = 5; bw.fromCheck = false; } else bw.step--; bw.tels = null; bwRender(true); return; }
   if (a === "next") { if (bwCanNext()) { bw.step = bw.fromCheck ? (bw.step === 0 && bwClash() ? 1 : 5) : bw.step + 1; if (bw.step === 5) bw.fromCheck = false; bwRender(true); } return; }
@@ -6695,6 +6702,54 @@ async function twSave(send) {
   } finally { bwBusy = false; if (tw) { tw.saving = false; if (!tw.done) twRender(); } }
 }
 
+/* ---------- payments any time ----------
+   Parties pay in parts, so the admin and the booking planner can add a payment to any saved booking (not cancelled) at any time.
+   Adding a payment changes nothing else on the booking; it is recorded in the booking's history with who added it. */
+const canPayAdd = b => platformWrite && (canBookings || canBookReq) && !!b && b.status !== "cancelled";
+async function payAdd(id, list) {
+  const cur = ops.bookings.find(x => x.id === id); if (!cur || !list.length) return null;
+  const add = list.map(p => ({ date: p.date || todayISO(), amount: Math.round(num(p.amount)), mode: p.mode || "Cash", note: String(p.note || "").trim(), byName: whoAmI(), addedOn: todayISO() }));
+  const next = { ...cur, payments: [...(cur.payments || []), ...add] };
+  const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
+  await opsSave("bookings", next);
+  const i = ops.bookings.findIndex(x => x.id === id); if (i >= 0) ops.bookings[i] = next;
+  await addBHistory(bookingChanges(cur, next, add.length === 1 ? `Payment added · ${rs(add[0].amount)}` : `${add.length} payments added · ${rs(add.reduce((a, p) => a + p.amount, 0))}`)).catch(() => {});
+  return next;
+}
+// Desktop: new payment rows typed in the Payments tab of a booking the person can't otherwise change.
+async function savePayOnly() {
+  const rows = [...$("bkPays").querySelectorAll(".payrow[data-new]")];
+  const list = rows.map(r => ({ date: r.querySelector("[data-pd]").value, amount: num(r.querySelector("[data-pa]").value), mode: r.querySelector("[data-pm]").value, note: r.querySelector("[data-pn]").value })).filter(p => p.amount > 0);
+  if (!list.length) return false;
+  $("bkSave").disabled = true;
+  try { await payAdd(bkEditId, list); return true; }
+  catch { toast("Couldn't save. Check your connection and try again."); return null; }
+  finally { $("bkSave").disabled = false; }
+}
+// Phone: the Add payment sheet on the booking summary.
+const bwPaySheetHtml = () => { const s = bw.pay; return `<div class="twsheet" data-bw="paybg"><div role="dialog" aria-modal="true" aria-label="Add payment"><span class="twgrip" aria-hidden="true"></span><h3>Add payment</h3>` +
+  `<div class="bw2"><label class="bwf1"><span>Amount</span><span class="bwin main"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="pay.amount" value="${esc(s.amount)}" aria-label="Amount"></span></label>` +
+  `<label class="bwf1"><span>Date</span><span class="bwin"><input type="date" data-k="pay.date" value="${esc(s.date)}" aria-label="Date" style="font-size:17px"></span></label></div>` +
+  `<div class="bwseg c4" role="group" aria-label="Paid by">${PAY_MODES.map(m => `<button type="button" data-pmode="${esc(m)}" aria-pressed="${s.mode === m}">${m === "Bank transfer" ? "Bank" : esc(m)}</button>`).join("")}</div>` +
+  `<label class="bwf1"><input type="text" data-k="pay.note" maxlength="60" value="${esc(s.note)}" placeholder="Note (optional), e.g. 2nd payment" aria-label="Note"></label><span class="bwerr" id="bwPayErr"></span>` +
+  `<div class="bwseg c2"><button type="button" data-bw="payclose">Cancel</button><button type="button" class="twsave" data-bw="paysave"${s.saving ? " disabled" : ""}>${s.saving ? "Saving…" : "Save payment"}</button></div></div></div>`; };
+function bwSyncPays(bk) {
+  const p1 = bk.payments?.[0];
+  bw.pays = (bk.payments || []).slice(1); bw.extraPaid = bw.pays.reduce((a, p) => a + num(p.amount), 0);
+  if (!num(bw.adv) && p1) { bw.adv = String(p1.amount); bw.mode = p1.mode || "Cash"; }
+}
+async function bwPaySave() {
+  const s = bw.pay, amt = Math.round(num(s.amount));
+  if (!(amt > 0)) { $("bwPayErr").textContent = "Enter the amount."; return; }
+  if (!s.date) { $("bwPayErr").textContent = "Enter the date."; return; }
+  s.saving = true; bwRender();
+  try {
+    const next = await payAdd(bw.editId, [{ amount: amt, date: s.date, mode: s.mode, note: s.note }]);
+    if (bw && next) { bwSyncPays(next); bw.pay = null; toast(`Payment saved · ${rs(amt)}`); }
+  } catch { toast("Couldn't save. Check your connection and try again."); if (bw?.pay) bw.pay.saving = false; }
+  if (bw) bwRender();
+}
+
 function bkPayRow(p = {}) {
   return `<div class="payrow bk"><label class="pf"><span>Date</span><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></label><label class="pf"><span>Amount (₹)</span><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" placeholder="Amount ₹" aria-label="Amount"></label>
     <label class="pf"><span>Paid by</span><select data-pm aria-label="Paid by">${PAY_MODES.map(m => `<option${m === (p.mode || "Cash") ? " selected" : ""}>${m}</option>`).join("")}</select></label><label class="pf"><span>Note</span><input data-pn value="${esc(p.note || "")}" placeholder="Advance, balance…" maxlength="60" aria-label="Note"></label><button class="icon prm" type="button" data-prm>Remove</button></div>`;
@@ -6782,6 +6837,7 @@ function openBooking(id, preset, full) {
   $("tsRejectWhy").disabled = false; $("tsRejectWhy").value = "";
   const fE = bkFilesEdit();
   $("bkAddPay").hidden = !canE; $("bkPays").querySelectorAll("button").forEach(x => x.hidden = !canE);
+  bkPayOnly = !canE && canPayAdd(b); if (bkPayOnly) $("bkAddPay").hidden = false;
   $("bkUpl").hidden = !fE; $("bkFileIn").disabled = $("bkFileCam").disabled = !fE || !assetsCap; $("bkFileKind").disabled = !fE;
   if (bkMode === "trip") $("bkFileKind").value = "Trip bills";
   $("bkFileHint").textContent = assetsCap ? "PDF or photo. Saved with the booking when you save." : "Attaching files isn't available in this view. Reload the page and try again.";
@@ -6828,7 +6884,7 @@ function openBooking(id, preset, full) {
   $("scrim").hidden = false; $("bkDrawer").hidden = false; $("bkForm").scrollTop = 0;
   if (!bwBusy) setTimeout(() => (canE && bkTab === "slip" ? $("bkParty") : $("bkTab-" + bkTab)).focus({ preventScroll: true }), 30);
 }
-let bkTripEdit = false;
+let bkTripEdit = false, bkPayOnly = false;
 const bkFilesEdit = () => bkMode === "edit" || bkMode === "request" || (bkMode === "trip" && bkTripEdit);
 // Empty rent: the party pays all five. Day rent: the party pays everything except diesel.
 const ppDefaults = rt => Object.fromEntries(PARTY_ITEMS.map(([k]) => [k, rt !== "day" || k !== "diesel"]));
@@ -7451,10 +7507,16 @@ $("bkForm").addEventListener("change", e => {
   if (e.target.name === "bkRentType") { const d = ppDefaults(e.target.value); $("bkPP").querySelectorAll("input[data-pp]").forEach(c => c.checked = d[c.dataset.pp]); }
   syncBk();
 });
-$("bkAddPay").onclick = () => { setBkTab("pay"); $("bkPays").insertAdjacentHTML("beforeend", bkPayRow({ date: todayISO() })); $("bkPays").lastElementChild.querySelector("[data-pa]").focus(); };
+$("bkAddPay").onclick = () => { setBkTab("pay"); $("bkPays").insertAdjacentHTML("beforeend", bkPayRow({ date: todayISO() })); $("bkPays").lastElementChild.dataset.new = "1";
+  if (bkPayOnly && !(bkMode === "trip" && bkTripEdit)) { $("bkSave").hidden = false; $("bkSave").textContent = "Save payment"; $("bkNote").textContent = "New payments are added to the booking. Nothing else changes."; } $("bkPays").lastElementChild.querySelector("[data-pa]").focus(); };
 $("bkPays").addEventListener("click", e => { const x = e.target.closest("[data-prm]"); if (x) { x.closest(".payrow").remove(); syncBk(); } });
 $("bkForm").addEventListener("submit", async e => {
-  e.preventDefault(); if (bkMode === "view") return;
+  e.preventDefault();
+  if (bkPayOnly && $("bkPays").querySelector(".payrow[data-new]")) {
+    const r = await savePayOnly(); if (r === null) return;
+    if (bkMode === "view" || (bkMode === "trip" && !bkTripEdit)) { if (r) toast("Payment saved"); closeBkDrawer(); renderOps(); return; }
+  }
+  if (bkMode === "view") return;
   if (bkMode === "trip") { if (bkTripEdit) await saveTripSheet(); return; }
   $("bkForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("bkForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid")); $("bkAddPay").removeAttribute("aria-invalid");
   let ok = true; const err = (k, m) => { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); ok = false; };
