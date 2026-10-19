@@ -1168,6 +1168,11 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwgo, .bwalt, .bwwa { box-sizing: border-box; width: 100%; height: 58px; border-radius: 14px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 20px var(--body); display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; cursor: pointer; }
 .bwgo:disabled { background: var(--chip-bg); color: var(--muted); cursor: default; } .bwgo svg, .bwwa svg { width: 22px; height: 22px; flex: none; }
 .bwalt { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-size: 18px; } .bwf.two .bwgo { font-size: 18px; }
+@media (prefers-reduced-motion: no-preference) {
+  .bwsl-l { animation: bwsl .18s ease-out; } .bwsl-r { animation: bwsr .18s ease-out; } .bwnudge .bwgo { animation: bwnd .3s ease; }
+  @keyframes bwsl { from { transform: translateX(40px); opacity: .4; } } @keyframes bwsr { from { transform: translateX(-40px); opacity: .4; } }
+  @keyframes bwnd { 30% { transform: scale(1.04); } }
+}
 /* the dates step fits a phone screen without scrolling */
 .bwb.s0 { gap: 12px; padding-top: 16px; padding-bottom: 14px; }
 .s0 .bwhint { margin-top: -6px; font-size: 17px; }
@@ -6119,6 +6124,17 @@ function bwOpen(preset, bk, readOnly) {
     document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="bw" role="dialog" aria-modal="true" aria-labelledby="bwTitle" hidden></div>');
     $("bw").addEventListener("click", bwClick);
     $("bw").addEventListener("input", bwInput);
+    // Swipe left for the next step, right for the previous one, same as the Next and back buttons.
+    let sx = 0, sy = 0, sOk = false;
+    $("bw").addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; sOk = e.touches.length === 1 && !e.target.closest("input, textarea, .bwhalf, .bwseg"); }, { passive: true });
+    $("bw").addEventListener("touchend", e => {
+      if (!sOk || !bw || bw.done || bw.saving) return; sOk = false;
+      const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      const b = $("bw").querySelector(dx < 0 ? '.bwgo[data-bw="next"]' : '.bwh [data-bw="back"]');
+      if (b && !b.disabled) { bw.slide = dx < 0 ? "l" : "r"; b.click(); }
+      else if (dx < 0 && $("bw").querySelector('.bwgo[data-bw="next"]')) { const f = $("bw").querySelector("footer"); f.classList.remove("bwnudge"); void f.offsetWidth; f.classList.add("bwnudge"); }
+    }, { passive: true });
   }
   $("bw").hidden = false; document.documentElement.classList.add("bw-on");
   bwRender(true);
@@ -6145,6 +6161,7 @@ function bwRender(top) {
       : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
       : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`;
   if (top) $("bwBody").scrollTop = 0;
+  if (bw.slide) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; }
 }
 function bwDatesHtml() {
   const { y, m, from, to } = bw, t = todayISO(), first = new Date(y, m, 1).getDay(), n = new Date(y, m + 1, 0).getDate();
