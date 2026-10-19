@@ -1217,7 +1217,10 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .s0 .bwhalf { padding-top: 8px; gap: 6px; } .s0 .bwhalf p { font-size: 16px; } .s0 .bwseg button { min-height: 44px; }
 @media (max-height: 780px) { .bwb.s0 { gap: 10px; padding-top: 12px; } .bwb.s0 h2 { font-size: 26px; } .s0 .bwd { height: 35px; } .s0 .bwsum { padding: 10px 12px; } }
 .bwsheet { position: absolute; inset: 0; z-index: 2; background: var(--bg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); }
-.bwsb { padding: 14px 16px 10px; background: var(--side-bg); }
+.bwsb { padding: 12px 16px 14px; background: var(--side-bg); display: flex; flex-direction: column; gap: 10px; }
+.bwpc { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 8px 14px; border-radius: 12px; border: 0; background: #8ccf5e; color: #0a1f16; text-align: left; font: inherit; cursor: pointer; }
+.bwpc > svg { width: 26px; height: 26px; flex: none; } .bwpc > svg:last-child { width: 20px; height: 20px; margin-left: auto; }
+.bwpc span { display: flex; flex-direction: column; } .bwpc b { font-size: 18px; } .bwpc small { font-size: 13px; opacity: .8; }
 .bwsb input { box-sizing: border-box; width: 100%; height: 50px; border-radius: 12px; border: 0; padding: 0 16px; font: 600 18px var(--body); background: var(--surface); color: var(--ink); }
 .bwsb input:focus { outline: 3px solid #8ccf5e; }
 .bwpl { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 12px 16px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
@@ -6205,7 +6208,7 @@ function bwRender(top) {
       : bw.readOnly ? `<button type="button" class="bwalt" data-bw="close">Close</button>`
       : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
       : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`;
-  if (bw.sheet) { el.insertAdjacentHTML("beforeend", bwSheetHtml()); setTimeout(() => el.querySelector('.bwsheet input')?.focus({ preventScroll: true }), 50); }
+  if (bw.sheet) el.insertAdjacentHTML("beforeend", bwSheetHtml());
   if (top) $("bwBody").scrollTop = 0;
   if (bw.slide) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; }
 }
@@ -6309,8 +6312,8 @@ function bwPartyRows() {
   return list.slice(0, 80).map(x => `<button type="button" class="bwpr" data-party="${x.i}"><span class="bwav" aria-hidden="true">${esc(x.name.charAt(0).toUpperCase())}</span><span class="bwpi"><b>${esc(x.name)}</b><span>${esc(x.phone || "No number")}</span><small>Last trip ${fmtDate(x.last)} · ${x.n} booking${x.n === 1 ? "" : "s"}</small></span>${BW_ICON.next}</button>`).join("");
 }
 const bwSheetHtml = () => `<div class="bwsheet" role="dialog" aria-modal="true" aria-label="Choose a party"><header class="bwh"><button type="button" class="bwx" data-bw="sheetclose" aria-label="Close">${BW_ICON.x}</button><div><b>Choose a party</b><span>From past bookings</span></div></header>` +
-  `<div class="bwsb"><input type="search" data-k="q" placeholder="Search name or phone number" aria-label="Search parties" autocomplete="off" value="${esc(bw.q || "")}"></div><div class="bwpl" id="bwPl">${bwPartyRows()}</div>` +
-  (bwHasContacts() ? `<footer class="bwf"><button type="button" class="bwalt" data-bw="contacts">${BW_ICON.book} Open phone contacts</button></footer>` : "") + `</div>`;
+  `<div class="bwsb">${bwHasContacts() ? `<button type="button" class="bwpc" data-bw="contacts">${BW_ICON.book}<span><b>Open phone contacts</b><small>For a new party not in this list</small></span>${BW_ICON.next}</button>` : ""}` +
+  `<input type="search" data-k="q" placeholder="Search name or phone number" aria-label="Search parties" autocomplete="off" value="${esc(bw.q || "")}"></div><div class="bwpl" id="bwPl">${bwPartyRows()}</div></div>`;
 function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext(); }
 function bwInput(e) {
   const k = e.target.dataset.k; if (!k || !bw) return;
