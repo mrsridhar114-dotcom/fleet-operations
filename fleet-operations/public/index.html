@@ -1168,6 +1168,17 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwgo, .bwalt, .bwwa { box-sizing: border-box; width: 100%; height: 58px; border-radius: 14px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 20px var(--body); display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; cursor: pointer; }
 .bwgo:disabled { background: var(--chip-bg); color: var(--muted); cursor: default; } .bwgo svg, .bwwa svg { width: 22px; height: 22px; flex: none; }
 .bwalt { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-size: 18px; } .bwf.two .bwgo { font-size: 18px; }
+/* the dates step fits a phone screen without scrolling */
+.bwb.s0 { gap: 12px; padding-top: 16px; padding-bottom: 14px; }
+.s0 .bwhint { margin-top: -6px; font-size: 17px; }
+.s0 .bwcal { padding: 8px 8px 10px; gap: 4px; border-radius: 16px; }
+.s0 .bwnav { width: 40px; height: 40px; } .s0 .bwmh b { font-size: 19px; }
+.s0 .bwgrid { gap: 3px; } .s0 .bwd { height: 38px; font-size: 18px; border-radius: 10px; }
+.s0 .bwsum { padding: 12px 14px; gap: 8px; } .s0 .bwsr { gap: 12px; }
+.s0 .bwdays { min-width: 52px; height: 52px; border-radius: 12px; } .s0 .bwdays b { font-size: 24px; } .s0 .bwdays span { font-size: 12px; }
+.s0 .bwsr > div:last-child { font-size: 17px; }
+.s0 .bwhalf { padding-top: 8px; gap: 6px; } .s0 .bwhalf p { font-size: 16px; } .s0 .bwseg button { min-height: 44px; }
+@media (max-height: 780px) { .bwb.s0 { gap: 10px; padding-top: 12px; } .bwb.s0 h2 { font-size: 26px; } .s0 .bwd { height: 35px; } .s0 .bwsum { padding: 10px 12px; } }
 .bwdone { align-items: center; text-align: center; padding-top: 40px; } .bwbig { width: 96px; height: 96px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; } .bwbig svg { width: 54px; height: 54px; }
 .bwdone p { margin: 0; font-size: 17px; color: var(--muted); line-height: 1.4; } .bwdone .bwno { font-size: 20px; font-weight: 600; color: var(--ink); }
 .bwwa { background: #1f8f4e; color: #fff; margin-top: 14px; }
@@ -6126,7 +6137,7 @@ function bwRender(top) {
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
   el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="${s ? "back" : "close"}" aria-label="${s ? "Back" : "Close"}">${s ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>Step ${s + 1} of 6</span></div>${s ? `<button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
     `<div class="bwbar" aria-hidden="true">${BW_TITLES.map((_, i) => `<i class="${i <= s ? "on" : ""}"></i>`).join("")}</div>` +
-    `<div class="bwb" id="bwBody"><h2>${s === 5 && bw.editId ? `${bw.status === "rejected" ? "Sent back" : "Draft"} ${esc(bw.no || "")}` : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
+    `<div class="bwb s${s}" id="bwBody"><h2>${s === 5 && bw.editId ? `${bw.status === "rejected" ? "Sent back" : "Draft"} ${esc(bw.no || "")}` : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
     `<footer class="bwf">${s < 5 ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>Next ${BW_ICON.next}</button>`
       : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : "Save booking"}</button>`
       : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`;
@@ -6143,9 +6154,9 @@ function bwDatesHtml() {
     cells += `<button type="button" class="bwd${edge ? " e" : ""}${inside ? " in" : ""}${half ? " h" : ""}${v === t ? " t" : ""}" data-day="${v}"${past ? " disabled" : ""} aria-pressed="${edge || inside}" aria-label="${bwFmt(v)}">${d}${half ? "½" : ""}</button>`;
   }
   const atStart = `${y}-${String(m + 1).padStart(2, "0")}` <= t.slice(0, 7);
-  const hint = !from ? "Tap the day the trip starts" : !to ? "Now tap the last day (the same day again for a 1-day trip)" : "Done. Tap a new day to start again.";
+  const hint = !from ? "Tap the day the trip starts" : !to ? "Now tap the last day (the same day again for a 1-day trip)" : "";
   const w = bwWhole(), dd = bwDays(), opt = (v, l) => `<button type="button" data-half="${v}" aria-pressed="${bw.half === v}">${l}</button>`;
-  return `<p class="bwhint${to ? " ok" : ""}">${hint}</p>` +
+  return (hint ? `<p class="bwhint">${hint}</p>` : "") +
     `<div class="bwcal"><div class="bwmh"><button type="button" class="bwnav" data-bw="pm" aria-label="Previous month"${atStart ? " disabled" : ""}>${BW_ICON.back}</button><b>${new Date(y, m, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</b><button type="button" class="bwnav" data-bw="nm" aria-label="Next month">${BW_ICON.next}</button></div>` +
     `<div class="bwwk" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="bwgrid">${cells}</div></div>` +
     (from && to ? `<div class="bwsum"><div class="bwsr"><div class="bwdays"><b>${bwHalfTxt(dd)}</b><span>${bwDayWord(dd)}</span></div><div><span style="color:var(--ink);font-weight:700">${bwFmt(from)}</span><span>to ${bwFmt(to)}</span></div></div>` +
