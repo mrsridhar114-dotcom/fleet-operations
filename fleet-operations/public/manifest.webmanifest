@@ -1,10 +1,10 @@
 {
-  "name": "Fleet Operations",
-  "short_name": "Fleet Ops",
+  "name": "VBS",
+  "short_name": "VBS",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#061d14",
+  "background_color": "#0a1f16",
   "theme_color": "#18212b",
   "icons": [
     {
@@ -33,7 +33,7 @@
     }
   ],
   "id": "/",
-  "description": "Fleet Operations: bookings, trip sheets, fuel log and vehicle records.",
+  "description": "VBS: bookings, trip sheets, fuel log and vehicle records.",
   "orientation": "portrait",
   "categories": [
     "business",
