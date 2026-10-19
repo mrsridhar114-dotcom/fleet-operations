@@ -6477,7 +6477,7 @@ const TW_BIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 // Delete straight from the list: the bin asks once more on the same card, so a slip of the thumb doesn't remove anything.
 const twAskHtml = (q, key) => `<div class="twcard twask" role="alert"><b>${q}</b><button type="button" class="twno" data-tw="asknot">No</button><button type="button" class="twyes" data-del="${esc(key)}"${tw.saving ? " disabled" : ""}>${TW_BIN} Delete</button></div>`;
 const twBk = () => tw ? ops.bookings.find(x => x.id === tw.id) : null;
-const twFills = () => { const b = twBk(); return [...dslLegacyOf(b).map(r => ({ ...r, legacy: true })), ...dslLinked(tw.id).map(f => ({ ...flToDsl(f), bunk: f.bunk || "", file: f.file || null }))].sort((a, c) => String(a.date || "").localeCompare(String(c.date || ""))); };
+const twFills = () => { const b = twBk(); return [...dslLegacyOf(b).map(r => ({ ...r, legacy: true })), ...dslLinked(tw.id).filter(f => !tw.gone?.has(f.id)).map(f => ({ ...flToDsl(f), bunk: f.bunk || "", file: f.file || null }))].sort((a, c) => String(a.date || "").localeCompare(String(c.date || ""))); };
 const twPP = k => { const b = twBk(); return !!b && !!(b.partyPays || ppDefaults(b.rentType || "mt"))[k]; };
 const twSumMoney = () => TW_MONEY.reduce((a, [k]) => a + num(tw[k]), 0);
 const twOtherSum = () => tw.other.reduce((a, x) => a + num(x.amt), 0);
@@ -6526,9 +6526,8 @@ function twMoneyHtml() {
 }
 function twDieselHtml() {
   const rows = twFills(), L = rows.reduce((a, r) => a + num(r.litres), 0), A = rows.reduce((a, r) => a + num(r.amount), 0), pp = twPP("diesel");
-  const card = (r, i) => tw.askDel === "fl:" + r.fuelLogId ? twAskHtml(`Delete fill ${i + 1}?`, "fl:" + r.fuelLogId)
-    : `<div class="twcard"><button type="button" class="twmain"${r.fuelLogId && tw.edit ? ` data-fl="${esc(r.fuelLogId)}"` : " disabled"}><span class="twn">${i + 1}</span><span class="twci"><b>${nf(num(r.litres), 2)} litres${pp ? "" : ` · ${rs(num(r.amount))}`}</b><span>${[r.date ? fmtDate(r.date) : "", r.bunk].filter(Boolean).join(" · ") || "Diesel"}</span></span>${r.file ? `<span class="twok">✓ Bill</span>` : ""}</button>` +
-      (r.fuelLogId && tw.edit ? `<button type="button" class="twdel" data-ask="fl:${esc(r.fuelLogId)}" aria-label="Delete fill ${i + 1}">${TW_BIN}</button>` : "") + `</div>`;
+  const card = (r, i) => `<div class="twcard"><button type="button" class="twmain"${r.fuelLogId && tw.edit ? ` data-fl="${esc(r.fuelLogId)}"` : " disabled"}><span class="twn">${i + 1}</span><span class="twci"><b>${nf(num(r.litres), 2)} litres${pp ? "" : ` · ${rs(num(r.amount))}`}</b><span>${[r.date ? fmtDate(r.date) : "", r.bunk].filter(Boolean).join(" · ") || "Diesel"}</span></span>${r.file ? `<span class="twok">✓ Bill</span>` : ""}</button>` +
+      (r.fuelLogId && tw.edit ? `<button type="button" class="twdel" data-del="fl:${esc(r.fuelLogId)}" aria-label="Delete fill ${i + 1}"${tw.saving ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
   const f = tw.fill;
   const form = f ? `<div class="twform"><b style="font-size:18px">${f.id ? "Change this fill" : `Fill ${rows.length + 1}`}</b>
       <div class="bw2"><label class="bwf1"><span>Litres</span><span class="bwin main"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl.litres" value="${esc(f.litres)}" aria-label="Litres"><b>L</b></span></label>
@@ -6542,9 +6541,8 @@ function twDieselHtml() {
     (form || (tw.edit ? `<button type="button" class="twadd" data-tw="fladd">${TW_PLUS} Add diesel fill</button>` : rows.length ? "" : `<p class="bwnote">No diesel entered.</p>`));
 }
 function twOtherHtml() {
-  const card = (x, i) => tw.askDel === "oth:" + i ? twAskHtml(`Delete ${esc(x.kind)} · ${rs(num(x.amt))}?`, "oth:" + i)
-    : `<div class="twcard"><button type="button" class="twmain" data-oth="${i}"${tw.edit ? "" : " disabled"}><span class="twn twk" aria-hidden="true">${(TW_KINDS.find(k => k[0] === x.kind) || TW_KINDS[2])[1]}</span><span class="twci"><b>${esc(x.kind)} · ${rs(num(x.amt))}</b>${x.note ? `<span>${esc(x.note)}</span>` : ""}</span>${x.fileId ? `<span class="twok">✓ Bill</span>` : ""}</button>` +
-      (tw.edit ? `<button type="button" class="twdel" data-ask="oth:${i}" aria-label="Delete ${esc(x.kind)}">${TW_BIN}</button>` : "") + `</div>`;
+  const card = (x, i) => `<div class="twcard"><button type="button" class="twmain" data-oth="${i}"${tw.edit ? "" : " disabled"}><span class="twn twk" aria-hidden="true">${(TW_KINDS.find(k => k[0] === x.kind) || TW_KINDS[2])[1]}</span><span class="twci"><b>${esc(x.kind)} · ${rs(num(x.amt))}</b>${x.note ? `<span>${esc(x.note)}</span>` : ""}</span>${x.fileId ? `<span class="twok">✓ Bill</span>` : ""}</button>` +
+      (tw.edit ? `<button type="button" class="twdel" data-del="oth:${i}" aria-label="Delete ${esc(x.kind)}"${tw.saving ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
   return `<p class="bwhint" style="font-weight:500;color:var(--muted)">Any other money you spent. Tap Add and choose.</p>` + tw.other.map(card).join("") +
     (tw.other.length ? `<div class="bwtot"><span>Total</span><b>${rs(twOtherSum())}</b></div>` : "") +
     (tw.edit ? `<button type="button" class="twadd" data-tw="othadd">${TW_PLUS} Add expense</button>` : tw.other.length ? "" : `<p class="bwnote">No other expenses.</p>`) +
@@ -6628,12 +6626,10 @@ function twClick(e) {
   if (a === "next") { tw.step++; tw.fill = null; tw.askDel = ""; twRender(true); return; }
   if (t.dataset.goto) { tw.step = +t.dataset.goto; tw.fill = null; tw.askDel = ""; twRender(true); return; }
   if (t.dataset.cam) { if (!tw.edit) return; if (!assetsCap) { toast("Photos can't be saved in this view."); return; } tw.camFor = t.dataset.cam; $("twCam").click(); return; }
-  if (t.dataset.ask) { tw.askDel = t.dataset.ask; tw.fill = null; twRender(); return; }
-  if (a === "asknot") { tw.askDel = ""; twRender(); return; }
   if (t.dataset.del) {
     const [k, v] = [t.dataset.del.slice(0, t.dataset.del.indexOf(":")), t.dataset.del.slice(t.dataset.del.indexOf(":") + 1)]; tw.askDel = "";
     if (k === "fl") { twDelFill(v); return; }
-    const x = tw.other[+v]; if (x?.fileId) tw.files = tw.files.filter(f => f.id !== x.fileId); tw.other.splice(+v, 1); toast("Expense deleted"); twRender(); return;
+    const x = tw.other[+v]; if (!x) return; if (x.fileId) tw.files = tw.files.filter(f => f.id !== x.fileId); tw.other.splice(+v, 1); twRender(); twPersistOther("Expense deleted"); return;
   }
   if (a === "fladd") { tw.fill = { litres: "", amount: "", file: null }; twRender(); $("tw").querySelector('[data-k="fl.litres"]')?.focus(); return; }
   if (t.dataset.fl) { const f = ops.fuelLog.find(x => x.id === t.dataset.fl); if (f) { tw.fill = { id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null }; twRender(); } return; }
@@ -6645,13 +6641,13 @@ function twClick(e) {
   if (t.dataset.kind) { tw.sheet.kind = t.dataset.kind; twRender(); $("tw").querySelector('[data-k="sh.amt"]')?.focus(); return; }
   if (a === "kind") { tw.sheet.kind = ""; twRender(); return; }
   if (a === "shclose") { tw.sheet = null; twRender(); return; }
-  if (a === "shdel") { const x = tw.other[tw.sheet.idx]; if (x?.fileId) tw.files = tw.files.filter(f => f.id !== x.fileId); tw.other.splice(tw.sheet.idx, 1); tw.sheet = null; twRender(); return; }
+  if (a === "shdel") { const x = tw.other[tw.sheet.idx]; if (x?.fileId) tw.files = tw.files.filter(f => f.id !== x.fileId); tw.other.splice(tw.sheet.idx, 1); tw.sheet = null; twRender(); twPersistOther("Expense deleted"); return; }
   if (a === "shsave") {
     const s = tw.sheet, amt = Math.round(num(s.amt));
     if (!(amt > 0)) { $("twShErr").textContent = "Enter the amount."; return; }
     if (s.kind === "Other" && !s.note.trim()) { $("twShErr").textContent = "Write what it was for."; return; }
     const x = { kind: s.kind, amt, note: s.note.trim().replace(/\s+/g, " ") }; if (s.fileId) x.fileId = s.fileId;
-    s.idx >= 0 ? tw.other[s.idx] = x : tw.other.push(x); tw.sheet = null; twRender(); return;
+    s.idx >= 0 ? tw.other[s.idx] = x : tw.other.push(x); tw.sheet = null; twRender(); twPersistOther(s.idx >= 0 ? "Expense changed" : "Expense saved"); return;
   }
   if (a === "full") { const id = tw.id; twClose(); openBooking(id, null, true); setBkTab("trip"); return; }
   if (a === "save" || a === "draft" || a === "send") { twSave(a === "send"); return; }
@@ -6696,10 +6692,28 @@ async function twSaveFill() {
 }
 async function twDelFill(fid) {
   const id = fid || tw.fill?.id; if (!id || tw.saving) return;
-  tw.saving = true; twRender();
-  try { await opsDelete("fuelLog", id); ops.fuelLog = ops.fuelLog.filter(x => x.id !== id); await syncBookingDiesel(tw.id); if (tw) { tw.fill = null; toast("Fill deleted"); } }
-  catch { toast("Couldn't delete. Try again."); }
+  // Gone from the list at once; it comes back only if the delete fails.
+  (tw.gone ||= new Set()).add(id); tw.fill = null; tw.saving = true; twRender();
+  try { await opsDelete("fuelLog", id); ops.fuelLog = ops.fuelLog.filter(x => x.id !== id); await syncBookingDiesel(tw.id); if (tw) toast("Fill deleted"); }
+  catch { if (tw) tw.gone.delete(id); toast("Couldn't delete. Check your connection and try again."); }
   finally { if (tw) { tw.saving = false; twRender(); } }
+}
+// Other expenses are saved to the booking as soon as one is added, changed or deleted, like the diesel fills.
+async function twPersistOther(msg) {
+  const cur = twBk(); if (!cur || !tw.edit) return;
+  const next = { ...cur }, sum = twOtherSum();
+  if (tw.other.length) next.otherList = tw.other.map(x => ({ ...x })); else delete next.otherList;
+  if (sum) next.otherExp = sum; else delete next.otherExp;
+  const att = [...(cur.attachments || []).filter(f => f.for !== "other"), ...tw.files.filter(f => f.for === "other")];
+  if (att.length) next.attachments = att; else delete next.attachments;
+  if (!cur.tsBy && !canBookings) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); }
+  const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
+  try {
+    await opsSave("bookings", next);
+    const i = ops.bookings.findIndex(x => x.id === next.id); if (i >= 0) ops.bookings[i] = next;
+    await addBHistory(bookingChanges(cur, next, "Trip sheet: other expenses")).catch(() => {});
+    toast(msg);
+  } catch { toast("Couldn't save. Check your connection and try again."); }
 }
 // Fill the booking's trip sheet and save it exactly as its Save draft / Submit buttons would.
 async function twSave(send) {
