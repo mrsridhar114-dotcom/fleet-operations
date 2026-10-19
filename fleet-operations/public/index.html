@@ -1937,7 +1937,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
         <div class="field"><label for="dValTR">Validity (TR), transport</label><input id="dValTR" type="date"><span class="hint">Needed to drive buses, trucks and taxis.</span><span class="err" id="e-dValTR"></span></div>
       </div>
       <div class="field"><span class="lbl">Vehicle class</span><div class="vcls" id="dVClass" role="group" aria-label="Vehicle class"></div><span class="hint">The vehicles this driver drives. In trip sheets, only drivers for that vehicle class are offered. Leave all unticked to offer the driver for every vehicle.</span></div>
-      <div class="field"><span class="lbl">Vehicle category</span><div class="vcls" id="dVCat" role="group" aria-label="Vehicle category"></div><span class="hint">The kind of bus work this driver does. Only drivers ticked <b>Spare bus</b> are listed under Booked by in bookings.</span></div>
+      <div class="field" id="dVCatF" hidden><span class="lbl">Vehicle category</span><div class="vcls" id="dVCat" role="group" aria-label="Vehicle category"></div><span class="hint">The kind of bus work this driver does. Only drivers ticked <b>Spare bus</b> are listed under Booked by in bookings.</span></div>
       <span class="hint">To attach the licence copies, open the driver and use the 📎 Documents button.</span>
     </fieldset>
     <fieldset class="docs">
@@ -3745,6 +3745,7 @@ function serviceText(doj) {
 }
 const D_VCATS = ["Route bus", "Spare bus", "Omni bus"];
 const vCatsOf = d => String(d?.vCat || "").split(",").map(x => x.trim()).filter(Boolean);
+function dSyncVCat() { const bus = !!document.querySelector('#dVClass input[data-vcls="Bus"]:checked'); $("dVCatF").hidden = !bus; }
 const D_TRACKED = [
   ["photoFileName", "Driver photo", "file"], ["name", "Name"], ["relType", "Relation"], ["relation", "Relation's name"], ["dob", "Date of birth", "date"], ["doj", "Date of joining", "date"],
   ["blood", "Blood group"], ["organDonor", "Organ donor"], ["mobile", "Mobile number", "mobile"], ["address", "Address", "text"],
@@ -3811,6 +3812,7 @@ function buildDriverForm() {
   $("dBlood").innerHTML = `<option value="">Choose…</option>` + BLOOD.map(b => `<option>${b}</option>`).join("");
   $("dVCat").innerHTML = D_VCATS.map(t => `<label class="chk"><input type="checkbox" data-vcat="${esc(t)}"> ${esc(t)}</label>`).join("");
   $("dVClass").innerHTML = TYPES.map(t => `<label class="chk"><input type="checkbox" data-vcls="${esc(t)}"> ${esc(t)}</label>`).join("");
+  $("dVClass").addEventListener("change", dSyncVCat);
   $("dState").innerHTML = `<option value="">Choose the state</option>` + STATES.map(st => `<option>${st}</option>`).join("");
   $("dStatusSeg").innerHTML = D_STATUS.map((st, i) => `<label><input type="radio" name="dStatus" id="dStatus-${i}" value="${st}"><span>${st}</span></label>`).join("");
   $("dDlNo").addEventListener("input", () => {
@@ -3901,7 +3903,7 @@ function openDfDrawer(d) {
     dFirstIssue: "firstIssue", dIssue: "issueDate", dValNT: "valNT", dValTR: "valTR", dRemarks: "remarks" };
   Object.entries(map).forEach(([id, key]) => $(id).value = key === "dlNo" ? fmtDl(d?.[key]) : (d?.[key] ?? ""));
   const vc = vClassesOf(d); document.querySelectorAll("#dVClass input[data-vcls]").forEach(i => i.checked = vc.includes(i.dataset.vcls));
-  const vct = vCatsOf(d); document.querySelectorAll("#dVCat input[data-vcat]").forEach(i => i.checked = vct.includes(i.dataset.vcat));
+  const vct = vCatsOf(d); document.querySelectorAll("#dVCat input[data-vcat]").forEach(i => i.checked = vct.includes(i.dataset.vcat)); dSyncVCat();
   $("dOrganY").checked = d?.organDonor === "Yes"; $("dOrganN").checked = d?.organDonor === "No";
   document.querySelectorAll('input[name="dStatus"]').forEach(r => r.checked = r.value === (d?.status || "Active"));
   $("dNote").value = "";
@@ -3946,7 +3948,7 @@ $("dForm").addEventListener("submit", async e => {
   else if (iss && nt <= iss) { dErr("dValNT", "Validity must be after the issue date."); ok = false; } else d.valNT = nt;
   if (tr) { if (iss && tr <= iss) { dErr("dValTR", "Validity must be after the issue date."); ok = false; } else d.valTR = tr; }
   const vcl = [...document.querySelectorAll("#dVClass input[data-vcls]:checked")].map(i => i.dataset.vcls); if (vcl.length) d.vClass = vcl.join(", ");
-  const vct = [...document.querySelectorAll("#dVCat input[data-vcat]:checked")].map(i => i.dataset.vcat); if (vct.length) d.vCat = vct.join(", ");
+  const vct = [...document.querySelectorAll("#dVCat input[data-vcat]:checked")].map(i => i.dataset.vcat); if (vct.length && vcl.includes("Bus")) d.vCat = vct.join(", ");
   ["photo", "dlFront", "dlBack"].forEach(k => { const f = dCur(k); if (f) { d[k + "File"] = f.id; d[k + "FileName"] = f.name; } });
   const rem = $("dRemarks").value.trim(); if (rem) d.remarks = rem;
   if (!ok) { document.querySelector('#dForm [aria-invalid="true"]')?.focus(); return; }
@@ -4014,7 +4016,7 @@ function fillDv(d) {
   };
   $("dvLicence").innerHTML = row("Licence number", `<span class="num">${esc(fmtDl(d.dlNo))}</span>`) + row("Issued by", d.state ? `Government of ${esc(d.state)}` : null) +
     dateRow("Date of first issue", d.firstIssue, d.firstIssue ? ` <span class="sub">· ${yearsBetween(d.firstIssue, todayISO())} years driving</span>` : "") +
-    dateRow("Issue date", d.issueDate) + val("Validity (NT), non-transport", d.valNT, "valNT") + val("Validity (TR), transport", d.valTR, "valTR") + row("Vehicle class", d.vClass ? esc(d.vClass) : `<span class="sub">All vehicles</span>`) + row("Vehicle category", d.vCat ? esc(d.vCat) : `<span class="sub">Not set</span>`);
+    dateRow("Issue date", d.issueDate) + val("Validity (NT), non-transport", d.valNT, "valNT") + val("Validity (TR), transport", d.valTR, "valTR") + row("Vehicle class", d.vClass ? esc(d.vClass) : `<span class="sub">All vehicles</span>`) + (vClassesOf(d).includes("Bus") ? row("Vehicle category", d.vCat ? esc(d.vCat) : `<span class="sub">Not set</span>`) : "");
   const total = dHistFor(d.id).length;
   $("dvHistCount").textContent = total; $("dvHistCount").hidden = !total;
   $("dvStatus").innerHTML = row("Status", `<span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span>`) + (d.remarks ? `<dt>Remarks</dt><dd class="addr">${esc(d.remarks)}</dd>` : row("Remarks", null));
