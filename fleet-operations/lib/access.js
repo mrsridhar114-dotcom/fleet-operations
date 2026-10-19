@@ -85,6 +85,8 @@ function bookingRule(a, op, prev, next) {
   // Booking planner: add payments to any booking that isn't cancelled (parties pay in parts). Earlier payments and
   // everything else on the booking stay exactly as they were; only the totals worked out from the payments change.
   if (a.bookings === "request" && prev && prev.status !== "cancelled" && paymentsAdded(prev, next)) return true;
+  // Booking planner: add files (ID proof, payment proof…) to any booking that isn't cancelled; nothing else changes.
+  if (a.bookings === "request" && prev && prev.status !== "cancelled" && filesAdded(prev, next)) return true;
   // Booking planner: their own drafts and requests, which an admin then approves.
   if (a.bookings === "request" && (!prev || OPEN_STATUS.includes(prev.status)) && OPEN_STATUS.includes(next.status)) return true;
   // Trip update: fills in the trip sheet of an existing booking without changing the booking itself.
@@ -103,4 +105,9 @@ function paymentsAdded(prev, next) {
   const p = prev.payments || [], n = next.payments || [];
   return n.length > p.length && JSON.stringify(n.slice(0, p.length)) === JSON.stringify(p)
     && sameExcept(prev, next, ["payments", "due", "received", "balance", "expense", "profit"]);
+}
+function filesAdded(prev, next) {
+  const p = prev.attachments || [], n = next.attachments || [];
+  return n.length > p.length && JSON.stringify(n.slice(0, p.length)) === JSON.stringify(p)
+    && sameExcept(prev, next, ["attachments", "due", "received", "balance", "expense", "profit"]);
 }
