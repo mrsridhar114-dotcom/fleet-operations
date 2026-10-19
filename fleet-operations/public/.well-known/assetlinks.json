@@ -1,8 +1,26 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.fleetops.app",
-        "sha256_cert_fingerprints": ["69:A8:82:CF:08:9F:C2:1A:6B:0B:76:A2:C3:C2:C1:32:77:C0:CF:45:F3:19:57:2B:D6:2D:03:29:59:8D:98:0C"]
-      }
-    }]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.vercel.fleet_operations_seven.twa",
+      "sha256_cert_fingerprints": [
+        "DB:7B:D0:97:90:30:A6:82:43:B3:DB:02:FD:1B:68:E2:2C:FA:60:CF:6B:B8:21:1A:89:60:C1:F9:90:1E:ED:ED"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.fleetops.app",
+      "sha256_cert_fingerprints": [
+        "69:A8:82:CF:08:9F:C2:1A:6B:0B:76:A2:C3:C2:C1:32:77:C0:CF:45:F3:19:57:2B:D6:2D:03:29:59:8D:98:0C"
+      ]
+    }
+  }
+]
