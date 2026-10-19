@@ -1137,7 +1137,8 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwx { width: 44px; height: 44px; flex: none; border-radius: 10px; border: 1px solid var(--side-line); background: transparent; color: var(--side-ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
 .bwx svg, .bwnav svg { width: 22px; height: 22px; }
 .bwbar { background: var(--side-bg); padding: 0 16px 14px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
-.bwbar i { height: 6px; border-radius: 3px; background: var(--side-line); } .bwbar i.on { background: #8ccf5e; }
+.bwbar i, .bwbar .bwseg-i { height: 6px; border-radius: 3px; background: var(--side-line); } .bwbar i.on, .bwbar .bwseg-i.on { background: #8ccf5e; }
+.bwbar .bwseg-i { border: 0; padding: 0; cursor: pointer; position: relative; } .bwbar .bwseg-i::after { content: ""; position: absolute; inset: -14px 0; } .bwbar .bwseg-i.cur { box-shadow: 0 0 0 2px #e3efe6; }
 .bwb { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 16px; overscroll-behavior: contain; }
 .bwb h2 { margin: 0; font: 700 30px/1.1 var(--display); }
 .bwhint { margin: -8px 0 0; font-size: 18px; font-weight: 600; line-height: 1.3; } .bwhint.ok { color: var(--accent); }
@@ -6195,10 +6196,10 @@ function bwCanNext() {
 // What is still needed before a booking can be sent for approval (a draft can be saved without these).
 const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) && "rent for one day", !(num(bw.adv) > 0) && "advance"].filter(Boolean);
 function bwRender(top) {
-  const el = $("bw"), s = bw.step, bk = s > 0 && !(bw.editId && s === 5);  // an opened booking starts on its summary, so there is no step to go back to
+  const el = $("bw"), s = bw.step, bk = s > 0 && !bw.readOnly;  // an opened booking starts on its summary and can still be stepped through
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
-  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="${bk ? "back" : "close"}" aria-label="${bk ? "Back" : "Close"}">${bk ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + (s < 5 ? ` · step ${s + 1} of 6` : "") : `Step ${s + 1} of 6`}</span></div>${bk ? `<button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
-    `<div class="bwbar" aria-hidden="true">${BW_TITLES.map((_, i) => `<i class="${i <= s ? "on" : ""}"></i>`).join("")}</div>` +
+  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="${bk ? "back" : "close"}" aria-label="${bk ? "Back" : "Close"}">${bk ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div>${bk ? `<button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
+    `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
     `<div class="bwb s${s}" id="bwBody"><h2>${s === 5 && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
     `<footer class="bwf">${s < 5 ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>${bw.fromCheck ? `${BW_ICON.ok} Done` : `Next ${BW_ICON.next}`}</button>`
       : bw.readOnly ? `<button type="button" class="bwalt" data-bw="close">Close</button>`
@@ -6363,7 +6364,7 @@ function bwClick(e) {
   if (t.dataset.bb) { bw.bookedBy = bw.bookedBy === t.dataset.bb ? "" : t.dataset.bb; bwRender(); return; }
   if (t.dataset.tel) { bw.phone = t.dataset.tel.slice(0, 5) + " " + t.dataset.tel.slice(5); bw.tels = null; bwRender(); return; }
   if (t.dataset.mode) { bw.mode = t.dataset.mode; bwRender(); return; }
-  if (t.dataset.goto) { bw.step = +t.dataset.goto; bw.fromCheck = true; bwRender(true); }
+  if (t.dataset.goto) { bw.step = +t.dataset.goto; bw.fromCheck = !t.classList.contains("bwseg-i") && bw.step < 5; bw.slide = ""; bwRender(true); }
 }
 // Cancel: the booking's stage becomes Cancelled, saved through the full booking form like any other change.
 async function bwCancel() {
