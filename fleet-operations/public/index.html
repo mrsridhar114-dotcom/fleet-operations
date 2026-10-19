@@ -1937,6 +1937,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
         <div class="field"><label for="dValTR">Validity (TR), transport</label><input id="dValTR" type="date"><span class="hint">Needed to drive buses, trucks and taxis.</span><span class="err" id="e-dValTR"></span></div>
       </div>
       <div class="field"><span class="lbl">Vehicle class</span><div class="vcls" id="dVClass" role="group" aria-label="Vehicle class"></div><span class="hint">The vehicles this driver drives. In trip sheets, only drivers for that vehicle class are offered. Leave all unticked to offer the driver for every vehicle.</span></div>
+      <div class="field"><span class="lbl">Vehicle category</span><div class="vcls" id="dVCat" role="group" aria-label="Vehicle category"></div><span class="hint">The kind of bus work this driver does. Only drivers ticked <b>Spare bus</b> are listed under Booked by in bookings.</span></div>
       <span class="hint">To attach the licence copies, open the driver and use the 📎 Documents button.</span>
     </fieldset>
     <fieldset class="docs">
@@ -2195,7 +2196,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
         <div class="field"><label for="bkTo">End date</label><input id="bkTo" type="date"><span class="err" id="e-bkTo"></span></div>
         <div class="field"><label for="bkDays">Total days</label><input id="bkDays" type="number" inputmode="decimal" min="0.5" step="0.5"><span class="err" id="e-bkDays"></span></div>
         <div class="field s4"><label for="bkPlaces">Places</label><input id="bkPlaces" autocomplete="off" maxlength="200" placeholder="Enter the place names for this trip"><span class="hint">Enter the place names for this trip</span><span class="err" id="e-bkPlaces"></span></div>
-        <div class="field s2"><label for="bkBookedBy">Booked by</label><select id="bkBookedBy"></select><span class="hint">The driver who brought this booking.</span></div>
+        <div class="field s2"><label for="bkBookedBy">Booked by</label><select id="bkBookedBy"></select><span class="hint" id="bkBookedByHint">Drivers ticked Spare bus under Vehicle category in Driver master.</span></div>
         <div class="field s3"><span class="lbl">Rent type</span><div class="seg" role="radiogroup" aria-label="Rent type">
           <label><input type="radio" name="bkRentType" value="mt"><span>Empty rent</span></label>
           <label><input type="radio" name="bkRentType" value="day"><span>Day rent</span></label>
@@ -3742,11 +3743,13 @@ function serviceText(doj) {
   const y = Math.floor(m / 12), r = m % 12;
   return [y ? `${y} year${y === 1 ? "" : "s"}` : "", r ? `${r} month${r === 1 ? "" : "s"}` : ""].filter(Boolean).join(" ") + " with us";
 }
+const D_VCATS = ["Route bus", "Spare bus", "Omni bus"];
+const vCatsOf = d => String(d?.vCat || "").split(",").map(x => x.trim()).filter(Boolean);
 const D_TRACKED = [
   ["photoFileName", "Driver photo", "file"], ["name", "Name"], ["relType", "Relation"], ["relation", "Relation's name"], ["dob", "Date of birth", "date"], ["doj", "Date of joining", "date"],
   ["blood", "Blood group"], ["organDonor", "Organ donor"], ["mobile", "Mobile number", "mobile"], ["address", "Address", "text"],
   ["dlNo", "Licence number", "dl"], ["state", "Issued by"], ["firstIssue", "Date of first issue", "date"], ["issueDate", "Issue date", "date"],
-  ["valNT", "Validity (NT), non-transport", "date", true], ["valTR", "Validity (TR), transport", "date", true], ["vClass", "Vehicle class"],
+  ["valNT", "Validity (NT), non-transport", "date", true], ["valTR", "Validity (TR), transport", "date", true], ["vClass", "Vehicle class"], ["vCat", "Vehicle category"],
   ["dlFrontFileName", "Licence copy, front", "file"], ["dlBackFileName", "Licence copy, back", "file"],
   ["status", "Status"], ["remarks", "Remarks", "text"]
 ];
@@ -3806,6 +3809,7 @@ function validityPill(iso, label) {
 
 function buildDriverForm() {
   $("dBlood").innerHTML = `<option value="">Choose…</option>` + BLOOD.map(b => `<option>${b}</option>`).join("");
+  $("dVCat").innerHTML = D_VCATS.map(t => `<label class="chk"><input type="checkbox" data-vcat="${esc(t)}"> ${esc(t)}</label>`).join("");
   $("dVClass").innerHTML = TYPES.map(t => `<label class="chk"><input type="checkbox" data-vcls="${esc(t)}"> ${esc(t)}</label>`).join("");
   $("dState").innerHTML = `<option value="">Choose the state</option>` + STATES.map(st => `<option>${st}</option>`).join("");
   $("dStatusSeg").innerHTML = D_STATUS.map((st, i) => `<label><input type="radio" name="dStatus" id="dStatus-${i}" value="${st}"><span>${st}</span></label>`).join("");
@@ -3897,6 +3901,7 @@ function openDfDrawer(d) {
     dFirstIssue: "firstIssue", dIssue: "issueDate", dValNT: "valNT", dValTR: "valTR", dRemarks: "remarks" };
   Object.entries(map).forEach(([id, key]) => $(id).value = key === "dlNo" ? fmtDl(d?.[key]) : (d?.[key] ?? ""));
   const vc = vClassesOf(d); document.querySelectorAll("#dVClass input[data-vcls]").forEach(i => i.checked = vc.includes(i.dataset.vcls));
+  const vct = vCatsOf(d); document.querySelectorAll("#dVCat input[data-vcat]").forEach(i => i.checked = vct.includes(i.dataset.vcat));
   $("dOrganY").checked = d?.organDonor === "Yes"; $("dOrganN").checked = d?.organDonor === "No";
   document.querySelectorAll('input[name="dStatus"]').forEach(r => r.checked = r.value === (d?.status || "Active"));
   $("dNote").value = "";
@@ -3941,6 +3946,7 @@ $("dForm").addEventListener("submit", async e => {
   else if (iss && nt <= iss) { dErr("dValNT", "Validity must be after the issue date."); ok = false; } else d.valNT = nt;
   if (tr) { if (iss && tr <= iss) { dErr("dValTR", "Validity must be after the issue date."); ok = false; } else d.valTR = tr; }
   const vcl = [...document.querySelectorAll("#dVClass input[data-vcls]:checked")].map(i => i.dataset.vcls); if (vcl.length) d.vClass = vcl.join(", ");
+  const vct = [...document.querySelectorAll("#dVCat input[data-vcat]:checked")].map(i => i.dataset.vcat); if (vct.length) d.vCat = vct.join(", ");
   ["photo", "dlFront", "dlBack"].forEach(k => { const f = dCur(k); if (f) { d[k + "File"] = f.id; d[k + "FileName"] = f.name; } });
   const rem = $("dRemarks").value.trim(); if (rem) d.remarks = rem;
   if (!ok) { document.querySelector('#dForm [aria-invalid="true"]')?.focus(); return; }
@@ -4008,7 +4014,7 @@ function fillDv(d) {
   };
   $("dvLicence").innerHTML = row("Licence number", `<span class="num">${esc(fmtDl(d.dlNo))}</span>`) + row("Issued by", d.state ? `Government of ${esc(d.state)}` : null) +
     dateRow("Date of first issue", d.firstIssue, d.firstIssue ? ` <span class="sub">· ${yearsBetween(d.firstIssue, todayISO())} years driving</span>` : "") +
-    dateRow("Issue date", d.issueDate) + val("Validity (NT), non-transport", d.valNT, "valNT") + val("Validity (TR), transport", d.valTR, "valTR") + row("Vehicle class", d.vClass ? esc(d.vClass) : `<span class="sub">All vehicles</span>`);
+    dateRow("Issue date", d.issueDate) + val("Validity (NT), non-transport", d.valNT, "valNT") + val("Validity (TR), transport", d.valTR, "valTR") + row("Vehicle class", d.vClass ? esc(d.vClass) : `<span class="sub">All vehicles</span>`) + row("Vehicle category", d.vCat ? esc(d.vCat) : `<span class="sub">Not set</span>`);
   const total = dHistFor(d.id).length;
   $("dvHistCount").textContent = total; $("dvHistCount").hidden = !total;
   $("dvStatus").innerHTML = row("Status", `<span class="pill ${D_STATUS_CLS[st]}">${esc(st)}</span>`) + (d.remarks ? `<dt>Remarks</dt><dd class="addr">${esc(d.remarks)}</dd>` : row("Remarks", null));
@@ -6056,7 +6062,7 @@ function openBooking(id, preset) {
   $("bkPP").innerHTML = PARTY_ITEMS.map(([k, l]) => `<label class="chk"><input type="checkbox" data-pp="${k}"${pp[k] ? " checked" : ""}> ${l}</label>`).join("");
   $("bkDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, ops.bookings, "Bus", [b?.driverId]);
   $("bkDriver").value = b ? crewValue("driver", b) : "";
-  $("bkBookedBy").innerHTML = `<option value="">Choose the driver</option>` + drivers.filter(d => d.status !== "Inactive" || d.id === b?.bookedById).map(d => `<option value="id:${d.id}">${esc(d.name)}</option>`).join("") +
+  $("bkBookedBy").innerHTML = `<option value="">Choose the driver</option>` + drivers.filter(d => (d.status !== "Inactive" && vCatsOf(d).includes("Spare bus")) || d.id === b?.bookedById).map(d => `<option value="id:${d.id}">${esc(d.name)}</option>`).join("") +
     (b?.bookedByName && !b.bookedById ? `<option value="name:${esc(b.bookedByName)}">${esc(b.bookedByName)}</option>` : "");
   $("bkBookedBy").value = b?.bookedById ? "id:" + b.bookedById : b?.bookedByName ? "name:" + b.bookedByName : "";
   bkFiles = (b?.attachments || []).map(f => ({ ...f })); bkMsgEdited = { party: false, drv: false };
