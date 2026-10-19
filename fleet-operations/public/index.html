@@ -1215,6 +1215,17 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .s0 .bwsr > div:last-child { font-size: 17px; }
 .s0 .bwhalf { padding-top: 8px; gap: 6px; } .s0 .bwhalf p { font-size: 16px; } .s0 .bwseg button { min-height: 44px; }
 @media (max-height: 780px) { .bwb.s0 { gap: 10px; padding-top: 12px; } .bwb.s0 h2 { font-size: 26px; } .s0 .bwd { height: 35px; } .s0 .bwsum { padding: 10px 12px; } }
+.bwsheet { position: absolute; inset: 0; z-index: 2; background: var(--bg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); }
+.bwsb { padding: 14px 16px 10px; background: var(--side-bg); }
+.bwsb input { box-sizing: border-box; width: 100%; height: 50px; border-radius: 12px; border: 0; padding: 0 16px; font: 600 18px var(--body); background: var(--surface); color: var(--ink); }
+.bwsb input:focus { outline: 3px solid #8ccf5e; }
+.bwpl { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 12px 16px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
+.bwpr { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.bwpr:active { background: var(--accent-soft); } .bwpr > svg { width: 20px; height: 20px; color: var(--muted); flex: none; }
+.bwav { width: 46px; height: 46px; flex: none; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font: 700 20px var(--body); }
+.bwpi { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; } .bwpi b { font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bwpi span { font: 600 16px var(--mono); color: var(--ink); } .bwpi small { font-size: 13px; color: var(--muted); }
+.bwsheet .bwalt svg { width: 22px; height: 22px; }
 .bwdone { align-items: center; text-align: center; padding-top: 40px; } .bwbig { width: 96px; height: 96px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; } .bwbig svg { width: 54px; height: 54px; }
 .bwdone p { margin: 0; font-size: 17px; color: var(--muted); line-height: 1.4; } .bwdone .bwno { font-size: 20px; font-weight: 600; color: var(--ink); }
 .bwwa { background: #1f8f4e; color: #fff; margin-top: 14px; }
@@ -6161,7 +6172,7 @@ function bwOpen(preset, bk, readOnly) {
     let sx = 0, sy = 0, sOk = false;
     $("bw").addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; sOk = e.touches.length === 1 && !e.target.closest("input, textarea, .bwhalf, .bwseg"); }, { passive: true });
     $("bw").addEventListener("touchend", e => {
-      if (!sOk || !bw || bw.done || bw.saving) return; sOk = false;
+      if (!sOk || !bw || bw.done || bw.saving || bw.sheet) return; sOk = false;
       const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
       const b = $("bw").querySelector(dx < 0 ? '.bwgo[data-bw="next"]' : '.bwh [data-bw="back"]');
@@ -6193,6 +6204,7 @@ function bwRender(top) {
       : bw.readOnly ? `<button type="button" class="bwalt" data-bw="close">Close</button>`
       : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
       : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`;
+  if (bw.sheet) { el.insertAdjacentHTML("beforeend", bwSheetHtml()); setTimeout(() => el.querySelector('.bwsheet input')?.focus({ preventScroll: true }), 50); }
   if (top) $("bwBody").scrollTop = 0;
   if (bw.slide) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; }
 }
@@ -6231,9 +6243,9 @@ function bwBusHtml() {
 function bwPartyHtml() {
   const dr = drivers.filter(d => d.status !== "Inactive" && vCatsOf(d).includes("Spare bus"));
   return `<label class="bwf1"><span>Phone number</span><span class="bwin big"><input type="tel" inputmode="numeric" autocomplete="off" maxlength="14" data-k="phone" value="${esc(bw.phone)}" placeholder="10-digit mobile" aria-label="Phone number">` +
-      (bwHasContacts() ? `<button type="button" class="bwct" data-bw="contacts" aria-label="Choose from phone contacts" title="Choose from phone contacts">${BW_ICON.book}</button>` : "") + `</span><span class="bwerr" id="bwPhErr"></span></label>` +
+      `<button type="button" class="bwct" data-bw="parties" aria-label="Choose a party" title="Choose a party">${BW_ICON.book}</button></span><span class="bwerr" id="bwPhErr"></span></label>` +
     (bw.tels ? `<div class="bwtels"><p>Which number?</p>${bw.tels.map(t => `<button type="button" data-tel="${t}">${t.slice(0, 5)} ${t.slice(5)}</button>`).join("")}</div>` : "") +
-    `<label class="bwf1"><span class="bwlr">Party name${bw.fromContact ? " <em>From contacts</em>" : ""}</span><input type="text" data-k="party" autocomplete="off" maxlength="80" value="${esc(bw.party)}">${bw.fromContact ? "<small>Change it if the contact name is not right.</small>" : ""}</label>` +
+    `<label class="bwf1"><span class="bwlr">Party name${bw.fromContact ? ` <em>${bw.fromContact === "past" ? "From past bookings" : "From contacts"}</em>` : ""}</span><input type="text" data-k="party" autocomplete="off" maxlength="80" value="${esc(bw.party)}">${bw.fromContact ? "<small>Change it if the name is not right.</small>" : ""}</label>` +
     `<div class="bwf1"><span>Booked by</span>${dr.length ? `<div class="bwchips">${dr.map(d => `<button type="button" data-bb="${d.id}" aria-pressed="${bw.bookedBy === d.id}">${esc(d.name)}</button>`).join("")}</div>`
       : "<small>No spare bus drivers yet. In Driver master, tick Bus and then Spare bus for the drivers who bring bookings.</small>"}</div>`;
 }
@@ -6277,10 +6289,32 @@ function bwDoneHtml() {
     (pn && !d.draft ? `<a class="bwwa" href="https://wa.me/${pn}?text=${encodeURIComponent(d.msg)}" target="_blank" rel="noopener">${BW_ICON.wa} Send to party on WhatsApp</a>` : "") +
     `</div><footer class="bwf two"><button type="button" class="bwgo" data-bw="again">+ New booking</button><button type="button" class="bwalt" data-bw="close">See planner</button></footer>`;
 }
+// Parties from past bookings, newest trip first, one row per phone number (or name when there is no number).
+function bwParties() {
+  const m = new Map();
+  ops.bookings.forEach(b => {
+    const name = String(b.party || "").trim(); if (!name) return;
+    const ph = String(b.phone || "").replace(/\D/g, "").slice(-10), key = ph.length === 10 ? ph : "n:" + name.toUpperCase();
+    const cur = m.get(key), when = b.from || b.bookedOn || "";
+    if (!cur) m.set(key, { name, phone: b.phone || "", address: b.address || "", last: when, n: 1 });
+    else { cur.n++; if (when > cur.last) Object.assign(cur, { name, phone: b.phone || cur.phone, address: b.address || cur.address, last: when }); }
+  });
+  return [...m.values()].sort((a, b) => b.last.localeCompare(a.last));
+}
+function bwPartyRows() {
+  const q = String(bw.q || "").trim().toLowerCase(), qd = q.replace(/\D/g, "");
+  const list = (bw.plist || []).map((x, i) => ({ ...x, i })).filter(x => !q || x.name.toLowerCase().includes(q) || (qd && x.phone.replace(/\D/g, "").includes(qd)));
+  if (!list.length) return `<p class="bwnote" style="padding:18px 4px">${bw.plist?.length ? "No party matches this search." : "No past parties yet. They appear here after the first bookings are saved."}</p>`;
+  return list.slice(0, 80).map(x => `<button type="button" class="bwpr" data-party="${x.i}"><span class="bwav" aria-hidden="true">${esc(x.name.charAt(0).toUpperCase())}</span><span class="bwpi"><b>${esc(x.name)}</b><span>${esc(x.phone || "No number")}</span><small>Last trip ${fmtDate(x.last)} · ${x.n} booking${x.n === 1 ? "" : "s"}</small></span>${BW_ICON.next}</button>`).join("");
+}
+const bwSheetHtml = () => `<div class="bwsheet" role="dialog" aria-modal="true" aria-label="Choose a party"><header class="bwh"><button type="button" class="bwx" data-bw="sheetclose" aria-label="Close">${BW_ICON.x}</button><div><b>Choose a party</b><span>From past bookings</span></div></header>` +
+  `<div class="bwsb"><input type="search" data-k="q" placeholder="Search name or phone number" aria-label="Search parties" autocomplete="off" value="${esc(bw.q || "")}"></div><div class="bwpl" id="bwPl">${bwPartyRows()}</div>` +
+  (bwHasContacts() ? `<footer class="bwf"><button type="button" class="bwalt" data-bw="contacts">${BW_ICON.book} Open phone contacts</button></footer>` : "") + `</div>`;
 function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext(); }
 function bwInput(e) {
   const k = e.target.dataset.k; if (!k || !bw) return;
   bw[k] = e.target.value;
+  if (k === "q") { bw[k] = e.target.value; $("bwPl").innerHTML = bwPartyRows(); return; }
   if (k === "party" && bw.fromContact) bw.fromContact = false;
   if (k === "phone") { const d = bw.phone.replace(/\D/g, "").length; $("bwPhErr").textContent = d && d < 10 ? "Enter all 10 digits." : ""; }
   if (k === "rate" && $("bwTot")) $("bwTot").innerHTML = bwTotHtml();
@@ -6291,7 +6325,7 @@ async function bwPickContact() {
     const c = (await navigator.contacts.select(["name", "tel"], { multiple: false }))?.[0]; if (!c) return;
     const tels = [...new Set((c.tel || []).map(t => String(t).replace(/\D/g, "").slice(-10)).filter(t => t.length === 10))];
     const nm = String((c.name || [])[0] || "").trim();
-    if (nm && !bw.party.trim()) { bw.party = nm; bw.fromContact = true; }
+    if (nm && !bw.party.trim()) { bw.party = nm; bw.fromContact = "contacts"; }
     if (tels.length === 1) { bw.phone = tels[0].slice(0, 5) + " " + tels[0].slice(5); bw.tels = null; }
     else if (tels.length > 1) bw.tels = tels;
     else toast("This contact has no 10-digit mobile number.");
@@ -6307,7 +6341,16 @@ function bwClick(e) {
   if (a === "back") { if (bw.fromCheck) { bw.step = 5; bw.fromCheck = false; } else bw.step--; bw.tels = null; bwRender(true); return; }
   if (a === "next") { if (bwCanNext()) { bw.step = bw.fromCheck ? (bw.step === 0 && bwClash() ? 1 : 5) : bw.step + 1; if (bw.step === 5) bw.fromCheck = false; bwRender(true); } return; }
   if (a === "pm" || a === "nm") { const d = new Date(bw.y, bw.m + (a === "nm" ? 1 : -1), 1); bw.y = d.getFullYear(); bw.m = d.getMonth(); bwRender(); return; }
-  if (a === "contacts") { bwPickContact(); return; }
+  if (a === "parties") { bw.sheet = true; bw.q = ""; bw.plist = bwParties(); bwRender(); return; }
+  if (a === "sheetclose") { bw.sheet = false; bwRender(); return; }
+  if (a === "contacts") { bw.sheet = false; bwRender(); bwPickContact(); return; }
+  if (t.dataset.party) {
+    const x = bw.plist[+t.dataset.party]; if (!x) return;
+    const d = x.phone.replace(/\D/g, "").slice(-10);
+    bw.phone = d.length === 10 ? d.slice(0, 5) + " " + d.slice(5) : x.phone; bw.party = x.name; bw.fromContact = "past"; bw.tels = null;
+    if (!bw.address.trim() && x.address) bw.address = x.address;
+    bw.sheet = false; bwRender(); bwSyncNext(); return;
+  }
   if (a === "rem") { bw.showRem = true; bwRender(); $("bw").querySelector('[data-k="remarks"]')?.focus(); return; }
   if (a === "save" || a === "draft") { bwSave(a === "draft"); return; }
   if (a === "cancel") { bw.askCancel = true; bwRender(); $("bw").querySelector(".bwcancel")?.scrollIntoView({ block: "nearest" }); return; }
