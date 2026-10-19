@@ -6090,11 +6090,18 @@ const bwDayWord = d => d <= 1 ? "day" : "days";
 const bwHasContacts = () => "contacts" in navigator && "ContactsManager" in window;
 const bwClash = () => bw.vehicleId && bw.from ? clashOf({ vehicleId: bw.vehicleId, from: bw.from, to: bw.to || bw.from }) : null;
 
-function bwOpen(preset) {
-  const t = todayISO(), start = preset?.from && preset.from >= t ? preset.from : "";
-  bw = { step: 0, y: +(start || t).slice(0, 4), m: +(start || t).slice(5, 7) - 1, from: start, to: start ? (preset.to || start) : "", half: "none",
+function bwOpen(preset, bk) {
+  const t = todayISO(), start = bk ? bk.from : preset?.from && preset.from >= t ? preset.from : "";
+  bw = { step: 0, y: +(start || t).slice(0, 4), m: +(start || t).slice(5, 7) - 1, from: start, to: start ? (bk ? bkEnd(bk) : preset.to || start) : "", half: "none",
     vehicleId: preset?.vehicleId || "", phone: "", party: "", fromContact: false, tels: null, bookedBy: "", places: "", address: "",
-    rate: "", padi: "", adv: "", mode: "Cash", remarks: "", showRem: false, saving: false, done: null };
+    rate: "", padi: "", adv: "", mode: "Cash", remarks: "", showRem: false, saving: false, done: null, editId: null };
+  if (bk) {
+    // Carry on with a draft (or a booking the admin sent back): its details come back into the steps, and it opens on Check and save.
+    const p1 = bk.payments?.[0], w = inclDays(bk.from, bkEnd(bk));
+    Object.assign(bw, { editId: bk.id, vehicleId: bk.vehicleId || "", phone: bk.phone || "", party: bk.party || "", bookedBy: bk.bookedById || "", places: bk.places || "", address: bk.address || "",
+      rate: bk.rate ? String(bk.rate) : "", padi: bk.padi ? String(bk.padi) : "", adv: p1?.amount ? String(p1.amount) : "", mode: p1?.mode || "Cash", remarks: bk.remarks || "", showRem: !!bk.remarks,
+      half: w && num(bk.days) === w - .5 ? (bk.halfDay || "last") : "none", step: 5, status: bk.status, rejectReason: bk.status === "rejected" ? (bk.rejectReason || bk.rejections?.[bk.rejections.length - 1]?.reason || "") : "", no: bk.no });
+  }
   if (!$("bw")) {
     document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="bw" role="dialog" aria-modal="true" aria-labelledby="bwTitle" hidden></div>');
     $("bw").addEventListener("click", bwClick);
@@ -6108,18 +6115,21 @@ function bwCanNext() {
   const s = bw.step;
   if (s === 0) return !!(bw.from && bw.to);
   if (s === 1) return !!bw.vehicleId && !bwClash();
-  if (s === 2) { const d = bw.phone.replace(/\D/g, "").length; return !!bw.party.trim() && (d === 0 || d >= 10); }
-  if (s === 4) return num(bw.rate) > 0 && num(bw.adv) > 0;
+  if (s === 2) { const d = bw.phone.replace(/\D/g, "").length; return (d === 0 || d >= 10) && (!canBookings || !!bw.party.trim()); }
+  if (s === 4) return !canBookings || (num(bw.rate) > 0 && num(bw.adv) > 0);
   return true;
 }
+// What is still needed before a booking can be sent for approval (a draft can be saved without these).
+const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) && "rent for one day", !(num(bw.adv) > 0) && "advance"].filter(Boolean);
 function bwRender(top) {
   const el = $("bw"), s = bw.step;
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
-  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="${s ? "back" : "close"}" aria-label="${s ? "Back" : "Close"}">${s ? BW_ICON.back : BW_ICON.x}</button><div><b id="bwTitle">New booking</b><span>Step ${s + 1} of 6</span></div></header>` +
+  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="${s ? "back" : "close"}" aria-label="${s ? "Back" : "Close"}">${s ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>Step ${s + 1} of 6</span></div>${s ? `<button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
     `<div class="bwbar" aria-hidden="true">${BW_TITLES.map((_, i) => `<i class="${i <= s ? "on" : ""}"></i>`).join("")}</div>` +
-    `<div class="bwb" id="bwBody"><h2>${BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
+    `<div class="bwb" id="bwBody"><h2>${s === 5 && bw.editId ? `${bw.status === "rejected" ? "Sent back" : "Draft"} ${esc(bw.no || "")}` : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
     `<footer class="bwf">${s < 5 ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>Next ${BW_ICON.next}</button>`
-      : `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : canBookings ? "Save booking" : "Send for approval"}</button>`}</footer>`;
+      : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : "Save booking"}</button>`
+      : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`;
   if (top) $("bwBody").scrollTop = 0;
 }
 function bwDatesHtml() {
@@ -6181,20 +6191,21 @@ function bwCheckHtml() {
   const v = vehicles.find(x => x.id === bw.vehicleId), dd = bwDays(), rent = Math.round(num(bw.rate) * dd), adv = Math.round(num(bw.adv));
   const bb = drivers.find(d => d.id === bw.bookedBy)?.name, padi = Math.round(num(bw.padi));
   const row = (k, body, step) => `<div class="bwrow"><div><small>${k}</small>${body}</div><button type="button" class="bwlink" data-goto="${step}">Change</button></div>`;
-  return `<div class="bwcard">` +
+  return (bw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the admin:</b> ${esc(bw.rejectReason)}</p>` : "") + `<div class="bwcard">` +
     row("Dates", `<b>${bwFmt(bw.from)}${bw.to !== bw.from ? ` to ${bwFmt(bw.to)}` : ""} (${bwHalfTxt(dd)} ${bwDayWord(dd)})</b>${bw.half !== "none" && bwWhole() > 1 ? `<span>Half day on the ${bw.half} day</span>` : ""}`, 0) +
     row("Bus", v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : "<b>—</b>", 1) +
     row("Party", `<b>${esc(bw.party.trim() || "—")}${bw.phone.trim() ? ` · ${esc(bw.phone.trim())}` : ""}</b>${bb ? `<span>Booked by ${esc(bb)}</span>` : ""}`, 2) +
     row("Going to", `<b>${esc(bw.places.trim() || "—")}</b>${bw.address.trim() ? `<span>Pick-up: ${esc(bw.address.trim())}</span>` : ""}`, 3) +
     row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span><span class="bwm bal"><span>Balance</span><b>${rs(rent - adv)}</b></span>` +
       (padi ? `<span class="bwm padi"><span>Driver padi (paid to driver, not office)</span><b>${rs(padi)}</b></span>` : "") + (bw.remarks.trim() ? `<span>Remarks: ${esc(bw.remarks.trim())}</span>` : ""), 4) +
-    `</div>` + (canBookings ? "" : `<p class="bwnote">This goes to the admin for approval.</p>`);
+    `</div>` + (canBookings ? "" : (m => m.length ? `<p class="bwnote"><b>Still needed to send for approval:</b> ${m.join(", ")}. Save draft now and finish it later.</p>` : `<p class="bwnote">Save draft to finish later, or send it to the admin for approval.</p>`)(bwMissing()));
 }
 function bwDoneHtml() {
   const d = bw.done, pn = waNum(d.phone);
   return `<header class="bwh"><div><b id="bwTitle">Booking planner</b></div></header><div class="bwb bwdone" id="bwBody"><span class="bwbig">${BW_ICON.ok}</span>` +
-    `<h2>${d.pending ? "Sent for approval" : "Booking saved"}</h2><p class="bwno">Booking no. ${esc(d.no)}</p><p>${esc(d.line1)}<br>${esc(d.line2)}</p>` +
-    (pn ? `<a class="bwwa" href="https://wa.me/${pn}?text=${encodeURIComponent(d.msg)}" target="_blank" rel="noopener">${BW_ICON.wa} Send to party on WhatsApp</a>` : "") +
+    `<h2>${d.draft ? "Draft saved" : d.pending ? "Sent for approval" : "Booking saved"}</h2><p class="bwno">Booking no. ${esc(d.no)}</p><p>${esc(d.line1)}<br>${esc(d.line2)}</p>` +
+    (d.draft ? `<p style="margin-top:10px">To finish it, open it from the planner. It opens here again, ready to complete and send for approval.</p>` : "") +
+    (pn && !d.draft ? `<a class="bwwa" href="https://wa.me/${pn}?text=${encodeURIComponent(d.msg)}" target="_blank" rel="noopener">${BW_ICON.wa} Send to party on WhatsApp</a>` : "") +
     `</div><footer class="bwf two"><button type="button" class="bwgo" data-bw="again">+ New booking</button><button type="button" class="bwalt" data-bw="close">See planner</button></footer>`;
 }
 function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext(); }
@@ -6229,7 +6240,7 @@ function bwClick(e) {
   if (a === "pm" || a === "nm") { const d = new Date(bw.y, bw.m + (a === "nm" ? 1 : -1), 1); bw.y = d.getFullYear(); bw.m = d.getMonth(); bwRender(); return; }
   if (a === "contacts") { bwPickContact(); return; }
   if (a === "rem") { bw.showRem = true; bwRender(); $("bw").querySelector('[data-k="remarks"]')?.focus(); return; }
-  if (a === "save") { bwSave(); return; }
+  if (a === "save" || a === "draft") { bwSave(a === "draft"); return; }
   if (t.dataset.day) { const v = t.dataset.day; if (!bw.from || bw.to) { bw.from = v; bw.to = ""; bw.half = "none"; } else if (v < bw.from) bw.from = v; else bw.to = v; bwRender(); return; }
   if (t.dataset.half) { bw.half = t.dataset.half; bwRender(); return; }
   if (t.dataset.bus) { bw.vehicleId = t.dataset.bus; bwRender(); return; }
@@ -6239,23 +6250,28 @@ function bwClick(e) {
   if (t.dataset.goto) { bw.step = +t.dataset.goto; bwRender(true); }
 }
 // Fill the full booking form and save it exactly as the Save button there would.
-async function bwSave() {
+async function bwSave(asDraft) {
   if (bw.saving) return;
   bw.saving = true; bwRender(); bwBusy = true;
   try {
-    openBooking(null, { vehicleId: bw.vehicleId, from: bw.from, to: bw.to });
+    openBooking(bw.editId, { vehicleId: bw.vehicleId, from: bw.from, to: bw.to });
+    if (bw.editId) { $("bkBus").value = bw.vehicleId; $("bkFrom").value = bw.from; $("bkTo").value = bw.to; }
+    bkHalfDay = bw.half;
     $("bkParty").value = bw.party.trim(); $("bkPhone").value = bw.phone.trim(); $("bkAddress").value = bw.address.trim();
     $("bkPlaces").value = bw.places.trim(); $("bkRemarks").value = bw.remarks.trim();
     $("bkBookedBy").value = bw.bookedBy ? "id:" + bw.bookedBy : "";
     $("bkDays").value = bwDays(); bkDaysTouched = true;
     $("bkRate").value = bw.rate; $("bkPadi").value = bw.padi; bkRentTouched = false;
-    if (!$("bkPays").querySelector(".payrow")) $("bkPays").innerHTML = bkPayRow({ date: todayISO(), note: "Advance" });
+    if (num(bw.adv) > 0 && !$("bkPays").querySelector(".payrow")) $("bkPays").innerHTML = bkPayRow({ date: todayISO(), note: "Advance" });
     const pr = $("bkPays").querySelector(".payrow");
-    pr.querySelector("[data-pd]").value = todayISO(); pr.querySelector("[data-pa]").value = Math.round(num(bw.adv));
-    pr.querySelector("[data-pm]").value = bw.mode; pr.querySelector("[data-pn]").value = "Advance";
-    bkSaveAs = "submit"; syncBk();
+    if (pr) {
+      if (!pr.querySelector("[data-pd]").value) pr.querySelector("[data-pd]").value = todayISO();
+      pr.querySelector("[data-pa]").value = num(bw.adv) > 0 ? Math.round(num(bw.adv)) : "";
+      pr.querySelector("[data-pm]").value = bw.mode; if (!pr.querySelector("[data-pn]").value) pr.querySelector("[data-pn]").value = "Advance";
+    }
+    bkSaveAs = asDraft ? "draft" : "submit"; syncBk();
     const no = $("bkNo").value.trim(), msg = bkMsgTexts().party, v = vehicles.find(x => x.id === bw.vehicleId), dd = bwDays();
-    const info = { no, msg, phone: bw.phone, pending: !canBookings,
+    const info = { no, msg, phone: bw.phone, pending: !canBookings, draft: !!asDraft,
       line1: `${v ? plateOf(v) : ""} · ${bwFmt(bw.from)}${bw.to !== bw.from ? ` to ${bwFmt(bw.to)}` : ""} (${bwHalfTxt(dd)} ${bwDayWord(dd)})`,
       line2: [bw.party.trim(), bw.places.trim()].filter(Boolean).join(" · ") };
     $("bkForm").requestSubmit();
@@ -6297,9 +6313,11 @@ function bkTabBadges(b, c) {
     tb("bkTb-trip", bkMode === "trip" && !op ? `Opens ${fmtShort(tsOpenDate(cur))}` : TS_STAGES[cur?.tsStatus] || "To fill", cur?.tsStatus === "approved" ? "ok" : cur?.tsStatus === "rejected" ? "warn" : bkMode === "trip" && !op ? "" : "warn"); return; }
   tb("bkTb-trip", b.status === "draft" || b.status === "pending" || b.status === "rejected" || b.status === "enquiry" || b.status === "booked" || b.status === "cancelled" ? "" : b.endKm ? "Filled" : "To fill", b.endKm ? "ok" : "warn");
 }
-let bkMode = "view", bkApproving = false, bkSaveAs = "draft";
+let bkMode = "view", bkApproving = false, bkSaveAs = "draft", bkHalfDay = "";
 function openBooking(id, preset) {
   const b = id ? ops.bookings.find(x => x.id === id) : null; bkEditId = b?.id || null;
+  if (b && !bwBusy && bwIsPhone() && !canBookings && canBookReq && (b.status === "draft" || b.status === "rejected") && (b.createdBy || b.submittedBy || "") === (myUserId || "")) { bkEditId = null; bwOpen(null, b); return; }
+  bkHalfDay = b?.halfDay || "";
   // Admins edit everything; the booking planner may only fill in a new booking; everyone else just looks.
   // The booking planner keeps working on their own drafts, and on their own bookings the admin rejected, until they submit them.
   const mine = x => (x.createdBy || x.submittedBy || "") === (myUserId || "");
@@ -6915,6 +6933,7 @@ function bkRead() {
   Object.entries(BK_NUM).forEach(([el, k]) => { const v = $(el).value; if (v !== "" && +v >= 0) b[k] = Math.round(+v); });
   if ($("bkLitres").value !== "" && +$("bkLitres").value >= 0) b.litres = Math.round(+$("bkLitres").value * 100) / 100;
   b.days = num($("bkDays").value); b.from = $("bkFrom").value; b.to = $("bkTo").value || b.from; b.vehicleId = $("bkBus").value;
+  { const wd = inclDays(b.from, b.to); if ((bkHalfDay === "first" || bkHalfDay === "last") && wd && b.days === wd - .5) b.halfDay = bkHalfDay; }
   b.partyPays = Object.fromEntries([...$("bkPP").querySelectorAll("input[data-pp]")].map(c => [c.dataset.pp, c.checked]));
   const dv = $("bkDriver").value;
   if (dv.startsWith("id:")) { b.driverId = dv.slice(3); b.driverName = drivers.find(d => d.id === b.driverId)?.name || ""; } else if (dv) b.driverName = dv.slice(5);
@@ -7039,7 +7058,8 @@ $("bkForm").addEventListener("submit", async e => {
   if (b.phone && b.phone.replace(/\D/g, "").length < 10) err("bkPhone", "Enter a 10-digit phone number, or leave it empty.");
   if (!b.from) err("bkFrom", "Enter the start date."); else if (b.to < b.from) err("bkTo", "Must be on or after the start date.");
   if (!(b.days > 0) && b.from) b.days = inclDays(b.from, b.to) || 1;
-  const needPay = !prev || bkMode === "request";
+  // A planner's draft can be saved without a payment; one sent for approval, and every new booking an admin saves, needs it.
+  const needPay = bkMode === "request" ? bkSaveAs === "submit" : !prev;
   if (needPay && !b.payments.length) {
     $("e-bkPays").textContent = "Enter the payment received from the party (amount above 0)."; ok = false;
     const amt = $("bkPays").querySelector("[data-pa]"); if (amt) amt.setAttribute("aria-invalid", "true"); else $("bkAddPay").setAttribute("aria-invalid", "true");
