@@ -1005,6 +1005,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .cdocs:hover, .cprint:hover { background: var(--chip-bg); }
 .cdocs[disabled] { opacity: .5; }
 .duepop .dlist li { justify-content: flex-start; align-items: center; }
+.duepop .dlist .fn .exppill { display: inline-block; margin: 3px 4px 0 0; font-size: 12px; padding: 1px 6px; }
 .duepop .dall { display: flex; gap: 10px; align-items: center; font-weight: 600; padding: 2px 0 8px; border-bottom: 1px solid var(--line); cursor: pointer; } .duepop .dall input { width: 18px; height: 18px; }
 .duepop .dlist label { display: flex; gap: 10px; align-items: center; flex: 1; min-width: 0; cursor: pointer; }
 .duepop .dlist input { width: 18px; height: 18px; flex: none; }
@@ -7356,12 +7357,12 @@ function openPickPop(b, title, items, mark, go) {
   pop.className = "duepop"; Object.assign(pop.dataset, mark); pop.setAttribute("role", "dialog");
   const sync = () => { const n = pop.querySelectorAll("input[data-i]:checked").length, btn = pop.querySelector(".duesave"); btn.disabled = !n; btn.lastChild.textContent = n ? `Save ${n} date${n === 1 ? "" : "s"} as image` : "Choose a date";
     const all = pop.querySelector("input[data-all]"); all.checked = n === items.length; all.indeterminate = n > 0 && n < items.length; };
-  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all checked> Select all</label><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}" checked><span><b>${esc(d.label)}</b><span class="fn">${esc(d.sub)}</span></span></label></li>`).join("")}</ul><button type="button" class="btn primary duesave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><span></span></button>`;
+  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all checked> Select all</label><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}" checked><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul><button type="button" class="btn primary duesave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><span></span></button>`;
   pop.addEventListener("change", e => { if (e.target.dataset.all != null) pop.querySelectorAll("input[data-i]").forEach(x => x.checked = e.target.checked); sync(); });
   pop.querySelector(".duesave").onclick = async ev => { ev.stopPropagation(); await go([...pop.querySelectorAll("input[data-i]:checked")].map(x => items[+x.dataset.i].k), ev.currentTarget); closeDuePop(); };
   placePop(pop, b); sync();
 }
-const pickSub = d => d.date ? `${fmtDate(d.date)} · ${whenText(d.n)}` : "Date not entered";
+const pickSub = d => d.date ? `<span class="pill ${listBand(d.n)} num exppill">${fmtDate(d.date)}</span> ${esc(whenText(d.n))}` : "Date not entered";
 function closeDuePop() { document.querySelector(".duepop")?.remove(); }
 // While the popup is open, a tap outside it only closes it: the tap is caught here and goes no further.
 document.addEventListener("click", e => {
