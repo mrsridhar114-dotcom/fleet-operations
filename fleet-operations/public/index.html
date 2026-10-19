@@ -1103,6 +1103,74 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .bstage.rejected { background: var(--danger-soft); color: var(--danger); }
 .acc b.request, .acc b.update { background: var(--warn-soft); color: var(--warn); }
 .nav .badge[hidden] { display: none; }
+/* ---------- easy booking on phones: one question per screen ---------- */
+html.bw-on, html.bw-on body { overflow: hidden; }
+.bw { position: fixed; inset: 0; z-index: 45; background: var(--bg); color: var(--ink); display: flex; flex-direction: column; font-family: var(--body); padding-top: env(safe-area-inset-top, 0px); }
+.bwh { background: var(--side-bg); color: var(--side-ink); display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 44px; }
+.bwh div { display: flex; flex-direction: column; } .bwh b { font: 700 22px/1.1 var(--display); } .bwh span { font-size: 14px; color: var(--side-muted); }
+.bwx { width: 44px; height: 44px; flex: none; border-radius: 10px; border: 1px solid var(--side-line); background: transparent; color: var(--side-ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
+.bwx svg, .bwnav svg { width: 22px; height: 22px; }
+.bwbar { background: var(--side-bg); padding: 0 16px 14px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+.bwbar i { height: 6px; border-radius: 3px; background: var(--side-line); } .bwbar i.on { background: #8ccf5e; }
+.bwb { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 16px; overscroll-behavior: contain; }
+.bwb h2 { margin: 0; font: 700 30px/1.1 var(--display); }
+.bwhint { margin: -8px 0 0; font-size: 18px; font-weight: 600; line-height: 1.3; } .bwhint.ok { color: var(--accent); }
+.bwcal { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+.bwmh { display: flex; align-items: center; justify-content: space-between; } .bwmh b { font-size: 21px; }
+.bwnav { width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; } .bwnav:disabled { opacity: .3; cursor: default; }
+.bwwk, .bwgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.bwwk span { text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); }
+.bwd { height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 19px var(--body); padding: 0; cursor: pointer; }
+.bwd:disabled { border-color: transparent; background: transparent; color: var(--muted); opacity: .45; font-weight: 500; cursor: default; }
+.bwd.t { box-shadow: inset 0 -3px 0 var(--accent); }
+.bwd.in { background: var(--accent-soft); border-color: var(--accent-soft); }
+.bwd.e { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: none; }
+.bwd.h { background: #8ccf5e; border: 2px dashed var(--accent); color: #0a1f16; }
+.bwsum { background: var(--accent-soft); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.bwsr { display: flex; align-items: center; gap: 14px; }
+.bwdays { min-width: 64px; height: 64px; padding: 0 6px; box-sizing: border-box; border-radius: 14px; background: var(--accent); color: var(--accent-ink); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; } .bwdays b { font-size: 28px; } .bwdays span { font-size: 13px; font-weight: 600; }
+.bwsr > div:last-child { display: flex; flex-direction: column; gap: 2px; font-size: 19px; font-weight: 700; } .bwsr > div:last-child span { font-weight: 500; color: var(--muted); }
+.bwhalf { border-top: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); padding-top: 12px; display: flex; flex-direction: column; gap: 10px; } .bwhalf p { margin: 0; font-size: 17px; font-weight: 600; }
+.bwseg { display: grid; gap: 8px; } .bwseg.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bwseg.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .bwseg.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.bwseg button, .bwchips button, .bwtels button { min-height: 50px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 17px var(--body); padding: 0 6px; cursor: pointer; }
+.bwseg button[aria-pressed="true"], .bwchips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.bwseg.c4 button { min-height: 46px; font-size: 15px; }
+.bwseg.c4 button[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); border: 2px solid var(--accent); }
+.bwbus { display: flex; align-items: center; gap: 14px; text-align: left; padding: 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.bwbus.sel { border: 3px solid var(--accent); padding: 12px; }
+.bwbus:disabled { background: color-mix(in srgb, var(--line) 40%, var(--bg)); border-style: dashed; color: var(--muted); cursor: default; } .bwbus:disabled .bwph { opacity: .5; filter: grayscale(1); }
+.bwph { width: 112px; height: 84px; flex: none; border-radius: 12px; overflow: hidden; background: var(--chip-bg); display: grid; place-items: center; color: var(--accent); } .bwph img { width: 100%; height: 100%; object-fit: cover; display: block; } .bwph svg { width: 40px; height: 40px; }
+.bwbi { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; font-size: 16px; font-weight: 600; } .bwbi .plate { font-size: 17px; } .bwbi .ok { color: var(--ok); } .bwbi .bad { color: var(--danger); } .bwbi .warn { color: var(--hot); font-size: 14px; }
+.bwtick { width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; } .bwtick svg { width: 20px; height: 20px; }
+.bwf1 { display: flex; flex-direction: column; gap: 8px; } .bwf1 > span:first-child, .bwlr { font-size: 18px; font-weight: 600; } .bwf1 i { font-style: normal; font-weight: 500; color: var(--muted); }
+.bwlr { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .bwlr em { font-style: normal; font-size: 13px; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 4px 10px; }
+.bwf1 small, .bwsm { font-size: 14px; color: var(--muted); } .bwsm { margin-top: -8px; }
+.bwf1 input[type=text], .bwf1 textarea, .bwin { box-sizing: border-box; width: 100%; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 21px var(--body); }
+.bwf1 input[type=text] { height: 60px; padding: 0 16px; } .bwf1 textarea { padding: 12px 16px; line-height: 1.35; resize: none; }
+.bwin { display: flex; align-items: center; gap: 6px; height: 60px; padding: 0 12px; } .bwin input { flex: 1; min-width: 0; border: 0; background: transparent; color: inherit; font: 700 22px var(--body); outline: none; height: 100%; padding: 0; }
+.bwin.big { border: 2px solid var(--accent); height: 64px; padding: 0 8px 0 16px; } .bwin.big input { font-size: 25px; letter-spacing: .03em; }
+.bwin.main { border: 2px solid var(--accent); } .bwin b { font-size: 21px; color: var(--muted); }
+.bwin:focus-within, .bwf1 input[type=text]:focus, .bwf1 textarea:focus { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
+.bwct { width: 48px; height: 48px; flex: none; border-radius: 50%; border: 0; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; padding: 0; cursor: pointer; } .bwct svg { width: 26px; height: 26px; }
+.bwchips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bwtels { display: flex; flex-direction: column; gap: 8px; } .bwtels p { margin: 0; font-size: 15px; font-weight: 600; }
+.bw2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .bw2 .bwf1 > span:first-child { font-size: 16px; line-height: 1.2; min-height: 2.4em; display: flex; align-items: flex-end; }
+.bwtot { background: var(--accent-soft); border-radius: 14px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 17px; } .bwtot b { font-size: 23px; }
+.bwbox { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.bwlink { align-self: flex-start; min-height: 44px; border: 0; background: none; color: var(--accent); font: 600 17px var(--body); padding: 0 4px; cursor: pointer; }
+.bwcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+.bwrow { display: flex; gap: 10px; align-items: flex-start; padding: 12px 10px 12px 16px; border-bottom: 1px solid var(--line); } .bwrow:last-child { border-bottom: 0; }
+.bwrow > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; font-size: 15px; color: var(--muted); } .bwrow small { font-size: 14px; } .bwrow b { font-size: 18px; color: var(--ink); } .bwrow .plate { align-self: flex-start; } .bwrow .bwlink { min-height: 40px; }
+.bwm { display: flex; justify-content: space-between; gap: 8px; font-size: 16px; color: var(--ink); } .bwm b { font-size: 17px; } .bwm.bal, .bwm.bal b { color: var(--danger); font-weight: 700; } .bwm.padi { color: var(--muted); border-top: 1px dashed var(--line); padding-top: 6px; }
+.bwnote { margin: 0; font-size: 15px; color: var(--muted); }
+.bwerr { color: var(--danger); font-size: 14px; font-weight: 600; } .bwerr:empty { display: none; }
+.bwf { background: var(--surface); border-top: 1px solid var(--line); padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px)); } .bwf.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bwgo, .bwalt, .bwwa { box-sizing: border-box; width: 100%; height: 58px; border-radius: 14px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 20px var(--body); display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; cursor: pointer; }
+.bwgo:disabled { background: var(--chip-bg); color: var(--muted); cursor: default; } .bwgo svg, .bwwa svg { width: 22px; height: 22px; flex: none; }
+.bwalt { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-size: 18px; } .bwf.two .bwgo { font-size: 18px; }
+.bwdone { align-items: center; text-align: center; padding-top: 40px; } .bwbig { width: 96px; height: 96px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; } .bwbig svg { width: 54px; height: 54px; }
+.bwdone p { margin: 0; font-size: 17px; color: var(--muted); line-height: 1.4; } .bwdone .bwno { font-size: 20px; font-weight: 600; color: var(--ink); }
+.bwwa { background: #1f8f4e; color: #fff; margin-top: 14px; }
 </style>
 
 <div class="topbar">
@@ -5990,14 +6058,216 @@ $("bAvail").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.clear) { bSelA = bSelB = ""; renderSpare(); return; }
   if (b.dataset.bk) { openBooking(b.dataset.bk); return; }
-  if (b.dataset.book) { const [lo, hi] = bkRange(); openBooking(null, { vehicleId: b.dataset.book, from: lo, to: hi }); }
+  if (b.dataset.book) { const [lo, hi] = bkRange(); if (bwIsPhone() && canBookReq) { bwOpen({ vehicleId: b.dataset.book, from: lo, to: hi }); return; } openBooking(null, { vehicleId: b.dataset.book, from: lo, to: hi }); }
 });
 $("bList").addEventListener("click", e => { const r = e.target.closest("tr[data-bk]"); if (r) openBooking(r.dataset.bk); });
 $("bList").addEventListener("keydown", e => { const r = e.target.closest("tr[data-bk]"); if (r && e.key === "Enter") openBooking(r.dataset.bk); });
 $("bPrevM").onclick = () => { bMonth = ymAdd(bMonth, -1); renderSpare(); };
 $("bNextM").onclick = () => { bMonth = ymAdd(bMonth, 1); renderSpare(); };
 $("bToday").onclick = () => { bMonth = todayISO().slice(0, 7); renderSpare(); };
-$("sAdd").onclick = () => { const [lo, hi] = bkRange(); openBooking(null, lo ? { from: lo, to: hi } : null); };
+$("sAdd").onclick = () => { const [lo, hi] = bkRange(); if (bwIsPhone() && canBookReq) { bwOpen(lo ? { from: lo, to: hi } : null); return; } openBooking(null, lo ? { from: lo, to: hi } : null); };
+/* ---------- Easy booking on phones: one question per screen ----------
+   A new booking on a phone goes through six short steps (dates, bus, party, places, money, check). Saving fills the
+   full booking form behind the scenes and saves it the usual way, so the booking, its checks, approvals and history
+   are exactly the same as one made in the full form. Opening a saved booking still uses the full form. */
+const bwIsPhone = () => matchMedia("(max-width: 700px)").matches;
+let bw = null, bwBusy = false;
+const BW_ICON = {
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
+  next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
+  ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M4 7h3M4 12h3M4 17h3"/><circle cx="12.5" cy="10" r="2.6"/><path d="M8.8 16.5a4 4 0 0 1 7.4 0"/></svg>',
+  bus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 21v-3M16 21v-3"/><circle cx="8" cy="14.5" r="1"/><circle cx="16" cy="14.5" r="1"/></svg>',
+  wa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"/></svg>'
+};
+const BW_TITLES = ["Trip dates", "Which bus?", "Who is booking?", "Where are they going?", "Rent and advance", "Check and save"];
+const bwFmt = iso => iso ? new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "";
+const bwHalfTxt = d => d === .5 ? "½" : Number.isInteger(d) ? String(d) : Math.floor(d) + "½";
+const bwWhole = () => bw.from && bw.to ? dayDiff(bw.from, bw.to) + 1 : 0;
+const bwDays = () => { const w = bwWhole(); return w ? w - (bw.half !== "none" ? .5 : 0) : 0; };
+const bwDayWord = d => d <= 1 ? "day" : "days";
+const bwHasContacts = () => "contacts" in navigator && "ContactsManager" in window;
+const bwClash = () => bw.vehicleId && bw.from ? clashOf({ vehicleId: bw.vehicleId, from: bw.from, to: bw.to || bw.from }) : null;
+
+function bwOpen(preset) {
+  const t = todayISO(), start = preset?.from && preset.from >= t ? preset.from : "";
+  bw = { step: 0, y: +(start || t).slice(0, 4), m: +(start || t).slice(5, 7) - 1, from: start, to: start ? (preset.to || start) : "", half: "none",
+    vehicleId: preset?.vehicleId || "", phone: "", party: "", fromContact: false, tels: null, bookedBy: "", places: "", address: "",
+    rate: "", padi: "", adv: "", mode: "Cash", remarks: "", showRem: false, saving: false, done: null };
+  if (!$("bw")) {
+    document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="bw" role="dialog" aria-modal="true" aria-labelledby="bwTitle" hidden></div>');
+    $("bw").addEventListener("click", bwClick);
+    $("bw").addEventListener("input", bwInput);
+  }
+  $("bw").hidden = false; document.documentElement.classList.add("bw-on");
+  bwRender(true);
+}
+function bwClose() { if ($("bw")) $("bw").hidden = true; document.documentElement.classList.remove("bw-on"); bw = null; }
+function bwCanNext() {
+  const s = bw.step;
+  if (s === 0) return !!(bw.from && bw.to);
+  if (s === 1) return !!bw.vehicleId && !bwClash();
+  if (s === 2) { const d = bw.phone.replace(/\D/g, "").length; return !!bw.party.trim() && (d === 0 || d >= 10); }
+  if (s === 4) return num(bw.rate) > 0 && num(bw.adv) > 0;
+  return true;
+}
+function bwRender(top) {
+  const el = $("bw"), s = bw.step;
+  if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
+  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="${s ? "back" : "close"}" aria-label="${s ? "Back" : "Close"}">${s ? BW_ICON.back : BW_ICON.x}</button><div><b id="bwTitle">New booking</b><span>Step ${s + 1} of 6</span></div></header>` +
+    `<div class="bwbar" aria-hidden="true">${BW_TITLES.map((_, i) => `<i class="${i <= s ? "on" : ""}"></i>`).join("")}</div>` +
+    `<div class="bwb" id="bwBody"><h2>${BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
+    `<footer class="bwf">${s < 5 ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>Next ${BW_ICON.next}</button>`
+      : `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : canBookings ? "Save booking" : "Send for approval"}</button>`}</footer>`;
+  if (top) $("bwBody").scrollTop = 0;
+}
+function bwDatesHtml() {
+  const { y, m, from, to } = bw, t = todayISO(), first = new Date(y, m, 1).getDay(), n = new Date(y, m + 1, 0).getDate();
+  const iso = d => `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  let cells = "";
+  for (let i = 0; i < first; i++) cells += "<span></span>";
+  for (let d = 1; d <= n; d++) {
+    const v = iso(d), past = v < t, edge = v === from || v === to, inside = !!(from && to && v > from && v < to);
+    const half = !!(from && to && ((bw.half === "first" && v === from) || (bw.half === "last" && v === to)));
+    cells += `<button type="button" class="bwd${edge ? " e" : ""}${inside ? " in" : ""}${half ? " h" : ""}${v === t ? " t" : ""}" data-day="${v}"${past ? " disabled" : ""} aria-pressed="${edge || inside}" aria-label="${bwFmt(v)}">${d}${half ? "½" : ""}</button>`;
+  }
+  const atStart = `${y}-${String(m + 1).padStart(2, "0")}` <= t.slice(0, 7);
+  const hint = !from ? "Tap the day the trip starts" : !to ? "Now tap the last day (the same day again for a 1-day trip)" : "Done. Tap a new day to start again.";
+  const w = bwWhole(), dd = bwDays(), opt = (v, l) => `<button type="button" data-half="${v}" aria-pressed="${bw.half === v}">${l}</button>`;
+  return `<p class="bwhint${to ? " ok" : ""}">${hint}</p>` +
+    `<div class="bwcal"><div class="bwmh"><button type="button" class="bwnav" data-bw="pm" aria-label="Previous month"${atStart ? " disabled" : ""}>${BW_ICON.back}</button><b>${new Date(y, m, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</b><button type="button" class="bwnav" data-bw="nm" aria-label="Next month">${BW_ICON.next}</button></div>` +
+    `<div class="bwwk" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="bwgrid">${cells}</div></div>` +
+    (from && to ? `<div class="bwsum"><div class="bwsr"><div class="bwdays"><b>${bwHalfTxt(dd)}</b><span>${bwDayWord(dd)}</span></div><div><span style="color:var(--ink);font-weight:700">${bwFmt(from)}</span><span>to ${bwFmt(to)}</span></div></div>` +
+      `<div class="bwhalf"><p>${w === 1 ? "Only half a day?" : "Is any day only half a day?"}</p><div class="bwseg ${w === 1 ? "c2" : "c3"}">${w === 1 ? opt("none", "No, full day") + opt("last", "Yes, half day") : opt("none", "No") + opt("first", "First day") + opt("last", "Last day")}</div></div></div>` : "");
+}
+function bwBusHtml() {
+  const buses = spareBuses();
+  if (!buses.length) return `<p class="bwnote">No spare buses yet. Add a vehicle with class Bus and operation type Spare under Masters › Vehicle.</p>`;
+  return `<p class="bwhint">${bwFmt(bw.from)}${bw.to !== bw.from ? ` to ${bwFmt(bw.to)}` : ""}</p>` + buses.map(v => {
+    const c = clashOf({ vehicleId: v.id, from: bw.from, to: bw.to }), ph = fileOf(v, "photo"), sel = bw.vehicleId === v.id && !c;
+    const bad = c ? [] : busChecks(v.id, bw.from, bw.to).filter(x => x.lvl === "bad");
+    return `<button type="button" class="bwbus${sel ? " sel" : ""}" data-bus="${v.id}"${c ? " disabled" : ""} aria-pressed="${sel}">` +
+      `<span class="bwph">${ph ? `<img src="/_blob/${encodeURIComponent(ph.id)}" alt="Photo of ${esc(plateOf(v))}" loading="lazy">` : BW_ICON.bus}</span>` +
+      `<span class="bwbi"><span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` +
+      `<span class="${c ? "bad" : "ok"}">${c ? `Already booked ${fmtShort(c.from)}${bkEnd(c) !== c.from ? ` – ${fmtShort(bkEnd(c))}` : ""}` : "Free on these days"}</span>` +
+      (bad.length ? `<span class="warn">${esc(bad[0].msg)}</span>` : "") + `</span>${sel ? `<span class="bwtick">${BW_ICON.ok}</span>` : ""}</button>`;
+  }).join("");
+}
+function bwPartyHtml() {
+  const dr = drivers.filter(d => d.status !== "Inactive" && vCatsOf(d).includes("Spare bus"));
+  return `<label class="bwf1"><span>Phone number</span><span class="bwin big"><input type="tel" inputmode="numeric" autocomplete="off" maxlength="14" data-k="phone" value="${esc(bw.phone)}" placeholder="10-digit mobile" aria-label="Phone number">` +
+      (bwHasContacts() ? `<button type="button" class="bwct" data-bw="contacts" aria-label="Choose from phone contacts" title="Choose from phone contacts">${BW_ICON.book}</button>` : "") + `</span><span class="bwerr" id="bwPhErr"></span></label>` +
+    (bw.tels ? `<div class="bwtels"><p>Which number?</p>${bw.tels.map(t => `<button type="button" data-tel="${t}">${t.slice(0, 5)} ${t.slice(5)}</button>`).join("")}</div>` : "") +
+    `<label class="bwf1"><span class="bwlr">Party name${bw.fromContact ? " <em>From contacts</em>" : ""}</span><input type="text" data-k="party" autocomplete="off" maxlength="80" value="${esc(bw.party)}">${bw.fromContact ? "<small>Change it if the contact name is not right.</small>" : ""}</label>` +
+    `<div class="bwf1"><span>Booked by</span>${dr.length ? `<div class="bwchips">${dr.map(d => `<button type="button" data-bb="${d.id}" aria-pressed="${bw.bookedBy === d.id}">${esc(d.name)}</button>`).join("")}</div>`
+      : "<small>No spare bus drivers yet. In Driver master, tick Bus and then Spare bus for the drivers who bring bookings.</small>"}</div>`;
+}
+function bwPlacesHtml() {
+  return `<label class="bwf1"><span>Places</span><textarea rows="3" data-k="places" maxlength="200" placeholder="e.g. Palani, Kodaikanal">${esc(bw.places)}</textarea></label>` +
+    `<label class="bwf1"><span>Pick-up place <i>(if known)</i></span><input type="text" data-k="address" maxlength="160" value="${esc(bw.address)}" placeholder="Street or area"></label>`;
+}
+const bwTotHtml = () => { const dd = bwDays(); return `<span>${bwHalfTxt(dd)} ${bwDayWord(dd)} × ${rs(num(bw.rate))}</span><b>${rs(num(bw.rate) * dd)}</b>`; };
+function bwMoneyHtml() {
+  return `<div class="bw2"><label class="bwf1"><span>Rent for one day</span><span class="bwin main"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="rate" value="${esc(bw.rate)}" aria-label="Rent for one day"></span></label>` +
+    `<label class="bwf1"><span>Driver padi from party</span><span class="bwin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="padi" value="${esc(bw.padi)}" aria-label="Driver padi from party"></span></label></div>` +
+    `<small class="bwsm">Driver padi is not added to the rent.</small><div class="bwtot" id="bwTot">${bwTotHtml()}</div>` +
+    `<div class="bwf1"><span>Advance received</span><div class="bwbox"><span class="bwin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="adv" value="${esc(bw.adv)}" placeholder="Amount" aria-label="Advance amount"></span>` +
+    `<div class="bwseg c4" role="group" aria-label="Paid by">${PAY_MODES.map(m => `<button type="button" data-mode="${esc(m)}" aria-pressed="${bw.mode === m}">${m === "Bank transfer" ? "Bank" : esc(m)}</button>`).join("")}</div></div>` +
+    `<small>An advance is needed to hold the bus.</small></div>` +
+    (bw.showRem ? `<label class="bwf1"><span>Remarks</span><textarea rows="2" data-k="remarks" maxlength="300">${esc(bw.remarks)}</textarea></label>` : `<button type="button" class="bwlink" data-bw="rem">+ Add remarks</button>`);
+}
+function bwCheckHtml() {
+  const v = vehicles.find(x => x.id === bw.vehicleId), dd = bwDays(), rent = Math.round(num(bw.rate) * dd), adv = Math.round(num(bw.adv));
+  const bb = drivers.find(d => d.id === bw.bookedBy)?.name, padi = Math.round(num(bw.padi));
+  const row = (k, body, step) => `<div class="bwrow"><div><small>${k}</small>${body}</div><button type="button" class="bwlink" data-goto="${step}">Change</button></div>`;
+  return `<div class="bwcard">` +
+    row("Dates", `<b>${bwFmt(bw.from)}${bw.to !== bw.from ? ` to ${bwFmt(bw.to)}` : ""} (${bwHalfTxt(dd)} ${bwDayWord(dd)})</b>${bw.half !== "none" && bwWhole() > 1 ? `<span>Half day on the ${bw.half} day</span>` : ""}`, 0) +
+    row("Bus", v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : "<b>—</b>", 1) +
+    row("Party", `<b>${esc(bw.party.trim() || "—")}${bw.phone.trim() ? ` · ${esc(bw.phone.trim())}` : ""}</b>${bb ? `<span>Booked by ${esc(bb)}</span>` : ""}`, 2) +
+    row("Going to", `<b>${esc(bw.places.trim() || "—")}</b>${bw.address.trim() ? `<span>Pick-up: ${esc(bw.address.trim())}</span>` : ""}`, 3) +
+    row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span><span class="bwm bal"><span>Balance</span><b>${rs(rent - adv)}</b></span>` +
+      (padi ? `<span class="bwm padi"><span>Driver padi (paid to driver, not office)</span><b>${rs(padi)}</b></span>` : "") + (bw.remarks.trim() ? `<span>Remarks: ${esc(bw.remarks.trim())}</span>` : ""), 4) +
+    `</div>` + (canBookings ? "" : `<p class="bwnote">This goes to the admin for approval.</p>`);
+}
+function bwDoneHtml() {
+  const d = bw.done, pn = waNum(d.phone);
+  return `<header class="bwh"><div><b id="bwTitle">Booking planner</b></div></header><div class="bwb bwdone" id="bwBody"><span class="bwbig">${BW_ICON.ok}</span>` +
+    `<h2>${d.pending ? "Sent for approval" : "Booking saved"}</h2><p class="bwno">Booking no. ${esc(d.no)}</p><p>${esc(d.line1)}<br>${esc(d.line2)}</p>` +
+    (pn ? `<a class="bwwa" href="https://wa.me/${pn}?text=${encodeURIComponent(d.msg)}" target="_blank" rel="noopener">${BW_ICON.wa} Send to party on WhatsApp</a>` : "") +
+    `</div><footer class="bwf two"><button type="button" class="bwgo" data-bw="again">+ New booking</button><button type="button" class="bwalt" data-bw="close">See planner</button></footer>`;
+}
+function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext(); }
+function bwInput(e) {
+  const k = e.target.dataset.k; if (!k || !bw) return;
+  bw[k] = e.target.value;
+  if (k === "party" && bw.fromContact) bw.fromContact = false;
+  if (k === "phone") { const d = bw.phone.replace(/\D/g, "").length; $("bwPhErr").textContent = d && d < 10 ? "Enter all 10 digits." : ""; }
+  if (k === "rate" && $("bwTot")) $("bwTot").innerHTML = bwTotHtml();
+  bwSyncNext();
+}
+async function bwPickContact() {
+  try {
+    const c = (await navigator.contacts.select(["name", "tel"], { multiple: false }))?.[0]; if (!c) return;
+    const tels = [...new Set((c.tel || []).map(t => String(t).replace(/\D/g, "").slice(-10)).filter(t => t.length === 10))];
+    const nm = String((c.name || [])[0] || "").trim();
+    if (nm && !bw.party.trim()) { bw.party = nm; bw.fromContact = true; }
+    if (tels.length === 1) { bw.phone = tels[0].slice(0, 5) + " " + tels[0].slice(5); bw.tels = null; }
+    else if (tels.length > 1) bw.tels = tels;
+    else toast("This contact has no 10-digit mobile number.");
+    bwRender();
+  } catch { /* the person closed the contact list */ }
+}
+function bwClick(e) {
+  if (!bw) return;
+  const t = e.target.closest("button, a"); if (!t || t.disabled) return;
+  const a = t.dataset.bw;
+  if (a === "close") { bwClose(); return; }
+  if (a === "again") { bwOpen(); return; }
+  if (a === "back") { bw.step--; bw.tels = null; bwRender(true); return; }
+  if (a === "next") { if (bwCanNext()) { bw.step++; bwRender(true); } return; }
+  if (a === "pm" || a === "nm") { const d = new Date(bw.y, bw.m + (a === "nm" ? 1 : -1), 1); bw.y = d.getFullYear(); bw.m = d.getMonth(); bwRender(); return; }
+  if (a === "contacts") { bwPickContact(); return; }
+  if (a === "rem") { bw.showRem = true; bwRender(); $("bw").querySelector('[data-k="remarks"]')?.focus(); return; }
+  if (a === "save") { bwSave(); return; }
+  if (t.dataset.day) { const v = t.dataset.day; if (!bw.from || bw.to) { bw.from = v; bw.to = ""; bw.half = "none"; } else if (v < bw.from) bw.from = v; else bw.to = v; bwRender(); return; }
+  if (t.dataset.half) { bw.half = t.dataset.half; bwRender(); return; }
+  if (t.dataset.bus) { bw.vehicleId = t.dataset.bus; bwRender(); return; }
+  if (t.dataset.bb) { bw.bookedBy = bw.bookedBy === t.dataset.bb ? "" : t.dataset.bb; bwRender(); return; }
+  if (t.dataset.tel) { bw.phone = t.dataset.tel.slice(0, 5) + " " + t.dataset.tel.slice(5); bw.tels = null; bwRender(); return; }
+  if (t.dataset.mode) { bw.mode = t.dataset.mode; bwRender(); return; }
+  if (t.dataset.goto) { bw.step = +t.dataset.goto; bwRender(true); }
+}
+// Fill the full booking form and save it exactly as the Save button there would.
+async function bwSave() {
+  if (bw.saving) return;
+  bw.saving = true; bwRender(); bwBusy = true;
+  try {
+    openBooking(null, { vehicleId: bw.vehicleId, from: bw.from, to: bw.to });
+    $("bkParty").value = bw.party.trim(); $("bkPhone").value = bw.phone.trim(); $("bkAddress").value = bw.address.trim();
+    $("bkPlaces").value = bw.places.trim(); $("bkRemarks").value = bw.remarks.trim();
+    $("bkBookedBy").value = bw.bookedBy ? "id:" + bw.bookedBy : "";
+    $("bkDays").value = bwDays(); bkDaysTouched = true;
+    $("bkRate").value = bw.rate; $("bkPadi").value = bw.padi; bkRentTouched = false;
+    if (!$("bkPays").querySelector(".payrow")) $("bkPays").innerHTML = bkPayRow({ date: todayISO(), note: "Advance" });
+    const pr = $("bkPays").querySelector(".payrow");
+    pr.querySelector("[data-pd]").value = todayISO(); pr.querySelector("[data-pa]").value = Math.round(num(bw.adv));
+    pr.querySelector("[data-pm]").value = bw.mode; pr.querySelector("[data-pn]").value = "Advance";
+    bkSaveAs = "submit"; syncBk();
+    const no = $("bkNo").value.trim(), msg = bkMsgTexts().party, v = vehicles.find(x => x.id === bw.vehicleId), dd = bwDays();
+    const info = { no, msg, phone: bw.phone, pending: !canBookings,
+      line1: `${v ? plateOf(v) : ""} · ${bwFmt(bw.from)}${bw.to !== bw.from ? ` to ${bwFmt(bw.to)}` : ""} (${bwHalfTxt(dd)} ${bwDayWord(dd)})`,
+      line2: [bw.party.trim(), bw.places.trim()].filter(Boolean).join(" · ") };
+    $("bkForm").requestSubmit();
+    // A problem the form found shows straight away; otherwise wait for the save to finish and the form to close.
+    const failed = () => !$("bkDrawer").hidden && [...$("bkForm").querySelectorAll(".err")].some(x => x.textContent.trim());
+    for (let i = 0; i < 100 && !failed() && !$("bkDrawer").hidden; i++) await new Promise(r => setTimeout(r, 150));
+    if (!$("bkDrawer").hidden) { bwClose(); toast(failed() ? "Please check the highlighted field." : "Still saving. Check the booking form."); return; }
+    if (!ops.bookings.some(x => String(x.no) === no)) { bw.saving = false; bwRender(); return; }
+    bw.done = info; bw.saving = false; bwRender(true);
+  } finally { bwBusy = false; if (bw) bw.saving = false; }
+}
+
 
 function bkPayRow(p = {}) {
   return `<div class="payrow bk"><label class="pf"><span>Date</span><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></label><label class="pf"><span>Amount (₹)</span><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" placeholder="Amount ₹" aria-label="Amount"></label>
@@ -6122,7 +6392,7 @@ function openBooking(id, preset) {
   $("bkMore").closest("footer").classList.remove("more-open"); $("bkMore").setAttribute("aria-expanded", "false");
   $("bkWarn").classList.toggle("open", innerWidth > 700);
   $("scrim").hidden = false; $("bkDrawer").hidden = false; $("bkForm").scrollTop = 0;
-  setTimeout(() => (canE && bkTab === "slip" ? $("bkParty") : $("bkTab-" + bkTab)).focus({ preventScroll: true }), 30);
+  if (!bwBusy) setTimeout(() => (canE && bkTab === "slip" ? $("bkParty") : $("bkTab-" + bkTab)).focus({ preventScroll: true }), 30);
 }
 let bkTripEdit = false;
 const bkFilesEdit = () => bkMode === "edit" || bkMode === "request" || (bkMode === "trip" && bkTripEdit);
