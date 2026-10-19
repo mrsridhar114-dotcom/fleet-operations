@@ -1242,6 +1242,14 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .twcam i { position: absolute; top: -7px; right: -7px; background: #8ccf5e; color: #0a1f16; border-radius: 999px; font: 700 12px var(--body); font-style: normal; padding: 2px 6px; }
 .twcard { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; color: var(--ink); font: inherit; cursor: pointer; }
 .twcard:disabled { cursor: default; opacity: 1; }
+div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor: default; }
+.twmain { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; } .twmain:disabled { cursor: default; opacity: 1; }
+.twdel { width: 58px; flex: none; border: 0; border-left: 1px solid var(--line); background: none; color: var(--danger); display: grid; place-items: center; cursor: pointer; padding: 0; } .twdel svg { width: 24px; height: 24px; }
+.twdel:active { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+div.twask { align-items: center; gap: 8px; padding: 10px 10px 10px 14px; border: 2px solid var(--danger); background: color-mix(in srgb, var(--danger) 7%, var(--surface)); }
+.twask b { flex: 1; min-width: 0; font-size: 16px; color: var(--danger); line-height: 1.2; }
+.twno, .twyes { height: 46px; border-radius: 12px; font: 700 16px var(--body); padding: 0 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.twno { border: 1px solid var(--line); background: var(--surface); color: var(--ink); } .twyes { border: 0; background: var(--danger); color: #fff; } .twyes svg { width: 18px; height: 18px; }
 .twn { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font: 700 18px var(--body); } .twn.twk { border-radius: 12px; font-size: 22px; }
 .twci { flex: 1; min-width: 0; display: flex; flex-direction: column; } .twci b { font-size: 18px; } .twci span { font-size: 14px; color: var(--muted); }
 .twok { font-size: 13px; font-weight: 700; color: var(--ok); white-space: nowrap; }
@@ -6465,6 +6473,9 @@ const TW_MONEY = [["padiPaid", "Driver padi"], ["cleanerPadi", "Cleaner padi"], 
 const TW_KINDS = [["Pooja", "🪔"], ["Mechanic", "🔧"], ["Other", "➕"]];
 const TW_CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
 const TW_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+const TW_BIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+// Delete straight from the list: the bin asks once more on the same card, so a slip of the thumb doesn't remove anything.
+const twAskHtml = (q, key) => `<div class="twcard twask" role="alert"><b>${q}</b><button type="button" class="twno" data-tw="asknot">No</button><button type="button" class="twyes" data-del="${esc(key)}"${tw.saving ? " disabled" : ""}>${TW_BIN} Delete</button></div>`;
 const twBk = () => tw ? ops.bookings.find(x => x.id === tw.id) : null;
 const twFills = () => { const b = twBk(); return [...dslLegacyOf(b).map(r => ({ ...r, legacy: true })), ...dslLinked(tw.id).map(f => ({ ...flToDsl(f), bunk: f.bunk || "", file: f.file || null }))].sort((a, c) => String(a.date || "").localeCompare(String(c.date || ""))); };
 const twPP = k => { const b = twBk(); return !!b && !!(b.partyPays || ppDefaults(b.rentType || "mt"))[k]; };
@@ -6497,7 +6508,7 @@ function twOpen(b) {
       const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
       const n = tw.step + (dx < 0 ? 1 : -1); if (n < 0 || n > 4 || !tw.edit) return;
-      tw.step = n; tw.slide = dx < 0 ? "l" : "r"; twRender(true);
+      tw.step = n; tw.askDel = ""; tw.slide = dx < 0 ? "l" : "r"; twRender(true);
     }, { passive: true });
   }
   $("tw").hidden = false; document.documentElement.classList.add("bw-on");
@@ -6515,7 +6526,9 @@ function twMoneyHtml() {
 }
 function twDieselHtml() {
   const rows = twFills(), L = rows.reduce((a, r) => a + num(r.litres), 0), A = rows.reduce((a, r) => a + num(r.amount), 0), pp = twPP("diesel");
-  const card = (r, i) => `<button type="button" class="twcard"${r.fuelLogId && tw.edit ? ` data-fl="${esc(r.fuelLogId)}"` : " disabled"}><span class="twn">${i + 1}</span><span class="twci"><b>${nf(num(r.litres), 2)} litres${pp ? "" : ` · ${rs(num(r.amount))}`}</b><span>${[r.date ? fmtDate(r.date) : "", r.bunk].filter(Boolean).join(" · ") || "Diesel"}</span></span>${r.file ? `<span class="twok">✓ Bill</span>` : ""}</button>`;
+  const card = (r, i) => tw.askDel === "fl:" + r.fuelLogId ? twAskHtml(`Delete fill ${i + 1}?`, "fl:" + r.fuelLogId)
+    : `<div class="twcard"><button type="button" class="twmain"${r.fuelLogId && tw.edit ? ` data-fl="${esc(r.fuelLogId)}"` : " disabled"}><span class="twn">${i + 1}</span><span class="twci"><b>${nf(num(r.litres), 2)} litres${pp ? "" : ` · ${rs(num(r.amount))}`}</b><span>${[r.date ? fmtDate(r.date) : "", r.bunk].filter(Boolean).join(" · ") || "Diesel"}</span></span>${r.file ? `<span class="twok">✓ Bill</span>` : ""}</button>` +
+      (r.fuelLogId && tw.edit ? `<button type="button" class="twdel" data-ask="fl:${esc(r.fuelLogId)}" aria-label="Delete fill ${i + 1}">${TW_BIN}</button>` : "") + `</div>`;
   const f = tw.fill;
   const form = f ? `<div class="twform"><b style="font-size:18px">${f.id ? "Change this fill" : `Fill ${rows.length + 1}`}</b>
       <div class="bw2"><label class="bwf1"><span>Litres</span><span class="bwin main"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl.litres" value="${esc(f.litres)}" aria-label="Litres"><b>L</b></span></label>
@@ -6529,7 +6542,9 @@ function twDieselHtml() {
     (form || (tw.edit ? `<button type="button" class="twadd" data-tw="fladd">${TW_PLUS} Add diesel fill</button>` : rows.length ? "" : `<p class="bwnote">No diesel entered.</p>`));
 }
 function twOtherHtml() {
-  const card = (x, i) => `<button type="button" class="twcard" data-oth="${i}"${tw.edit ? "" : " disabled"}><span class="twn twk" aria-hidden="true">${(TW_KINDS.find(k => k[0] === x.kind) || TW_KINDS[2])[1]}</span><span class="twci"><b>${esc(x.kind)} · ${rs(num(x.amt))}</b>${x.note ? `<span>${esc(x.note)}</span>` : ""}</span>${x.fileId ? `<span class="twok">✓ Bill</span>` : ""}</button>`;
+  const card = (x, i) => tw.askDel === "oth:" + i ? twAskHtml(`Delete ${esc(x.kind)} · ${rs(num(x.amt))}?`, "oth:" + i)
+    : `<div class="twcard"><button type="button" class="twmain" data-oth="${i}"${tw.edit ? "" : " disabled"}><span class="twn twk" aria-hidden="true">${(TW_KINDS.find(k => k[0] === x.kind) || TW_KINDS[2])[1]}</span><span class="twci"><b>${esc(x.kind)} · ${rs(num(x.amt))}</b>${x.note ? `<span>${esc(x.note)}</span>` : ""}</span>${x.fileId ? `<span class="twok">✓ Bill</span>` : ""}</button>` +
+      (tw.edit ? `<button type="button" class="twdel" data-ask="oth:${i}" aria-label="Delete ${esc(x.kind)}">${TW_BIN}</button>` : "") + `</div>`;
   return `<p class="bwhint" style="font-weight:500;color:var(--muted)">Any other money you spent. Tap Add and choose.</p>` + tw.other.map(card).join("") +
     (tw.other.length ? `<div class="bwtot"><span>Total</span><b>${rs(twOtherSum())}</b></div>` : "") +
     (tw.edit ? `<button type="button" class="twadd" data-tw="othadd">${TW_PLUS} Add expense</button>` : tw.other.length ? "" : `<p class="bwnote">No other expenses.</p>`) +
@@ -6609,10 +6624,17 @@ function twClick(e) {
   const a = t.dataset.tw;
   if (a === "shbg") { if (e.target === t) { tw.sheet = null; twRender(); } return; }
   if (a === "close") { twClose(); return; }
-  if (a === "back") { tw.step--; tw.fill = null; twRender(true); return; }
-  if (a === "next") { tw.step++; tw.fill = null; twRender(true); return; }
-  if (t.dataset.goto) { tw.step = +t.dataset.goto; tw.fill = null; twRender(true); return; }
+  if (a === "back") { tw.step--; tw.fill = null; tw.askDel = ""; twRender(true); return; }
+  if (a === "next") { tw.step++; tw.fill = null; tw.askDel = ""; twRender(true); return; }
+  if (t.dataset.goto) { tw.step = +t.dataset.goto; tw.fill = null; tw.askDel = ""; twRender(true); return; }
   if (t.dataset.cam) { if (!tw.edit) return; if (!assetsCap) { toast("Photos can't be saved in this view."); return; } tw.camFor = t.dataset.cam; $("twCam").click(); return; }
+  if (t.dataset.ask) { tw.askDel = t.dataset.ask; tw.fill = null; twRender(); return; }
+  if (a === "asknot") { tw.askDel = ""; twRender(); return; }
+  if (t.dataset.del) {
+    const [k, v] = [t.dataset.del.slice(0, t.dataset.del.indexOf(":")), t.dataset.del.slice(t.dataset.del.indexOf(":") + 1)]; tw.askDel = "";
+    if (k === "fl") { twDelFill(v); return; }
+    const x = tw.other[+v]; if (x?.fileId) tw.files = tw.files.filter(f => f.id !== x.fileId); tw.other.splice(+v, 1); toast("Expense deleted"); twRender(); return;
+  }
   if (a === "fladd") { tw.fill = { litres: "", amount: "", file: null }; twRender(); $("tw").querySelector('[data-k="fl.litres"]')?.focus(); return; }
   if (t.dataset.fl) { const f = ops.fuelLog.find(x => x.id === t.dataset.fl); if (f) { tw.fill = { id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null }; twRender(); } return; }
   if (a === "flcancel") { tw.fill = null; twRender(); return; }
@@ -6672,8 +6694,8 @@ async function twSaveFill() {
   } catch { toast("Couldn't save. Check your connection and try again."); }
   finally { if (tw) { tw.saving = false; twRender(); } }
 }
-async function twDelFill() {
-  const id = tw.fill?.id; if (!id || tw.saving) return;
+async function twDelFill(fid) {
+  const id = fid || tw.fill?.id; if (!id || tw.saving) return;
   tw.saving = true; twRender();
   try { await opsDelete("fuelLog", id); ops.fuelLog = ops.fuelLog.filter(x => x.id !== id); await syncBookingDiesel(tw.id); if (tw) { tw.fill = null; toast("Fill deleted"); } }
   catch { toast("Couldn't delete. Try again."); }
