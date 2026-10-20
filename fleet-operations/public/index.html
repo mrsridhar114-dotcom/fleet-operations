@@ -1234,6 +1234,21 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwdone p { margin: 0; font-size: 17px; color: var(--muted); line-height: 1.4; } .bwdone .bwno { font-size: 20px; font-weight: 600; color: var(--ink); }
 .bwwa { background: #1f8f4e; color: #fff; margin-top: 14px; }
 .bwbar.c5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.tpage { gap: 12px; padding: 14px 14px 18px; }
+.tptip { background: var(--accent-soft); border-radius: 14px; padding: 10px 14px; font-size: 16px; line-height: 1.35; }
+.tpsec { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 4px 12px 8px; }
+.tpsec h3 { margin: 8px 0 2px; font: 700 14px var(--body); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+.tprow { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); } .tprow:last-of-type { border-bottom: 0; }
+.tpl { flex: 1; min-width: 0; font: 700 18px/1.15 var(--body); }
+.tpin { width: 128px; height: 54px; flex: none; padding: 0 10px; } .tpin input { font-size: 21px; } .tpin b { font-size: 17px; }
+.tpin.km { width: 180px; } .tpin.km input { font-family: var(--mono); font-size: 20px; }
+.tpfill .tpin { flex: 1 1 0; width: auto; min-width: 0; } .tpfill .tpin.l { flex: 0 0 96px; } .tpin input { width: 100%; min-width: 0; }
+.tprow .twcam { width: 52px; height: 52px; }
+.tpbin { width: 40px; height: 52px; flex: none; border: 0; background: none; color: var(--danger); display: grid; place-items: center; padding: 0; cursor: pointer; } .tpbin svg { width: 22px; height: 22px; }
+.tpadd { width: 100%; height: 50px; margin: 8px 0 4px; border-radius: 12px; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 8px; font: 700 17px var(--body); cursor: pointer; } .tpadd svg { width: 22px; height: 22px; }
+.tpnote { padding: 0 0 8px; margin-top: -2px; border-bottom: 1px solid var(--line); } .tpnote input { width: 100%; height: 46px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: 500 17px var(--body); background: var(--surface); color: var(--ink); }
+.tphd { display: flex; gap: 8px; padding: 6px 0 0; font: 600 13px var(--body); color: var(--muted); }
+.tpst { font: 600 15px var(--body); color: var(--muted); } .tpst.ok { color: var(--ok); } .tpst.bad { color: var(--danger); }
 .twhub { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
 .twhm { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .twhi { width: 52px; height: 52px; flex: none; border-radius: 14px; background: var(--accent-soft); display: grid; place-items: center; font-size: 28px; }
@@ -6524,6 +6539,7 @@ function twOpen(b) {
     padiPaid: b.padiPaid ? String(b.padiPaid) : "", cleanerPadi: b.cleanerPadi ? String(b.cleanerPadi) : "", permit: b.permit ? String(b.permit) : "", toll: b.toll ? String(b.toll) : "",
     startKm: b.startKm ? String(b.startKm) : "", endKm: b.endKm ? String(b.endKm) : "", prevKm, other, files: (b.attachments || []).map(f => ({ ...f })),
     fill: null, sheet: null, saving: false, done: null, rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "" };
+  tpInit(b);
   if (!$("tw")) {
     document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="tw" role="dialog" aria-modal="true" aria-labelledby="twTitle" hidden></div><input type="file" id="twCam" accept="image/*" capture="environment" hidden>');
     $("tw").addEventListener("click", twClick);
@@ -6612,6 +6628,107 @@ function twSheetHtml() {
     `<div class="bwseg c2"><button type="button" data-tw="shclose">Cancel</button><button type="button" class="twsave" data-tw="shsave"${s.kind ? "" : " disabled"}>Save</button></div>` +
     (s.idx >= 0 ? `<button type="button" class="bwlink bwdangerlink" style="margin:0" data-tw="shdel">Remove this expense</button>` : "") + `</div></div>`;
 }
+/* ---------- Simple trip sheet: the whole sheet on one page ----------
+   Like the paper trip sheet: one row per item with an amount box and a camera. Everything saves by itself a moment after
+   typing (padi, toll, permit, other expenses and km to the booking; each diesel line to the Fuel log). Send to office
+   shows the summary first. */
+const TP_OTHER = [["Pooja", "pooja"], ["Mechanic", "mechanic"], ["Other", "othr"]];
+function tpInit(b) {
+  const oth = { Pooja: { amt: "", note: "" }, Mechanic: { amt: "", note: "" }, Other: { amt: "", note: "" } };
+  (tw.other || []).forEach(x => { const k = oth[x.kind] ? x.kind : "Other"; oth[k].amt = String(num(oth[k].amt) + num(x.amt) || ""); if (x.note) oth[k].note = [oth[k].note, x.note].filter(Boolean).join(", "); });
+  tw.oth = oth;
+  tw.rows = dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null }));
+  if (!tw.rows.length && tw.edit) tw.rows.push({ litres: "", amount: "", file: null });
+  tw.legacy = dslLegacyOf(b);
+}
+const tpOtherList = () => TP_OTHER.filter(([k]) => num(tw.oth[k].amt) > 0).map(([k, key]) => {
+  const x = { kind: k, amt: Math.round(num(tw.oth[k].amt)), note: String(tw.oth[k].note || "").trim().replace(/\s+/g, " ") };
+  const f = tw.files.filter(f => f.for === key).pop(); if (f) x.fileId = f.id; return x; });
+const tpDiesel = () => tw.rows.reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0);
+const tpTotal = () => twSumMoney() + (twPP("diesel") ? 0 : tpDiesel()) + TP_OTHER.reduce((a, [k]) => a + num(tw.oth[k].amt), 0);
+function tpRowHtml(label, key, val, opts = {}) {
+  return `<div class="tprow"><span class="tpl">${label}</span><span class="bwin tpin${opts.km ? " km" : ""}">${opts.km ? "" : "<b>₹</b>"}<input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${opts.ph ?? (opts.km ? "" : "0")}" aria-label="${label}"${tw.edit ? "" : " readonly"}>${opts.km ? "<b>km</b>" : ""}</span>${opts.km ? "" : twCamBtn(opts.cam || key, label)}</div>`;
+}
+function tpPageHtml() {
+  const pp = twPP("diesel"), sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
+  const fill = (r, i) => `<div class="tprow tpfill"><span class="bwin tpin l"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" placeholder="0" aria-label="Litres, fill ${i + 1}"${tw.edit ? "" : " readonly"}><b>L</b></span>` +
+    `<span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="${pp ? "Party pays" : "0"}" aria-label="Amount, fill ${i + 1}"${tw.edit ? "" : " readonly"}></span>` +
+    `<button type="button" class="twcam${r.file ? " on" : ""}" data-cam="row:${i}" aria-label="Photo of diesel bill ${i + 1}"${tw.edit ? "" : " disabled"}>${TW_CAM}${r.file ? "<i>✓</i>" : ""}</button>` +
+    (tw.edit ? `<button type="button" class="tpbin" data-rowdel="${i}" aria-label="Remove diesel line ${i + 1}">${TW_BIN}</button>` : "") + `</div>`;
+  const km = num(tw.startKm) && num(tw.endKm) > num(tw.startKm) ? num(tw.endKm) - num(tw.startKm) : 0;
+  return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
+    `<div class="tptip"><b>Just type the amount.</b> It saves by itself. Leave empty what you did not spend.</div>` +
+    sec("Padi", tpRowHtml("Driver padi", "padiPaid", tw.padiPaid) + tpRowHtml("Cleaner padi", "cleanerPadi", tw.cleanerPadi)) +
+    sec("On the way", tpRowHtml("Toll gate", "toll", tw.toll) + tpRowHtml("Permit", "permit", tw.permit)) +
+    sec("Diesel", (pp ? `<p class="bwnote" style="margin:6px 0">Diesel is paid by the party: litres are enough.</p>` : "") +
+      tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
+      `<div class="tphd"><span style="flex:0 0 96px">Litres</span><span style="flex:1">Amount</span><span style="flex:0 0 ${tw.edit ? 100 : 52}px">Bill</span></div>` + tw.rows.map(fill).join("") + (tw.edit ? `<button type="button" class="tpadd" data-tw="rowadd">${TW_PLUS} Add diesel</button>` : "")) +
+    sec("Other", TP_OTHER.map(([k, key]) => tpRowHtml(k, "o:" + k, tw.oth[k].amt, { cam: key }) +
+      (k === "Other" ? `<div class="tpnote"><input type="text" data-k="on:Other" maxlength="80" value="${esc(tw.oth.Other.note)}" placeholder="What was it for?" aria-label="What was the other expense for"${tw.edit ? "" : " readonly"}></div>` : "")).join("")) +
+    sec("Km meter", tpRowHtml("Start km", "startKm", tw.startKm, { km: true }) + (tw.prevKm ? `<p class="bwnote" style="margin:-2px 0 4px">Last trip of this bus ended at <b style="color:var(--ink)">${nf(num(tw.prevKm))} km</b></p>` : "") + tpRowHtml("End km", "endKm", tw.endKm, { km: true, ph: "When back" }) +
+      `<span class="bwerr" id="twKmErr">${num(tw.startKm) && num(tw.endKm) && num(tw.endKm) <= num(tw.startKm) ? "End km must be more than start km." : ""}</span>` +
+      `<p class="bwnote" id="tpRun" style="margin:4px 0 6px">${km ? `${nf(km)} km run` : ""}</p>`);
+}
+function tpSaveState(t) { const el = $("tpSt"); if (el) { el.textContent = t; el.className = "tpst" + (t.startsWith("✓") ? " ok" : t.startsWith("Not") ? " bad" : ""); } }
+function tpRefresh() {
+  if ($("tpTot")) $("tpTot").textContent = rs(tpTotal());
+  const s = num(tw.startKm), e = num(tw.endKm);
+  if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
+  if ($("tpRun")) $("tpRun").textContent = s && e > s ? `${nf(e - s)} km run` : "";
+}
+// Saving is queued, so changes typed quickly one after another are saved in order.
+function tpQueue(job) { tw.q = (tw.q || Promise.resolve()).then(job).catch(() => {}); return tw.q; }
+function tpSoon(key, job, ms = 900) { tw.timers ||= {}; clearTimeout(tw.timers[key]); tpSaveState("Saving…"); tw.timers[key] = setTimeout(() => { delete tw.timers[key]; tpQueue(job); }, ms); }
+async function tpFlush() { const t = tw.timers || {}; Object.keys(t).forEach(k => { clearTimeout(t[k]); delete t[k]; }); tpQueue(() => tpSaveBooking()); tw.rows.forEach((_, i) => tpQueue(() => tpSaveRow(i))); await tw.q; }
+async function tpSaveBooking() {
+  const cur = twBk(); if (!cur || !tw?.edit) return;
+  tw.other = tpOtherList();
+  const next = { ...cur };
+  const put = (k, v) => { const n = Math.round(num(v)); if (n > 0) next[k] = n; else delete next[k]; };
+  TW_MONEY.forEach(([k]) => put(k, tw[k])); put("startKm", tw.startKm); put("endKm", tw.endKm);
+  if (next.startKm && next.endKm && next.endKm <= next.startKm) { next.endKm = cur.endKm; if (!next.endKm) delete next.endKm; }
+  if (tw.other.length) next.otherList = tw.other.map(x => ({ ...x })); else delete next.otherList;
+  const os = tw.other.reduce((a, x) => a + x.amt, 0); if (os) next.otherExp = os; else delete next.otherExp;
+  if (tw.files.length) next.attachments = tw.files.map(f => ({ ...f })); else delete next.attachments;
+  if (!canBookings) { if (!cur.tsBy) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); } if (!cur.tsStatus) next.tsStatus = "draft"; next.tsDraftOn = todayISO(); }
+  const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
+  const keys = [...TW_MONEY.map(([k]) => k), "startKm", "endKm", "otherList", "otherExp", "attachments", "tsStatus"];
+  if (keys.every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { tpSaveState("✓ Saved"); return; }
+  try {
+    await opsSave("bookings", next);
+    const i = ops.bookings.findIndex(x => x.id === next.id); if (i >= 0) ops.bookings[i] = next;
+    if (tw) tpSaveState("✓ Saved");
+  } catch { if (tw) tpSaveState("Not saved. Check the signal; it will try again."); if (tw) tpSoon("bk", tpSaveBooking, 8000); }
+}
+async function tpSaveRow(i) {
+  const b = twBk(), r = tw?.rows?.[i]; if (!b || !r || !tw.edit) return;
+  const litres = Math.round(num(r.litres) * 100) / 100, amount = Math.round(num(r.amount) * 100) / 100, pp = twPP("diesel");
+  if (!(litres > 0) || (!pp && !(amount > 0))) { tpSaveState("✓ Saved"); return; }   // finished once both boxes are filled
+  const prev = r.id ? ops.fuelLog.find(x => x.id === r.id) : null, t = todayISO();
+  if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { tpSaveState("✓ Saved"); return; }
+  const last = flSorted(b.vehicleId).pop();
+  const f = { ...(prev || {}), id: prev?.id || r.id || genId("fl"), date: prev?.date || (t < b.from ? b.from : t > bkEnd(b) ? bkEnd(b) : t), vehicleId: b.vehicleId, pay: prev?.pay || last?.pay || "Cash", litres, bookingId: b.id, bookingNo: b.no || "" };
+  if (amount > 0) { f.amount = amount; f.rate = Math.round(amount / litres * 100) / 100; } else { delete f.amount; delete f.rate; }
+  if (r.file) f.file = r.file; else delete f.file;
+  if (!prev) { if (b.driverId) { f.driverId = b.driverId; f.driverName = drivers.find(d => d.id === b.driverId)?.name || b.driverName || ""; } else if (b.driverName) f.driverName = b.driverName; if (last?.bunk) f.bunk = last.bunk; f.createdByName = whoAmI(); f.createdOn = t; } else f.updatedByName = whoAmI();
+  f.fy = fyOf(f.date); f.month = f.date.slice(0, 7);
+  r.id = f.id;
+  try {
+    await opsSave("fuelLog", f);
+    const k = ops.fuelLog.findIndex(x => x.id === f.id); k >= 0 ? ops.fuelLog[k] = f : ops.fuelLog.push(f);
+    await syncBookingDiesel(b.id);
+    if (tw) tpSaveState("✓ Saved");
+  } catch { if (tw) tpSaveState("Not saved. Check the signal; it will try again."); if (tw) tpSoon("row" + i, () => tpSaveRow(i), 8000); }
+}
+async function tpDelRow(i) {
+  const r = tw.rows[i]; if (!r) return;
+  tw.rows.splice(i, 1); if (!tw.rows.length) tw.rows.push({ litres: "", amount: "", file: null });
+  twRender();
+  if (r.id) tpQueue(async () => {
+    try { await opsDelete("fuelLog", r.id); ops.fuelLog = ops.fuelLog.filter(x => x.id !== r.id); await syncBookingDiesel(tw.id); toast("Diesel line removed"); }
+    catch { toast("Couldn't remove. Check the signal and try again."); }
+  });
+}
 const twSpent = () => twSumMoney() + (twPP("diesel") ? 0 : twFills().reduce((a, r) => a + num(r.amount), 0)) + twOtherSum();
 // The trip sheet opens here: four buttons, each showing what is already in. The driver fills any of them, in any order, as things happen.
 function twHubHtml() {
@@ -6628,7 +6745,7 @@ function twHubHtml() {
     card(3, "🚌", "Km meter", `Start ${s0 ? nf(s0) : "not yet"} · End ${e0 ? nf(e0) : "not yet"}`, !!(s0 && e0));
 }
 function twRender(top) {
-  const el = $("tw"), s = tw.step;
+  const el = $("tw"), s = tw.step, keep = !top && $("twBody") ? $("twBody").scrollTop : 0;
   if (tw.done) {
     const d = tw.done;
     el.innerHTML = `<header class="bwh"><div><b id="twTitle">Trip sheet</b></div></header><div class="bwb bwdone"><span class="bwbig">${BW_ICON.ok}</span><h2>${d.sent ? "Sent to the office" : "Saved"}</h2><p class="bwno">Booking ${esc(tw.no)} · ${esc(tw.plate)}</p>` +
@@ -6637,19 +6754,23 @@ function twRender(top) {
   }
   const back = s >= 0 && tw.edit, sub = esc([tw.places, tw.dates].filter(Boolean).join(" · "));
   el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="${back ? "home" : "close"}" aria-label="${back ? "Back" : "Close"}">${back ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${sub}</span></div>${back ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
-    (s < 0 ? `<div class="bwb tws" id="twBody">${twHubHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>${TW_TITLES[s]}</h2>${[twMoneyHtml, twDieselHtml, twOtherHtml, twKmHtml, twCheckHtml][s]()}</div>`) +
-    `<footer class="bwf${s === 4 && tw.edit && !tw.admin ? " two" : ""}">${s < 0 ? `<div class="twspent"><span>Spent so far</span><b>${rs(twSpent())}</b></div><button type="button" class="bwgo" data-goto="4">${tw.admin ? "Check and save" : "Check and send to office"} ${BW_ICON.next}</button>`
+    (s < 0 ? `<div class="bwb tws tpage" id="twBody">${tpPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>${TW_TITLES[s]}</h2>${[twMoneyHtml, twDieselHtml, twOtherHtml, twKmHtml, twCheckHtml][s]()}</div>`) +
+    `<footer class="bwf${s === 4 && tw.edit && !tw.admin ? " two" : ""}">${s < 0 ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span><span>Total <b id="tpTot">${rs(tpTotal())}</b></span></div><button type="button" class="bwgo" data-tw="tocheck">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
       : s === 1 || s === 2 ? `<button type="button" class="bwgo" data-tw="donehome"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} Done</button>`
       : s < 4 ? `<button type="button" class="bwgo" data-tw="savehome"${tw.saving ? " disabled" : ""}>${tw.saving ? "Saving…" : `${BW_ICON.ok} Save`}</button>`
       : !tw.edit ? `<button type="button" class="bwalt" data-tw="close">Close</button>`
       : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
       : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>` + twSheetHtml();
-  if (top) $("twBody").scrollTop = 0;
+  if (top) $("twBody").scrollTop = 0; else if (keep && $("twBody")) $("twBody").scrollTop = keep;
   if (tw.slide) { $("twBody").classList.add("bwsl-" + tw.slide); tw.slide = ""; }
 }
 function twInput(e) {
   const k = e.target.dataset.k; if (!k || !tw) return;
   const v = e.target.value;
+  if (k.startsWith("fl:")) { const [, i, f] = k.split(":"); tw.rows[+i][f] = v; tpRefresh(); tpSoon("row" + i, () => tpSaveRow(+i), 1200); return; }
+  if (k.startsWith("o:")) { tw.oth[k.slice(2)].amt = v; tw.other = tpOtherList(); tpRefresh(); tpSoon("bk", tpSaveBooking); return; }
+  if (k.startsWith("on:")) { tw.oth[k.slice(3)].note = v; tw.other = tpOtherList(); tpSoon("bk", tpSaveBooking); return; }
+  if (tw.step < 0) { tw[k] = v; tpRefresh(); tpSoon("bk", tpSaveBooking); return; }
   if (k.startsWith("fl.")) { tw.fill[k.slice(3)] = v; return; }
   if (k.startsWith("sh.")) { tw.sheet[k.slice(3)] = v; return; }
   tw[k] = v;
@@ -6665,11 +6786,14 @@ function twClick(e) {
   const t = e.target.closest("button, [data-tw]"); if (!t || t.disabled) return;
   const a = t.dataset.tw;
   if (a === "shbg") { if (e.target === t) { tw.sheet = null; twRender(); } return; }
-  if (a === "close") { twClose(); return; }
+  if (a === "close") { if (tw.step < 0 && tw.edit) { const go = () => twClose(); tpFlush().then(go, go); return; } twClose(); return; }
+  if (a === "tocheck") { tpSaveState("Saving…"); tpFlush().then(() => { if (!tw) return; tw.step = 4; tw.slide = "l"; twRender(true); }); return; }
+  if (a === "rowadd") { tw.rows.push({ litres: "", amount: "", file: null }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
+  if (t.dataset.rowdel != null) { tpDelRow(+t.dataset.rowdel); return; }
   if (a === "back" || a === "home") { tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true); return; }
   if (t.dataset.sec != null) { tw.step = +t.dataset.sec; tw.slide = "l"; if (t.dataset.addfill) tw.fill = { litres: "", amount: "", file: null }; twRender(true); if (tw.fill) $("tw").querySelector('[data-k="fl.litres"]')?.focus(); return; }
   if (a === "next") { tw.step++; tw.fill = null; tw.askDel = ""; twRender(true); return; }
-  if (t.dataset.goto) { tw.step = +t.dataset.goto; tw.fill = null; tw.askDel = ""; twRender(true); return; }
+  if (t.dataset.goto) { tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true); return; }
   if (t.dataset.cam) { if (!tw.edit) return; if (!assetsCap) { toast("Photos can't be saved in this view."); return; } tw.camFor = t.dataset.cam; $("twCam").click(); return; }
   if (t.dataset.del) {
     const [k, v] = [t.dataset.del.slice(0, t.dataset.del.indexOf(":")), t.dataset.del.slice(t.dataset.del.indexOf(":") + 1)]; tw.askDel = "";
@@ -6708,12 +6832,14 @@ async function twPhoto(e) {
   const key = tw.camFor; toast("Uploading the photo…");
   try {
     const r = await assetsCap.upload(file, { type: file.type });
-    const label = { padiPaid: "Driver padi", cleanerPadi: "Cleaner padi", permit: "Permit", toll: "Toll gate", fill: "Diesel", other: tw.sheet?.kind || "Expense" }[key] || "Trip";
+    const label = { padiPaid: "Driver padi", cleanerPadi: "Cleaner padi", permit: "Permit", toll: "Toll gate", fill: "Diesel", other: tw.sheet?.kind || "Expense", pooja: "Pooja", mechanic: "Mechanic", othr: "Other expense" }[key] || "Trip";
     const ext = (file.name.match(/\.[a-z0-9]+$/i) || [".jpg"])[0];
-    if (key === "fill") { if (tw.fill) tw.fill.file = { id: r.id, name: `${label} bill${ext}` }; }
+    if (key.startsWith("row:")) { const row = tw.rows[+key.slice(4)]; if (row) { row.file = { id: r.id, name: `Diesel bill${ext}` }; tpSoon("row" + key.slice(4), () => tpSaveRow(+key.slice(4)), 50); } }
+    else if (key === "fill") { if (tw.fill) tw.fill.file = { id: r.id, name: `${label} bill${ext}` }; }
     else {
       const f = { id: r.id, name: `${label} bill${ext}`, kind: "Trip bills", type: file.type, at: new Date().toISOString(), byName: whoAmI(), for: key };
       tw.files.push(f); if (key === "other" && tw.sheet) tw.sheet.fileId = r.id;
+      if (tw.step < 0) tpSoon("bk", tpSaveBooking, 50);
     }
     toast("Photo added"); twRender();
   } catch (er) { toast(er?.code === "too_large" ? "That photo is too large." : er?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the photo. Try again."); }
