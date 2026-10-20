@@ -5942,14 +5942,14 @@ const B_TRACKED = [
   ["payments", "Payments"],
   ["driverName", "Driver"], ["cleanerName", "Cleaner"], ["padiPaid", "Driver padi (trip sheet)", "inr"], ["cleanerPadi", "Cleaner padi", "inr"], ["permit", "Permit expense", "inr"],
   ["toll", "Toll gate", "inr"], ["litres", "Litres"], ["fuelCost", "Fuel price", "inr"], ["otherExp", "Other exp.", "inr"], ["startKm", "Start km", "km"], ["endKm", "End km", "km"], ["tripNote", "Trip remarks"],
-  ["attachments", "Files"], ["_sent", "Message sent"], ["tsStatus", "Trip sheet status"], ["bookedByName", "Booked by"], ["closedOn", "Trip closed", "date"], ["writeOff", "Written off", "inr"]
+  ["attachments", "Files"], ["_sent", "Message sent"], ["tsStatus", "Trip sheet status"], ["bookedByName", "Booked by"], ["closedOn", "Trip closed", "date"]
 ];
 const B_FIELD_INFO = Object.fromEntries(B_TRACKED.map(([k, label, fmt]) => [k, { label, fmt }]));
 const B_KEYS = B_TRACKED.map(t => t[0]);
 const B_HIST_OPTS = () => {
   const ks = B_TRACKED.map(t => t[0]), g = (label, keys) => `<optgroup label="${label}">${keys.map(k => `<option value="${k}">${B_FIELD_INFO[k].label}</option>`).join("")}</optgroup>`;
   return `<option value="">All fields</option>` + g("Stage", ["status"]) + g("Booking slip", [...ks.slice(1, 17), "bookedByName"]) + g("Payments", ["payments"]) +
-    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn", "writeOff"]);
+    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn"]);
 };
 const BHLS = "fleet-bkhistory.v1";
 let bHistory = loadLS(BHLS), bHistRef = null;
@@ -6003,7 +6003,7 @@ let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bk
 const blocks = b => b.status === "draft" || b.status === "pending" || b.status === "booked" || b.status === "ontrip" || b.status === "completed";
 const META = ["tsStatus", "tsBy", "tsByName", "tsDraftOn", "tsSubmittedBy", "tsSubmittedByName", "tsSubmittedOn", "tsSubmitCount", "tsApprovedByName", "tsApprovedOn", "tsRejectedByName", "tsRejectedOn", "tsRejectReason", "tsRejections",
   "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason",
-  "closedOn", "closedByName", "writeOff", "writeOffNote", "reopens"];
+  "closedOn", "closedByName", "reopens"];
 const whoAmI = () => myRecord()?.name || me?.name || (store ? "Someone" : "This browser");
 const bkEnd = b => b.to || b.from;
 const bkCalc = b => {
@@ -6011,14 +6011,12 @@ const bkCalc = b => {
   const exp = Object.values(BK_EXP).reduce((a, k) => a + (partyKeys.includes(k) ? 0 : num(b[k])), 0);
   const due = num(b.rent) + num(b.toll) + num(b.extra), received = (b.payments || []).reduce((a, p) => a + num(p.amount), 0);
   const km = b.endKm && b.startKm && b.endKm > b.startKm ? b.endKm - b.startKm : 0;
-  const writeOff = num(b.writeOff);  // the balance an admin wrote off when closing the trip
-  return { due, received, writeOff, balance: due - received - writeOff, exp, profit: due - writeOff - exp, km };
+  return { due, received, balance: due - received, exp, profit: due - exp, km };
 };
 const bkSettled = b => b.status === "completed" && bkCalc(b).balance <= 0;
 // A closed trip is final: its booking, payments, files, trip sheet and diesel lines are view-only for everyone (admin too)
-// until an admin reopens it. The server refuses changes to it as well. Closing and reopening are admin-only for now.
+// until an admin reopens it. The server refuses changes to it as well. An admin can close or reopen a trip at any time.
 const tripClosed = b => !!b?.closedOn;
-const closeReady = b => !!b && b.status === "completed" && b.tsStatus === "approved" && !b.closedOn;
 const stageName = b => tripClosed(b) ? "Closed" : BK_STAGES[b?.status] || "";
 const stageTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : bkSettled(b) ? '<span class="bstage completed">✓ Settled</span>' : `<span class="bstage ${b.status}">${BK_STAGES[b.status] || ""}</span>`;
 const clashOf = (b, ignoreId) => ops.bookings.find(x => x.id !== ignoreId && x.vehicleId === b.vehicleId && blocks(x) && x.from <= bkEnd(b) && bkEnd(x) >= b.from);
@@ -6205,15 +6203,13 @@ function bwLeave(to, sure) {
   if (to === "home") { const b = bwBkNow(), driver = bw.driver; bwOpen(null, b, bw.readOnly); bw.sub = "home"; bw.home = true; bw.driver = driver; bw.slide = "r"; bwRender(true); return; }
   bwClose();
 }
-// Close trip / Reopen trip on the phone: a sheet that says what happens and asks for the reason when one is needed.
+// Close trip / Reopen trip on the phone: a sheet that says what happens (reopening asks why).
 function bwLockHtml() {
-  const b = bwBkNow(), close = bw.lockAsk === "close", bal = b ? bkCalc(b).balance : 0;
-  const need = close ? bal > 0 : true;
+  const close = bw.lockAsk === "close";
   return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwLkT"><div><b id="bwLkT">${close ? "Close this trip?" : "Reopen this trip?"}</b>` +
     `<p>${close ? "The booking, payments, files and trip sheet become view only for everyone. Only an admin can reopen it." : "The booking can be changed again. Close it again when the corrections are done."}</p>` +
-    (close && bal > 0 ? `<p style="color:var(--danger);font-weight:600">${rs(bal)} is still to collect. Closing writes it off.</p>` : "") +
-    (need ? `<input type="text" id="bwLockNote" data-k="lockNote" maxlength="200" placeholder="${close ? "Why is it written off? e.g. discount" : "Why reopen? e.g. toll bill missed"}" aria-label="Reason" value="${esc(bw.lockNote || "")}">` : "") +
-    `<div class="bwseg c2"><button type="button" data-bw="lockno"${bw.lockBusy ? " disabled" : ""}>Cancel</button><button type="button" class="twsave" data-bw="lockgo"${bw.lockBusy ? " disabled" : ""}>${bw.lockBusy ? "Saving…" : close ? (bal > 0 ? "Write off and close" : "Close trip") : "Reopen trip"}</button></div></div></div>`;
+    (close ? "" : `<input type="text" id="bwLockNote" data-k="lockNote" maxlength="200" placeholder="Why reopen? e.g. toll bill missed" aria-label="Reason" value="${esc(bw.lockNote || "")}">`) +
+    `<div class="bwseg c2"><button type="button" data-bw="lockno"${bw.lockBusy ? " disabled" : ""}>Cancel</button><button type="button" class="twsave" data-bw="lockgo"${bw.lockBusy ? " disabled" : ""}>${bw.lockBusy ? "Saving…" : close ? "Close trip" : "Reopen trip"}</button></div></div></div>`;
 }
 async function bwLockGo() {
   if (!bw || bw.lockBusy) return;
@@ -6844,9 +6840,9 @@ function bwHomeHtml(b) {
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
-        (num(b.writeOff) ? `<span>${rs(num(b.writeOff))} written off${b.writeOffNote ? `: ${esc(b.writeOffNote)}` : ""}</span>` : "") + `</div>` +
+        `</div>` +
         (canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="reopen">Reopen trip</button>` : "")
-      : canCloseTrips && closeReady(b) ? `<button type="button" class="bhclose" data-bw="lockask" data-how="close">🔒 Close trip</button>` : "") +
+      : canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="close">🔒 Close trip</button>` : "") +
     `</div></div>` + navBar("bw", false);
 }
 function bwSubHtml() {
@@ -6859,7 +6855,6 @@ function bwSubHtml() {
       (canRm ? `<button type="button" class="twdel" data-payrm="${i}" aria-label="Remove this payment"${bw.paySaving ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
     return head("Payments") + `<div class="bwb tws" id="bwBody">` +
       `<div class="bwcard"><div class="bwrow"><div><span class="bwm"><span>Rent${num(b.toll) ? " + toll" : ""}</span><b>${rs(c.due)}</b></span><span class="bwm"><span>Received (${pays.length} payment${pays.length === 1 ? "" : "s"})</span><b>${rs(c.received)}</b></span>` +
-      (c.writeOff ? `<span class="bwm"><span>Written off when closed</span><b>${rs(c.writeOff)}</b></span>` : "") +
       `<span class="bwm bal"><span>${c.balance > 0 ? "Still to collect" : c.balance < 0 ? "Paid extra" : "Balance"}</span><b>${rs(Math.abs(c.balance))}</b></span></div></div></div>` +
       (pays.length ? pays.map(card).join("") : `<p class="bwnote">No payments yet.</p>`) +
       (canAdd ? `<button type="button" class="twadd" data-bw="payadd">${TW_PLUS} Add payment</button>` : "") +
@@ -7500,24 +7495,20 @@ $("tsReject").onclick = async () => {
   try { await opsSave("bookings", next); await addBHistory(bookingChanges(cur, next, `Trip sheet sent back: ${why}`)).catch(() => {}); closeBkDrawer(); toast(`Trip sheet for booking ${cur.no || ""} sent back`); renderOps(); }
   catch { toast("Couldn't save. Try again."); }
 };
-// Close a completed trip (writing off any balance, with a reason) or reopen a closed one (reason needed). Returns "" or the problem.
+// Close a trip, or reopen a closed one (with the reason). Admin, at any time. Returns "" or the problem.
 async function tripLock(id, how, note) {
   const cur = ops.bookings.find(x => x.id === id); note = String(note || "").trim();
   if (!cur || !canCloseTrips) return "Only an admin can close or reopen a trip.";
   let next, action;
   if (how === "close") {
-    if (!closeReady(cur)) return tripClosed(cur) ? "This trip is already closed." : "Approve the trip sheet first.";
-    const bal = bkCalc(cur).balance;
-    if (bal > 0 && !note) return "Type why the balance is written off.";
+    if (tripClosed(cur)) return "This trip is already closed.";
     next = { ...cur, closedOn: todayISO(), closedByName: whoAmI() };
-    delete next.writeOff; delete next.writeOffNote;
-    if (bal > 0) { next.writeOff = bal; next.writeOffNote = note; }
-    action = bal > 0 ? `Trip closed · ${rs(bal)} written off: ${note}` : "Trip closed";
+    action = "Trip closed";
   } else {
     if (!tripClosed(cur)) return "This trip is not closed.";
     if (!note) return "Type why the trip is reopened.";
-    next = { ...cur, reopens: [...(cur.reopens || []), { on: todayISO(), by: whoAmI(), why: note, writeOff: num(cur.writeOff) || undefined }] };
-    ["closedOn", "closedByName", "writeOff", "writeOffNote"].forEach(k => delete next[k]);
+    next = { ...cur, reopens: [...(cur.reopens || []), { on: todayISO(), by: whoAmI(), why: note }] };
+    ["closedOn", "closedByName"].forEach(k => delete next[k]);
     action = `Trip reopened: ${note}`;
   }
   const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
@@ -7529,17 +7520,16 @@ async function tripLock(id, how, note) {
 }
 // Desktop booking window: the Close trip / Reopen trip strip.
 function syncBkLock(b) {
-  const closed = tripClosed(b), ready = closeReady(b), show = !!b && (closed || (ready && canCloseTrips));
+  const closed = tripClosed(b), show = !!b && (closed || canCloseTrips);
   $("bkLock").hidden = !show; if (!show) return;
-  const bal = bkCalc(b).balance;
   $("bkLock").className = "bkappr" + (closed ? " draft" : " ok");
-  $("bkLockText").innerHTML = closed ? `<b>🔒 Trip closed</b> on ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything is view only.${num(b.writeOff) ? ` ${rs(num(b.writeOff))} written off${b.writeOffNote ? `: ${esc(b.writeOffNote)}` : ""}.` : ""}`
-    : `<b>Trip sheet approved.</b> ${bal > 0 ? `${rs(bal)} still to collect: closing writes it off.` : "Fully paid."} Close the trip to lock it.`;
+  $("bkLockText").innerHTML = closed ? `<b>🔒 Trip closed</b> on ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything is view only.`
+    : "Close the trip to make it view only for everyone.";
   $("bkLockAct").hidden = !canCloseTrips;
   $("bkLockWhy").disabled = false; $("bkLockWhy").value = "";
-  $("bkLockWhy").hidden = !closed && bal <= 0;
-  $("bkLockWhy").placeholder = closed ? "Why reopen? e.g. toll bill missed" : "Why is it written off?";
-  $("bkLockBtn").textContent = closed ? "Reopen trip" : bal > 0 ? "Write off and close" : "Close trip";
+  $("bkLockWhy").hidden = !closed;
+  $("bkLockWhy").placeholder = "Why reopen? e.g. toll bill missed";
+  $("bkLockBtn").textContent = closed ? "Reopen trip" : "Close trip";
   $("bkLockBtn").className = "btn " + (closed ? "" : "primary");
 }
 $("bkLockBtn").onclick = async () => {
