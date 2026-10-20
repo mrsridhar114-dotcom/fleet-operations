@@ -1172,12 +1172,13 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .bhbtn:disabled { opacity: .6; cursor: default; } .bhbtn { position: relative; }
 .bhpct { position: absolute; top: -9px; right: 10px; height: 24px; padding: 0 9px; border-radius: 12px; border: 2px solid var(--surface); background: var(--danger); color: #fff; font: 700 13px/20px var(--body); box-shadow: 0 2px 6px rgba(0,0,0,.18); }
-.bhpct.mid { background: var(--warn); } .bhpct.ok { background: var(--ok); }
+.bhpct.mid { background: var(--warn); } .bhpct.ok { background: var(--ok); } .bhpct.cnt { background: var(--accent); color: var(--accent-ink); min-width: 24px; text-align: center; }
 .bhi { width: 48px; height: 48px; flex: none; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; font-size: 24px; font-weight: 700; color: var(--accent); }
 .bht { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .bht b { font-size: 19px; } .bht span { font-size: 15px; font-weight: 600; color: var(--muted); } .bht span.due { color: var(--danger); } .bht span.ok { color: var(--ok); }
 .bhbtn > svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
 a.twmain { text-decoration: none; color: inherit; }
-.bwchips.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .bwchips.c3 button { min-height: 46px; font-size: 14px; padding: 4px; }
+.bwchips .fkc { display: inline-block; min-width: 22px; height: 22px; margin-left: 4px; padding: 0 6px; border-radius: 11px; background: var(--accent-soft); color: var(--accent); font: 700 13px/22px var(--body); vertical-align: 1px; }
+.bwchips button[aria-pressed="true"] .fkc { background: var(--accent-ink); }
 .tws { gap: 12px; } .tws .bwhint { margin-top: -6px; font-size: 16px; }
 .twcam { width: 54px; height: 54px; flex: none; border-radius: 12px; border: 2px solid var(--accent); background: var(--surface); color: var(--accent); display: grid; place-items: center; position: relative; padding: 0; cursor: pointer; }
 .twcam.on { background: var(--accent); color: var(--accent-ink); } .twcam svg { width: 26px; height: 26px; }
@@ -2349,7 +2350,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </div>
     </section>
     <section class="bkpanel" id="bkFilesSet" role="tabpanel" aria-labelledby="bkTab-files">
-      <div class="bkupl" id="bkUpl"><select id="bkFileKind" aria-label="What the file is"><option>ID proof</option><option>Signed slip</option><option>Payment proof</option><option>Trip bills</option><option>Other</option></select>
+      <div class="bkupl" id="bkUpl"><select id="bkFileKind" aria-label="What the file is"><option>Permit</option><option>Trip sheet</option><option>Diesel bill</option><option>Others</option></select>
         <label class="btn filebtn" for="bkFileIn" style="padding:6px 12px;font-size:13px">+ Attach file</label><input id="bkFileIn" type="file" accept="image/*,application/pdf" hidden multiple>
         <label class="btn filebtn camonly" for="bkFileCam" style="padding:6px 12px;font-size:13px">📷 Take photo</label><input id="bkFileCam" type="file" accept="image/*" capture="environment" hidden>
         <span class="hint" id="bkFileHint">PDF or photo. Saved with the booking when you save.</span></div>
@@ -6582,7 +6583,7 @@ async function twPhoto(e) {
       if (row) { row.file = { id: r.id, name: `Diesel bill${ext}` }; twSoon("row" + i, () => twSaveRow(i), 50); }
     } else {
       const label = { permit: "Permit", toll: "Toll gate", pooja: "Pooja", mechanic: "Mechanic", othr: "Other expense" }[key] || "Trip";
-      tw.files.push({ id: r.id, name: `${label} bill${ext}`, kind: "Trip bills", type: file.type, at: new Date().toISOString(), byName: whoAmI(), for: key });
+      tw.files.push({ id: r.id, name: `${label} bill${ext}`, kind: key === "permit" ? "Permit" : "Others", type: file.type, at: new Date().toISOString(), byName: whoAmI(), for: key });
       twSoon("bk", twSaveBooking, 50);
     }
     toast("Photo added"); twRender();
@@ -6716,7 +6717,9 @@ async function bwPaySave() {
 }
 
 /* ---------- phone: Payments and Files screens of a booking (no jump to the desktop form) ---------- */
-const BW_FILE_KINDS = ["ID proof", "Signed slip", "Payment proof", "Trip bills", "Other"];
+const BW_FILE_KINDS = ["Permit", "Trip sheet", "Diesel bill", "Others"];
+// Files saved before these four kinds (ID proof, Trip bills, ...) are counted under Others.
+const fileKindOf = f => BW_FILE_KINDS.includes(f.kind) ? f.kind : "Others";
 const bwToll = () => bw?.editId ? num(ops.bookings.find(x => x.id === bw.editId)?.toll) : 0;
 const bwBkNow = () => ops.bookings.find(x => x.id === bw.editId);
 const bwCanFiles = b => !!b && platformWrite && (canBookings || canBookReq || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status))) && b.status !== "cancelled";
@@ -6734,6 +6737,8 @@ function bwHomeHtml(b) {
   const confirmed = ["booked", "ontrip", "completed"].includes(b.status);
   const tripOk = canBookings || (canTsUpd && confirmed), tsOpen = canBookings || tsIsOpen(b);
   const tile = (attrs, icon, title, line, cls = "", off = false, badge = "") => `<button type="button" class="bhbtn" ${attrs}${off ? " disabled" : ""}>${badge}<span class="bhi" aria-hidden="true">${icon}</span><span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span>${BW_ICON.next}</button>`;
+  const fileBadge = `<span class="bhpct cnt" title="${n} file${n === 1 ? "" : "s"} added">${n}</span>`;
+  const byKind = BW_FILE_KINDS.map(k => [k, (b.attachments || []).filter(f => fileKindOf(f) === k).length]).filter(x => x[1]);
   const fp = tsFill(b), fpBadge = tsOpen ? `<span class="bhpct ${fp.pct === 100 ? "ok" : fp.pct >= 50 ? "mid" : ""}" title="${fp.done} of ${fp.all} filled in${fp.left.length ? ": still to fill " + fp.left.join(", ") : ""}">${fp.pct}%</span>` : "";
   return `<header class="bwh"><button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(BK_STAGES[b.status] || "")}</span></div></header>` +
     `<div class="bwb tws" id="bwBody"><div class="bhcard">` +
@@ -6744,7 +6749,7 @@ function bwHomeHtml(b) {
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
-      tile('data-bw="sub" data-sub="files"', "📎", "Files", n ? `${n} file${n === 1 ? "" : "s"}` : "None yet") +
+      tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
     `</div></div>`;
 }
 function bwSubHtml() {
@@ -6766,7 +6771,7 @@ function bwSubHtml() {
   const card = (f, i) => `<div class="twcard"><a class="twmain" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener"><span class="twn twk" aria-hidden="true">${/image/.test(f.type || "") || /\.(jpe?g|png|webp|heic)$/i.test(f.name || "") ? "🖼️" : "📄"}</span><span class="twci"><b>${esc(f.kind || "File")}</b><span>${esc(f.name || "")}</span><span>${[f.at ? fmtDate(f.at.slice(0, 10)) : "", f.byName].filter(Boolean).map(esc).join(" · ")}</span></span></a>` +
     (canRm ? `<button type="button" class="twdel" data-frm="${i}" aria-label="Remove this file"${bw.fileBusy ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
   return head("Files") + `<div class="bwb tws" id="bwBody">` +
-    (canAdd ? `<div class="bwbox"><span style="font-weight:600;font-size:17px">What is it?</span><div class="bwchips c3">${BW_FILE_KINDS.map(k => `<button type="button" data-fkind="${esc(k)}" aria-pressed="${(bw.fkind || "Payment proof") === k}">${esc(k)}</button>`).join("")}</div>` +
+    (canAdd ? `<div class="bwbox"><span style="font-weight:600;font-size:17px">What is it?</span><div class="bwchips">${BW_FILE_KINDS.map(k => { const c = files.filter(f => fileKindOf(f) === k).length; return `<button type="button" data-fkind="${esc(k)}" aria-pressed="${(bw.fkind || "Permit") === k}">${esc(k)}${c ? ` <span class="fkc">${c}</span>` : ""}</button>`; }).join("")}</div>` +
       `<div class="bwseg c2"><button type="button" class="twsave" data-bw="fcam"${bw.fileBusy ? " disabled" : ""}>📷 Take photo</button><button type="button" data-bw="fpick"${bw.fileBusy ? " disabled" : ""}>+ Choose file</button></div>${bw.fileBusy ? `<small>Uploading…</small>` : ""}</div>` : "") +
     (files.length ? files.map(card).join("") : `<p class="bwnote">No files yet.</p>`) + `<p class="bwnote">Tap a file to open it.</p></div>`;
 }
@@ -6790,7 +6795,7 @@ async function bwFileUp(e) {
   bw.fileBusy = true; bwRender();
   const added = [];
   for (const file of list) {
-    try { const r = await assetsCap.upload(file, { type: file.type }); added.push({ id: r.id, name: file.name, kind: bw.fkind || "Payment proof", type: file.type, at: new Date().toISOString(), byName: whoAmI() }); }
+    try { const r = await assetsCap.upload(file, { type: file.type }); added.push({ id: r.id, name: file.name, kind: bw.fkind || "Permit", type: file.type, at: new Date().toISOString(), byName: whoAmI() }); }
     catch (er) { toast(er?.code === "too_large" ? "That file is too large." : er?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the file. Try again."); }
   }
   try { const cur = bwBkNow(); if (added.length && cur) { await bwBkSave({ ...cur, attachments: [...(cur.attachments || []), ...added] }, added.length === 1 ? `File added · ${added[0].kind}` : `${added.length} files added`); toast(added.length === 1 ? "File added" : `${added.length} files added`); } }
@@ -6894,7 +6899,7 @@ function openBooking(id, preset, full) {
   $("bkAddPay").hidden = !canE; $("bkPays").querySelectorAll("button").forEach(x => x.hidden = !canE);
   bkPayOnly = !canE && canPayAdd(b); if (bkPayOnly) $("bkAddPay").hidden = false;
   $("bkUpl").hidden = !fE; $("bkFileIn").disabled = $("bkFileCam").disabled = !fE || !assetsCap; $("bkFileKind").disabled = !fE;
-  if (bkMode === "trip") $("bkFileKind").value = "Trip bills";
+  if (bkMode === "trip") $("bkFileKind").value = "Trip sheet";
   $("bkFileHint").textContent = assetsCap ? "PDF or photo. Saved with the booking when you save." : "Attaching files isn't available in this view. Reload the page and try again.";
   renderBkFiles();
   $("bkRejectWhy").disabled = false;
@@ -6992,7 +6997,7 @@ let bkFiles = [], bkOtherList = [];
 function renderBkFiles() {
   const canE = bkFilesEdit();
   $("bkFiles").innerHTML = bkFiles.length ? bkFiles.map((f, i) => `<div class="bkfile"><span class="fk">${esc(f.kind)}</span><a href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener">${FILE_SVG}${esc(f.name)}</a><span class="fm">${f.at ? fmtShort(f.at.slice(0, 10)) : ""}${f.byName ? ` · ${esc(f.byName)}` : ""}</span>${canE ? `<button class="icon" type="button" data-frm="${i}">Remove</button>` : "<span></span>"}</div>`).join("")
-    : `<p class="sub" style="margin:0">No files attached. Keep the party's ID proof, the signed slip and payment proofs here.</p>`;
+    : `<p class="sub" style="margin:0">No files attached. Keep permits, the trip sheet, diesel bills and other papers here.</p>`;
   $("bkTb-files").textContent = bkFiles.length || "";
 }
 const bkUploadFiles = async e => {
