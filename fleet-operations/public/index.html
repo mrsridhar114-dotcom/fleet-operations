@@ -1248,8 +1248,10 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpadd { width: 100%; height: 50px; margin: 8px 0 4px; border-radius: 12px; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 8px; font: 700 17px var(--body); cursor: pointer; } .tpadd svg { width: 22px; height: 22px; }
 .tpnote { padding: 0 0 8px; margin-top: -2px; border-bottom: 1px solid var(--line); } .tpnote input { width: 100%; height: 46px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: 500 17px var(--body); background: var(--surface); color: var(--ink); }
 .tpcrew { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); } .tpcrew:last-of-type { border-bottom: 0; }
-.tpcrew { flex-direction: row; align-items: center; gap: 10px; }
-.tpsel { flex: 0 0 62%; height: 54px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 18px var(--body); padding: 0 10px; }
+.tpcrew { flex-direction: row; align-items: flex-end; gap: 10px; }
+.tpcol { display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; min-width: 0; } .tpcol > span:first-child { font: 700 16px var(--body); }
+.tpcol.tpp { flex: 0 0 128px; } .tpcol .tpin { width: 100%; }
+.tpsel { width: 100%; height: 54px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 18px var(--body); padding: 0 10px; }
 .tpcrew + .tpnote { margin-top: -2px; }
 .tphd { display: flex; gap: 8px; padding: 6px 0 0; font: 600 13px var(--body); color: var(--muted); }
 .tpst { font: 600 15px var(--body); color: var(--muted); } .tpst.ok { color: var(--ok); } .tpst.bad { color: var(--danger); }
@@ -6670,9 +6672,10 @@ function tpCrewHtml() {
   const same = tw.cleaner.trim() && tpDriverName() && tw.cleaner.trim().toUpperCase() === tpDriverName().toUpperCase();
   const dv = tw.drvOther ? "__other" : tw.drvId, cv = tw.noCleaner ? "__none" : tw.clnOther ? "__other" : tw.cleaner.trim();
   const opt = (v, l, cur) => `<option value="${esc(v)}"${String(cur).toUpperCase() === String(v).toUpperCase() ? " selected" : ""}>${esc(l)}</option>`;
-  return `<label class="tpcrew"><span class="tpl">Driver</span><select class="tpsel" data-sel="drv" aria-label="Driver"${ro}>${opt("", "Choose the driver", dv)}${dr.map(d => opt(d.id, d.name, dv)).join("")}${opt("__other", "Other (type the name)", dv)}</select></label>` +
+  const padi = (k, l) => `<label class="tpcol tpp"><span>Padi</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${k}" value="${esc(tw[k])}" placeholder="0" aria-label="${l}"${tw.edit ? "" : " readonly"}></span></label>`;
+  return `<div class="tpcrew"><label class="tpcol"><span>Driver</span><select class="tpsel" data-sel="drv" aria-label="Driver"${ro}>${opt("", "Choose", dv)}${dr.map(d => opt(d.id, d.name, dv)).join("")}${opt("__other", "Other (type the name)", dv)}</select></label>${padi("padiPaid", "Driver padi")}</div>` +
     (tw.drvOther ? `<div class="tpnote"><input type="text" data-k="drvName" maxlength="60" value="${esc(tw.drvName)}" placeholder="Driver name" aria-label="Driver name"${tw.edit ? "" : " readonly"}></div>` : "") +
-    `<label class="tpcrew"><span class="tpl">Cleaner</span><select class="tpsel" data-sel="cln" aria-label="Cleaner"${ro}>${opt("", "Choose the cleaner", cv)}${cl.map(n => opt(n, n, cv)).join("")}${opt("__none", "No cleaner", cv)}${opt("__other", "Other (type the name)", cv)}</select></label>` +
+    `<div class="tpcrew"><label class="tpcol"><span>Cleaner</span><select class="tpsel" data-sel="cln" aria-label="Cleaner"${ro}>${opt("", "Choose", cv)}${cl.map(n => opt(n, n, cv)).join("")}${opt("__none", "No cleaner", cv)}${opt("__other", "Other (type the name)", cv)}</select></label>${padi("cleanerPadi", "Cleaner padi")}</div>` +
     (tw.clnOther ? `<div class="tpnote"><input type="text" data-k="cleaner" maxlength="60" value="${esc(tw.cleaner)}" placeholder="Cleaner name" aria-label="Cleaner name"${tw.edit ? "" : " readonly"}></div>` : "") +
     `<span class="bwerr" id="tpCrewErr">${same ? "The cleaner can't be the same person as the driver." : ""}</span>`;
 }
@@ -6694,7 +6697,6 @@ function tpPageHtml() {
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     `<div class="tptip"><b>Just type the amount.</b> It saves by itself. Leave empty what you did not spend.</div>` +
     sec("Driver and cleaner", tpCrewHtml()) +
-    sec("Padi", tpRowHtml("Driver padi", "padiPaid", tw.padiPaid) + tpRowHtml("Cleaner padi", "cleanerPadi", tw.cleanerPadi)) +
     sec("On the way", tpRowHtml("Toll gate", "toll", tw.toll) + tpRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel", (pp ? `<p class="bwnote" style="margin:6px 0">Diesel is paid by the party: litres are enough.</p>` : "") +
       tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
