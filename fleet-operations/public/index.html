@@ -1160,7 +1160,11 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpl { flex: 1; min-width: 0; font: 700 18px/1.15 var(--body); }
 .tpin { width: 128px; height: 54px; flex: none; padding: 0 10px; } .tpin input { font-size: 21px; } .tpin b { font-size: 17px; }
 .tpin.km { width: 180px; } .tpin.km input { font-family: var(--mono); font-size: 20px; }
-.tpfill .tpin { flex: 1 1 0; width: auto; min-width: 0; } .tpfill .tpin.l { flex: 0 0 96px; } .tpin input { width: 100%; min-width: 0; }
+.tpin input { width: 100%; min-width: 0; }
+.tpfc { padding: 10px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.tpfg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .tpfg label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tpfg label > span:first-child { font: 600 13px var(--body); color: var(--muted); } .tpfg .tpin { width: 100%; padding: 0 8px; } .tpfg .tpin input { font-size: 19px; } .tpfg .tpin b { font-size: 15px; }
+.tpfb { display: flex; align-items: center; gap: 8px; } .tpfb .bwseg { flex: 1; } .tpfb .bwseg button { min-height: 50px; } .tpfb .twcam { width: 52px; height: 52px; }
 .tprow .twcam { width: 52px; height: 52px; }
 .tpbin { width: 40px; height: 52px; flex: none; border: 0; background: none; color: var(--danger); display: grid; place-items: center; padding: 0; cursor: pointer; } .tpbin svg { width: 22px; height: 22px; }
 .tpadd { width: 100%; height: 50px; margin: 8px 0 4px; border-radius: 12px; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 8px; font: 700 17px var(--body); cursor: pointer; } .tpadd svg { width: 22px; height: 22px; }
@@ -1171,7 +1175,6 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpcol.tpp { flex: 0 0 128px; } .tpcol .tpin { width: 100%; }
 .tpsel { width: 100%; height: 54px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 18px var(--body); padding: 0 10px; }
 .tpcrew + .tpnote { margin-top: -2px; }
-.tphd { display: flex; gap: 8px; padding: 6px 0 0; font: 600 13px var(--body); color: var(--muted); }
 .tpst { font: 600 15px var(--body); color: var(--muted); } .tpst.ok { color: var(--ok); } .tpst.bad { color: var(--danger); }
 .twspent { display: flex; justify-content: space-between; align-items: baseline; font: 600 16px var(--body); color: var(--muted); margin-bottom: 8px; } .twspent b { color: var(--ink); font-size: 19px; }
 .bhcard { background: var(--surface); border: 3px solid var(--accent); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: var(--muted); }
@@ -6616,8 +6619,9 @@ function twOpen(b, backTo) {
     padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
     files: (b.attachments || []).map(f => ({ ...f })), saving: false, backTo: backTo || "",
     drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
-    rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null })), legacy: dslLegacyOf(b) };
-  if (!tw.rows.length && edit) tw.rows.push({ litres: "", amount: "", file: null });
+    rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", rate: f.rate != null ? String(f.rate) : "", amount: f.amount != null ? String(f.amount) : "", pay: f.pay || "Cash", file: f.file || null,
+      amtTyped: num(f.amount) > 0 && !(num(f.rate) > 0 && Math.abs(num(f.litres) * num(f.rate) - num(f.amount)) <= 1) })), legacy: dslLegacyOf(b) };
+  if (!tw.rows.length && edit) tw.rows.push(twNewRow());
   // Other expenses: one row each for Pooja, Mechanic and Other (older trip sheets with several items are added up per kind).
   tw.oth = Object.fromEntries(TW_OTHER.map(([k]) => [k, { amt: "", note: "" }]));
   const list = (b.otherList || []).length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : [];
@@ -6671,12 +6675,18 @@ function twCrewHtml() {
 function twRowHtml(label, key, val, opts = {}) {
   return `<div class="tprow"><span class="tpl">${label}</span><span class="bwin tpin${opts.km ? " km" : ""}">${opts.km ? "" : "<b>₹</b>"}<input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${opts.ph ?? (opts.km ? "" : "0")}" aria-label="${label}"${tw.edit ? "" : " readonly"}>${opts.km ? "<b>km</b>" : ""}</span>${opts.km ? "" : twCamBtn(opts.cam || key, label)}</div>`;
 }
+// A new diesel line starts with the rate and payment of this bus's last fill.
+function twNewRow() { const last = flSorted(twBk()?.vehicleId || "").pop(); return { litres: "", rate: last?.rate ? String(last.rate) : "", amount: "", pay: last?.pay === "Fuel card" ? "Fuel card" : "Cash", file: null, amtTyped: false }; }
 function twPageHtml() {
   const pp = twPP("diesel"), rd = tw.edit ? "" : " readonly", sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
-  const fill = (r, i) => `<div class="tprow tpfill"><span class="bwin tpin l"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" placeholder="0" aria-label="Litres, fill ${i + 1}"${rd}><b>L</b></span>` +
-    `<span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="${pp ? "Party pays" : "0"}" aria-label="Amount, fill ${i + 1}"${rd}></span>` +
+  // One diesel fill: litres, rate and amount (litres × rate fills the amount), how it was paid, and the bill photo.
+  const fill = (r, i) => `<div class="tpfc"><div class="tpfg">` +
+      `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" placeholder="0" aria-label="Litres, fill ${i + 1}"${rd}><b>L</b></span></label>` +
+      `<label><span>Rate</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:rate" value="${esc(r.rate)}" placeholder="0" aria-label="Rate per litre, fill ${i + 1}"${rd}></span></label>` +
+      `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="${pp ? "Party" : "0"}" aria-label="Amount, fill ${i + 1}"${rd}></span></label></div>` +
+    `<div class="tpfb"><div class="bwseg c2">${["Cash", "Card"].map(m => `<button type="button" data-flpay="${i}:${m === "Card" ? "Fuel card" : "Cash"}" aria-pressed="${(r.pay || "Cash") === (m === "Card" ? "Fuel card" : "Cash")}"${tw.edit ? "" : " disabled"}>${m}</button>`).join("")}</div>` +
     `<button type="button" class="twcam${r.file ? " on" : ""}" data-cam="row:${i}" aria-label="Photo of diesel bill ${i + 1}"${tw.edit ? "" : " disabled"}>${TW_CAM}${r.file ? "<i>✓</i>" : ""}</button>` +
-    (tw.edit ? `<button type="button" class="tpbin" data-rowdel="${i}" aria-label="Remove diesel line ${i + 1}">${TW_BIN}</button>` : "") + `</div>`;
+    (tw.edit ? `<button type="button" class="tpbin" data-rowdel="${i}" aria-label="Remove diesel line ${i + 1}">${TW_BIN}</button>` : "") + `</div></div>`;
   const s = num(tw.startKm), e = num(tw.endKm);
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     `<div class="tptip"><b>Just type the amount.</b> It saves by itself. Leave empty what you did not spend.</div>` +
@@ -6684,7 +6694,6 @@ function twPageHtml() {
     sec("On the way", twRowHtml("Toll gate", "toll", tw.toll) + twRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel", (pp ? `<p class="bwnote" style="margin:6px 0">Diesel is paid by the party: litres are enough.</p>` : "") +
       tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
-      `<div class="tphd"><span style="flex:0 0 96px">Litres</span><span style="flex:1">Amount</span><span style="flex:0 0 ${tw.edit ? 100 : 52}px">Bill</span></div>` +
       tw.rows.map(fill).join("") + (tw.edit ? `<button type="button" class="tpadd" data-tw="rowadd">${TW_PLUS} Add diesel</button>` : "")) +
     sec("Other", TW_OTHER.map(([k, key]) => twRowHtml(k, "o:" + k, tw.oth[k].amt, { cam: key }) +
       (k === "Other" ? `<div class="tpnote"><input type="text" data-k="on:Other" maxlength="80" value="${esc(tw.oth.Other.note)}" placeholder="What was it for?" aria-label="What was the other expense for"${rd}></div>` : "")).join("")) +
@@ -6731,7 +6740,12 @@ function twRefresh() {
 function twInput(e) {
   const k = e.target.dataset.k; if (!k || !tw) return;
   const v = e.target.value;
-  if (k.startsWith("fl:")) { const [, i, f] = k.split(":"); tw.rows[+i][f] = v; twRefresh(); twSoon("row" + i, () => twSaveRow(+i), 1200); return; }
+  if (k.startsWith("fl:")) {
+    const [, i, f] = k.split(":"), r = tw.rows[+i]; r[f] = v;
+    if (f === "amount") r.amtTyped = v !== "";
+    else if (!r.amtTyped && num(r.litres) > 0 && num(r.rate) > 0) { r.amount = String(Math.round(num(r.litres) * num(r.rate))); const el = $("tw").querySelector(`[data-k="fl:${i}:amount"]`); if (el) el.value = r.amount; }
+    twRefresh(); twSoon("row" + i, () => twSaveRow(+i), 1200); return;
+  }
   if (k.startsWith("o:")) tw.oth[k.slice(2)].amt = v;
   else if (k.startsWith("on:")) tw.oth[k.slice(3)].note = v;
   else tw[k] = v;
@@ -6753,7 +6767,8 @@ function twClick(e) {
   if (a === "back" || a === "close") { twBack(a === "close"); return; }
   if (a === "check") { twSaveState("Saving…"); twFlush().then(() => { if (!tw) return; tw.view = "check"; tw.slide = "l"; twRender(true); }); return; }
   if (a === "page") { tw.view = "page"; tw.slide = "r"; twRender(true); return; }
-  if (a === "rowadd") { tw.rows.push({ litres: "", amount: "", file: null }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
+  if (t.dataset.flpay) { const [i, m] = t.dataset.flpay.split(":"), r = tw.rows[+i]; if (!r || !tw.edit) return; r.pay = m; twRender(); twSoon("row" + i, () => twSaveRow(+i), 300); return; }
+  if (a === "rowadd") { tw.rows.push(twNewRow()); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
   if (t.dataset.rowdel != null) { twDelRow(+t.dataset.rowdel); return; }
   if (t.dataset.cam) { if (!tw.edit) return; if (!assetsCap) { toast("Photos can't be saved in this view."); return; } tw.camFor = t.dataset.cam; $("twCam").click(); return; }
   if (a === "save" || a === "draft" || a === "send") twSave(a === "send");
@@ -6806,10 +6821,12 @@ async function twSaveRow(i) {
   const litres = Math.round(num(r.litres) * 100) / 100, amount = Math.round(num(r.amount) * 100) / 100, pp = twPP("diesel");
   if (!(litres > 0) || (!pp && !(amount > 0))) { twSaveState("✓ Saved"); return; }
   const prev = r.id ? ops.fuelLog.find(x => x.id === r.id) : null, t = todayISO();
-  if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { twSaveState("✓ Saved"); return; }
+  const rate = num(r.rate) > 0 ? Math.round(num(r.rate) * 100) / 100 : amount > 0 ? Math.round(amount / litres * 100) / 100 : 0, pay = r.pay || "Cash";
+  if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && num(prev.rate || 0) === rate && (prev.pay || "Cash") === pay && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { twSaveState("✓ Saved"); return; }
   const last = flSorted(b.vehicleId).pop();
-  const f = { ...(prev || {}), id: prev?.id || r.id || genId("fl"), date: prev?.date || (t < b.from ? b.from : t > bkEnd(b) ? bkEnd(b) : t), vehicleId: b.vehicleId, pay: prev?.pay || last?.pay || "Cash", litres, bookingId: b.id, bookingNo: b.no || "" };
-  if (amount > 0) { f.amount = amount; f.rate = Math.round(amount / litres * 100) / 100; } else { delete f.amount; delete f.rate; }
+  const f = { ...(prev || {}), id: prev?.id || r.id || genId("fl"), date: prev?.date || (t < b.from ? b.from : t > bkEnd(b) ? bkEnd(b) : t), vehicleId: b.vehicleId, pay, litres, bookingId: b.id, bookingNo: b.no || "" };
+  if (amount > 0) f.amount = amount; else delete f.amount;
+  if (rate > 0) f.rate = rate; else delete f.rate;
   if (r.file) f.file = r.file; else delete f.file;
   if (prev) f.updatedByName = whoAmI();
   else { if (b.driverId) { f.driverId = b.driverId; f.driverName = drivers.find(d => d.id === b.driverId)?.name || b.driverName || ""; } else if (b.driverName) f.driverName = b.driverName; if (last?.bunk) f.bunk = last.bunk; f.createdByName = whoAmI(); f.createdOn = t; }
@@ -6824,7 +6841,7 @@ async function twSaveRow(i) {
 }
 function twDelRow(i) {
   const r = tw.rows[i]; if (!r) return;
-  tw.rows.splice(i, 1); if (!tw.rows.length) tw.rows.push({ litres: "", amount: "", file: null });
+  tw.rows.splice(i, 1); if (!tw.rows.length) tw.rows.push(twNewRow());
   twRender();
   if (r.id) twQueue(async () => {
     try { await opsDelete("fuelLog", r.id); ops.fuelLog = ops.fuelLog.filter(x => x.id !== r.id); await syncBookingDiesel(tw.id); toast("Diesel line removed"); }
@@ -8073,29 +8090,26 @@ async function tsPdf(L, b) {
   // ---- back
   head("TRIP SHEET  -  BACK");
   y = H - 96; text(`${plateOf(bus)}  ·  ${b.places || ""}  ·  ${fd(b.from)} to ${fd(bkEnd(b))}`, W / 2, y, { size: 8.5, align: "center", color: grey }); y -= 20;
-  text("DIESEL FILL-UPS", X0, y, { size: 10, bold: true, color: ink }); y -= 8;
-  const cols = [["#", 16], ["Date", 52], ["Fuel station", 92], ["Litres", 42, 1], ["Rate", 38, 1], ["Amount", 50, 1], ["Paid by", 44], ["Bill no.", 0]];
-  cols[cols.length - 1][1] = X1 - X0 - cols.reduce((a, c2) => a + c2[1], 0);
-  const trow = (cells, o = {}) => { if (o.fill) page.drawRectangle({ x: X0, y: y - 15, width: X1 - X0, height: 15, color: shade });
-    let x = X0; cols.forEach(([, w, right], i) => { const v = fit(cells[i] ?? "", o.bold ? bold : reg, 8.5, w - 6); right ? text(v, x + w - 4, y - 11, { size: 8.5, bold: o.bold, align: "right" }) : text(v, x + 3, y - 11, { size: 8.5, bold: o.bold }); x += w; });
-    y -= 15; hline(X0, X1, y, { t: 0.4, color: grey }); };
-  hline(X0, X1, y, { t: 0.6 }); trow(cols.map(c2 => c2[0]), { bold: true, fill: true });
-  const all = [...fills.map(f => [fd(f.date), f.bunk || "", f.litres, f.rate, f.amount, f.pay || "Cash", f.bill || ""]), ...legacy.map(r => ["", r.note || "Entered on the trip sheet", r.litres, "", r.amount, "", ""])];
-  all.forEach((r, i) => { if (y < 80) { head("TRIP SHEET  -  BACK (continued)"); y = H - 100; } trow([String(i + 1), r[0], r[1], r[2] ? nf(num(r[2]), 2) : "", r[3] ? nf(num(r[3]), 2) : "", r[4] ? nf(num(r[4])) : "", r[5], r[6]]); });
-  if (!all.length) { text("No diesel fills entered.", X0 + 4, y - 12, { size: 9, color: grey }); y -= 16; }
-  else trow(["", "", "Total", nf(litres, 2), "", nf(all.reduce((a, r) => a + num(r[4]), 0)), "", ""], { bold: true, fill: true });
-  // Driver advance and the expenses paid from it, as tables. A long list carries on to a new page.
+  // Tables with borders. A long list carries on to a new page.
   const ensure = h => { if (y - h < 50) { head("TRIP SHEET  -  BACK (continued)"); y = H - 100; } };
   const title = t => { ensure(70); text(t, X0, y, { size: 10, bold: true, color: ink }); y -= 9; };
-  const tbl = (cols, rows) => { const rh = 16.5, tw = cols.reduce((a, c2) => a + c2[1], 0);
+  const tbl = (cols, rows, sz = 9.5) => { const rh = sz < 9 ? 15.5 : 16.5, tw = cols.reduce((a, c2) => a + c2[1], 0), pad = sz < 9 ? 4 : 7;
     const draw = (cells, st = {}) => { ensure(rh);
       if (st.fill) page.drawRectangle({ x: X0, y: y - rh, width: tw, height: rh, color: shade });
-      let x = X0; cols.forEach(([, w, right], k) => { const f = st.bold ? bold : reg, v = fit(cells[k] ?? "", f, 9.5, w - 12);
-        right ? text(v, x + w - 7, y - 11.5, { size: 9.5, bold: st.bold, align: "right" }) : text(v, x + 7, y - 11.5, { size: 9.5, bold: st.bold }); x += w; });
+      let x = X0; cols.forEach(([, w, right], k) => { const f = st.bold ? bold : reg, v = fit(cells[k] ?? "", f, sz, w - 2 * pad);
+        right ? text(v, x + w - pad, y - rh + 5, { size: sz, bold: st.bold, align: "right" }) : text(v, x + pad, y - rh + 5, { size: sz, bold: st.bold }); x += w; });
       page.drawRectangle({ x: X0, y: y - rh, width: tw, height: rh, borderColor: ink, borderWidth: 0.6 });
       let vx = X0; cols.slice(0, -1).forEach(([, w]) => { vx += w; page.drawLine({ start: { x: vx, y }, end: { x: vx, y: y - rh }, thickness: 0.6, color: ink }); });
       y -= rh; };
     draw(cols.map(c2 => c2[0]), { bold: true, fill: true }); rows.forEach(r => draw(r.cells, r)); };
+  title("DIESEL FILL-UPS");
+  const all = [...fills.map(f => [fd(f.date), f.bunk || "", f.litres, f.rate || (num(f.litres) && num(f.amount) ? num(f.amount) / num(f.litres) : 0), f.amount, f.pay === "Fuel card" ? "Card" : "Cash", f.bill || ""]),
+    ...legacy.map(r => ["", r.note || "Entered on the trip sheet", r.litres, num(r.litres) && num(r.amount) ? num(r.amount) / num(r.litres) : 0, r.amount, "", ""])];
+  const dcols = [["#", 18], ["Date", 54], ["Fuel station", 0], ["Litres", 46, 1], ["Rate", 42, 1], ["Amount", 52, 1], ["Paid by", 40], ["Bill no.", 40]];
+  dcols[2][1] = X1 - X0 - dcols.reduce((a, c2) => a + c2[1], 0);
+  tbl(dcols, all.length ? [...all.map((r, k) => ({ cells: [String(k + 1), r[0], r[1], r[2] ? nf(num(r[2]), 2) : "", r[3] ? nf(num(r[3]), 2) : "", r[4] ? nf(num(r[4])) : "", r[5], r[6]] })),
+    { cells: ["", "", "Total", nf(litres, 2), "", nf(all.reduce((a, r) => a + num(r[4]), 0)), "", ""], bold: true, fill: true }] : [{ cells: ["", "", "No diesel fills entered", "", "", "", "", ""] }], 8.5);
+  // Driver advance and the expenses paid from it.
   const d = drvCalc(b), AW = 104;
   y -= 22; title("DRIVER ADVANCE");
   if (!d.total && !d.spent) { text("No advance given.", X0, y - 12, { size: 9.5, color: grey }); y -= 20; }
