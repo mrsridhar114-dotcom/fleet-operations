@@ -6169,7 +6169,7 @@ function bwBack() {
   if (bw.pay) { bw.pay = null; bwRender(); return; }
   if (bw.sheet) { bw.sheet = false; bwRender(); return; }
   if (bw.askCancel) { bw.askCancel = false; bwRender(); return; }
-  if (bw.done) { const id = bw.home && bw.editId; bwClose(); if (id) openBooking(id); return; }
+  if (bw.done) { bwClose(); return; }
   if (bw.sub === "home") { bwClose(); return; }
   if (bw.sub) { bw.sub = "home"; bw.slide = "r"; bwRender(true); return; }
   if (bw.fromCheck) { bw.step = 5; bw.fromCheck = false; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
@@ -6290,7 +6290,7 @@ function bwDoneHtml() {
     `<h2>${d.cancelled ? "Booking cancelled" : d.draft ? "Draft saved" : d.pending ? "Sent for approval" : d.edited ? "Changes saved" : "Booking saved"}</h2><p class="bwno">Booking no. ${esc(d.no)}</p><p>${esc(d.line1)}<br>${esc(d.line2)}</p>` +
     (d.draft ? `<p style="margin-top:10px">To finish it, open it from the planner. It opens here again, ready to complete and send for approval.</p>` : "") +
     (pn && !d.draft ? `<a class="bwwa" href="https://wa.me/${pn}?text=${encodeURIComponent(d.msg)}" target="_blank" rel="noopener">${BW_ICON.wa} Send to party on WhatsApp</a>` : "") +
-    `</div>` + (bw.home ? `<footer class="bwf"><button type="button" class="bwgo" data-bw="back">Back to booking</button></footer>` : `<footer class="bwf two"><button type="button" class="bwgo" data-bw="again">+ New booking</button><button type="button" class="bwalt" data-bw="close">See planner</button></footer>`);
+    `</div><footer class="bwf two"><button type="button" class="bwgo" data-bw="again">+ New booking</button><button type="button" class="bwalt" data-bw="close">See planner</button></footer>`;
 }
 // Parties from past bookings, newest trip first, one row per phone number (or name when there is no number).
 function bwParties() {
@@ -6395,9 +6395,12 @@ async function bwCancel() {
     if (!$("bkDrawer").hidden) { bwClose(); toast("Please check the highlighted field."); return; }
     const b = ops.bookings.find(x => x.id === id);
     if (b?.status !== "cancelled") { bw.saving = false; bwRender(); return; }
+    if (bwHomeAfter("Booking cancelled")) return;
     bw.done = { no, cancelled: true, phone: "", msg: "", line1: bw.party.trim(), line2: "The bus is free again on these days." }; bw.saving = false; bwRender(true);
   } finally { bwBusy = false; if (bw) bw.saving = false; }
 }
+// Saved from a booking's own page: go straight back to that page (no "saved" screen in between).
+function bwHomeAfter(msg) { if (!bw?.home) return false; bw.saving = false; bwLeave("home", true); toast(msg); return true; }
 // Fill the full booking form and save it exactly as the Save button there would.
 async function bwSave(asDraft) {
   if (bw.saving) return;
@@ -6434,6 +6437,7 @@ async function bwSave(asDraft) {
     for (let i = 0; i < 100 && !failed() && !$("bkDrawer").hidden; i++) await new Promise(r => setTimeout(r, 150));
     if (!$("bkDrawer").hidden) { bwClose(); toast(failed() ? "Please check the highlighted field." : "Still saving. Check the booking form."); return; }
     if (!ops.bookings.some(x => String(x.no) === no)) { bw.saving = false; bwRender(); return; }
+    if (bwHomeAfter(info.pending ? "Sent for approval" : info.draft ? "Draft saved" : "Changes saved")) return;
     bw.done = info; bw.saving = false; bwRender(true);
   } finally { bwBusy = false; if (bw) bw.saving = false; }
 }
