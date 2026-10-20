@@ -1179,6 +1179,19 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 .bhlock { border-radius: 16px; padding: 14px 16px; background: var(--chip-bg); color: var(--ink); display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
 .bhlock b { font-size: 17px; } .bhlock span { color: var(--muted); }
+.daadv { display: flex; gap: 10px; align-items: stretch; } .daadv .bwin { flex: 1 1 0; min-width: 0; }
+.datoll, .daexp { display: flex; align-items: center; gap: 10px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: 600 16px var(--body); cursor: pointer; text-align: left; }
+.datoll { flex: none; padding: 0 14px; min-height: 60px; } .datoll span { display: flex; flex-direction: column; line-height: 1.2; } .datoll small { color: var(--muted); font-size: 14px; }
+.datoll i, .daexp i { width: 26px; height: 26px; flex: none; border-radius: 8px; border: 2px solid var(--line); display: grid; place-items: center; color: transparent; }
+.datoll i svg, .daexp i svg { width: 18px; height: 18px; }
+.datoll[aria-pressed="true"], .daexp[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.datoll[aria-pressed="true"] i, .daexp[aria-pressed="true"] i { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.datoll:disabled, .daexp:disabled { cursor: default; opacity: .75; }
+.daexp { width: 100%; min-height: 54px; padding: 8px 14px; margin-top: 8px; } .daexp span { flex: 1; min-width: 0; } .daexp b { white-space: nowrap; }
+.darow { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; font-size: 17px; } .darow b { font-size: 20px; }
+.danet { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-radius: 16px; padding: 14px 16px; background: var(--accent-soft); }
+.danet span { display: flex; flex-direction: column; font-weight: 700; font-size: 17px; } .danet small { font-weight: 500; font-size: 14px; color: var(--muted); }
+.danet b { font-size: 26px; white-space: nowrap; } .danet.neg { background: var(--danger-soft); } .danet.neg b { color: var(--danger); }
 .bhclose { height: 56px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); font: 700 18px var(--body); cursor: pointer; }
 .bwleave input { box-sizing: border-box; width: 100%; height: 54px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 17px var(--body); }
 .bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
@@ -5949,7 +5962,7 @@ const B_KEYS = B_TRACKED.map(t => t[0]);
 const B_HIST_OPTS = () => {
   const ks = B_TRACKED.map(t => t[0]), g = (label, keys) => `<optgroup label="${label}">${keys.map(k => `<option value="${k}">${B_FIELD_INFO[k].label}</option>`).join("")}</optgroup>`;
   return `<option value="">All fields</option>` + g("Stage", ["status"]) + g("Booking slip", [...ks.slice(1, 17), "bookedByName"]) + g("Payments", ["payments"]) +
-    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn"]) + g("Driver money", ["drvAdvance", "drvSettle"]);
+    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn"]) + g("Driver advance", ["drvAdvance", "drvSettle"]);
 };
 const BHLS = "fleet-bkhistory.v1";
 let bHistory = loadLS(BHLS), bHistRef = null;
@@ -5961,7 +5974,7 @@ function bHistVal(k, b) {
   if (k === "payments") return (b.payments || []).map(p => `${p.date ? fmtShort(p.date) : "No date"} ${rs(p.amount)} ${p.mode || ""}${p.note ? ` (${p.note})` : ""}`).join("; ");
   if (k === "attachments") return (b.attachments || []).map(f => `${f.kind}: ${f.name}`).join("; ");
   if (k === "_sent") return "";
-  if (k === "drvSettle") { const st = b.drvSettle; return st ? `${st.dir === "pay" ? "Paid to driver" : "Returned by driver"} ${rs(num(st.amount))} (${st.mode})` : ""; }
+  if (k === "drvSettle") { const st = b.drvSettle; return st ? `${st.dir === "pay" ? "Office paid the driver" : "Driver gave the office"} ${rs(num(st.amount))} (${st.mode})` : ""; }
   if (k === "tsStatus") return TS_STAGES[b.tsStatus] || "";
   if (k === "driverName") return b.driverId ? (drivers.find(d => d.id === b.driverId)?.name || b.driverName || "") : (b.driverName || "");
   return histVal(b[k]);
@@ -6004,7 +6017,7 @@ let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bk
 const blocks = b => b.status === "draft" || b.status === "pending" || b.status === "booked" || b.status === "ontrip" || b.status === "completed";
 const META = ["tsStatus", "tsBy", "tsByName", "tsDraftOn", "tsSubmittedBy", "tsSubmittedByName", "tsSubmittedOn", "tsSubmitCount", "tsApprovedByName", "tsApprovedOn", "tsRejectedByName", "tsRejectedOn", "tsRejectReason", "tsRejections",
   "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason",
-  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvSettle"];
+  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle"];
 const whoAmI = () => myRecord()?.name || me?.name || (store ? "Someone" : "This browser");
 const bkEnd = b => b.to || b.from;
 const bkCalc = b => {
@@ -6018,14 +6031,25 @@ const bkSettled = b => b.status === "completed" && bkCalc(b).balance <= 0;
 // A closed trip is final: its booking, payments, files, trip sheet and diesel lines are view-only for everyone (admin too)
 // until an admin reopens it. The server refuses changes to it as well. An admin can close or reopen a trip at any time.
 const tripClosed = b => !!b?.closedOn;
-// Driver money: the office gives the driver an advance; the trip's cash expenses (padi, toll, permit, other, diesel not paid
-// by fuel card or by the party) come out of it; what is left is settled with the driver after the trip.
-function drvSpentOf(b) {
-  const pp = !!(b.partyPays || ppDefaults(b.rentType || "mt")).diesel;
-  const diesel = pp ? 0 : dslLinked(b.id).filter(f => f.pay !== "Fuel card").reduce((a, f) => a + num(f.amount), 0) + dslLegacyOf(b).reduce((a, r) => a + num(r.amount), 0);
-  return Math.round(num(b.padiPaid) + num(b.cleanerPadi) + num(b.permit) + num(b.toll) + num(b.otherExp) + diesel);
+// Driver advance: the office gives the driver an advance (plus the toll money when Toll gate is ticked). The admin ticks the
+// trip sheet expenses he paid from it; advance − those = what the driver gives back to the office (minus: the office pays him).
+function drvExpenses(b) {
+  const out = [], add = (key, label, amt, card) => { if (num(amt) > 0) out.push({ key, label, amt: Math.round(num(amt)), card: !!card }); };
+  add("padiPaid", "Driver padi", b.padiPaid); add("cleanerPadi", "Cleaner padi", b.cleanerPadi); add("toll", "Toll gate", b.toll); add("permit", "Permit", b.permit);
+  if (!(b.partyPays || ppDefaults(b.rentType || "mt")).diesel) {
+    dslLinked(b.id).forEach(f => add("fl:" + f.id, `Diesel${f.date ? " " + fmtShort(f.date) : ""} · ${nf(num(f.litres), 2)} L${f.pay === "Fuel card" ? " · fuel card" : ""}`, f.amount, f.pay === "Fuel card"));
+    dslLegacyOf(b).forEach((r, i) => add("dl:" + i, `Diesel · ${nf(num(r.litres), 2)} L`, r.amount));
+  }
+  (b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other expenses", amt: b.otherExp }] : []).forEach((x, i) => add("o:" + i, x.note ? `${x.kind} · ${x.note}` : x.kind, x.amt));
+  return out;
 }
-const drvLeft = b => num(b.drvAdvance) - drvSpentOf(b);  // more than 0: with the driver; less than 0: the office owes the driver
+// st: the screen's values not saved yet. Expenses are ticked unless switched off (diesel by fuel card starts off).
+function drvCalc(b, st) {
+  const exp = drvExpenses(b), off = st?.off || b.drvExpOff || exp.filter(x => x.card).map(x => x.key);
+  const adv = Math.round(num(st ? st.amt : b.drvAdvance)), toll = (st ? st.toll : b.drvAdvToll) ? Math.round(num(b.toll)) : 0;
+  const spent = exp.filter(x => !off.includes(x.key)).reduce((a, x) => a + x.amt, 0);
+  return { exp, off, adv, toll, total: adv + toll, spent, net: adv + toll - spent };
+}
 // One party = one phone number (or the name when there is no number), in the party list of the booking screens.
 const partyKey = b => { const name = String(b?.party || "").trim(), ph = String(b?.phone || "").replace(/\D/g, "").slice(-10); return ph.length === 10 ? ph : name ? "n:" + name.toUpperCase() : ""; };
 const stageName = b => tripClosed(b) ? "Closed" : BK_STAGES[b?.status] || "";
@@ -6203,7 +6227,7 @@ function bwBack() {
   if (bw.askCancel) { bw.askCancel = false; bwRender(); return; }
   if (bw.done) { bwClose(); return; }
   if (bw.sub === "home") { bwClose(); return; }
-  if (bw.sub) { bw.sub = "home"; bw.money = null; bw.slide = "r"; bwRender(true); return; }
+  if (bw.sub) { if (bw.da) { clearTimeout(bw.advTimer); bwAdvSave(); } bw.sub = "home"; bw.da = null; bw.advSaved = ""; bw.slide = "r"; bwRender(true); return; }
   if (bw.fromCheck) { bw.step = 5; bw.fromCheck = false; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
   if (bw.step > 0 && !(bw.home && bw.step === 5)) { bw.step--; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
   bwLeave(bw.home ? "home" : "list");
@@ -6367,7 +6391,7 @@ function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]')
 function bwInput(e) {
   const k = e.target.dataset.k; if (!k || !bw) return;
   if (k.startsWith("pay.")) { bw.pay[k.slice(4)] = e.target.value; return; }
-  if (k.startsWith("money.")) { bw.money[k.slice(6)] = e.target.value; return; }
+  if (k.startsWith("da.")) { bw.da[k.slice(3)] = e.target.value; bwAdvRefresh(); bwAdvSoon(900); return; }
   bw[k] = e.target.value;
   if (k === "q") { bw[k] = e.target.value; $("bwPl").innerHTML = bwPartyRows(); return; }
   if (k === "party" && bw.fromContact) bw.fromContact = false;
@@ -6398,7 +6422,9 @@ function bwClick(e) {
   if (a === "lockno") { bw.lockAsk = ""; bwRender(); return; }
   if (a === "lockgo") { bwLockGo(); return; }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
-  if (t.dataset.mmode) { bw.money.mode = t.dataset.mmode; bwRender(); return; }
+  if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
+  if (a === "advtoll") { bw.da.toll = !bw.da.toll; bwRender(); bwAdvSoon(50); return; }
+  if (t.dataset.exp) { const k = t.dataset.exp, o = bw.da.off; bw.da.off = o.includes(k) ? o.filter(x => x !== k) : [...o, k]; bwRender(); bwAdvSoon(50); return; }
 
   if (a === "leavego") { const to = bw.leave; bw.leave = ""; bwLeave(to, true); return; }
   if (a === "paybg") { if (e.target.closest("[data-bw]") === t && e.target === t) { bw.pay = null; bwRender(); } return; }
@@ -6520,10 +6546,6 @@ const twOtherSum = () => TW_OTHER.reduce((a, [k]) => a + num(tw.oth[k].amt), 0);
 const twDiesel = () => tw.rows.reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0);
 const twLitres = () => tw.rows.reduce((a, r) => a + num(r.litres), 0) + tw.legacy.reduce((a, r) => a + num(r.litres), 0);
 const twTotal = () => twSumMoney() + (twPP("diesel") ? 0 : twDiesel()) + twOtherSum();
-// Spent from the driver's advance: everything except diesel paid by fuel card (or by the party).
-const twCashSpent = () => twSumMoney() + twOtherSum() + (twPP("diesel") ? 0 : tw.rows.filter(r => (ops.fuelLog.find(f => f.id === r.id)?.pay || "Cash") !== "Fuel card").reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0));
-const twCashLine = () => { const adv = num(tw.drvAdvance), left = Math.round(adv - twCashSpent());
-  return !adv ? "" : left >= 0 ? `Cash with driver: <b>${rs(left)}</b> (${rs(adv)} advance − ${rs(Math.round(twCashSpent()))} spent)` : `Spent ${rs(-left)} more than the advance: the office pays the driver.`; };
 const twMissing = () => { const s = num(tw.startKm), e = num(tw.endKm); return [!s && "start km", !e && "end km", s && e && e <= s && "end km more than start km"].filter(Boolean); };
 function twOpen(b, backTo) {
   if (!b) return;
@@ -6536,7 +6558,7 @@ function twOpen(b, backTo) {
   const str = n => n ? String(n) : "";
   tw = { id: b.id, no: b.no || "", plate: v ? plateOf(v) : "", places: b.places || b.party || "", dates: `${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtShort(bkEnd(b))}` : ""}`,
     view: edit ? "page" : "check", edit, admin: canBookings, status: b.tsStatus || "", rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "",
-    padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), drvAdvance: str(b.drvAdvance), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
+    padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
     files: (b.attachments || []).map(f => ({ ...f })), saving: false, backTo: backTo || "",
     drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
     rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null })), legacy: dslLegacyOf(b) };
@@ -6592,7 +6614,7 @@ function twCrewHtml() {
     `<span class="bwerr" id="tpCrewErr">${twSameCrew() ? "The cleaner can't be the same person as the driver." : ""}</span>`;
 }
 function twRowHtml(label, key, val, opts = {}) {
-  return `<div class="tprow"><span class="tpl">${label}</span><span class="bwin tpin${opts.km ? " km" : ""}">${opts.km ? "" : "<b>₹</b>"}<input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${opts.ph ?? (opts.km ? "" : "0")}" aria-label="${label}"${tw.edit ? "" : " readonly"}>${opts.km ? "<b>km</b>" : ""}</span>${opts.km || opts.noCam ? "" : twCamBtn(opts.cam || key, label)}</div>`;
+  return `<div class="tprow"><span class="tpl">${label}</span><span class="bwin tpin${opts.km ? " km" : ""}">${opts.km ? "" : "<b>₹</b>"}<input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${opts.ph ?? (opts.km ? "" : "0")}" aria-label="${label}"${tw.edit ? "" : " readonly"}>${opts.km ? "<b>km</b>" : ""}</span>${opts.km ? "" : twCamBtn(opts.cam || key, label)}</div>`;
 }
 function twPageHtml() {
   const pp = twPP("diesel"), rd = tw.edit ? "" : " readonly", sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
@@ -6603,8 +6625,6 @@ function twPageHtml() {
   const s = num(tw.startKm), e = num(tw.endKm);
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     `<div class="tptip"><b>Just type the amount.</b> It saves by itself. Leave empty what you did not spend.</div>` +
-    (tw.admin || num(tw.drvAdvance) ? sec("Driver advance", (tw.admin ? twRowHtml("Advance given", "drvAdvance", tw.drvAdvance, { noCam: true }) : `<div class="tprow"><span class="tpl">Advance given</span><b style="font-size:20px">${rs(num(tw.drvAdvance))}</b></div>`) +
-      `<p class="bwnote" id="tpCash" style="margin:4px 0 6px">${twCashLine()}</p>`) : "") +
     sec("Driver and cleaner", twCrewHtml()) +
     sec("On the way", twRowHtml("Toll gate", "toll", tw.toll) + twRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel", (pp ? `<p class="bwnote" style="margin:6px 0">Diesel is paid by the party: litres are enough.</p>` : "") +
@@ -6631,7 +6651,6 @@ function twCheckHtml() {
     row(`Diesel · ${lines} fill${lines === 1 ? "" : "s"}`, m(`${nf(twLitres(), 2)} L`, twPP("diesel") ? "Party pays" : rs(twDiesel()))) +
     row("Other expenses", other.length ? other.map(x => m(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") : "<b>None</b>") +
     row("Km meter", m(`${s ? nf(s) : "—"} → ${e ? nf(e) : "—"}`, s && e > s ? `${nf(e - s)} km` : "—")) +
-    (num(tw.drvAdvance) ? row("Driver advance", m("Advance given", rs(num(tw.drvAdvance))) + m(num(tw.drvAdvance) >= twCashSpent() ? "Cash with driver" : "Office pays driver", rs(Math.abs(Math.round(num(tw.drvAdvance) - twCashSpent()))))) : "") +
     `<div class="bwrow"><div>${m("<b style='font-size:19px;color:var(--ink)'>Total spent</b>", `<span style="font-size:20px">${rs(twTotal())}</span>`)}</div></div></div>` +
     (tw.edit && !tw.admin ? `<p class="bwnote">${twMissing().length ? `<b>Still needed to send:</b> ${twMissing().join(", ")}. Save for later and finish it after the trip.` : "Save to finish later, or send it to the office when the trip is over."}</p>` : "");
 }
@@ -6649,7 +6668,6 @@ function twRender(top) {
 function twSaveState(t) { const el = $("tpSt"); if (el) { el.textContent = t; el.className = "tpst" + (t.startsWith("✓") ? " ok" : t.startsWith("Not") ? " bad" : ""); } }
 function twRefresh() {
   if ($("tpTot")) $("tpTot").textContent = rs(twTotal());
-  if ($("tpCash")) $("tpCash").innerHTML = twCashLine();
   const s = num(tw.startKm), e = num(tw.endKm);
   if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
   if ($("tpRun")) $("tpRun").textContent = s && e > s ? `${nf(e - s)} km run` : "";
@@ -6710,7 +6728,6 @@ async function twSaveBooking() {
   const next = { ...cur }, other = twOtherList();
   const put = (k, v) => { const n = Math.round(num(v)); if (n > 0) next[k] = n; else delete next[k]; };
   TW_MONEY.forEach(([k]) => put(k, tw[k])); put("startKm", tw.startKm); put("endKm", tw.endKm);
-  if (tw.admin) { put("drvAdvance", tw.drvAdvance); if (num(next.drvAdvance) !== num(cur.drvAdvance)) { next.drvAdvanceOn = todayISO(); next.drvAdvanceBy = whoAmI(); } }
   if (next.startKm && next.endKm && next.endKm <= next.startKm) { if (cur.endKm) next.endKm = cur.endKm; else delete next.endKm; }
   const dn = twDriverName(), cn = tw.noCleaner ? "" : tw.cleaner.trim().replace(/\s+/g, " ");
   if (tw.drvId) { next.driverId = tw.drvId; next.driverName = dn; } else { delete next.driverId; if (dn) next.driverName = dn.toUpperCase(); else delete next.driverName; }
@@ -6720,7 +6737,7 @@ async function twSaveBooking() {
   if (tw.files.length) next.attachments = tw.files.map(f => ({ ...f })); else delete next.attachments;
   if (!canBookings) { if (!cur.tsBy) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); } if (!cur.tsStatus) next.tsStatus = "draft"; next.tsDraftOn = todayISO(); }
   const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
-  const keys = [...TW_MONEY.map(([k]) => k), "drvAdvance", "startKm", "endKm", "otherList", "otherExp", "attachments", "tsStatus", "driverId", "driverName", "cleanerName", "noCleaner"];
+  const keys = [...TW_MONEY.map(([k]) => k), "startKm", "endKm", "otherList", "otherExp", "attachments", "tsStatus", "driverId", "driverName", "cleanerName", "noCleaner"];
   if (keys.every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { twSaveState("✓ Saved"); return; }
   try {
     await opsSave("bookings", next);
@@ -6862,7 +6879,7 @@ function bwHomeHtml(b) {
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
-      (canBookings && confirmed ? tile('data-bw="sub" data-sub="money"', "💵", "Driver money", b.drvSettle ? "Settled" : !num(b.drvAdvance) ? "No advance given" : drvLeft(b) > 0 ? `${rs(drvLeft(b))} with driver` : drvLeft(b) < 0 ? `Office owes driver ${rs(-drvLeft(b))}` : "Nothing to settle", b.drvSettle ? "ok" : num(b.drvAdvance) && drvLeft(b) ? "due" : "") : "") +
+      (canBookings && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", "Driver advance", b.drvSettle ? "Settled" : !d.total ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle", b.drvSettle ? "ok" : d.total && d.net ? "due" : ""))(drvCalc(b)) : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
         `</div>` +
@@ -6894,35 +6911,55 @@ function bwSubHtml() {
       `<div class="bwseg c2"><button type="button" class="twsave" data-bw="fcam"${bw.fileBusy ? " disabled" : ""}>📷 Take photo</button><button type="button" data-bw="fpick"${bw.fileBusy ? " disabled" : ""}>+ Choose file</button></div>${bw.fileBusy ? `<small>Uploading…</small>` : ""}</div>` : "") +
     (files.length ? files.map(card).join("") : `<p class="bwnote">No files yet.</p>`) + `<p class="bwnote">Tap a file to open it.</p></div>` + navBar("bw", true);
 }
-// Driver money: the advance (entered in the trip sheet), what was spent from it, and settling the rest. Admin only.
+// Driver advance (admin): the advance, Toll gate money added to it, the trip sheet expenses paid from it, and what the
+// driver gives back to the office. Saves by itself; Mark settled records the handover.
 function bwDrvMoneyHtml(b) {
-  const adv = num(b.drvAdvance), sp = drvSpentOf(b), left = adv - sp, st = b.drvSettle, ed = canBookings && platformWrite && !tripClosed(b);
-  const pp = !!(b.partyPays || ppDefaults(b.rentType || "mt")).diesel, dsl = sp - num(b.padiPaid) - num(b.cleanerPadi) - num(b.permit) - num(b.toll) - num(b.otherExp);
-  const m = bw.money ||= { amt: String(Math.abs(left)), mode: "Cash" };
-  const r = (l, v, big) => `<span class="bwm${big ? " bal" : ""}"><span>${l}</span><b>${v}</b></span>`;
-  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Driver money</b><span>Booking ${esc(b.no || "")} · ${esc(b.driverName || "No driver yet")}</span></div></header><div class="bwb tws" id="bwBody">` +
-    `<div class="bwcard"><div class="bwrow"><div>${r("Advance given", adv ? rs(adv) : "None")}` +
-      `<span class="bwm"><span>Spent from it</span><b>− ${rs(sp)}</b></span>` +
-      `<small class="bwnote">Padi ${rs(num(b.padiPaid) + num(b.cleanerPadi))} · Toll and permit ${rs(num(b.toll) + num(b.permit))} · Diesel ${pp ? "paid by party" : rs(dsl)} · Other ${rs(num(b.otherExp))}</small>` +
-      r(left > 0 ? "Driver returns" : left < 0 ? "Office pays driver" : "Balance", rs(Math.abs(left)), true) + `</div></div></div>` +
-    (!adv ? `<p class="bwnote">Enter the advance in the trip sheet (Driver advance) when the office gives it.</p>` : "") +
-    (!st && b.tsStatus !== "approved" ? `<p class="bwnote">The trip sheet is not approved yet, so the spent amount can still change.</p>` : "") +
-    (st ? `<div class="bhlock"><b>✓ Settled</b><span>${st.dir === "pay" ? "Paid to the driver" : "Returned by the driver"}: ${rs(num(st.amount))} · ${esc(st.mode)}</span><span>On ${fmtDate(st.on)}${st.by ? ` by ${esc(st.by)}` : ""}</span></div>` +
-      (ed ? `<button type="button" class="bwlink" data-bw="unsettle"${bw.moneyBusy ? " disabled" : ""}>Undo settlement</button>` : "")
-    : ed && (adv || sp) ? `<div class="bwbox"><label class="bwf1"><span>${left < 0 ? "Amount paid to the driver" : "Amount received back"}</span><span class="bwin main"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="money.amt" value="${esc(m.amt)}" aria-label="Amount"></span></label>` +
-      `<span style="font-weight:600;font-size:17px">How</span><div class="bwseg c3">${["Cash", "UPI", "Next trip"].map(x => `<button type="button" data-mmode="${x}" aria-pressed="${m.mode === x}">${x}</button>`).join("")}</div>` +
-      `<small class="bwnote">Next trip: the money stays with the driver for his next trip.</small></div>` : "") +
-    `</div>` + (!st && ed && (adv || sp) ? `<footer class="bwf"><button type="button" class="bwgo" data-bw="settle"${bw.moneyBusy ? " disabled" : ""}>${bw.moneyBusy ? "Saving…" : "Mark settled"}</button></footer>` : "") + navBar("bw", true);
+  const st = b.drvSettle, ed = canBookings && platformWrite && !tripClosed(b) && !st;
+  const v = bw.da ||= { amt: num(b.drvAdvance) ? String(num(b.drvAdvance)) : "", toll: !!b.drvAdvToll, off: drvCalc(b).off.slice(), mode: "Cash" };
+  const d = drvCalc(b, v), dis = ed ? "" : " disabled";
+  const chk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+  const exp = x => `<button type="button" class="daexp" data-exp="${esc(x.key)}" aria-pressed="${!d.off.includes(x.key)}"${dis}><i>${chk}</i><span>${esc(x.label)}</span><b>${rs(x.amt)}</b></button>`;
+  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Driver advance</b><span>Booking ${esc(b.no || "")} · ${esc(b.driverName || "No driver yet")}</span></div></header><div class="bwb tws" id="bwBody">` +
+    `<section class="tpsec"><h3>Advance</h3><div class="daadv"><span class="bwin main"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="da.amt" value="${esc(v.amt)}" placeholder="0" aria-label="Driver advance"${dis}></span>` +
+      `<button type="button" class="datoll" data-bw="advtoll" aria-pressed="${v.toll}"${dis}><i>${chk}</i><span>Toll gate<small>${rs(num(b.toll))}</small></span></button></div>` +
+      `<div class="darow"><span>Total advance</span><b id="daTot">${rs(d.total)}</b></div></section>` +
+    `<section class="tpsec"><h3>Expenses from the trip sheet</h3>` + (d.exp.length ? d.exp.map(exp).join("") : `<p class="bwnote">No expenses in the trip sheet yet.</p>`) +
+      `<div class="darow"><span>Total expenses</span><b id="daExp">${rs(d.spent)}</b></div></section>` +
+    `<div class="danet${d.net < 0 ? " neg" : ""}" id="daNetBox"><span>Driver gives to office<small id="daHint">${d.net < 0 ? "Minus: the office pays the driver." : "Total advance − total expenses"}</small></span><b id="daNet">${d.net < 0 ? "− " : ""}${rs(Math.abs(d.net))}</b></div>` +
+    (st ? `<div class="bhlock"><b>✓ Settled</b><span>${st.dir === "pay" ? "Office paid the driver" : "Driver gave the office"} ${rs(num(st.amount))} · ${esc(st.mode)}</span><span>On ${fmtDate(st.on)}${st.by ? ` by ${esc(st.by)}` : ""}</span></div>` +
+      (canBookings && platformWrite && !tripClosed(b) ? `<button type="button" class="bwlink" data-bw="unsettle"${bw.advBusy ? " disabled" : ""}>Undo settlement</button>` : "")
+    : ed ? `<span class="tpst ok" id="daSt">${bw.advSaved || ""}</span>` + (d.total || d.spent ? `<div class="bwbox"><span style="font-weight:600;font-size:17px">How is it settled?</span><div class="bwseg c3">${["Cash", "UPI", "Next trip"].map(x => `<button type="button" data-mmode="${x}" aria-pressed="${v.mode === x}">${x}</button>`).join("")}</div></div>` : "") : "") +
+    `</div>` + (ed && (d.total || d.spent) ? `<footer class="bwf"><button type="button" class="bwgo" data-bw="settle"${bw.advBusy ? " disabled" : ""}>${bw.advBusy ? "Saving…" : "Mark settled"}</button></footer>` : "") + navBar("bw", true);
+}
+// Typing the advance updates the totals in place (no redraw, so the keyboard stays) and saves a moment later.
+function bwAdvRefresh() {
+  const d = drvCalc(bwBkNow(), bw.da);
+  if ($("daTot")) $("daTot").textContent = rs(d.total);
+  if ($("daNet")) { $("daNet").textContent = (d.net < 0 ? "− " : "") + rs(Math.abs(d.net)); $("daNetBox").classList.toggle("neg", d.net < 0); $("daHint").textContent = d.net < 0 ? "Minus: the office pays the driver." : "Total advance − total expenses"; }
+}
+function bwAdvSoon(ms) { clearTimeout(bw.advTimer); if ($("daSt")) $("daSt").textContent = "Saving…"; bw.advTimer = setTimeout(bwAdvSave, ms); }
+async function bwAdvSave() {
+  const cur = bwBkNow(); if (!cur || !bw?.adv || !canBookings || tripClosed(cur) || cur.drvSettle) return;
+  const v = bw.da, next = { ...cur }, amt = Math.round(num(v.amt));
+  if (amt > 0) next.drvAdvance = amt; else delete next.drvAdvance;
+  if (v.toll) next.drvAdvToll = true; else delete next.drvAdvToll;
+  next.drvExpOff = v.off.slice();
+  if (num(next.drvAdvance) !== num(cur.drvAdvance)) { next.drvAdvanceOn = todayISO(); next.drvAdvanceBy = whoAmI(); }
+  if (["drvAdvance", "drvAdvToll", "drvExpOff"].every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { bw.advSaved = "✓ Saved"; if ($("daSt")) $("daSt").textContent = bw.advSaved; return; }
+  try { await bwBkSave(next, "Driver advance"); if (bw) { bw.advSaved = "✓ Saved"; if ($("daSt")) $("daSt").textContent = bw.advSaved; } }
+  catch { if (bw) { bw.advSaved = "Not saved. Check the signal."; if ($("daSt")) $("daSt").textContent = bw.advSaved; } }
 }
 async function bwSettle(undo) {
-  const cur = bwBkNow(); if (!cur || bw.moneyBusy || !canBookings || tripClosed(cur)) return;
-  const left = drvLeft(cur), next = { ...cur };
+  const cur = bwBkNow(); if (!cur || bw.advBusy || !canBookings || tripClosed(cur)) return;
+  clearTimeout(bw.advTimer);
+  if (!undo) await bwAdvSave();
+  const now = bwBkNow(), d = drvCalc(now), next = { ...now };
   if (undo) delete next.drvSettle;
-  else next.drvSettle = { on: todayISO(), by: whoAmI(), amount: Math.round(num(bw.money?.amt)), mode: bw.money?.mode || "Cash", dir: left < 0 ? "pay" : "back" };
-  bw.moneyBusy = true; bwRender();
+  else next.drvSettle = { on: todayISO(), by: whoAmI(), amount: Math.abs(d.net), mode: bw.da?.mode || "Cash", dir: d.net < 0 ? "pay" : "back" };
+  bw.advBusy = true; bwRender();
   try { await bwBkSave(next, undo ? "Driver settlement undone" : "Driver settled"); toast(undo ? "Settlement undone" : "Driver settled"); }
   catch { toast("Couldn't save. Check your connection and try again."); }
-  finally { if (bw) { bw.moneyBusy = false; bw.money = null; bwRender(); } }
+  finally { if (bw) { bw.advBusy = false; bw.da = null; bw.advSaved = ""; bwRender(); } }
 }
 async function bwBkSave(next, action) {
   const cur = bwBkNow(); if (!cur) return false;
