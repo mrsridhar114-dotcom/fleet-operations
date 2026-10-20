@@ -8084,14 +8084,17 @@ async function tsPdf(L, b) {
   // ---- back
   head("TRIP SHEET  -  BACK");
   y = H - 96; text(`${plateOf(bus)}  ·  ${b.places || ""}  ·  ${fd(b.from)} to ${fd(bkEnd(b))}`, W / 2, y, { size: 8.5, align: "center", color: grey }); y -= 20;
-  // Tables with borders. A long list carries on to a new page.
+  // Tables with borders, made a little tighter when there are many lines so the back stays on one page (a very long list still carries on to a new page).
+  const d = drvCalc(b), paid = d.exp.filter(x => !d.off.includes(x.key)), nFill = fills.length + legacy.length;
+  const nRows = (nFill ? nFill + 2 : 2) + (d.total || d.spent ? 2 + (d.toll ? 1 : 0) + 1 + (paid.length || 1) + 2 : 0);
+  const K = Math.max(0.55, Math.min(1, (y - 50 - 140) / (nRows * 16.5)));
   const ensure = h => { if (y - h < 50) { head("TRIP SHEET  -  BACK (continued)"); y = H - 100; } };
   const title = t => { ensure(70); text(t, X0, y, { size: 10, bold: true, color: ink }); y -= 9; };
-  const tbl = (cols, rows, sz = 9.5) => { const rh = sz < 9 ? 15.5 : 16.5, tw = cols.reduce((a, c2) => a + c2[1], 0), pad = sz < 9 ? 4 : 7;
+  const tbl = (cols, rows, sz = 9.5) => { sz = Math.min(sz, sz * (0.4 + 0.6 * K)); const rh = 16.5 * K, tw = cols.reduce((a, c2) => a + c2[1], 0), pad = sz < 9 ? 4 : 7;
     const draw = (cells, st = {}) => { ensure(rh);
       if (st.fill) page.drawRectangle({ x: X0, y: y - rh, width: tw, height: rh, color: shade });
       let x = X0; cols.forEach(([, w, right], k) => { const f = st.bold ? bold : reg, v = fit(cells[k] ?? "", f, sz, w - 2 * pad);
-        right ? text(v, x + w - pad, y - rh + 5, { size: sz, bold: st.bold, align: "right" }) : text(v, x + pad, y - rh + 5, { size: sz, bold: st.bold }); x += w; });
+        const ty = y - rh / 2 - sz * 0.35; right ? text(v, x + w - pad, ty, { size: sz, bold: st.bold, align: "right" }) : text(v, x + pad, ty, { size: sz, bold: st.bold }); x += w; });
       page.drawRectangle({ x: X0, y: y - rh, width: tw, height: rh, borderColor: ink, borderWidth: 0.6 });
       let vx = X0; cols.slice(0, -1).forEach(([, w]) => { vx += w; page.drawLine({ start: { x: vx, y }, end: { x: vx, y: y - rh }, thickness: 0.6, color: ink }); });
       y -= rh; };
@@ -8104,23 +8107,22 @@ async function tsPdf(L, b) {
   tbl(dcols, all.length ? [...all.map((r, k) => ({ cells: [String(k + 1), r[0], r[1], r[2] ? nf(num(r[2]), 2) : "", r[3] ? nf(num(r[3])) : "", r[4], r[5]] })),
     { cells: ["", "", "Total", nf(litres, 2), nf(all.reduce((a, r) => a + num(r[3]), 0)), "", ""], bold: true, fill: true }] : [{ cells: ["", "", "No diesel fills entered", "", "", "", ""] }], 8.5);
   // Driver advance and the expenses paid from it.
-  const d = drvCalc(b), AW = 104;
-  y -= 22; title("DRIVER ADVANCE");
+  const AW = 104;
+  y -= 22 * K; title("DRIVER ADVANCE");
   if (!d.total && !d.spent) { text("No advance given.", X0, y - 12, { size: 9.5, color: grey }); y -= 20; }
   else {
     tbl([["Details", X1 - X0 - AW], ["Amount (Rs.)", AW, 1]], [{ cells: ["Advance given", nf(d.adv)] }, ...(d.toll ? [{ cells: ["Toll gate money added", nf(d.toll)] }] : []), { cells: ["Total advance", nf(d.total)], bold: true, fill: true }]);
-    y -= 20; title("EXPENSES PAID FROM THE ADVANCE");
-    const paid = d.exp.filter(x => !d.off.includes(x.key));
+    y -= 20 * K; title("EXPENSES PAID FROM THE ADVANCE");
     tbl([["#", 24], ["Expense", X1 - X0 - 24 - AW], ["Amount (Rs.)", AW, 1]],
       [...(paid.length ? paid.map((x, k) => ({ cells: [String(k + 1), x.label.replace(/ · /g, ", "), nf(x.amt)] })) : [{ cells: ["", "No expenses ticked", ""] }]),
        { cells: ["", "Total expenses", nf(d.spent)], bold: true, fill: true }]);
-    y -= 14; ensure(36);
+    y -= 14 * K; ensure(36);
     page.drawRectangle({ x: X0, y: y - 28, width: X1 - X0, height: 28, color: d.net < 0 ? L.rgb(0.99, 0.91, 0.9) : L.rgb(0.89, 0.95, 0.86), borderColor: ink, borderWidth: 0.8 });
     text(d.net < 0 ? "Office pays the driver" : "Driver gives to office", X0 + 10, y - 18, { size: 11.5, bold: true });
     text(`Rs. ${d.net < 0 ? "- " : ""}${nf(Math.abs(d.net))}`, X1 - 10, y - 18.5, { size: 13, bold: true, align: "right" });
-    text("Total advance - total expenses", W / 2 + 10, y - 17.5, { size: 7.5, color: grey, align: "center" });
+    // Once settled, the box says when and how instead of how the amount is worked out.
+    text(b.drvSettle ? `Settled ${fd(b.drvSettle.on)} · ${b.drvSettle.mode}` : "Total advance - total expenses", W / 2 + 10, y - 17.5, { size: 7.5, color: grey, align: "center" });
     y -= 40;
-    if (b.drvSettle) { ensure(14); text(`Settled on ${fd(b.drvSettle.on)}  ·  Rs. ${nf(num(b.drvSettle.amount))}  ·  ${b.drvSettle.mode}`, X0, y, { size: 9, color: grey }); y -= 16; }
   }
   text("Driver signature", X0, 30, { size: 9 }); hline(X0, X0 + 110, 42, { t: 0.5, color: grey });
   text("Office signature", X1, 30, { size: 9, align: "right" }); hline(X1 - 110, X1, 42, { t: 0.5, color: grey });
