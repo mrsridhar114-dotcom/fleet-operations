@@ -53,9 +53,30 @@ const sameExcept = (x, y, keys) => {
   return strip(x) === strip(y);
 };
 
+// Closing and reopening a trip: admin only, until it gets a role of its own.
+export const canCloseTrips = a => isAdmin(a);
+// A closed trip is final. Nobody, admin included, may change or delete it, or the diesel fills linked to it, until an
+// admin reopens it. Closing and reopening change only the closing details and the totals worked out from them.
+const CLOSE_KEYS = ["closedOn", "closedByName", "writeOff", "writeOffNote", "reopens", "due", "received", "balance", "expense", "profit"];
+function closedRule(a, op, coll, prev, next, linkedClosed) {
+  const shut = "This trip is closed. An admin must reopen it first.";
+  if (coll === "fuelLog") return linkedClosed ? shut : "";
+  if (coll !== "bookings") return "";
+  const was = !!prev?.closedOn, is = !!next?.closedOn;
+  if (op === "delete") return was ? shut : "";
+  if (was && is) return sameExcept(prev, next, []) ? "" : shut;
+  if (was === is) return "";
+  if (!canCloseTrips(a)) return "Only an admin can close or reopen a trip.";
+  if (!prev || !sameExcept(prev, next, CLOSE_KEYS)) return "Closing or reopening a trip can't change anything else on the booking.";
+  return is && prev.status !== "completed" ? "Only a completed trip can be closed." : "";
+}
+
 // May this person make this change? prev is the stored record (null when new); next is the record after the change.
+// linkedClosed: for a diesel fill, whether the booking it belongs to (before or after the change) is a closed trip.
 // Returns "" when allowed, otherwise the reason.
-export function canWrite(a, me, op, coll, id, prev, next) {
+export function canWrite(a, me, op, coll, id, prev, next, linkedClosed) {
+  const shut = closedRule(a, op, coll, prev, next, linkedClosed);
+  if (shut) return shut;
   if (isAdmin(a)) return "";
   const no = "You don't have permission to change this.";
   if (coll === "appUsers") return "Only an admin can change users.";
