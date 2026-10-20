@@ -8154,7 +8154,12 @@ async function tsLayout(L, pdf, b) {
   text("Driver signature", X0, 30, { size: 9 }); hline(X0, X0 + 110, 42, { t: 0.5, color: grey });
   text("Office signature", X1, 30, { size: 9, align: "right" }); hline(X1 - 110, X1, 42, { t: 0.5, color: grey });
 }
-async function tsPrint(b, btn) {
+// Print: a tick list (like the vehicle master's) to choose the front, the back or both; each is saved as its own image.
+function tsPrint(b, btn) {
+  const items = [{ k: 0, label: "Front", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back", sub: "Diesel fill-ups, driver advance and expenses" }];
+  openPickPop(btn, `Trip sheet ${b.no || ""} · print`, items, { ts: b.id }, (keys, go) => tsSave(b, keys, go), { noun: "page", note: "Tick the pages you want. Each is saved as an image.", on: () => true });
+}
+async function tsSave(b, keys, btn) {
   let downloads = null;
   try { downloads = await auDownloads(); } catch { downloads = null; }
   if (!downloads) { toast("Saving files isn't available in this view."); return; }
@@ -8163,10 +8168,11 @@ async function tsPrint(b, btn) {
     const { doc, L } = tsCanvasKit(); await tsLayout(L, doc, b);
     const base = `Trip sheet ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ");
     for (const [i, cv] of doc.pages.entries()) {
+      if (!keys.includes(Math.min(i, 1))) continue;
       const blob = await new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92));
       await downloads.save({ filename: `${base} ${i === 0 ? "front" : i === 1 ? "back" : "back " + i}.jpg`, data: blob });
     }
-    toast("Trip sheet saved as images (front and back). Open them to print.");
+    toast(keys.length > 1 ? "Front and back saved as images. Open them to print." : `${keys[0] ? "Back" : "Front"} saved as an image. Open it to print.`);
   } catch (e) {
     toast(e?.code === "declined" ? "Trip sheet not saved." : e?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't save the trip sheet. Try again.");
   } finally { if (btn) btn.disabled = false; }
@@ -8255,12 +8261,13 @@ async function downloadVehicleDocs(btn, v, picks, prefix) {
   } finally { if (btn.isConnected) { btn.disabled = false; btn.innerHTML = label; } }
 }
 // Choose the dates to put on the image first, like the documents download list: everything ticked, untick what isn't wanted.
-function openPickPop(b, title, items, mark, go) {
-  const pop = document.createElement("div");
+// Tick list pop-up. Used for renewal dates (the default wording) and for the trip sheet's front and back pages (o.noun, o.note, o.on).
+function openPickPop(b, title, items, mark, go, o = {}) {
+  const noun = o.noun || "date", on = o.on || (d => d.date && d.n <= 90), pop = document.createElement("div");
   pop.className = "duepop"; Object.assign(pop.dataset, mark); pop.setAttribute("role", "dialog");
-  const sync = () => { const n = pop.querySelectorAll("input[data-i]:checked").length, btn = pop.querySelector(".duesave"); btn.disabled = !n; btn.lastChild.textContent = n ? `Save ${n} date${n === 1 ? "" : "s"} as image` : "Choose a date";
+  const sync = () => { const n = pop.querySelectorAll("input[data-i]:checked").length, btn = pop.querySelector(".duesave"); btn.disabled = !n; btn.lastChild.textContent = n ? `Save ${n} ${noun}${n === 1 ? "" : "s"} as image${n === 1 ? "" : "s"}` : `Choose a ${noun}`;
     const all = pop.querySelector("input[data-all]"), m = pop.querySelectorAll("input[data-i]:not(:disabled)").length; all.disabled = !m; all.checked = !!m && n === m; all.indeterminate = n > 0 && n < m; };
-  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all> Select all</label><p class="dnote">Dates due within 3 months are ticked. Tick any others you want, including ones with no date.</p><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}"${d.date && d.n <= 90 ? " checked" : ""}><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul><button type="button" class="btn primary duesave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><span></span></button>`;
+  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all> Select all</label><p class="dnote">${o.note || "Dates due within 3 months are ticked. Tick any others you want, including ones with no date."}</p><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}"${on(d) ? " checked" : ""}><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul><button type="button" class="btn primary duesave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><span></span></button>`;
   pop.addEventListener("change", e => { if (e.target.dataset.all != null) pop.querySelectorAll("input[data-i]:not(:disabled)").forEach(x => x.checked = e.target.checked); sync(); });
   pop.querySelector(".duesave").onclick = async ev => { ev.stopPropagation(); await go([...pop.querySelectorAll("input[data-i]:checked")].map(x => items[+x.dataset.i].k), ev.currentTarget); closeDuePop(); };
   placePop(pop, b); sync();
