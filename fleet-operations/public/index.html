@@ -6616,7 +6616,7 @@ function twRender(top) {
   el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="${back ? "back" : "close"}" aria-label="${back ? "Back" : "Close"}">${back ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${tw.edit ? `Step ${s + 1} of 5 · ` : ""}${esc(tw.places)}</span></div>${back ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
     (tw.edit ? `<div class="bwbar c5">${TW_TITLES.map((t, i) => `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>`).join("")}</div>` : "") +
     `<div class="bwb tws" id="twBody"><h2>${TW_TITLES[s]}</h2>${[twMoneyHtml, twDieselHtml, twOtherHtml, twKmHtml, twCheckHtml][s]()}</div>` +
-    `<footer class="bwf${s === 4 && tw.edit && !tw.admin ? " two" : ""}">${s < 4 ? `<button type="button" class="bwgo" data-tw="next">Next ${BW_ICON.next}</button>`
+    `<footer class="bwf${(s === 4 && tw.edit && !tw.admin) || (s < 4 && tw.edit) ? " two" : ""}">${s < 4 ? `<button type="button" class="bwalt" data-tw="qsave"${tw.saving ? " disabled" : ""}>${tw.saving ? "Saving…" : "Save"}</button><button type="button" class="bwgo" data-tw="savenext"${tw.saving ? " disabled" : ""}>Save &amp; next ${BW_ICON.next}</button>`
       : !tw.edit ? `<button type="button" class="bwalt" data-tw="close">Close</button>`
       : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
       : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>` + twSheetHtml();
@@ -6671,6 +6671,12 @@ function twClick(e) {
   }
   if (a === "full") { const id = tw.id; twClose(); openBooking(id, null, true); setBkTab("trip"); return; }
   if (a === "save" || a === "draft" || a === "send") { twSave(a === "send"); return; }
+  // Save keeps the driver on this step (e.g. just a toll paid on the way); Save & next saves and moves on.
+  if (a === "qsave" || a === "savenext") {
+    const go = () => twSave(false, a === "savenext" ? "next" : "stay");
+    if (tw.fill && (num(tw.fill.litres) > 0 || num(tw.fill.amount) > 0)) { twSaveFill().then(() => { if (tw && !tw.fill) go(); }); return; }
+    tw.fill = null; go(); return;
+  }
 }
 async function twPhoto(e) {
   const file = e.target.files[0]; e.target.value = ""; if (!file || !tw || !assetsCap) return;
@@ -6736,7 +6742,7 @@ async function twPersistOther(msg) {
   } catch { toast("Couldn't save. Check your connection and try again."); }
 }
 // Fill the booking's trip sheet and save it exactly as its Save draft / Submit buttons would.
-async function twSave(send) {
+async function twSave(send, quick) {
   if (tw.saving) return;
   if (tw.fill || tw.sheet) { tw.fill = null; tw.sheet = null; }
   tw.saving = true; twRender(); bwBusy = true;
@@ -6753,7 +6759,12 @@ async function twSave(send) {
     $("bkForm").requestSubmit();
     const failed = () => !$("bkDrawer").hidden && [...$("bkForm").querySelectorAll(".err")].some(x => x.textContent.trim());
     for (let i = 0; i < 100 && !failed() && !$("bkDrawer").hidden; i++) await new Promise(r => setTimeout(r, 150));
-    if (!$("bkDrawer").hidden) { twClose(); toast(failed() ? "Please check the highlighted field." : "Still saving. Check the trip sheet."); return; }
+    if (!$("bkDrawer").hidden) {
+      const msg = failed() ? [...$("bkForm").querySelectorAll(".err")].map(x => x.textContent.trim()).filter(Boolean)[0] || "Please check the entries." : "Still saving. Try again.";
+      if (quick) { closeBkDrawer(); toast(msg); return; }
+      twClose(); toast(msg); return;
+    }
+    if (tw && quick) { const b = twBk(); if (b) tw.status = b.tsStatus || tw.status; toast("Saved"); if (quick === "next" && tw.step < 4) { tw.step++; tw.slide = "l"; tw.fill = null; twRender(true); } return; }
     if (tw) { tw.done = info; twRender(true); }
   } finally { bwBusy = false; if (tw) { tw.saving = false; if (!tw.done) twRender(); } }
 }
