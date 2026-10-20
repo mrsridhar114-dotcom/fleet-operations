@@ -1235,8 +1235,6 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .twspent { display: flex; justify-content: space-between; align-items: baseline; font: 600 16px var(--body); color: var(--muted); margin-bottom: 8px; } .twspent b { color: var(--ink); font-size: 19px; }
 .bhcard { background: var(--surface); border: 3px solid var(--accent); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: var(--muted); }
 .bhcard b { color: var(--ink); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
-.bhcall { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 6px; }
-.bhcall a { display: flex; align-items: center; justify-content: center; gap: 6px; height: 46px; border-radius: 12px; border: 1px solid var(--line); color: var(--ink); font: 700 16px var(--body); text-decoration: none; } .bhcall a svg { width: 18px; height: 18px; }
 .bhbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 .bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .bhbtn:disabled { opacity: .6; cursor: default; }
@@ -6789,8 +6787,7 @@ const bwToll = () => bw?.editId ? num(ops.bookings.find(x => x.id === bw.editId)
 const bwBkNow = () => ops.bookings.find(x => x.id === bw.editId);
 const bwCanFiles = b => !!b && platformWrite && (canBookings || canBookReq || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status))) && b.status !== "cancelled";
 function bwHomeHtml(b) {
-  const v = vehicles.find(x => x.id === b.vehicleId), c = bkCalc(b), n = (b.attachments || []).length, wa = waNum(b.phone);
-  const drv = b.driverId ? drivers.find(d => d.id === b.driverId)?.name || b.driverName : b.driverName;
+  const v = vehicles.find(x => x.id === b.vehicleId), c = bkCalc(b), n = (b.attachments || []).length;
   const confirmed = ["booked", "ontrip", "completed"].includes(b.status);
   const tripOk = canBookings || (canTsUpd && confirmed), tsOpen = canBookings || tsIsOpen(b);
   const tile = (attrs, icon, title, line, cls = "", off = false) => `<button type="button" class="bhbtn" ${attrs}${off ? " disabled" : ""}><span class="bhi" aria-hidden="true">${icon}</span><span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span>${BW_ICON.next}</button>`;
@@ -6799,9 +6796,6 @@ function bwHomeHtml(b) {
       `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span></div>` +
       `<b class="bhplace">${esc(b.places || "—")}</b>` +
       `<span>${bwFmt(b.from)}${bkEnd(b) !== b.from ? ` to ${bwFmt(bkEnd(b))}` : ""} · ${bwHalfTxt(num(b.days) || inclDays(b.from, bkEnd(b)))} ${bwDayWord(num(b.days))}</span>` +
-      `<span><b>${esc(b.party || "—")}</b>${b.phone ? ` · ${esc(b.phone)}` : ""}</span>` +
-      (b.address ? `<span>Pick-up: ${esc(b.address)}</span>` : "") + (drv ? `<span>Driver: ${esc(drv)}${b.cleanerName ? ` · Cleaner: ${esc(b.cleanerName)}` : ""}</span>` : "") +
-      (wa ? `<div class="bhcall"><a href="tel:+${wa}">📞 Call party</a><a href="https://wa.me/${wa}" target="_blank" rel="noopener">${BW_ICON.wa} WhatsApp</a></div>` : "") +
     `</div><div class="bhbtns">` +
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
