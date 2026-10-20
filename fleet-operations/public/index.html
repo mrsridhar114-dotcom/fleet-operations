@@ -46,13 +46,11 @@
   --f-petrol: #e39a55; --f-diesel: #a9b6c2; --f-gas: #c19ae6; --chip-bg: #1b2d22;
   --side-bg: #07150f; --side-ink: #e3efe6; --side-muted: #86a594; --side-line: #142a1e; --side-active: #17402b;
   --shadow: 0 10px 40px rgba(0,0,0,.5); color-scheme: dark; }
-
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
 button { font: inherit; cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
 /* ---------- shell ---------- */
 .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
 .side { background: var(--side-bg); color: var(--side-ink); position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
@@ -77,7 +75,6 @@ nav.paths { padding: 14px 10px 20px; display: flex; flex-direction: column; gap:
 .nav .badge { margin-left: auto; font-family: var(--mono); font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--danger); color: var(--side-bg); }
 .nav .soon { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--side-line); border-radius: 4px; padding: 1px 5px; }
 .side .foot { padding: 14px 20px 20px; border-top: 1px solid var(--side-line); font-size: 12px; color: var(--side-muted); }
-
 .topbar { display: none; }
 .navscrim { display: none; }
 @media (max-width: 860px) {
@@ -91,11 +88,9 @@ nav.paths { padding: 14px 10px 20px; display: flex; flex-direction: column; gap:
   .navscrim[hidden] { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .side { transition: none; } }
-
 .main { min-width: 0; }
 .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: flex; flex-direction: column; gap: 20px; }
 @media (min-width: 1000px) { .wrap { padding-inline: 32px; } }
-
 header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
 h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 42px); line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
@@ -103,14 +98,12 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .sechead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 16px; }
 .sechead p { margin: 0; font-size: 13px; color: var(--muted); }
 .sync { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
-
 .btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 9px 14px; border-radius: 6px; font-weight: 600; font-size: 14px; }
 .btn:hover { border-color: var(--muted); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .btn.primary:hover { filter: brightness(1.08); }
 .btn.danger { background: var(--danger); border-color: var(--danger); color: var(--surface); }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; min-width: 0; }
-
 /* ---------- dashboard ---------- */
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
 .kpi { all: unset; box-sizing: border-box; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px 14px 18px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 2px; }
@@ -121,10 +114,8 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .kpi .k { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .kpi .v { font-family: var(--display); font-weight: 700; font-size: 36px; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--c); }
 .kpi .s { font-size: 12px; color: var(--muted); }
-
 .dashgrid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; }
 @media (max-width: 1000px) { .dashgrid { grid-template-columns: minmax(0, 1fr); } }
-
 .weeks-scroll { overflow-x: auto; margin-top: 14px; }
 .weeks { display: grid; grid-template-columns: repeat(13, minmax(34px, 1fr)); gap: 6px; align-items: end; min-width: 480px; height: 190px; }
 .wk { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; height: 100%; gap: 4px; min-width: 0; }
@@ -135,7 +126,6 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .wk.over .bar { background: var(--danger); }
 .wk.soon .bar { background: var(--warn); }
 .wk.over .l { color: var(--danger); font-weight: 600; }
-
 .doclist { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
 .docrow { display: grid; grid-template-columns: 150px minmax(0, 1fr) 70px; gap: 12px; align-items: center; }
 .docrow .name { font-size: 13px; font-weight: 600; min-width: 0; }
@@ -145,7 +135,6 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 @media (max-width: 480px) { .docrow { grid-template-columns: minmax(0, 1fr) 60px; } .docrow .stack { grid-column: 1 / -1; grid-row: 2; } }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 12px; }
 .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
-
 .pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .pill.expired { background: var(--danger-soft); color: var(--danger); }
 .pill.d7 { background: var(--hot-soft); color: var(--hot); }
@@ -171,14 +160,12 @@ tr.rowlink:active { background: var(--accent-soft); }
 .delq .btn { flex: 1; }
 .drawer footer.asking > :not(.fdel) { display: none; }
 .drawer footer.asking .fdel { margin-right: 0; flex: 1; }
-
 /* ---------- toolbars & tables ---------- */
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .toolbar input, .toolbar select { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
 .toolbar input[type="search"] { flex: 1 1 200px; min-width: 0; }
 .toolbar select { flex: 0 1 auto; min-width: 0; max-width: 100%; }
 .count { font-size: 13px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
-
 .register { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 thead th { text-align: left; font-family: var(--mono); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 12px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -206,7 +193,6 @@ tbody tr:hover { background: var(--accent-soft); }
 .empty { padding: 40px 20px; text-align: center; color: var(--muted); }
 .empty strong { display: block; color: var(--ink); font-family: var(--display); font-size: 22px; margin-bottom: 4px; }
 .vh { position: absolute; left: -9999px; }
-
 /* Vehicle list on a computer: no Vehicle class or Owner name columns; the summary sits on one line. */
 @media (min-width: 761px) {
   #view-vehicles .c-cls, #view-vehicles .c-own { display: none; }
@@ -235,7 +221,6 @@ tbody tr:hover { background: var(--accent-soft); }
 .stat .v { font-family: var(--display); font-weight: 700; font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .fuelbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--chip-bg); margin-top: 10px; }
 .fuelbar span { display: block; height: 100%; }
-
 @media (max-width: 720px) {
   .register { overflow: visible; background: transparent; border: 0; }
   .register table, .register tbody { display: block; }
@@ -259,7 +244,6 @@ tbody tr:hover { background: var(--accent-soft); }
   .register tbody tr { gap: 8px 12px; }
   .count { margin-left: 0; width: 100%; }
 }
-
 /* ---------- drawer ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(10, 18, 26, .45); z-index: 40; }
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(460px, 100%); background: var(--surface); box-shadow: var(--shadow); z-index: 41; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -312,7 +296,6 @@ fieldset.docs legend { font-family: var(--mono); font-size: 11px; letter-spacing
 .side .preview { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
 .side .preview label { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
 .side .preview select { font: inherit; font-size: 13px; background: var(--side-active); color: var(--side-ink); border: 1px solid var(--side-line); border-radius: 5px; padding: 5px 8px; }
-
 /* ---------- renewal history ---------- */
 .hhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 .hhead h3 { margin: 0; }
@@ -631,7 +614,6 @@ table.hflat td.hnone { text-align: center; color: var(--muted); padding: 22px 10
 .backbtn { padding: 2px 0; margin-bottom: 6px; display: block; }
 .hhead { margin-bottom: 4px; }
 .hhead label { margin: 0; }
-
 /* ---------- user master ---------- */
 .pill.admin { background: var(--accent-soft); color: var(--accent); }
 .pill.role { background: var(--chip-bg); color: var(--ink); }
@@ -655,7 +637,6 @@ table.hflat td.hnone { text-align: center; color: var(--muted); padding: 22px 10
 .denied { max-width: 520px; }
 .denied ul { padding-left: 18px; margin: 8px 0 0; }
 .side .who { color: var(--side-ink); font-weight: 600; font-size: 13px; margin-bottom: 2px; }
-
 .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 6px; font-size: 14px; z-index: 50; max-width: calc(100% - 32px); }
 @media (prefers-reduced-motion: no-preference) { .drawer { animation: slide .18s ease-out; } @keyframes slide { from { transform: translateX(24px); opacity: .6; } } }
 /* ---------- trip sheet home, daily entry, spare bus hires, truck trips ---------- */
@@ -679,7 +660,6 @@ a.btn { text-decoration: none; display: inline-block; }
 .otodo .orow .what { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; }
 .otodo .orow .btn { padding: 5px 12px; font-size: 13px; }
 .otodo .none { color: var(--muted); font-size: 14px; padding: 8px 0; margin: 0; }
-
 .dbook { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
 .dblist { display: flex; flex-direction: column; gap: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
 .dbl-h { font-size: 12px; color: var(--muted); margin: 4px 8px 6px; font-weight: 600; }
@@ -730,7 +710,6 @@ a.btn { text-decoration: none; display: inline-block; }
   .dbitem { flex-direction: column; align-items: flex-start; gap: 2px; flex: none; }
 }
 @media (max-width: 700px) { .dbgrid.c4 { grid-template-columns: 1fr 1fr; } .dbgrid.c6 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-
 table.ttable.otable { min-width: 1750px; }
 table.ttable tr.grp td { background: var(--bg); font-size: 12px; padding: 8px; border-bottom: 1px solid var(--line); }
 table.ttable tr.grp td .grpin { position: sticky; left: 8px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; max-width: calc(100vw - 80px); }
@@ -971,7 +950,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 @media (max-width: 700px) { .tsgrid { grid-template-columns: 1fr 1fr; } }
 .calcbox { display: block; font-family: var(--mono); font-size: 14px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 6px; background: var(--surface); min-height: 42px; color: var(--ink); }
 .calcbox.neg { color: var(--danger); } .calcbox.pos { color: var(--ok); }
-
 .bkpp { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .field.pp input { background: var(--chip-bg); }
 .bkstages span { padding: 6px 11px; }
@@ -1233,7 +1211,6 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwdone { align-items: center; text-align: center; padding-top: 40px; } .bwbig { width: 96px; height: 96px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; } .bwbig svg { width: 54px; height: 54px; }
 .bwdone p { margin: 0; font-size: 17px; color: var(--muted); line-height: 1.4; } .bwdone .bwno { font-size: 20px; font-weight: 600; color: var(--ink); }
 .bwwa { background: #1f8f4e; color: #fff; margin-top: 14px; }
-.bwbar.c5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .tpage { gap: 12px; padding: 14px 14px 18px; }
 .tptip { background: var(--accent-soft); border-radius: 14px; padding: 10px 14px; font-size: 16px; line-height: 1.35; }
 .tpsec { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 4px 12px 8px; }
@@ -1255,13 +1232,6 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpcrew + .tpnote { margin-top: -2px; }
 .tphd { display: flex; gap: 8px; padding: 6px 0 0; font: 600 13px var(--body); color: var(--muted); }
 .tpst { font: 600 15px var(--body); color: var(--muted); } .tpst.ok { color: var(--ok); } .tpst.bad { color: var(--danger); }
-.twhub { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
-.twhm { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
-.twhi { width: 52px; height: 52px; flex: none; border-radius: 14px; background: var(--accent-soft); display: grid; place-items: center; font-size: 28px; }
-.twhub .twci b { font-size: 20px; } .twhub .twci span { font-size: 15px; line-height: 1.3; }
-.twhr { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; color: var(--muted); flex: none; } .twhr svg { width: 20px; height: 20px; }
-.twtag { border-radius: 999px; padding: 3px 10px; font: 700 13px var(--body); background: #fff4d6; color: #7a5200; } .twtag.on { background: #e4f3ea; color: #1e5c38; }
-.twhadd { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border: 0; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); font: 700 17px var(--body); cursor: pointer; } .twhadd svg { width: 22px; height: 22px; }
 .twspent { display: flex; justify-content: space-between; align-items: baseline; font: 600 16px var(--body); color: var(--muted); margin-bottom: 8px; } .twspent b { color: var(--ink); font-size: 19px; }
 .bhcard { background: var(--surface); border: 3px solid var(--accent); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: var(--muted); }
 .bhcard b { color: var(--ink); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
@@ -1273,15 +1243,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhi { width: 48px; height: 48px; flex: none; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; font-size: 24px; font-weight: 700; color: var(--accent); }
 .bht { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .bht b { font-size: 19px; } .bht span { font-size: 15px; font-weight: 600; color: var(--muted); } .bht span.due { color: var(--danger); } .bht span.ok { color: var(--ok); }
 .bhbtn > svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
-.bwtiles { display: flex; flex-direction: column; gap: 8px; }
-.bwtile { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 60px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
-.bwtile b { font-size: 18px; flex: none; } .bwtile span { flex: 1; text-align: right; font-size: 15px; font-weight: 600; color: var(--muted); } .bwtile span.due { color: var(--danger); } .bwtile span.ok { color: var(--ok); }
-.bwtile svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
 a.twmain { text-decoration: none; color: inherit; }
 .bwchips.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .bwchips.c3 button { min-height: 46px; font-size: 14px; padding: 4px; }
 .tws { gap: 12px; } .tws .bwhint { margin-top: -6px; font-size: 16px; }
-.twrow { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px; }
-.twrow > b { flex: 1; min-width: 0; font-size: 18px; line-height: 1.15; } .twrow .bwin { width: 132px; flex: none; height: 54px; padding: 0 10px; } .twrow .bwin b { font-size: 18px; }
 .twcam { width: 54px; height: 54px; flex: none; border-radius: 12px; border: 2px solid var(--accent); background: var(--surface); color: var(--accent); display: grid; place-items: center; position: relative; padding: 0; cursor: pointer; }
 .twcam.on { background: var(--accent); color: var(--accent-ink); } .twcam svg { width: 26px; height: 26px; }
 .twcam i { position: absolute; top: -7px; right: -7px; background: #8ccf5e; color: #0a1f16; border-radius: 999px; font: 700 12px var(--body); font-style: normal; padding: 2px 6px; }
@@ -1291,27 +1255,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 .twmain { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; } .twmain:disabled { cursor: default; opacity: 1; }
 .twdel { width: 58px; flex: none; border: 0; border-left: 1px solid var(--line); background: none; color: var(--danger); display: grid; place-items: center; cursor: pointer; padding: 0; } .twdel svg { width: 24px; height: 24px; }
 .twdel:active { background: color-mix(in srgb, var(--danger) 12%, transparent); }
-div.twask { align-items: center; gap: 8px; padding: 10px 10px 10px 14px; border: 2px solid var(--danger); background: color-mix(in srgb, var(--danger) 7%, var(--surface)); }
-.twask b { flex: 1; min-width: 0; font-size: 16px; color: var(--danger); line-height: 1.2; }
-.twno, .twyes { height: 46px; border-radius: 12px; font: 700 16px var(--body); padding: 0 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-.twno { border: 1px solid var(--line); background: var(--surface); color: var(--ink); } .twyes { border: 0; background: var(--danger); color: #fff; } .twyes svg { width: 18px; height: 18px; }
 .twn { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font: 700 18px var(--body); } .twn.twk { border-radius: 12px; font-size: 22px; }
 .twci { flex: 1; min-width: 0; display: flex; flex-direction: column; } .twci b { font-size: 18px; } .twci span { font-size: 14px; color: var(--muted); }
-.twok { font-size: 13px; font-weight: 700; color: var(--ok); white-space: nowrap; }
 .twadd { width: 100%; min-height: 60px; border-radius: 16px; border: 3px dashed var(--accent); background: var(--surface); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 10px; font: 700 19px var(--body); cursor: pointer; } .twadd svg { width: 24px; height: 24px; }
-.twform { background: var(--surface); border: 3px solid var(--accent); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-.twphoto { min-height: 54px; border-radius: 12px; border: 2px dashed var(--accent); background: var(--accent-soft); color: var(--ink); display: flex; align-items: center; justify-content: center; gap: 10px; font: 700 17px var(--body); cursor: pointer; } .twphoto svg { width: 24px; height: 24px; color: var(--accent); }
-.twphoto.on { border-style: solid; }
 .bwseg button.twsave { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); } .bwseg button.twsave:disabled { background: var(--chip-bg); border-color: var(--chip-bg); color: var(--muted); }
-.twkm .bwin { height: 64px; } .twkm .bwin input { font: 700 28px var(--mono); letter-spacing: .04em; } .twkm .bwin b { font-size: 18px; }
 .twsheet { position: absolute; inset: 0; z-index: 3; background: rgba(10, 31, 22, .55); display: flex; flex-direction: column; justify-content: flex-end; }
 .twsheet > div { background: var(--surface); border-radius: 22px 22px 0 0; padding: 12px 20px calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 12px; }
 .twgrip { align-self: center; width: 44px; height: 5px; border-radius: 3px; background: var(--line); }
 .twsheet h3 { margin: 0; font: 700 24px/1.1 var(--display); }
-.twkinds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.twkinds button { height: 104px; border-radius: 16px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font: 700 18px var(--body); cursor: pointer; } .twkinds span { font-size: 34px; line-height: 1; }
-.twchosen { display: flex; align-items: center; gap: 10px; background: var(--accent-soft); border-radius: 12px; padding: 6px 8px 6px 12px; } .twchosen > span { font-size: 24px; } .twchosen b { flex: 1; font-size: 19px; } .twchosen .bwlink { min-height: 40px; }
-.twamt { display: flex; gap: 10px; } .twamt .bwin { flex: 1; } .twamt .twcam { width: 60px; height: 60px; }
 </style>
 
 <div class="topbar">
@@ -2865,7 +2816,6 @@ function histCtx() {
   return { rec: vehicles.find(x => x.id === hVid), info: FIELD_INFO, all: () => histFor(hVid), keys: ALL_KEYS(), title: vFull, created: "Vehicle" };
 }
 const KIND_LABEL = { created: "Vehicle added", recorded: "Recorded", renewed: "Renewed", corrected: "Corrected", cleared: "Cleared", added: "Added", changed: "Changed", removed: "Removed" };
-const KIND_DOT = { created: "var(--accent)", recorded: "var(--accent)", renewed: "var(--ok)", corrected: "var(--warn)", cleared: "var(--muted)", added: "var(--accent)", changed: "var(--accent)", removed: "var(--muted)" };
 function fmtStamp(iso) { const d = new Date(iso); return isNaN(d) ? "" : `${dmy(d)}, ${d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`; }
 let userCap = null, reqRef = null, requests = [], names = {}, ownerLinkTried = false;
 const myId = () => me?.id || null;
@@ -3157,15 +3107,6 @@ const CAR_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 function listThumb(v) {
   const ph = fileOf(v, "photo");
   return ph ? `<img class="lthumb" src="/_blob/${encodeURIComponent(ph.id)}" alt="" loading="lazy">` : `<span class="lthumb none" title="No photo">${CAR_SVG}</span>`;
-}
-function renewCell(v) {
-  if (v.status === "Sold / Scrapped") return `<span class="sub">Not tracked</span>`;
-  const docs = docsOf(v);
-  if (!docs.length) return `<span class="sub">No dates entered</span>`;
-  const d = docs[0], days = daysUntil(d.date), b = band(days);
-  const others = docs.slice(1).filter(x => band(daysUntil(x.date)) !== "ok").length;
-  const title = docs.map(x => `${x.short}: ${fmtDate(x.date)}`).join("\n");
-  return `<div class="renew" title="${esc(title)}"><span class="pill ${b}">${esc(d.short)} · ${whenText(days).toLowerCase()}</span><span class="sub num">${fmtDate(d.date)}${others ? ` · +${others} more due` : ""}</span></div>`;
 }
 // Expiry dates shown in the vehicle list, coloured by how soon they fall due.
 const LIST_DOCS = [["fcDate", "FC expiry"], ["insuranceExp", "Insurance expiry"], ["taxExp", "Tax expiry"], ["permitExp", "Permit expiry"], ["permitAuthExp", "Permit authorization expiry"], ["pollutionExp", "Pollution expiry"]];
@@ -5301,7 +5242,6 @@ async function auLoad(force) {
   auData = { sessions, log, at: new Date() };
   return auData;
 }
-const auDay = iso => String(iso || "").slice(0, 10);
 const auLocalDay = iso => { const d = new Date(iso); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
 const auAgo = iso => { if (!iso) return "Never"; const m = Math.round((Date.now() - Date.parse(iso)) / 60000); return m < 2 ? "Just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`; };
 const auTime = iso => { const d = new Date(iso); return isNaN(d) ? "" : `${dmy(d)}, ${d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`; };
@@ -6365,7 +6305,7 @@ function bwCheckHtml() {
     row("Going to", `<b>${esc(bw.places.trim() || "—")}</b>${bw.address.trim() ? `<span>Pick-up: ${esc(bw.address.trim())}</span>` : ""}`, 3) +
     row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span>${(bw.pays || []).map(p => `<span class="bwm"><span>${p.date ? fmtShort(p.date) : "Payment"} · ${esc(p.mode || "Cash")}${p.note ? ` · ${esc(p.note)}` : ""}</span><b>${rs(num(p.amount))}</b></span>`).join("")}${bwToll() ? `<span class="bwm"><span>Toll (collected from the party)</span><b>${rs(bwToll())}</b></span>` : ""}<span class="bwm bal"><span>Balance</span><b>${rs(rent + bwToll() - adv - more)}</b></span>` +
       (padi ? `<span class="bwm padi"><span>Driver padi (paid to driver, not office)</span><b>${rs(padi)}</b></span>` : "") + (bw.remarks.trim() ? `<span>Remarks: ${esc(bw.remarks.trim())}</span>` : ""), 4) +
-    `</div>` + (bw.editId && !bw.home ? bwTilesHtml() : "") +
+    `</div>` +
     (bw.editId && canBookings && !["cancelled", "completed", "pending"].includes(bw.status) ? (bw.askCancel
       ? `<div class="bwcancel"><p><b>Cancel booking ${esc(bw.no || "")}?</b> The bus becomes free on these days. Money already received stays on record.</p><div class="bwseg c2"><button type="button" data-bw="keep">No, keep it</button><button type="button" class="bwdanger" data-bw="cancelyes">Yes, cancel</button></div></div>`
       : `<button type="button" class="bwlink bwdangerlink" data-bw="cancel">Cancel this booking</button>`) : "") + (canBookings || bw.readOnly ? "" : (m => m.length ? `<p class="bwnote"><b>Still needed to send for approval:</b> ${m.join(", ")}. Save draft now and finish it later.</p>` : `<p class="bwnote">Save draft to finish later, or send it to the admin for approval.</p>`)(bwMissing()));
@@ -6523,61 +6463,54 @@ async function bwSave(asDraft) {
   } finally { bwBusy = false; if (bw) bw.saving = false; }
 }
 
-/* ---------- Easy trip sheet on phones: five short steps for the driver ----------
-   Padi, permit and toll · Diesel (one entry per fill) · Other expenses (Pooja, Mechanic, Other) · Km meter · Check and send.
-   Diesel fills go straight into the Fuel log against the booking, like + Add diesel. Everything else is saved by filling the
-   booking's trip sheet behind the scenes and saving it the usual way, so drafts, sending for approval and history stay the same. */
+/* ---------- Trip sheet on phones: the whole sheet on one page ----------
+   Like the paper trip sheet: driver and cleaner with their padi, then toll and permit, diesel lines, other expenses and km.
+   Everything saves by itself a moment after typing (to the booking; each diesel line to the Fuel log against the booking).
+   Send to office shows the summary first and is saved through the booking's own trip sheet, so drafts, sending for
+   approval and history work as before. */
 let tw = null;
-const TW_TITLES = ["Padi, permit and toll", "Diesel", "Other expenses", "Km meter", "Check and send"];
 const TW_MONEY = [["padiPaid", "Driver padi"], ["cleanerPadi", "Cleaner padi"], ["permit", "Permit"], ["toll", "Toll gate"]];
-const TW_KINDS = [["Pooja", "🪔"], ["Mechanic", "🔧"], ["Other", "➕"]];
+const TW_OTHER = [["Pooja", "pooja"], ["Mechanic", "mechanic"], ["Other", "othr"]];
 const TW_CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
 const TW_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 const TW_BIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
-// Delete straight from the list: the bin asks once more on the same card, so a slip of the thumb doesn't remove anything.
-const twAskHtml = (q, key) => `<div class="twcard twask" role="alert"><b>${q}</b><button type="button" class="twno" data-tw="asknot">No</button><button type="button" class="twyes" data-del="${esc(key)}"${tw.saving ? " disabled" : ""}>${TW_BIN} Delete</button></div>`;
 const twBk = () => tw ? ops.bookings.find(x => x.id === tw.id) : null;
-const twFills = () => { const b = twBk(); return [...dslLegacyOf(b).map(r => ({ ...r, legacy: true })), ...dslLinked(tw.id).filter(f => !tw.gone?.has(f.id)).map(f => ({ ...flToDsl(f), bunk: f.bunk || "", file: f.file || null }))].sort((a, c) => String(a.date || "").localeCompare(String(c.date || ""))); };
 const twPP = k => { const b = twBk(); return !!b && !!(b.partyPays || ppDefaults(b.rentType || "mt"))[k]; };
 const twSumMoney = () => TW_MONEY.reduce((a, [k]) => a + num(tw[k]), 0);
-const twOtherSum = () => tw.other.reduce((a, x) => a + num(x.amt), 0);
+const twOtherList = () => TW_OTHER.filter(([k]) => num(tw.oth[k].amt) > 0).map(([k, key]) => {
+  const x = { kind: k, amt: Math.round(num(tw.oth[k].amt)), note: String(tw.oth[k].note || "").trim().replace(/\s+/g, " ") };
+  const f = tw.files.filter(f => f.for === key).pop(); if (f) x.fileId = f.id; return x; });
+const twOtherSum = () => TW_OTHER.reduce((a, [k]) => a + num(tw.oth[k].amt), 0);
+const twDiesel = () => tw.rows.reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0);
+const twLitres = () => tw.rows.reduce((a, r) => a + num(r.litres), 0) + tw.legacy.reduce((a, r) => a + num(r.litres), 0);
+const twTotal = () => twSumMoney() + (twPP("diesel") ? 0 : twDiesel()) + twOtherSum();
+const twMissing = () => { const s = num(tw.startKm), e = num(tw.endKm); return [!s && "start km", !e && "end km", s && e && e <= s && "end km more than start km"].filter(Boolean); };
 function twOpen(b) {
   if (!b) return;
   if (!canBookings && !tsIsOpen(b)) { toast(`The trip sheet opens on ${fmtDate(tsOpenDate(b))}.`); return; }
   if (!canBookings && tsWorkerOnly() && acc.bookings === "none" && b.status === "completed" && !["draft", "rejected", "submitted"].includes(b.tsStatus)) { toast("This trip is closed."); return; }
   const locked = b.tsStatus === "submitted" || b.tsStatus === "approved", mine = !b.tsBy || b.tsBy === (myUserId || "");
-  const edit = canBookings || (canTsUpd && !locked && mine);
-  const v = vehicles.find(x => x.id === b.vehicleId);
+  const edit = canBookings || (canTsUpd && !locked && mine), v = vehicles.find(x => x.id === b.vehicleId);
   // The last km on record for this bus, from its earlier trips.
   const prevKm = ops.bookings.filter(x => x.id !== b.id && x.vehicleId === b.vehicleId && num(x.endKm) > 0 && String(x.from) < String(b.from)).sort((a, c) => String(a.from).localeCompare(String(c.from))).pop()?.endKm || 0;
-  const other = (b.otherList || []).length && (b.otherList || []).reduce((a, x) => a + num(x.amt), 0) === num(b.otherExp) ? b.otherList.map(x => ({ ...x }))
-    : num(b.otherExp) ? [{ kind: "Other", amt: String(b.otherExp), note: "" }] : [];
-  tw = { id: b.id, no: b.no || "", plate: v ? plateOf(v) : "", places: b.places || b.party || "", dates: `${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtShort(bkEnd(b))}` : ""}`, step: edit ? -1 : 4, edit, admin: canBookings, status: b.tsStatus || "",
-    padiPaid: b.padiPaid ? String(b.padiPaid) : "", cleanerPadi: b.cleanerPadi ? String(b.cleanerPadi) : "", permit: b.permit ? String(b.permit) : "", toll: b.toll ? String(b.toll) : "",
-    startKm: b.startKm ? String(b.startKm) : "", endKm: b.endKm ? String(b.endKm) : "", prevKm, other, files: (b.attachments || []).map(f => ({ ...f })),
-    fill: null, sheet: null, saving: false, done: null, rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "" };
-  tpInit(b);
+  const str = n => n ? String(n) : "";
+  tw = { id: b.id, no: b.no || "", plate: v ? plateOf(v) : "", places: b.places || b.party || "", dates: `${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtShort(bkEnd(b))}` : ""}`,
+    view: edit ? "page" : "check", edit, admin: canBookings, status: b.tsStatus || "", rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "",
+    padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
+    files: (b.attachments || []).map(f => ({ ...f })), saving: false, done: null,
+    drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
+    rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null })), legacy: dslLegacyOf(b) };
+  if (!tw.rows.length && edit) tw.rows.push({ litres: "", amount: "", file: null });
+  // Other expenses: one row each for Pooja, Mechanic and Other (older trip sheets with several items are added up per kind).
+  tw.oth = Object.fromEntries(TW_OTHER.map(([k]) => [k, { amt: "", note: "" }]));
+  const list = (b.otherList || []).length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : [];
+  list.forEach(x => { const o = tw.oth[tw.oth[x.kind] ? x.kind : "Other"]; o.amt = String(num(o.amt) + num(x.amt) || ""); if (x.note) o.note = [o.note, x.note].filter(Boolean).join(", "); });
   if (!$("tw")) {
     document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="tw" role="dialog" aria-modal="true" aria-labelledby="twTitle" hidden></div><input type="file" id="twCam" accept="image/*" capture="environment" hidden>');
     $("tw").addEventListener("click", twClick);
     $("tw").addEventListener("input", twInput);
-    $("tw").addEventListener("change", e => {
-      const k = e.target.dataset.sel; if (!k || !tw) return; const v = e.target.value;
-      if (k === "drv") { tw.drvOther = v === "__other"; tw.drvId = tw.drvOther ? "" : v; if (!tw.drvOther) tw.drvName = ""; }
-      else { tw.noCleaner = v === "__none"; tw.clnOther = v === "__other"; tw.cleaner = v === "__none" || v === "__other" ? "" : v; }
-      twRender(); if (tw.drvOther && k === "drv") $("tw").querySelector('[data-k="drvName"]')?.focus(); if (tw.clnOther && k === "cln") $("tw").querySelector('[data-k="cleaner"]')?.focus();
-      tpSoon("bk", tpSaveBooking, 300);
-    });
+    $("tw").addEventListener("change", twSelect);
     $("twCam").addEventListener("change", twPhoto);
-    let sx = 0, sy = 0, sOk = false;
-    $("tw").addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; sOk = e.touches.length === 1 && !e.target.closest("input, textarea, .twsheet, .twform"); }, { passive: true });
-    $("tw").addEventListener("touchend", e => {
-      if (!sOk || !tw || tw.done || tw.saving || tw.sheet || tw.fill) return; sOk = false;
-      const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-      if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-      if (dx < 0 || tw.step < 0 || !tw.edit) return;
-      tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true);
-    }, { passive: true });
   }
   $("tw").hidden = false; document.documentElement.classList.add("bw-on");
   twRender(true);
@@ -6587,391 +6520,217 @@ function twCamBtn(key, label) {
   const n = tw.files.filter(f => f.for === key).length;
   return `<button type="button" class="twcam${n ? " on" : ""}" data-cam="${key}" aria-label="Photo of ${esc(label)} bill"${tw.edit ? "" : " disabled"}>${TW_CAM}${n ? `<i>${n}</i>` : ""}</button>`;
 }
-function twMoneyHtml() {
-  return `<p class="bwhint" style="font-weight:500;color:var(--muted)">Type the amount. Tap the camera for the bill.</p>` +
-    TW_MONEY.map(([k, l]) => `<div class="twrow"><b>${l}</b><span class="bwin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${k}" value="${esc(tw[k])}" placeholder="0" aria-label="${l}"${tw.edit ? "" : " readonly"}></span>${twCamBtn(k, l)}</div>`).join("") +
-    `<div class="bwtot"><span>Total</span><b id="twMoneyTot">${rs(twSumMoney())}</b></div>`;
-}
-function twDieselHtml() {
-  const rows = twFills(), L = rows.reduce((a, r) => a + num(r.litres), 0), A = rows.reduce((a, r) => a + num(r.amount), 0), pp = twPP("diesel");
-  const card = (r, i) => `<div class="twcard"><button type="button" class="twmain"${r.fuelLogId && tw.edit ? ` data-fl="${esc(r.fuelLogId)}"` : " disabled"}><span class="twn">${i + 1}</span><span class="twci"><b>${nf(num(r.litres), 2)} litres${pp ? "" : ` · ${rs(num(r.amount))}`}</b><span>${[r.date ? fmtDate(r.date) : "", r.bunk].filter(Boolean).join(" · ") || "Diesel"}</span></span>${r.file ? `<span class="twok">✓ Bill</span>` : ""}</button>` +
-      (r.fuelLogId && tw.edit ? `<button type="button" class="twdel" data-del="fl:${esc(r.fuelLogId)}" aria-label="Delete fill ${i + 1}"${tw.saving ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
-  const f = tw.fill;
-  const form = f ? `<div class="twform"><b style="font-size:18px">${f.id ? "Change this fill" : `Fill ${rows.length + 1}`}</b>
-      <div class="bw2"><label class="bwf1"><span>Litres</span><span class="bwin main"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl.litres" value="${esc(f.litres)}" aria-label="Litres"><b>L</b></span></label>
-      <label class="bwf1"><span>Amount</span><span class="bwin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl.amount" value="${esc(f.amount)}" aria-label="Amount"${pp ? ' placeholder="Party pays"' : ""}></span></label></div>
-      <button type="button" class="twphoto${f.file ? " on" : ""}" data-cam="fill">${TW_CAM}${f.file ? "✓ Bill photo added · change" : "Photo of bill"}</button>
-      <span class="bwerr" id="twFlErr"></span>
-      <div class="bwseg c2"><button type="button" data-tw="flcancel">Cancel</button><button type="button" class="twsave" data-tw="flsave"${tw.saving ? " disabled" : ""}>${tw.saving ? "Saving…" : "Save fill"}</button></div>
-      ${f.id ? `<button type="button" class="bwlink bwdangerlink" style="margin:0" data-tw="fldel">${f.askDel ? "Tap again to delete this fill" : "Delete this fill"}</button>` : ""}</div>` : "";
-  return `<p class="bwhint" style="font-weight:500;color:var(--muted)">Add a fill every time you fill diesel on this trip.${pp ? " Diesel is paid by the party: litres are enough." : ""}</p>` +
-    rows.map(card).join("") + (rows.length ? `<div class="bwtot"><span>${rows.length} fill${rows.length === 1 ? "" : "s"}</span><b>${nf(L, 2)} L${pp ? "" : ` · ${rs(A)}`}</b></div>` : "") +
-    (form || (tw.edit ? `<button type="button" class="twadd" data-tw="fladd">${TW_PLUS} Add diesel fill</button>` : rows.length ? "" : `<p class="bwnote">No diesel entered.</p>`));
-}
-function twOtherHtml() {
-  const card = (x, i) => `<div class="twcard"><button type="button" class="twmain" data-oth="${i}"${tw.edit ? "" : " disabled"}><span class="twn twk" aria-hidden="true">${(TW_KINDS.find(k => k[0] === x.kind) || TW_KINDS[2])[1]}</span><span class="twci"><b>${esc(x.kind)} · ${rs(num(x.amt))}</b>${x.note ? `<span>${esc(x.note)}</span>` : ""}</span>${x.fileId ? `<span class="twok">✓ Bill</span>` : ""}</button>` +
-      (tw.edit ? `<button type="button" class="twdel" data-del="oth:${i}" aria-label="Delete ${esc(x.kind)}"${tw.saving ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
-  return `<p class="bwhint" style="font-weight:500;color:var(--muted)">Any other money you spent. Tap Add and choose.</p>` + tw.other.map(card).join("") +
-    (tw.other.length ? `<div class="bwtot"><span>Total</span><b>${rs(twOtherSum())}</b></div>` : "") +
-    (tw.edit ? `<button type="button" class="twadd" data-tw="othadd">${TW_PLUS} Add expense</button>` : tw.other.length ? "" : `<p class="bwnote">No other expenses.</p>`) +
-    (twPP("parking") || twPP("route") ? `<p class="bwnote" style="border:1px dashed var(--line);border-radius:14px;padding:12px 14px"><b>Paid by the party:</b> ${[twPP("parking") && "parking", twPP("route") && "route expenses"].filter(Boolean).join(" and ")}. Nothing to enter.</p>` : "");
-}
-function twKmHtml() {
-  const s = num(tw.startKm), e = num(tw.endKm), run = s && e > s ? e - s : 0, L = twFills().reduce((a, r) => a + num(r.litres), 0);
-  const box = (k, l, hint, main) => `<label class="bwf1 twkm"><span>${l}</span><span class="bwin${main ? " main" : ""}"><input type="number" inputmode="numeric" min="0" data-k="${k}" value="${esc(tw[k])}" aria-label="${l}"${tw.edit ? "" : " readonly"}><b>km</b></span><small>${hint}</small></label>`;
-  return `<p class="bwhint" style="font-weight:500;color:var(--muted)">Start km when the bus leaves. End km when it is back.</p>` +
-    box("startKm", "Start km", tw.prevKm ? `Last trip of this bus ended at <b style="color:var(--ink)">${nf(num(tw.prevKm))} km</b>` : "Look at the km meter before the bus leaves.") +
-    box("endKm", "End km", "Fill this when the bus is back at the shed.", true) + `<span class="bwerr" id="twKmErr">${s && e && e <= s ? "End km must be more than start km." : ""}</span>` +
-    `<div class="bwsum" id="twRun">${twRunHtml(run, L)}</div>`;
-}
-const twRunHtml = (run, L) => `<div class="bwsr"><div class="bwdays"><b>${run ? nf(run) : "—"}</b><span>km run</span></div><div><span style="color:var(--ink);font-weight:700">${L ? `${nf(L, 2)} L diesel` : "No diesel yet"}</span><span>${run && L ? `${nf(run / L, 2)} km per litre` : ""}</span></div></div>`;
-function twCheckHtml() {
-  const rows = twFills(), L = rows.reduce((a, r) => a + num(r.litres), 0), A = twPP("diesel") ? 0 : rows.reduce((a, r) => a + num(r.amount), 0);
-  const s = num(tw.startKm), e = num(tw.endKm), total = twSumMoney() + A + twOtherSum();
-  const row = (k, body, step) => `<div class="bwrow"><div><small>${k}</small>${body}</div>${tw.edit ? `<button type="button" class="bwlink" data-goto="${step}">Change</button>` : ""}</div>`;
-  const m = (l, v) => `<span class="bwm"><span>${l}</span><b>${v}</b></span>`;
-  const st = { draft: "Draft", submitted: "Sent to the office", approved: "Approved", rejected: "Sent back" }[tw.status];
-  return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : st && !tw.edit ? `<p class="bwnote"><b>${st}.</b></p>` : "") + `<div class="bwcard">` +
-    row("Driver and cleaner", m("Driver", esc(tpDriverName() || "—")) + m("Cleaner", tw.noCleaner ? "No cleaner" : esc(tw.cleaner.trim() || "—")), 0) +
-    row("Padi, permit and toll", TW_MONEY.map(([k, l]) => m(l, rs(num(tw[k])))).join(""), 0) +
-    row(`Diesel · ${rows.length} fill${rows.length === 1 ? "" : "s"}`, m(`${nf(L, 2)} L`, twPP("diesel") ? "Party pays" : rs(A)), 1) +
-    row("Other expenses", tw.other.length ? tw.other.map(x => m(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(num(x.amt)))).join("") : "<b>None</b>", 2) +
-    row("Km meter", m(`${s ? nf(s) : "—"} → ${e ? nf(e) : "—"}`, s && e > s ? `${nf(e - s)} km` : "—"), 3) +
-    `<div class="bwrow"><div>${m("<b style='font-size:19px;color:var(--ink)'>Total spent</b>", `<span style="font-size:20px">${rs(total)}</span>`)}</div></div></div>` +
-    (tw.edit && !tw.admin ? `<p class="bwnote">${twMissing().length ? `<b>Still needed to send:</b> ${twMissing().join(", ")}. Save for later and finish it after the trip.` : "Save to finish later, or send it to the office when the trip is over."}</p>` : "") +
-    "";
-}
-const twMissing = () => { const s = num(tw.startKm), e = num(tw.endKm); return [!s && "start km", !e && "end km", s && e && e <= s && "end km more than start km"].filter(Boolean); };
-function twSheetHtml() {
-  const s = tw.sheet; if (!s) return "";
-  const ic = (TW_KINDS.find(k => k[0] === s.kind) || [, ""])[1];
-  return `<div class="twsheet" data-tw="shbg"><div role="dialog" aria-modal="true" aria-label="Add expense"><span class="twgrip" aria-hidden="true"></span><h3>${s.idx >= 0 ? "Change expense" : "What did you spend on?"}</h3>` +
-    (!s.kind ? `<div class="twkinds">${TW_KINDS.map(([k, i]) => `<button type="button" data-kind="${k}"><span aria-hidden="true">${i}</span>${k}</button>`).join("")}</div>`
-      : `<div class="twchosen"><span aria-hidden="true">${ic}</span><b>${esc(s.kind)}</b><button type="button" class="bwlink" data-tw="kind">Change</button></div>` +
-        `<div class="twamt"><span class="bwin main"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="sh.amt" value="${esc(s.amt)}" placeholder="Amount" aria-label="Amount"></span><button type="button" class="twcam${s.fileId ? " on" : ""}" data-cam="other" aria-label="Photo of bill">${TW_CAM}${s.fileId ? "<i>✓</i>" : ""}</button></div>` +
-        `<label class="bwf1"><input type="text" data-k="sh.note" maxlength="80" value="${esc(s.note)}" placeholder="${s.kind === "Other" ? "What was it for?" : "Note (optional)"}" aria-label="What was it for"></label><span class="bwerr" id="twShErr"></span>`) +
-    `<div class="bwseg c2"><button type="button" data-tw="shclose">Cancel</button><button type="button" class="twsave" data-tw="shsave"${s.kind ? "" : " disabled"}>Save</button></div>` +
-    (s.idx >= 0 ? `<button type="button" class="bwlink bwdangerlink" style="margin:0" data-tw="shdel">Remove this expense</button>` : "") + `</div></div>`;
-}
-/* ---------- Simple trip sheet: the whole sheet on one page ----------
-   Like the paper trip sheet: one row per item with an amount box and a camera. Everything saves by itself a moment after
-   typing (padi, toll, permit, other expenses and km to the booking; each diesel line to the Fuel log). Send to office
-   shows the summary first. */
-const TP_OTHER = [["Pooja", "pooja"], ["Mechanic", "mechanic"], ["Other", "othr"]];
-function tpInit(b) {
-  const oth = { Pooja: { amt: "", note: "" }, Mechanic: { amt: "", note: "" }, Other: { amt: "", note: "" } };
-  (tw.other || []).forEach(x => { const k = oth[x.kind] ? x.kind : "Other"; oth[k].amt = String(num(oth[k].amt) + num(x.amt) || ""); if (x.note) oth[k].note = [oth[k].note, x.note].filter(Boolean).join(", "); });
-  tw.oth = oth;
-  tw.rows = dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null }));
-  if (!tw.rows.length && tw.edit) tw.rows.push({ litres: "", amount: "", file: null });
-  tw.legacy = dslLegacyOf(b);
-  tw.drvId = b.driverId || ""; tw.drvName = b.driverId ? "" : (b.driverName || ""); tw.drvOther = !b.driverId && !!b.driverName;
-  tw.cleaner = b.cleanerName || ""; tw.noCleaner = !!b.noCleaner;
-}
-// Drivers who drive spare buses, plus whoever is on this trip; cleaners named on this bus's earlier trips, newest first.
-const tpDrivers = () => drivers.filter(d => (d.status !== "Inactive" && vCatsOf(d).includes("Spare bus")) || d.id === tw.drvId);
-function tpCleaners() {
+// Drivers who drive spare buses, plus whoever is on this trip; cleaners named on earlier trips, this bus's first, newest first.
+const twDrivers = () => drivers.filter(d => (d.status !== "Inactive" && vCatsOf(d).includes("Spare bus")) || d.id === tw.drvId);
+function twCleaners() {
   const b = twBk(), seen = new Set(), out = [];
   [...ops.bookings].filter(x => x.cleanerName && x.id !== b?.id).sort((a, c) => (a.vehicleId === b?.vehicleId ? 0 : 1) - (c.vehicleId === b?.vehicleId ? 0 : 1) || String(c.from).localeCompare(String(a.from)))
     .forEach(x => { const n = x.cleanerName.trim(), k = n.toUpperCase(); if (!seen.has(k)) { seen.add(k); out.push(n); } });
   return out.slice(0, 5);
 }
-const tpDriverName = () => tw.drvId ? drivers.find(d => d.id === tw.drvId)?.name || "" : tw.drvName.trim();
-function tpCrewHtml() {
-  const dr = tpDrivers(), cl = tpCleaners(), ro = tw.edit ? "" : " disabled";
+const twDriverName = () => tw.drvId ? drivers.find(d => d.id === tw.drvId)?.name || "" : tw.drvName.trim();
+const twSameCrew = () => { const c = tw.cleaner.trim(), d = twDriverName(); return !!(c && d && c.toUpperCase() === d.toUpperCase()); };
+function twCrewHtml() {
+  const cl = twCleaners(), ro = tw.edit ? "" : " disabled", rd = tw.edit ? "" : " readonly";
   if (tw.cleaner && !tw.clnOther && !cl.some(n => n.toUpperCase() === tw.cleaner.trim().toUpperCase())) cl.unshift(tw.cleaner.trim());
-  const same = tw.cleaner.trim() && tpDriverName() && tw.cleaner.trim().toUpperCase() === tpDriverName().toUpperCase();
   const dv = tw.drvOther ? "__other" : tw.drvId, cv = tw.noCleaner ? "__none" : tw.clnOther ? "__other" : tw.cleaner.trim();
   const opt = (v, l, cur) => `<option value="${esc(v)}"${String(cur).toUpperCase() === String(v).toUpperCase() ? " selected" : ""}>${esc(l)}</option>`;
-  const padi = (k, l) => `<label class="tpcol tpp"><span>Padi</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${k}" value="${esc(tw[k])}" placeholder="0" aria-label="${l}"${tw.edit ? "" : " readonly"}></span></label>`;
-  return `<div class="tpcrew"><label class="tpcol"><span>Driver</span><select class="tpsel" data-sel="drv" aria-label="Driver"${ro}>${opt("", "Choose", dv)}${dr.map(d => opt(d.id, d.name, dv)).join("")}${opt("__other", "Other (type the name)", dv)}</select></label>${padi("padiPaid", "Driver padi")}</div>` +
-    (tw.drvOther ? `<div class="tpnote"><input type="text" data-k="drvName" maxlength="60" value="${esc(tw.drvName)}" placeholder="Driver name" aria-label="Driver name"${tw.edit ? "" : " readonly"}></div>` : "") +
+  const padi = (k, l) => `<label class="tpcol tpp"><span>Padi</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${k}" value="${esc(tw[k])}" placeholder="0" aria-label="${l}"${rd}></span></label>`;
+  const name = (k, v, l) => `<div class="tpnote"><input type="text" data-k="${k}" maxlength="60" value="${esc(v)}" placeholder="${l}" aria-label="${l}"${rd}></div>`;
+  return `<div class="tpcrew"><label class="tpcol"><span>Driver</span><select class="tpsel" data-sel="drv" aria-label="Driver"${ro}>${opt("", "Choose", dv)}${twDrivers().map(d => opt(d.id, d.name, dv)).join("")}${opt("__other", "Other (type the name)", dv)}</select></label>${padi("padiPaid", "Driver padi")}</div>` +
+    (tw.drvOther ? name("drvName", tw.drvName, "Driver name") : "") +
     `<div class="tpcrew"><label class="tpcol"><span>Cleaner</span><select class="tpsel" data-sel="cln" aria-label="Cleaner"${ro}>${opt("", "Choose", cv)}${cl.map(n => opt(n, n, cv)).join("")}${opt("__none", "No cleaner", cv)}${opt("__other", "Other (type the name)", cv)}</select></label>${padi("cleanerPadi", "Cleaner padi")}</div>` +
-    (tw.clnOther ? `<div class="tpnote"><input type="text" data-k="cleaner" maxlength="60" value="${esc(tw.cleaner)}" placeholder="Cleaner name" aria-label="Cleaner name"${tw.edit ? "" : " readonly"}></div>` : "") +
-    `<span class="bwerr" id="tpCrewErr">${same ? "The cleaner can't be the same person as the driver." : ""}</span>`;
+    (tw.clnOther ? name("cleaner", tw.cleaner, "Cleaner name") : "") +
+    `<span class="bwerr" id="tpCrewErr">${twSameCrew() ? "The cleaner can't be the same person as the driver." : ""}</span>`;
 }
-const tpOtherList = () => TP_OTHER.filter(([k]) => num(tw.oth[k].amt) > 0).map(([k, key]) => {
-  const x = { kind: k, amt: Math.round(num(tw.oth[k].amt)), note: String(tw.oth[k].note || "").trim().replace(/\s+/g, " ") };
-  const f = tw.files.filter(f => f.for === key).pop(); if (f) x.fileId = f.id; return x; });
-const tpDiesel = () => tw.rows.reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0);
-const tpTotal = () => twSumMoney() + (twPP("diesel") ? 0 : tpDiesel()) + TP_OTHER.reduce((a, [k]) => a + num(tw.oth[k].amt), 0);
-function tpRowHtml(label, key, val, opts = {}) {
+function twRowHtml(label, key, val, opts = {}) {
   return `<div class="tprow"><span class="tpl">${label}</span><span class="bwin tpin${opts.km ? " km" : ""}">${opts.km ? "" : "<b>₹</b>"}<input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${opts.ph ?? (opts.km ? "" : "0")}" aria-label="${label}"${tw.edit ? "" : " readonly"}>${opts.km ? "<b>km</b>" : ""}</span>${opts.km ? "" : twCamBtn(opts.cam || key, label)}</div>`;
 }
-function tpPageHtml() {
-  const pp = twPP("diesel"), sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
-  const fill = (r, i) => `<div class="tprow tpfill"><span class="bwin tpin l"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" placeholder="0" aria-label="Litres, fill ${i + 1}"${tw.edit ? "" : " readonly"}><b>L</b></span>` +
-    `<span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="${pp ? "Party pays" : "0"}" aria-label="Amount, fill ${i + 1}"${tw.edit ? "" : " readonly"}></span>` +
+function twPageHtml() {
+  const pp = twPP("diesel"), rd = tw.edit ? "" : " readonly", sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
+  const fill = (r, i) => `<div class="tprow tpfill"><span class="bwin tpin l"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" placeholder="0" aria-label="Litres, fill ${i + 1}"${rd}><b>L</b></span>` +
+    `<span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="${pp ? "Party pays" : "0"}" aria-label="Amount, fill ${i + 1}"${rd}></span>` +
     `<button type="button" class="twcam${r.file ? " on" : ""}" data-cam="row:${i}" aria-label="Photo of diesel bill ${i + 1}"${tw.edit ? "" : " disabled"}>${TW_CAM}${r.file ? "<i>✓</i>" : ""}</button>` +
     (tw.edit ? `<button type="button" class="tpbin" data-rowdel="${i}" aria-label="Remove diesel line ${i + 1}">${TW_BIN}</button>` : "") + `</div>`;
-  const km = num(tw.startKm) && num(tw.endKm) > num(tw.startKm) ? num(tw.endKm) - num(tw.startKm) : 0;
+  const s = num(tw.startKm), e = num(tw.endKm);
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     `<div class="tptip"><b>Just type the amount.</b> It saves by itself. Leave empty what you did not spend.</div>` +
-    sec("Driver and cleaner", tpCrewHtml()) +
-    sec("On the way", tpRowHtml("Toll gate", "toll", tw.toll) + tpRowHtml("Permit", "permit", tw.permit)) +
+    sec("Driver and cleaner", twCrewHtml()) +
+    sec("On the way", twRowHtml("Toll gate", "toll", tw.toll) + twRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel", (pp ? `<p class="bwnote" style="margin:6px 0">Diesel is paid by the party: litres are enough.</p>` : "") +
       tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
-      `<div class="tphd"><span style="flex:0 0 96px">Litres</span><span style="flex:1">Amount</span><span style="flex:0 0 ${tw.edit ? 100 : 52}px">Bill</span></div>` + tw.rows.map(fill).join("") + (tw.edit ? `<button type="button" class="tpadd" data-tw="rowadd">${TW_PLUS} Add diesel</button>` : "")) +
-    sec("Other", TP_OTHER.map(([k, key]) => tpRowHtml(k, "o:" + k, tw.oth[k].amt, { cam: key }) +
-      (k === "Other" ? `<div class="tpnote"><input type="text" data-k="on:Other" maxlength="80" value="${esc(tw.oth.Other.note)}" placeholder="What was it for?" aria-label="What was the other expense for"${tw.edit ? "" : " readonly"}></div>` : "")).join("")) +
-    sec("Km meter", tpRowHtml("Start km", "startKm", tw.startKm, { km: true }) + (tw.prevKm ? `<p class="bwnote" style="margin:-2px 0 4px">Last trip of this bus ended at <b style="color:var(--ink)">${nf(num(tw.prevKm))} km</b></p>` : "") + tpRowHtml("End km", "endKm", tw.endKm, { km: true, ph: "When back" }) +
-      `<span class="bwerr" id="twKmErr">${num(tw.startKm) && num(tw.endKm) && num(tw.endKm) <= num(tw.startKm) ? "End km must be more than start km." : ""}</span>` +
-      `<p class="bwnote" id="tpRun" style="margin:4px 0 6px">${km ? `${nf(km)} km run` : ""}</p>`);
+      `<div class="tphd"><span style="flex:0 0 96px">Litres</span><span style="flex:1">Amount</span><span style="flex:0 0 ${tw.edit ? 100 : 52}px">Bill</span></div>` +
+      tw.rows.map(fill).join("") + (tw.edit ? `<button type="button" class="tpadd" data-tw="rowadd">${TW_PLUS} Add diesel</button>` : "")) +
+    sec("Other", TW_OTHER.map(([k, key]) => twRowHtml(k, "o:" + k, tw.oth[k].amt, { cam: key }) +
+      (k === "Other" ? `<div class="tpnote"><input type="text" data-k="on:Other" maxlength="80" value="${esc(tw.oth.Other.note)}" placeholder="What was it for?" aria-label="What was the other expense for"${rd}></div>` : "")).join("")) +
+    sec("Km meter", twRowHtml("Start km", "startKm", tw.startKm, { km: true }) +
+      (tw.prevKm ? `<p class="bwnote" style="margin:-2px 0 4px">Last trip of this bus ended at <b style="color:var(--ink)">${nf(num(tw.prevKm))} km</b></p>` : "") +
+      twRowHtml("End km", "endKm", tw.endKm, { km: true, ph: "When back" }) +
+      `<span class="bwerr" id="twKmErr">${s && e && e <= s ? "End km must be more than start km." : ""}</span>` +
+      `<p class="bwnote" id="tpRun" style="margin:4px 0 6px">${s && e > s ? `${nf(e - s)} km run` : ""}</p>`);
 }
-function tpSaveState(t) { const el = $("tpSt"); if (el) { el.textContent = t; el.className = "tpst" + (t.startsWith("✓") ? " ok" : t.startsWith("Not") ? " bad" : ""); } }
-function tpRefresh() {
-  if ($("tpTot")) $("tpTot").textContent = rs(tpTotal());
+function twCheckHtml() {
+  const s = num(tw.startKm), e = num(tw.endKm), lines = tw.rows.filter(r => num(r.litres) > 0).length + tw.legacy.length;
+  const row = (k, body) => `<div class="bwrow"><div><small>${k}</small>${body}</div>${tw.edit ? `<button type="button" class="bwlink" data-tw="page">Change</button>` : ""}</div>`;
+  const m = (l, v) => `<span class="bwm"><span>${l}</span><b>${v}</b></span>`;
+  const st = { draft: "Draft", submitted: "Sent to the office", approved: "Approved", rejected: "Sent back" }[tw.status];
+  const other = twOtherList();
+  return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : st && !tw.edit ? `<p class="bwnote"><b>${st}.</b></p>` : "") + `<div class="bwcard">` +
+    row("Driver and cleaner", m("Driver", esc(twDriverName() || "—")) + m("Cleaner", tw.noCleaner ? "No cleaner" : esc(tw.cleaner.trim() || "—"))) +
+    row("Padi, permit and toll", TW_MONEY.map(([k, l]) => m(l, rs(num(tw[k])))).join("")) +
+    row(`Diesel · ${lines} fill${lines === 1 ? "" : "s"}`, m(`${nf(twLitres(), 2)} L`, twPP("diesel") ? "Party pays" : rs(twDiesel()))) +
+    row("Other expenses", other.length ? other.map(x => m(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") : "<b>None</b>") +
+    row("Km meter", m(`${s ? nf(s) : "—"} → ${e ? nf(e) : "—"}`, s && e > s ? `${nf(e - s)} km` : "—")) +
+    `<div class="bwrow"><div>${m("<b style='font-size:19px;color:var(--ink)'>Total spent</b>", `<span style="font-size:20px">${rs(twTotal())}</span>`)}</div></div></div>` +
+    (tw.edit && !tw.admin ? `<p class="bwnote">${twMissing().length ? `<b>Still needed to send:</b> ${twMissing().join(", ")}. Save for later and finish it after the trip.` : "Save to finish later, or send it to the office when the trip is over."}</p>` : "");
+}
+function twRender(top) {
+  const el = $("tw"), page = tw.view === "page", keep = !top && $("twBody") ? $("twBody").scrollTop : 0;
+  if (tw.done) {
+    const d = tw.done;
+    el.innerHTML = `<header class="bwh"><div><b id="twTitle">Trip sheet</b></div></header><div class="bwb bwdone"><span class="bwbig">${BW_ICON.ok}</span><h2>${d.sent ? "Sent to the office" : "Saved"}</h2><p class="bwno">Booking ${esc(tw.no)} · ${esc(tw.plate)}</p>` +
+      `<p>${d.line}<br>${d.sent ? 'The office will check it. You will see "Approved" in Trip sheets.' : d.admin ? "The trip sheet is updated." : "Open it again from Trip sheets to finish and send it."}</p></div><footer class="bwf"><button type="button" class="bwgo" data-tw="close">Back</button></footer>`;
+    return;
+  }
+  const back = !page && tw.edit;
+  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="${back ? "page" : "close"}" aria-label="${back ? "Back" : "Close"}">${back ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${esc([tw.places, tw.dates].filter(Boolean).join(" · "))}</span></div>${back ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
+    (page ? `<div class="bwb tws tpage" id="twBody">${twPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>Check and send</h2>${twCheckHtml()}</div>`) +
+    `<footer class="bwf${!page && tw.edit && !tw.admin ? " two" : ""}">${page ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span><span>Total <b id="tpTot">${rs(twTotal())}</b></span></div><button type="button" class="bwgo" data-tw="check">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
+      : !tw.edit ? `<button type="button" class="bwalt" data-tw="close">Close</button>`
+      : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
+      : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>`;
+  if (top) $("twBody").scrollTop = 0; else if (keep) $("twBody").scrollTop = keep;
+  if (tw.slide) { $("twBody").classList.add("bwsl-" + tw.slide); tw.slide = ""; }
+}
+function twSaveState(t) { const el = $("tpSt"); if (el) { el.textContent = t; el.className = "tpst" + (t.startsWith("✓") ? " ok" : t.startsWith("Not") ? " bad" : ""); } }
+function twRefresh() {
+  if ($("tpTot")) $("tpTot").textContent = rs(twTotal());
   const s = num(tw.startKm), e = num(tw.endKm);
   if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
   if ($("tpRun")) $("tpRun").textContent = s && e > s ? `${nf(e - s)} km run` : "";
+  if ($("tpCrewErr")) $("tpCrewErr").textContent = twSameCrew() ? "The cleaner can't be the same person as the driver." : "";
+}
+function twInput(e) {
+  const k = e.target.dataset.k; if (!k || !tw) return;
+  const v = e.target.value;
+  if (k.startsWith("fl:")) { const [, i, f] = k.split(":"); tw.rows[+i][f] = v; twRefresh(); twSoon("row" + i, () => twSaveRow(+i), 1200); return; }
+  if (k.startsWith("o:")) tw.oth[k.slice(2)].amt = v;
+  else if (k.startsWith("on:")) tw.oth[k.slice(3)].note = v;
+  else tw[k] = v;
+  twRefresh(); twSoon("bk", twSaveBooking);
+}
+function twSelect(e) {
+  const k = e.target.dataset.sel; if (!k || !tw) return; const v = e.target.value;
+  if (k === "drv") { tw.drvOther = v === "__other"; tw.drvId = tw.drvOther ? "" : v; if (!tw.drvOther) tw.drvName = ""; }
+  else { tw.noCleaner = v === "__none"; tw.clnOther = v === "__other"; tw.cleaner = tw.noCleaner || tw.clnOther ? "" : v; }
+  twRender();
+  if (tw.drvOther && k === "drv") $("tw").querySelector('[data-k="drvName"]')?.focus();
+  if (tw.clnOther && k === "cln") $("tw").querySelector('[data-k="cleaner"]')?.focus();
+  twSoon("bk", twSaveBooking, 300);
+}
+function twClick(e) {
+  if (!tw) return;
+  const t = e.target.closest("button"); if (!t || t.disabled) return;
+  const a = t.dataset.tw;
+  if (a === "close") { if (tw.view === "page" && tw.edit) { const go = () => twClose(); twFlush().then(go, go); return; } twClose(); return; }
+  if (a === "check") { twSaveState("Saving…"); twFlush().then(() => { if (!tw) return; tw.view = "check"; tw.slide = "l"; twRender(true); }); return; }
+  if (a === "page") { tw.view = "page"; tw.slide = "r"; twRender(true); return; }
+  if (a === "rowadd") { tw.rows.push({ litres: "", amount: "", file: null }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
+  if (t.dataset.rowdel != null) { twDelRow(+t.dataset.rowdel); return; }
+  if (t.dataset.cam) { if (!tw.edit) return; if (!assetsCap) { toast("Photos can't be saved in this view."); return; } tw.camFor = t.dataset.cam; $("twCam").click(); return; }
+  if (a === "save" || a === "draft" || a === "send") twSave(a === "send");
+}
+async function twPhoto(e) {
+  const file = e.target.files[0]; e.target.value = ""; if (!file || !tw || !assetsCap) return;
+  const key = tw.camFor; toast("Uploading the photo…");
+  try {
+    const r = await assetsCap.upload(file, { type: file.type }), ext = (file.name.match(/\.[a-z0-9]+$/i) || [".jpg"])[0];
+    if (key.startsWith("row:")) {
+      const i = +key.slice(4), row = tw.rows[i];
+      if (row) { row.file = { id: r.id, name: `Diesel bill${ext}` }; twSoon("row" + i, () => twSaveRow(i), 50); }
+    } else {
+      const label = { permit: "Permit", toll: "Toll gate", pooja: "Pooja", mechanic: "Mechanic", othr: "Other expense" }[key] || "Trip";
+      tw.files.push({ id: r.id, name: `${label} bill${ext}`, kind: "Trip bills", type: file.type, at: new Date().toISOString(), byName: whoAmI(), for: key });
+      twSoon("bk", twSaveBooking, 50);
+    }
+    toast("Photo added"); twRender();
+  } catch (er) { toast(er?.code === "too_large" ? "That photo is too large." : er?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the photo. Try again."); }
 }
 // Saving is queued, so changes typed quickly one after another are saved in order.
-function tpQueue(job) { tw.q = (tw.q || Promise.resolve()).then(job).catch(() => {}); return tw.q; }
-function tpSoon(key, job, ms = 900) { tw.timers ||= {}; clearTimeout(tw.timers[key]); tpSaveState("Saving…"); tw.timers[key] = setTimeout(() => { delete tw.timers[key]; tpQueue(job); }, ms); }
-async function tpFlush() { const t = tw.timers || {}; Object.keys(t).forEach(k => { clearTimeout(t[k]); delete t[k]; }); tpQueue(() => tpSaveBooking()); tw.rows.forEach((_, i) => tpQueue(() => tpSaveRow(i))); await tw.q; }
-async function tpSaveBooking() {
+function twQueue(job) { tw.q = (tw.q || Promise.resolve()).then(job).catch(() => {}); return tw.q; }
+function twSoon(key, job, ms = 900) { tw.timers ||= {}; clearTimeout(tw.timers[key]); twSaveState("Saving…"); tw.timers[key] = setTimeout(() => { delete tw.timers[key]; twQueue(job); }, ms); }
+async function twFlush() { const t = tw.timers || {}; Object.keys(t).forEach(k => { clearTimeout(t[k]); delete t[k]; }); twQueue(twSaveBooking); tw.rows.forEach((_, i) => twQueue(() => twSaveRow(i))); await tw.q; }
+async function twSaveBooking() {
   const cur = twBk(); if (!cur || !tw?.edit) return;
-  tw.other = tpOtherList();
-  const next = { ...cur };
+  const next = { ...cur }, other = twOtherList();
   const put = (k, v) => { const n = Math.round(num(v)); if (n > 0) next[k] = n; else delete next[k]; };
   TW_MONEY.forEach(([k]) => put(k, tw[k])); put("startKm", tw.startKm); put("endKm", tw.endKm);
-  if (next.startKm && next.endKm && next.endKm <= next.startKm) { next.endKm = cur.endKm; if (!next.endKm) delete next.endKm; }
-  const dn = tpDriverName(), cn = tw.noCleaner ? "" : tw.cleaner.trim().replace(/\s+/g, " ");
+  if (next.startKm && next.endKm && next.endKm <= next.startKm) { if (cur.endKm) next.endKm = cur.endKm; else delete next.endKm; }
+  const dn = twDriverName(), cn = tw.noCleaner ? "" : tw.cleaner.trim().replace(/\s+/g, " ");
   if (tw.drvId) { next.driverId = tw.drvId; next.driverName = dn; } else { delete next.driverId; if (dn) next.driverName = dn.toUpperCase(); else delete next.driverName; }
-  if (!(cn && dn && cn.toUpperCase() === dn.toUpperCase())) { if (cn) next.cleanerName = cn; else delete next.cleanerName; }
+  if (!twSameCrew()) { if (cn) next.cleanerName = cn; else delete next.cleanerName; }
   if (tw.noCleaner) next.noCleaner = true; else delete next.noCleaner;
-  if (tw.other.length) next.otherList = tw.other.map(x => ({ ...x })); else delete next.otherList;
-  const os = tw.other.reduce((a, x) => a + x.amt, 0); if (os) next.otherExp = os; else delete next.otherExp;
+  if (other.length) { next.otherList = other; next.otherExp = other.reduce((a, x) => a + x.amt, 0); } else { delete next.otherList; delete next.otherExp; }
   if (tw.files.length) next.attachments = tw.files.map(f => ({ ...f })); else delete next.attachments;
   if (!canBookings) { if (!cur.tsBy) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); } if (!cur.tsStatus) next.tsStatus = "draft"; next.tsDraftOn = todayISO(); }
   const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
   const keys = [...TW_MONEY.map(([k]) => k), "startKm", "endKm", "otherList", "otherExp", "attachments", "tsStatus", "driverId", "driverName", "cleanerName", "noCleaner"];
-  if (keys.every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { tpSaveState("✓ Saved"); return; }
+  if (keys.every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { twSaveState("✓ Saved"); return; }
   try {
     await opsSave("bookings", next);
     const i = ops.bookings.findIndex(x => x.id === next.id); if (i >= 0) ops.bookings[i] = next;
-    if (tw) tpSaveState("✓ Saved");
-  } catch { if (tw) tpSaveState("Not saved. Check the signal; it will try again."); if (tw) tpSoon("bk", tpSaveBooking, 8000); }
+    if (tw) twSaveState("✓ Saved");
+  } catch { if (tw) { twSaveState("Not saved. Check the signal; it will try again."); twSoon("bk", twSaveBooking, 8000); } }
 }
-async function tpSaveRow(i) {
+// A diesel line goes into the Fuel log against this booking once both litres and amount are filled in.
+async function twSaveRow(i) {
   const b = twBk(), r = tw?.rows?.[i]; if (!b || !r || !tw.edit) return;
   const litres = Math.round(num(r.litres) * 100) / 100, amount = Math.round(num(r.amount) * 100) / 100, pp = twPP("diesel");
-  if (!(litres > 0) || (!pp && !(amount > 0))) { tpSaveState("✓ Saved"); return; }   // finished once both boxes are filled
+  if (!(litres > 0) || (!pp && !(amount > 0))) { twSaveState("✓ Saved"); return; }
   const prev = r.id ? ops.fuelLog.find(x => x.id === r.id) : null, t = todayISO();
-  if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { tpSaveState("✓ Saved"); return; }
+  if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { twSaveState("✓ Saved"); return; }
   const last = flSorted(b.vehicleId).pop();
   const f = { ...(prev || {}), id: prev?.id || r.id || genId("fl"), date: prev?.date || (t < b.from ? b.from : t > bkEnd(b) ? bkEnd(b) : t), vehicleId: b.vehicleId, pay: prev?.pay || last?.pay || "Cash", litres, bookingId: b.id, bookingNo: b.no || "" };
   if (amount > 0) { f.amount = amount; f.rate = Math.round(amount / litres * 100) / 100; } else { delete f.amount; delete f.rate; }
   if (r.file) f.file = r.file; else delete f.file;
-  if (!prev) { if (b.driverId) { f.driverId = b.driverId; f.driverName = drivers.find(d => d.id === b.driverId)?.name || b.driverName || ""; } else if (b.driverName) f.driverName = b.driverName; if (last?.bunk) f.bunk = last.bunk; f.createdByName = whoAmI(); f.createdOn = t; } else f.updatedByName = whoAmI();
+  if (prev) f.updatedByName = whoAmI();
+  else { if (b.driverId) { f.driverId = b.driverId; f.driverName = drivers.find(d => d.id === b.driverId)?.name || b.driverName || ""; } else if (b.driverName) f.driverName = b.driverName; if (last?.bunk) f.bunk = last.bunk; f.createdByName = whoAmI(); f.createdOn = t; }
   f.fy = fyOf(f.date); f.month = f.date.slice(0, 7);
   r.id = f.id;
   try {
     await opsSave("fuelLog", f);
     const k = ops.fuelLog.findIndex(x => x.id === f.id); k >= 0 ? ops.fuelLog[k] = f : ops.fuelLog.push(f);
     await syncBookingDiesel(b.id);
-    if (tw) tpSaveState("✓ Saved");
-  } catch { if (tw) tpSaveState("Not saved. Check the signal; it will try again."); if (tw) tpSoon("row" + i, () => tpSaveRow(i), 8000); }
+    if (tw) twSaveState("✓ Saved");
+  } catch { if (tw) { twSaveState("Not saved. Check the signal; it will try again."); twSoon("row" + i, () => twSaveRow(i), 8000); } }
 }
-async function tpDelRow(i) {
+function twDelRow(i) {
   const r = tw.rows[i]; if (!r) return;
   tw.rows.splice(i, 1); if (!tw.rows.length) tw.rows.push({ litres: "", amount: "", file: null });
   twRender();
-  if (r.id) tpQueue(async () => {
+  if (r.id) twQueue(async () => {
     try { await opsDelete("fuelLog", r.id); ops.fuelLog = ops.fuelLog.filter(x => x.id !== r.id); await syncBookingDiesel(tw.id); toast("Diesel line removed"); }
     catch { toast("Couldn't remove. Check the signal and try again."); }
   });
 }
-const twSpent = () => twSumMoney() + (twPP("diesel") ? 0 : twFills().reduce((a, r) => a + num(r.amount), 0)) + twOtherSum();
-// The trip sheet opens here: four buttons, each showing what is already in. The driver fills any of them, in any order, as things happen.
-function twHubHtml() {
-  const fills = twFills(), L = fills.reduce((a, r) => a + num(r.litres), 0), A = fills.reduce((a, r) => a + num(r.amount), 0), pp = twPP("diesel");
-  const money = TW_MONEY.filter(([k]) => num(tw[k]) > 0), s0 = num(tw.startKm), e0 = num(tw.endKm);
-  const tag = on => `<span class="twtag${on ? " on" : ""}">${on ? "✓ Entered" : "Not yet"}</span>`;
-  const card = (i, icon, title, line, on, extra = "") => `<div class="twhub"><button type="button" class="twhm" data-sec="${i}"><span class="twhi" aria-hidden="true">${icon}</span><span class="twci"><b>${title}</b><span>${line}</span></span><span class="twhr">${tag(on)}${BW_ICON.next}</span></button>${extra}</div>`;
-  return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
-    `<p class="bwhint" style="font-weight:500;color:var(--muted)">Tap what you want to enter. Fill each one when it happens.</p>` +
-    card(0, "💵", "Padi, permit and toll", money.length ? money.map(([k, l]) => `${l} ${rs(num(tw[k]))}`).join(" · ") : "Nothing yet", money.length > 0) +
-    card(1, "⛽", "Diesel", fills.length ? `${fills.length} fill${fills.length === 1 ? "" : "s"} · ${nf(L, 2)} L${pp ? "" : ` · ${rs(A)}`}` : "No fills yet", fills.length > 0,
-      `<button type="button" class="twhadd" data-sec="1" data-addfill="1">${TW_PLUS} Add diesel fill</button>`) +
-    card(2, "🧾", "Other expenses", tw.other.length ? tw.other.map(x => `${esc(x.kind)} ${rs(num(x.amt))}`).join(" · ") : "None yet", tw.other.length > 0) +
-    card(3, "🚌", "Km meter", `Start ${s0 ? nf(s0) : "not yet"} · End ${e0 ? nf(e0) : "not yet"}`, !!(s0 && e0));
-}
-function twRender(top) {
-  const el = $("tw"), s = tw.step, keep = !top && $("twBody") ? $("twBody").scrollTop : 0;
-  if (tw.done) {
-    const d = tw.done;
-    el.innerHTML = `<header class="bwh"><div><b id="twTitle">Trip sheet</b></div></header><div class="bwb bwdone"><span class="bwbig">${BW_ICON.ok}</span><h2>${d.sent ? "Sent to the office" : "Saved"}</h2><p class="bwno">Booking ${esc(tw.no)} · ${esc(tw.plate)}</p>` +
-      `<p>${d.line}<br>${d.sent ? 'The office will check it. You will see "Approved" in Trip sheets.' : d.admin ? "The trip sheet is updated." : "Open it again from Trip sheets to finish and send it."}</p></div><footer class="bwf"><button type="button" class="bwgo" data-tw="close">Back to trip sheets</button></footer>`;
-    return;
-  }
-  const back = s >= 0 && tw.edit, sub = esc([tw.places, tw.dates].filter(Boolean).join(" · "));
-  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="${back ? "home" : "close"}" aria-label="${back ? "Back" : "Close"}">${back ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${sub}</span></div>${back ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
-    (s < 0 ? `<div class="bwb tws tpage" id="twBody">${tpPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>${TW_TITLES[s]}</h2>${[twMoneyHtml, twDieselHtml, twOtherHtml, twKmHtml, twCheckHtml][s]()}</div>`) +
-    `<footer class="bwf${s === 4 && tw.edit && !tw.admin ? " two" : ""}">${s < 0 ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span><span>Total <b id="tpTot">${rs(tpTotal())}</b></span></div><button type="button" class="bwgo" data-tw="tocheck">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
-      : s === 1 || s === 2 ? `<button type="button" class="bwgo" data-tw="donehome"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} Done</button>`
-      : s < 4 ? `<button type="button" class="bwgo" data-tw="savehome"${tw.saving ? " disabled" : ""}>${tw.saving ? "Saving…" : `${BW_ICON.ok} Save`}</button>`
-      : !tw.edit ? `<button type="button" class="bwalt" data-tw="close">Close</button>`
-      : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
-      : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>` + twSheetHtml();
-  if (top) $("twBody").scrollTop = 0; else if (keep && $("twBody")) $("twBody").scrollTop = keep;
-  if (tw.slide) { $("twBody").classList.add("bwsl-" + tw.slide); tw.slide = ""; }
-}
-function twInput(e) {
-  const k = e.target.dataset.k; if (!k || !tw) return;
-  const v = e.target.value;
-  if (k.startsWith("fl:")) { const [, i, f] = k.split(":"); tw.rows[+i][f] = v; tpRefresh(); tpSoon("row" + i, () => tpSaveRow(+i), 1200); return; }
-  if (k.startsWith("o:")) { tw.oth[k.slice(2)].amt = v; tw.other = tpOtherList(); tpRefresh(); tpSoon("bk", tpSaveBooking); return; }
-  if (k.startsWith("on:")) { tw.oth[k.slice(3)].note = v; tw.other = tpOtherList(); tpSoon("bk", tpSaveBooking); return; }
-  if (tw.step < 0 && (k === "drvName" || k === "cleaner")) { tw[k] = v; const d = tpDriverName(), c = tw.cleaner.trim(); if ($("tpCrewErr")) $("tpCrewErr").textContent = c && d && c.toUpperCase() === d.toUpperCase() ? "The cleaner can't be the same person as the driver." : ""; tpSoon("bk", tpSaveBooking); return; }
-  if (tw.step < 0) { tw[k] = v; tpRefresh(); tpSoon("bk", tpSaveBooking); return; }
-  if (k.startsWith("fl.")) { tw.fill[k.slice(3)] = v; return; }
-  if (k.startsWith("sh.")) { tw.sheet[k.slice(3)] = v; return; }
-  tw[k] = v;
-  if ($("twMoneyTot")) $("twMoneyTot").textContent = rs(twSumMoney());
-  if (k === "startKm" || k === "endKm") {
-    const s = num(tw.startKm), en = num(tw.endKm);
-    $("twKmErr").textContent = s && en && en <= s ? "End km must be more than start km." : "";
-    $("twRun").innerHTML = twRunHtml(s && en > s ? en - s : 0, twFills().reduce((a, r) => a + num(r.litres), 0));
-  }
-}
-function twClick(e) {
-  if (!tw) return;
-  const t = e.target.closest("button, [data-tw]"); if (!t || t.disabled) return;
-  const a = t.dataset.tw;
-  if (a === "shbg") { if (e.target === t) { tw.sheet = null; twRender(); } return; }
-  if (a === "close") { if (tw.step < 0 && tw.edit) { const go = () => twClose(); tpFlush().then(go, go); return; } twClose(); return; }
-  if (a === "tocheck") { tpSaveState("Saving…"); tpFlush().then(() => { if (!tw) return; tw.step = 4; tw.slide = "l"; twRender(true); }); return; }
-  if (false && t.dataset.drv) { if (t.dataset.drv === "other") { tw.drvOther = true; tw.drvId = ""; } else { tw.drvOther = false; tw.drvId = t.dataset.drv; tw.drvName = ""; } twRender(); if (tw.drvOther) $("tw").querySelector('[data-k="drvName"]')?.focus(); tpSoon("bk", tpSaveBooking, 300); return; }
-  if (false && t.dataset.cln) { const v = t.dataset.cln; tw.noCleaner = v === "__none"; tw.clnOther = v === "__other"; if (v === "__none") tw.cleaner = ""; else if (v === "__other") tw.cleaner = ""; else tw.cleaner = v; twRender(); if (tw.clnOther) $("tw").querySelector('[data-k="cleaner"]')?.focus(); tpSoon("bk", tpSaveBooking, 300); return; }
-  if (a === "rowadd") { tw.rows.push({ litres: "", amount: "", file: null }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
-  if (t.dataset.rowdel != null) { tpDelRow(+t.dataset.rowdel); return; }
-  if (a === "back" || a === "home") { tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true); return; }
-  if (t.dataset.sec != null) { tw.step = +t.dataset.sec; tw.slide = "l"; if (t.dataset.addfill) tw.fill = { litres: "", amount: "", file: null }; twRender(true); if (tw.fill) $("tw").querySelector('[data-k="fl.litres"]')?.focus(); return; }
-  if (a === "next") { tw.step++; tw.fill = null; tw.askDel = ""; twRender(true); return; }
-  if (t.dataset.goto) { tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true); return; }
-  if (t.dataset.cam) { if (!tw.edit) return; if (!assetsCap) { toast("Photos can't be saved in this view."); return; } tw.camFor = t.dataset.cam; $("twCam").click(); return; }
-  if (t.dataset.del) {
-    const [k, v] = [t.dataset.del.slice(0, t.dataset.del.indexOf(":")), t.dataset.del.slice(t.dataset.del.indexOf(":") + 1)]; tw.askDel = "";
-    if (k === "fl") { twDelFill(v); return; }
-    const x = tw.other[+v]; if (!x) return; if (x.fileId) tw.files = tw.files.filter(f => f.id !== x.fileId); tw.other.splice(+v, 1); twRender(); twPersistOther("Expense deleted"); return;
-  }
-  if (a === "fladd") { tw.fill = { litres: "", amount: "", file: null }; twRender(); $("tw").querySelector('[data-k="fl.litres"]')?.focus(); return; }
-  if (t.dataset.fl) { const f = ops.fuelLog.find(x => x.id === t.dataset.fl); if (f) { tw.fill = { id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null }; twRender(); } return; }
-  if (a === "flcancel") { tw.fill = null; twRender(); return; }
-  if (a === "flsave") { twSaveFill(); return; }
-  if (a === "fldel") { if (!tw.fill.askDel) { tw.fill.askDel = true; twRender(); return; } twDelFill(); return; }
-  if (a === "othadd") { tw.sheet = { idx: -1, kind: "", amt: "", note: "", fileId: "" }; twRender(); return; }
-  if (t.dataset.oth) { const i = +t.dataset.oth, x = tw.other[i]; tw.sheet = { idx: i, kind: x.kind, amt: x.amt != null ? String(x.amt) : "", note: x.note || "", fileId: x.fileId || "" }; twRender(); return; }
-  if (t.dataset.kind) { tw.sheet.kind = t.dataset.kind; twRender(); $("tw").querySelector('[data-k="sh.amt"]')?.focus(); return; }
-  if (a === "kind") { tw.sheet.kind = ""; twRender(); return; }
-  if (a === "shclose") { tw.sheet = null; twRender(); return; }
-  if (a === "shdel") { const x = tw.other[tw.sheet.idx]; if (x?.fileId) tw.files = tw.files.filter(f => f.id !== x.fileId); tw.other.splice(tw.sheet.idx, 1); tw.sheet = null; twRender(); twPersistOther("Expense deleted"); return; }
-  if (a === "shsave") {
-    const s = tw.sheet, amt = Math.round(num(s.amt));
-    if (!(amt > 0)) { $("twShErr").textContent = "Enter the amount."; return; }
-    if (s.kind === "Other" && !s.note.trim()) { $("twShErr").textContent = "Write what it was for."; return; }
-    const x = { kind: s.kind, amt, note: s.note.trim().replace(/\s+/g, " ") }; if (s.fileId) x.fileId = s.fileId;
-    s.idx >= 0 ? tw.other[s.idx] = x : tw.other.push(x); tw.sheet = null; twRender(); twPersistOther(s.idx >= 0 ? "Expense changed" : "Expense saved"); return;
-  }
-  if (a === "full") { const id = tw.id; twClose(); openBooking(id, null, true); setBkTab("trip"); return; }
-  if (a === "save" || a === "draft" || a === "send") { twSave(a === "send"); return; }
-  // Save keeps the driver on this step (e.g. just a toll paid on the way); Save & next saves and moves on.
-  if (a === "qsave" || a === "savenext" || a === "savehome" || a === "donehome") {
-    const go = a === "donehome" ? () => { tw.step = -1; tw.slide = "r"; twRender(true); } : () => twSave(false, a === "savenext" ? "next" : a === "savehome" ? "home" : "stay");
-    if (tw.fill && (num(tw.fill.litres) > 0 || num(tw.fill.amount) > 0)) { twSaveFill().then(() => { if (tw && !tw.fill) go(); }); return; }
-    tw.fill = null; go(); return;
-  }
-}
-async function twPhoto(e) {
-  const file = e.target.files[0]; e.target.value = ""; if (!file || !tw || !assetsCap) return;
-  const key = tw.camFor; toast("Uploading the photo…");
-  try {
-    const r = await assetsCap.upload(file, { type: file.type });
-    const label = { padiPaid: "Driver padi", cleanerPadi: "Cleaner padi", permit: "Permit", toll: "Toll gate", fill: "Diesel", other: tw.sheet?.kind || "Expense", pooja: "Pooja", mechanic: "Mechanic", othr: "Other expense" }[key] || "Trip";
-    const ext = (file.name.match(/\.[a-z0-9]+$/i) || [".jpg"])[0];
-    if (key.startsWith("row:")) { const row = tw.rows[+key.slice(4)]; if (row) { row.file = { id: r.id, name: `Diesel bill${ext}` }; tpSoon("row" + key.slice(4), () => tpSaveRow(+key.slice(4)), 50); } }
-    else if (key === "fill") { if (tw.fill) tw.fill.file = { id: r.id, name: `${label} bill${ext}` }; }
-    else {
-      const f = { id: r.id, name: `${label} bill${ext}`, kind: "Trip bills", type: file.type, at: new Date().toISOString(), byName: whoAmI(), for: key };
-      tw.files.push(f); if (key === "other" && tw.sheet) tw.sheet.fileId = r.id;
-      if (tw.step < 0) tpSoon("bk", tpSaveBooking, 50);
-    }
-    toast("Photo added"); twRender();
-  } catch (er) { toast(er?.code === "too_large" ? "That photo is too large." : er?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the photo. Try again."); }
-}
-// A diesel fill is saved straight into the Fuel log against this booking, the same as + Add diesel on the trip sheet.
-async function twSaveFill() {
-  const b = twBk(), f0 = tw.fill; if (!b || !f0 || tw.saving) return;
-  const litres = Math.round(num(f0.litres) * 100) / 100, amount = Math.round(num(f0.amount) * 100) / 100, pp = twPP("diesel");
-  if (!(litres > 0)) { $("twFlErr").textContent = "Enter the litres."; return; }
-  if (!pp && !(amount > 0)) { $("twFlErr").textContent = "Enter the amount."; return; }
-  const prev = f0.id ? ops.fuelLog.find(x => x.id === f0.id) : null, t = todayISO();
-  const date = prev?.date || (t < b.from ? b.from : t > bkEnd(b) ? bkEnd(b) : t), last = flSorted(b.vehicleId).pop();
-  const f = { ...(prev || {}), id: prev?.id || genId("fl"), date, vehicleId: b.vehicleId, pay: prev?.pay || last?.pay || "Cash", litres, bookingId: b.id, bookingNo: b.no || "" };
-  if (amount > 0) { f.amount = amount; f.rate = Math.round(amount / litres * 100) / 100; } else { delete f.amount; delete f.rate; }
-  if (f0.file) f.file = f0.file; else delete f.file;
-  if (!prev) { if (b.driverId) { f.driverId = b.driverId; f.driverName = drivers.find(d => d.id === b.driverId)?.name || b.driverName || ""; } else if (b.driverName) f.driverName = b.driverName; if (last?.bunk) f.bunk = last.bunk; }
-  f.fy = fyOf(f.date); f.month = f.date.slice(0, 7);
-  if (prev) f.updatedByName = whoAmI(); else { f.createdByName = whoAmI(); f.createdOn = t; }
-  tw.saving = true; twRender();
-  try {
-    await opsSave("fuelLog", f);
-    const i = ops.fuelLog.findIndex(x => x.id === f.id); i >= 0 ? ops.fuelLog[i] = f : ops.fuelLog.push(f);
-    await syncBookingDiesel(b.id);
-    if (tw) { tw.fill = null; toast(`Fill saved · ${nf(litres, 2)} L`); }
-  } catch { toast("Couldn't save. Check your connection and try again."); }
-  finally { if (tw) { tw.saving = false; twRender(); } }
-}
-async function twDelFill(fid) {
-  const id = fid || tw.fill?.id; if (!id || tw.saving) return;
-  // Gone from the list at once; it comes back only if the delete fails.
-  (tw.gone ||= new Set()).add(id); tw.fill = null; tw.saving = true; twRender();
-  try { await opsDelete("fuelLog", id); ops.fuelLog = ops.fuelLog.filter(x => x.id !== id); await syncBookingDiesel(tw.id); if (tw) toast("Fill deleted"); }
-  catch { if (tw) tw.gone.delete(id); toast("Couldn't delete. Check your connection and try again."); }
-  finally { if (tw) { tw.saving = false; twRender(); } }
-}
-// Other expenses are saved to the booking as soon as one is added, changed or deleted, like the diesel fills.
-async function twPersistOther(msg) {
-  const cur = twBk(); if (!cur || !tw.edit) return;
-  const next = { ...cur }, sum = twOtherSum();
-  if (tw.other.length) next.otherList = tw.other.map(x => ({ ...x })); else delete next.otherList;
-  if (sum) next.otherExp = sum; else delete next.otherExp;
-  const att = [...(cur.attachments || []).filter(f => f.for !== "other"), ...tw.files.filter(f => f.for === "other")];
-  if (att.length) next.attachments = att; else delete next.attachments;
-  if (!cur.tsBy && !canBookings) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); }
-  const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
-  try {
-    await opsSave("bookings", next);
-    const i = ops.bookings.findIndex(x => x.id === next.id); if (i >= 0) ops.bookings[i] = next;
-    await addBHistory(bookingChanges(cur, next, "Trip sheet: other expenses")).catch(() => {});
-    toast(msg);
-  } catch { toast("Couldn't save. Check your connection and try again."); }
-}
-// Fill the booking's trip sheet and save it exactly as its Save draft / Submit buttons would.
-async function twSave(send, quick) {
+// Save for later / Send to office: fill the booking's trip sheet and save it exactly as its own buttons would.
+async function twSave(send) {
   if (tw.saving) return;
-  if (tw.fill || tw.sheet) { tw.fill = null; tw.sheet = null; }
   tw.saving = true; twRender(); bwBusy = true;
   try {
     openBooking(tw.id, null, true);
     if (!bkTripEdit) { closeBkDrawer(); toast("This trip sheet can't be changed now."); return; }
     const put = (id, v) => { const x = $(id); if (x && !x.disabled) x.value = num(v) > 0 ? Math.round(num(v)) : ""; };
-    put("bkPadiPaid", tw.padiPaid); put("bkCleanerPadi", tw.cleanerPadi); put("bkPermit", tw.permit); put("bkToll", tw.toll);
+    TW_MONEY.forEach(([k]) => put({ padiPaid: "bkPadiPaid", cleanerPadi: "bkCleanerPadi", permit: "bkPermit", toll: "bkToll" }[k], tw[k]));
     put("bkOther", twOtherSum()); put("bkStartKm", tw.startKm); put("bkEndKm", tw.endKm);
-    bkOtherList = tw.other.map(x => ({ ...x })); bkFiles = tw.files.map(f => ({ ...f }));
+    bkOtherList = twOtherList(); bkFiles = tw.files.map(f => ({ ...f }));
     bkSaveAs = send ? "submit" : "draft"; syncBk();
-    const s = num(tw.startKm), e = num(tw.endKm), run = s && e > s ? e - s : 0;
-    const info = { sent: send, admin: tw.admin, line: [run ? `${nf(run)} km` : "", `${rs(twSumMoney() + (twPP("diesel") ? 0 : twFills().reduce((a, r) => a + num(r.amount), 0)) + twOtherSum())} spent`].filter(Boolean).join(" · ") };
+    const s = num(tw.startKm), e = num(tw.endKm);
+    const info = { sent: send, admin: tw.admin, line: [s && e > s ? `${nf(e - s)} km` : "", `${rs(twTotal())} spent`].filter(Boolean).join(" · ") };
     $("bkForm").requestSubmit();
     const failed = () => !$("bkDrawer").hidden && [...$("bkForm").querySelectorAll(".err")].some(x => x.textContent.trim());
     for (let i = 0; i < 100 && !failed() && !$("bkDrawer").hidden; i++) await new Promise(r => setTimeout(r, 150));
-    if (!$("bkDrawer").hidden) {
-      const msg = failed() ? [...$("bkForm").querySelectorAll(".err")].map(x => x.textContent.trim()).filter(Boolean)[0] || "Please check the entries." : "Still saving. Try again.";
-      if (quick) { closeBkDrawer(); toast(msg); return; }
-      twClose(); toast(msg); return;
-    }
-    if (tw && quick) { const b = twBk(); if (b) tw.status = b.tsStatus || tw.status; toast("Saved"); if (quick === "home") { tw.step = -1; tw.slide = "r"; tw.fill = null; twRender(true); } else if (quick === "next" && tw.step < 4) { tw.step++; tw.slide = "l"; tw.fill = null; twRender(true); } return; }
+    if (!$("bkDrawer").hidden) { const msg = failed() ? [...$("bkForm").querySelectorAll(".err")].map(x => x.textContent.trim()).find(Boolean) : "Still saving. Try again."; closeBkDrawer(); toast(msg); return; }
     if (tw) { tw.done = info; twRender(true); }
   } finally { bwBusy = false; if (tw) { tw.saving = false; if (!tw.done) twRender(); } }
 }
@@ -7029,16 +6788,6 @@ const BW_FILE_KINDS = ["ID proof", "Signed slip", "Payment proof", "Trip bills",
 const bwToll = () => bw?.editId ? num(ops.bookings.find(x => x.id === bw.editId)?.toll) : 0;
 const bwBkNow = () => ops.bookings.find(x => x.id === bw.editId);
 const bwCanFiles = b => !!b && platformWrite && (canBookings || canBookReq || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status))) && b.status !== "cancelled";
-function bwTilesHtml() {
-  const b = bwBkNow(); if (!b) return "";
-  const c = bkCalc(b), n = (b.attachments || []).length;
-  const tripOk = !bw.readOnly && (canBookings || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status)));
-  const tile = (sub, title, line, cls = "") => `<button type="button" class="bwtile" data-bw="sub" data-sub="${sub}"><b>${title}</b><span class="${cls}">${line}</span>${BW_ICON.next}</button>`;
-  return `<div class="bwtiles">` +
-    tile("pay", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok") +
-    (tripOk ? `<button type="button" class="bwtile" data-bw="trip"><b>Trip sheet</b><span>${esc(TS_STAGES[b.tsStatus] || "Not started")}</span>${BW_ICON.next}</button>` : "") +
-    tile("files", "Files", n ? `${n} file${n === 1 ? "" : "s"}` : "None yet") + `</div>`;
-}
 function bwHomeHtml(b) {
   const v = vehicles.find(x => x.id === b.vehicleId), c = bkCalc(b), n = (b.attachments || []).length, wa = waNum(b.phone);
   const drv = b.driverId ? drivers.find(d => d.id === b.driverId)?.name || b.driverName : b.driverName;
