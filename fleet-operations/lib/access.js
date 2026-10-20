@@ -109,8 +109,10 @@ function bookingRule(a, op, prev, next) {
   if (a.bookings === "request" && prev && prev.status !== "cancelled" && filesAdded(prev, next)) return true;
   // Booking planner: their own drafts and requests, which an admin then approves.
   if (a.bookings === "request" && (!prev || OPEN_STATUS.includes(prev.status)) && OPEN_STATUS.includes(next.status)) return true;
-  // Trip update: fills in the trip sheet of an existing booking without changing the booking itself.
+  // Trip update: fills in the trip sheet of an existing booking without changing the booking itself, nor the driver's
+  // advance and its settlement, which belong to the office.
   if ((a.tripsheets === "update" || a.tripsheets === "edit") && prev && next.status === prev.status) {
+    if (!sameExcept(pick(prev, DRV_MONEY), pick(next, DRV_MONEY), [])) return false;
     if (a.tripsheets === "edit") return true;
     const ts = next.tsStatus || "";
     return ts === (prev.tsStatus || "") || ["", "draft", "submitted"].includes(ts);
@@ -121,6 +123,8 @@ function bookingRule(a, op, prev, next) {
   return false;
 }
 
+const DRV_MONEY = ["drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvSettle"];
+const pick = (o, keys) => Object.fromEntries(keys.filter(k => o?.[k] != null).map(k => [k, o[k]]));
 function paymentsAdded(prev, next) {
   const p = prev.payments || [], n = next.payments || [];
   return n.length > p.length && JSON.stringify(n.slice(0, p.length)) === JSON.stringify(p)
