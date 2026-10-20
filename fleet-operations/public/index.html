@@ -1248,8 +1248,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpadd { width: 100%; height: 50px; margin: 8px 0 4px; border-radius: 12px; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 8px; font: 700 17px var(--body); cursor: pointer; } .tpadd svg { width: 22px; height: 22px; }
 .tpnote { padding: 0 0 8px; margin-top: -2px; border-bottom: 1px solid var(--line); } .tpnote input { width: 100%; height: 46px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: 500 17px var(--body); background: var(--surface); color: var(--ink); }
 .tpcrew { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); } .tpcrew:last-of-type { border-bottom: 0; }
-.tpcrew .bwchips { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tpcrew .bwchips button { min-height: 48px; font-size: 16px; }
-.tpcrew .tpnote { border: 0; padding: 0; margin: 0; }
+.tpcrew { flex-direction: row; align-items: center; gap: 10px; }
+.tpsel { flex: 0 0 62%; height: 54px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 18px var(--body); padding: 0 10px; }
+.tpcrew + .tpnote { margin-top: -2px; }
 .tphd { display: flex; gap: 8px; padding: 6px 0 0; font: 600 13px var(--body); color: var(--muted); }
 .tpst { font: 600 15px var(--body); color: var(--muted); } .tpst.ok { color: var(--ok); } .tpst.bad { color: var(--danger); }
 .twhub { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
@@ -6547,6 +6548,13 @@ function twOpen(b) {
     document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="tw" role="dialog" aria-modal="true" aria-labelledby="twTitle" hidden></div><input type="file" id="twCam" accept="image/*" capture="environment" hidden>');
     $("tw").addEventListener("click", twClick);
     $("tw").addEventListener("input", twInput);
+    $("tw").addEventListener("change", e => {
+      const k = e.target.dataset.sel; if (!k || !tw) return; const v = e.target.value;
+      if (k === "drv") { tw.drvOther = v === "__other"; tw.drvId = tw.drvOther ? "" : v; if (!tw.drvOther) tw.drvName = ""; }
+      else { tw.noCleaner = v === "__none"; tw.clnOther = v === "__other"; tw.cleaner = v === "__none" || v === "__other" ? "" : v; }
+      twRender(); if (tw.drvOther && k === "drv") $("tw").querySelector('[data-k="drvName"]')?.focus(); if (tw.clnOther && k === "cln") $("tw").querySelector('[data-k="cleaner"]')?.focus();
+      tpSoon("bk", tpSaveBooking, 300);
+    });
     $("twCam").addEventListener("change", twPhoto);
     let sx = 0, sy = 0, sOk = false;
     $("tw").addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; sOk = e.touches.length === 1 && !e.target.closest("input, textarea, .twsheet, .twform"); }, { passive: true });
@@ -6658,14 +6666,15 @@ function tpCleaners() {
 const tpDriverName = () => tw.drvId ? drivers.find(d => d.id === tw.drvId)?.name || "" : tw.drvName.trim();
 function tpCrewHtml() {
   const dr = tpDrivers(), cl = tpCleaners(), ro = tw.edit ? "" : " disabled";
-  if (tw.cleaner && !cl.some(n => n.toUpperCase() === tw.cleaner.trim().toUpperCase())) cl.unshift(tw.cleaner.trim());
+  if (tw.cleaner && !tw.clnOther && !cl.some(n => n.toUpperCase() === tw.cleaner.trim().toUpperCase())) cl.unshift(tw.cleaner.trim());
   const same = tw.cleaner.trim() && tpDriverName() && tw.cleaner.trim().toUpperCase() === tpDriverName().toUpperCase();
-  return `<div class="tpcrew"><span class="tpl">Driver</span><div class="bwchips">${dr.map(d => `<button type="button" data-drv="${d.id}" aria-pressed="${tw.drvId === d.id}"${ro}>${esc(d.name)}</button>`).join("")}<button type="button" data-drv="other" aria-pressed="${tw.drvOther}"${ro}>Other</button></div>` +
-    (tw.drvOther ? `<div class="tpnote"><input type="text" data-k="drvName" maxlength="60" value="${esc(tw.drvName)}" placeholder="Driver name" aria-label="Driver name"${tw.edit ? "" : " readonly"}></div>` : "") + `</div>` +
-    `<div class="tpcrew"><span class="tpl">Cleaner</span><div class="bwchips">${cl.map(n => `<button type="button" data-cln="${esc(n)}" aria-pressed="${!tw.noCleaner && !tw.clnOther && tw.cleaner.trim().toUpperCase() === n.toUpperCase()}"${ro}>${esc(n)}</button>`).join("")}` +
-    `<button type="button" data-cln="__other" aria-pressed="${!!tw.clnOther}"${ro}>Other</button><button type="button" data-cln="__none" aria-pressed="${tw.noCleaner}"${ro}>No cleaner</button></div>` +
+  const dv = tw.drvOther ? "__other" : tw.drvId, cv = tw.noCleaner ? "__none" : tw.clnOther ? "__other" : tw.cleaner.trim();
+  const opt = (v, l, cur) => `<option value="${esc(v)}"${String(cur).toUpperCase() === String(v).toUpperCase() ? " selected" : ""}>${esc(l)}</option>`;
+  return `<label class="tpcrew"><span class="tpl">Driver</span><select class="tpsel" data-sel="drv" aria-label="Driver"${ro}>${opt("", "Choose the driver", dv)}${dr.map(d => opt(d.id, d.name, dv)).join("")}${opt("__other", "Other (type the name)", dv)}</select></label>` +
+    (tw.drvOther ? `<div class="tpnote"><input type="text" data-k="drvName" maxlength="60" value="${esc(tw.drvName)}" placeholder="Driver name" aria-label="Driver name"${tw.edit ? "" : " readonly"}></div>` : "") +
+    `<label class="tpcrew"><span class="tpl">Cleaner</span><select class="tpsel" data-sel="cln" aria-label="Cleaner"${ro}>${opt("", "Choose the cleaner", cv)}${cl.map(n => opt(n, n, cv)).join("")}${opt("__none", "No cleaner", cv)}${opt("__other", "Other (type the name)", cv)}</select></label>` +
     (tw.clnOther ? `<div class="tpnote"><input type="text" data-k="cleaner" maxlength="60" value="${esc(tw.cleaner)}" placeholder="Cleaner name" aria-label="Cleaner name"${tw.edit ? "" : " readonly"}></div>` : "") +
-    `<span class="bwerr" id="tpCrewErr">${same ? "The cleaner can't be the same person as the driver." : ""}</span></div>`;
+    `<span class="bwerr" id="tpCrewErr">${same ? "The cleaner can't be the same person as the driver." : ""}</span>`;
 }
 const tpOtherList = () => TP_OTHER.filter(([k]) => num(tw.oth[k].amt) > 0).map(([k, key]) => {
   const x = { kind: k, amt: Math.round(num(tw.oth[k].amt)), note: String(tw.oth[k].note || "").trim().replace(/\s+/g, " ") };
@@ -6820,8 +6829,8 @@ function twClick(e) {
   if (a === "shbg") { if (e.target === t) { tw.sheet = null; twRender(); } return; }
   if (a === "close") { if (tw.step < 0 && tw.edit) { const go = () => twClose(); tpFlush().then(go, go); return; } twClose(); return; }
   if (a === "tocheck") { tpSaveState("Saving…"); tpFlush().then(() => { if (!tw) return; tw.step = 4; tw.slide = "l"; twRender(true); }); return; }
-  if (t.dataset.drv) { if (t.dataset.drv === "other") { tw.drvOther = true; tw.drvId = ""; } else { tw.drvOther = false; tw.drvId = t.dataset.drv; tw.drvName = ""; } twRender(); if (tw.drvOther) $("tw").querySelector('[data-k="drvName"]')?.focus(); tpSoon("bk", tpSaveBooking, 300); return; }
-  if (t.dataset.cln) { const v = t.dataset.cln; tw.noCleaner = v === "__none"; tw.clnOther = v === "__other"; if (v === "__none") tw.cleaner = ""; else if (v === "__other") tw.cleaner = ""; else tw.cleaner = v; twRender(); if (tw.clnOther) $("tw").querySelector('[data-k="cleaner"]')?.focus(); tpSoon("bk", tpSaveBooking, 300); return; }
+  if (false && t.dataset.drv) { if (t.dataset.drv === "other") { tw.drvOther = true; tw.drvId = ""; } else { tw.drvOther = false; tw.drvId = t.dataset.drv; tw.drvName = ""; } twRender(); if (tw.drvOther) $("tw").querySelector('[data-k="drvName"]')?.focus(); tpSoon("bk", tpSaveBooking, 300); return; }
+  if (false && t.dataset.cln) { const v = t.dataset.cln; tw.noCleaner = v === "__none"; tw.clnOther = v === "__other"; if (v === "__none") tw.cleaner = ""; else if (v === "__other") tw.cleaner = ""; else tw.cleaner = v; twRender(); if (tw.clnOther) $("tw").querySelector('[data-k="cleaner"]')?.focus(); tpSoon("bk", tpSaveBooking, 300); return; }
   if (a === "rowadd") { tw.rows.push({ litres: "", amount: "", file: null }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
   if (t.dataset.rowdel != null) { tpDelRow(+t.dataset.rowdel); return; }
   if (a === "back" || a === "home") { tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true); return; }
