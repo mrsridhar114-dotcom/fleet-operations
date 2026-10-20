@@ -8068,7 +8068,8 @@ async function tsPdf(L, b) {
   [["Total income", nf(c.due), "Total km", km ? nf(km) : ""], ["Total expense", nf(c.exp), "Total diesel", litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) + " L" : ""],
    ["Balance", nf(c.profit), "Mileage", km && litres ? nf(km / litres, 1) + " km/L" : ""]].forEach(([l1, v1, l2, v2]) => { field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 24; });
   text("Driver signature", X1, 30, { size: 9, align: "right" }); hline(X1 - 110, X1, 42, { t: 0.5, color: grey });
-  if (b.tsStatus === "approved") text(`Approved${b.tsApprovedByName ? " by " + b.tsApprovedByName : ""}${b.tsApprovedOn ? " on " + fd(b.tsApprovedOn) : ""}`, X0, 30, { size: 8, color: grey });
+  // Names only, never an email address (a user without a name in the user master shows as their email).
+  if (b.tsStatus === "approved") text(`Approved${b.tsApprovedByName && !b.tsApprovedByName.includes("@") ? " by " + b.tsApprovedByName : ""}${b.tsApprovedOn ? " on " + fd(b.tsApprovedOn) : ""}`, X0, 30, { size: 8, color: grey });
   // ---- back
   head("TRIP SHEET  -  BACK");
   y = H - 96; text(`${plateOf(bus)}  ·  ${b.places || ""}  ·  ${fd(b.from)} to ${fd(bkEnd(b))}`, W / 2, y, { size: 8.5, align: "center", color: grey }); y -= 20;
@@ -8080,22 +8081,38 @@ async function tsPdf(L, b) {
     y -= 15; hline(X0, X1, y, { t: 0.4, color: grey }); };
   hline(X0, X1, y, { t: 0.6 }); trow(cols.map(c2 => c2[0]), { bold: true, fill: true });
   const all = [...fills.map(f => [fd(f.date), f.bunk || "", f.litres, f.rate, f.amount, f.pay || "Cash", f.bill || ""]), ...legacy.map(r => ["", r.note || "Entered on the trip sheet", r.litres, "", r.amount, "", ""])];
-  all.forEach((r, i) => { if (y < 200) return; trow([String(i + 1), r[0], r[1], r[2] ? nf(num(r[2]), 2) : "", r[3] ? nf(num(r[3]), 2) : "", r[4] ? nf(num(r[4])) : "", r[5], r[6]]); });
+  all.forEach((r, i) => { if (y < 80) { head("TRIP SHEET  -  BACK (continued)"); y = H - 100; } trow([String(i + 1), r[0], r[1], r[2] ? nf(num(r[2]), 2) : "", r[3] ? nf(num(r[3]), 2) : "", r[4] ? nf(num(r[4])) : "", r[5], r[6]]); });
   if (!all.length) { text("No diesel fills entered.", X0 + 4, y - 12, { size: 9, color: grey }); y -= 16; }
   else trow(["", "", "Total", nf(litres, 2), "", nf(all.reduce((a, r) => a + num(r[4]), 0)), "", ""], { bold: true, fill: true });
-  y -= 22;
-  text("DRIVER ADVANCE", X0, y, { size: 10, bold: true, color: ink }); y -= 18;
-  const d = drvCalc(b), line = (l, v, o = {}) => { text(l, X0 + (o.in || 0), y, { size: o.size || 9.5, bold: o.bold, color: o.color }); text(v, X1, y, { size: o.size || 9.5, bold: o.bold, align: "right", color: o.color }); y -= o.gap || 14; };
-  if (!d.total && !d.spent) text("No advance given.", X0, y, { size: 9.5, color: grey });
+  // Driver advance and the expenses paid from it, as tables. A long list carries on to a new page.
+  const ensure = h => { if (y - h < 50) { head("TRIP SHEET  -  BACK (continued)"); y = H - 100; } };
+  const title = t => { ensure(70); text(t, X0, y, { size: 10, bold: true, color: ink }); y -= 9; };
+  const tbl = (cols, rows) => { const rh = 16.5, tw = cols.reduce((a, c2) => a + c2[1], 0);
+    const draw = (cells, st = {}) => { ensure(rh);
+      if (st.fill) page.drawRectangle({ x: X0, y: y - rh, width: tw, height: rh, color: shade });
+      let x = X0; cols.forEach(([, w, right], k) => { const f = st.bold ? bold : reg, v = fit(cells[k] ?? "", f, 9.5, w - 12);
+        right ? text(v, x + w - 7, y - 11.5, { size: 9.5, bold: st.bold, align: "right" }) : text(v, x + 7, y - 11.5, { size: 9.5, bold: st.bold }); x += w; });
+      page.drawRectangle({ x: X0, y: y - rh, width: tw, height: rh, borderColor: ink, borderWidth: 0.6 });
+      let vx = X0; cols.slice(0, -1).forEach(([, w]) => { vx += w; page.drawLine({ start: { x: vx, y }, end: { x: vx, y: y - rh }, thickness: 0.6, color: ink }); });
+      y -= rh; };
+    draw(cols.map(c2 => c2[0]), { bold: true, fill: true }); rows.forEach(r => draw(r.cells, r)); };
+  const d = drvCalc(b), AW = 104;
+  y -= 22; title("DRIVER ADVANCE");
+  if (!d.total && !d.spent) { text("No advance given.", X0, y - 12, { size: 9.5, color: grey }); y -= 20; }
   else {
-    line("Advance given", nf(d.adv)); if (d.toll) line("Toll gate money added", nf(d.toll));
-    line("Total advance", nf(d.total), { bold: true, gap: 18 });
-    text("Expenses paid from the advance", X0, y, { size: 9, color: grey }); y -= 13;
-    d.exp.filter(x => !d.off.includes(x.key)).forEach(x => { if (y > 70) line(x.label, nf(x.amt), { in: 8, size: 9, gap: 12 }); });
-    y -= 2; line("Total expenses", nf(d.spent), { bold: true, gap: 18 });
-    hline(X0, X1, y + 10, { t: 0.6 });
-    line(d.net < 0 ? "Office pays the driver" : "Driver gives to office", (d.net < 0 ? "- " : "") + nf(Math.abs(d.net)), { bold: true, size: 11, gap: 16 });
-    if (b.drvSettle) line(`Settled on ${fd(b.drvSettle.on)}${b.drvSettle.by ? " by " + b.drvSettle.by : ""}`, `${nf(num(b.drvSettle.amount))} · ${b.drvSettle.mode}`, { size: 9, color: grey });
+    tbl([["Details", X1 - X0 - AW], ["Amount (Rs.)", AW, 1]], [{ cells: ["Advance given", nf(d.adv)] }, ...(d.toll ? [{ cells: ["Toll gate money added", nf(d.toll)] }] : []), { cells: ["Total advance", nf(d.total)], bold: true, fill: true }]);
+    y -= 20; title("EXPENSES PAID FROM THE ADVANCE");
+    const paid = d.exp.filter(x => !d.off.includes(x.key));
+    tbl([["#", 24], ["Expense", X1 - X0 - 24 - AW], ["Amount (Rs.)", AW, 1]],
+      [...(paid.length ? paid.map((x, k) => ({ cells: [String(k + 1), x.label.replace(/ · /g, ", "), nf(x.amt)] })) : [{ cells: ["", "No expenses ticked", ""] }]),
+       { cells: ["", "Total expenses", nf(d.spent)], bold: true, fill: true }]);
+    y -= 14; ensure(36);
+    page.drawRectangle({ x: X0, y: y - 28, width: X1 - X0, height: 28, color: d.net < 0 ? L.rgb(0.99, 0.91, 0.9) : L.rgb(0.89, 0.95, 0.86), borderColor: ink, borderWidth: 0.8 });
+    text(d.net < 0 ? "Office pays the driver" : "Driver gives to office", X0 + 10, y - 18, { size: 11.5, bold: true });
+    text(`Rs. ${d.net < 0 ? "- " : ""}${nf(Math.abs(d.net))}`, X1 - 10, y - 18.5, { size: 13, bold: true, align: "right" });
+    text("Total advance - total expenses", W / 2 + 10, y - 17.5, { size: 7.5, color: grey, align: "center" });
+    y -= 40;
+    if (b.drvSettle) { ensure(14); text(`Settled on ${fd(b.drvSettle.on)}  ·  Rs. ${nf(num(b.drvSettle.amount))}  ·  ${b.drvSettle.mode}`, X0, y, { size: 9, color: grey }); y -= 16; }
   }
   text("Driver signature", X0, 30, { size: 9 }); hline(X0, X0 + 110, 42, { t: 0.5, color: grey });
   text("Office signature", X1, 30, { size: 9, align: "right" }); hline(X1 - 110, X1, 42, { t: 0.5, color: grey });
