@@ -1234,6 +1234,14 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwdone p { margin: 0; font-size: 17px; color: var(--muted); line-height: 1.4; } .bwdone .bwno { font-size: 20px; font-weight: 600; color: var(--ink); }
 .bwwa { background: #1f8f4e; color: #fff; margin-top: 14px; }
 .bwbar.c5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.twhub { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.twhm { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.twhi { width: 52px; height: 52px; flex: none; border-radius: 14px; background: var(--accent-soft); display: grid; place-items: center; font-size: 28px; }
+.twhub .twci b { font-size: 20px; } .twhub .twci span { font-size: 15px; line-height: 1.3; }
+.twhr { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; color: var(--muted); flex: none; } .twhr svg { width: 20px; height: 20px; }
+.twtag { border-radius: 999px; padding: 3px 10px; font: 700 13px var(--body); background: #fff4d6; color: #7a5200; } .twtag.on { background: #e4f3ea; color: #1e5c38; }
+.twhadd { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border: 0; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); font: 700 17px var(--body); cursor: pointer; } .twhadd svg { width: 22px; height: 22px; }
+.twspent { display: flex; justify-content: space-between; align-items: baseline; font: 600 16px var(--body); color: var(--muted); margin-bottom: 8px; } .twspent b { color: var(--ink); font-size: 19px; }
 .bwtiles { display: flex; flex-direction: column; gap: 8px; }
 .bwtile { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 60px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .bwtile b { font-size: 18px; flex: none; } .bwtile span { flex: 1; text-align: right; font-size: 15px; font-weight: 600; color: var(--muted); } .bwtile span.due { color: var(--danger); } .bwtile span.ok { color: var(--ok); }
@@ -6512,7 +6520,7 @@ function twOpen(b) {
   const prevKm = ops.bookings.filter(x => x.id !== b.id && x.vehicleId === b.vehicleId && num(x.endKm) > 0 && String(x.from) < String(b.from)).sort((a, c) => String(a.from).localeCompare(String(c.from))).pop()?.endKm || 0;
   const other = (b.otherList || []).length && (b.otherList || []).reduce((a, x) => a + num(x.amt), 0) === num(b.otherExp) ? b.otherList.map(x => ({ ...x }))
     : num(b.otherExp) ? [{ kind: "Other", amt: String(b.otherExp), note: "" }] : [];
-  tw = { id: b.id, no: b.no || "", plate: v ? plateOf(v) : "", places: b.places || b.party || "", step: edit ? 0 : 4, edit, admin: canBookings, status: b.tsStatus || "",
+  tw = { id: b.id, no: b.no || "", plate: v ? plateOf(v) : "", places: b.places || b.party || "", dates: `${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtShort(bkEnd(b))}` : ""}`, step: edit ? -1 : 4, edit, admin: canBookings, status: b.tsStatus || "",
     padiPaid: b.padiPaid ? String(b.padiPaid) : "", cleanerPadi: b.cleanerPadi ? String(b.cleanerPadi) : "", permit: b.permit ? String(b.permit) : "", toll: b.toll ? String(b.toll) : "",
     startKm: b.startKm ? String(b.startKm) : "", endKm: b.endKm ? String(b.endKm) : "", prevKm, other, files: (b.attachments || []).map(f => ({ ...f })),
     fill: null, sheet: null, saving: false, done: null, rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "" };
@@ -6527,8 +6535,8 @@ function twOpen(b) {
       if (!sOk || !tw || tw.done || tw.saving || tw.sheet || tw.fill) return; sOk = false;
       const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-      const n = tw.step + (dx < 0 ? 1 : -1); if (n < 0 || n > 4 || !tw.edit) return;
-      tw.step = n; tw.askDel = ""; tw.slide = dx < 0 ? "l" : "r"; twRender(true);
+      if (dx < 0 || tw.step < 0 || !tw.edit) return;
+      tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true);
     }, { passive: true });
   }
   $("tw").hidden = false; document.documentElement.classList.add("bw-on");
@@ -6604,6 +6612,21 @@ function twSheetHtml() {
     `<div class="bwseg c2"><button type="button" data-tw="shclose">Cancel</button><button type="button" class="twsave" data-tw="shsave"${s.kind ? "" : " disabled"}>Save</button></div>` +
     (s.idx >= 0 ? `<button type="button" class="bwlink bwdangerlink" style="margin:0" data-tw="shdel">Remove this expense</button>` : "") + `</div></div>`;
 }
+const twSpent = () => twSumMoney() + (twPP("diesel") ? 0 : twFills().reduce((a, r) => a + num(r.amount), 0)) + twOtherSum();
+// The trip sheet opens here: four buttons, each showing what is already in. The driver fills any of them, in any order, as things happen.
+function twHubHtml() {
+  const fills = twFills(), L = fills.reduce((a, r) => a + num(r.litres), 0), A = fills.reduce((a, r) => a + num(r.amount), 0), pp = twPP("diesel");
+  const money = TW_MONEY.filter(([k]) => num(tw[k]) > 0), s0 = num(tw.startKm), e0 = num(tw.endKm);
+  const tag = on => `<span class="twtag${on ? " on" : ""}">${on ? "✓ Entered" : "Not yet"}</span>`;
+  const card = (i, icon, title, line, on, extra = "") => `<div class="twhub"><button type="button" class="twhm" data-sec="${i}"><span class="twhi" aria-hidden="true">${icon}</span><span class="twci"><b>${title}</b><span>${line}</span></span><span class="twhr">${tag(on)}${BW_ICON.next}</span></button>${extra}</div>`;
+  return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
+    `<p class="bwhint" style="font-weight:500;color:var(--muted)">Tap what you want to enter. Fill each one when it happens.</p>` +
+    card(1, "⛽", "Diesel", fills.length ? `${fills.length} fill${fills.length === 1 ? "" : "s"} · ${nf(L, 2)} L${pp ? "" : ` · ${rs(A)}`}` : "No fills yet", fills.length > 0,
+      `<button type="button" class="twhadd" data-sec="1" data-addfill="1">${TW_PLUS} Add diesel fill</button>`) +
+    card(0, "💵", "Padi, permit and toll", money.length ? money.map(([k, l]) => `${l} ${rs(num(tw[k]))}`).join(" · ") : "Nothing yet", money.length > 0) +
+    card(2, "🧾", "Other expenses", tw.other.length ? tw.other.map(x => `${esc(x.kind)} ${rs(num(x.amt))}`).join(" · ") : "None yet", tw.other.length > 0) +
+    card(3, "🚌", "Km meter", `Start ${s0 ? nf(s0) : "not yet"} · End ${e0 ? nf(e0) : "not yet"}`, !!(s0 && e0));
+}
 function twRender(top) {
   const el = $("tw"), s = tw.step;
   if (tw.done) {
@@ -6612,11 +6635,12 @@ function twRender(top) {
       `<p>${d.line}<br>${d.sent ? 'The office will check it. You will see "Approved" in Trip sheets.' : d.admin ? "The trip sheet is updated." : "Open it again from Trip sheets to finish and send it."}</p></div><footer class="bwf"><button type="button" class="bwgo" data-tw="close">Back to trip sheets</button></footer>`;
     return;
   }
-  const back = s > 0 && tw.edit;
-  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="${back ? "back" : "close"}" aria-label="${back ? "Back" : "Close"}">${back ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${tw.edit ? `Step ${s + 1} of 5 · ` : ""}${esc(tw.places)}</span></div>${back ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
-    (tw.edit ? `<div class="bwbar c5">${TW_TITLES.map((t, i) => `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>`).join("")}</div>` : "") +
-    `<div class="bwb tws" id="twBody"><h2>${TW_TITLES[s]}</h2>${[twMoneyHtml, twDieselHtml, twOtherHtml, twKmHtml, twCheckHtml][s]()}</div>` +
-    `<footer class="bwf${(s === 4 && tw.edit && !tw.admin) || (s < 4 && tw.edit) ? " two" : ""}">${s < 4 ? `<button type="button" class="bwalt" data-tw="qsave"${tw.saving ? " disabled" : ""}>${tw.saving ? "Saving…" : "Save"}</button><button type="button" class="bwgo" data-tw="savenext"${tw.saving ? " disabled" : ""}>Save &amp; next ${BW_ICON.next}</button>`
+  const back = s >= 0 && tw.edit, sub = esc([tw.places, tw.dates].filter(Boolean).join(" · "));
+  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="${back ? "home" : "close"}" aria-label="${back ? "Back" : "Close"}">${back ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${sub}</span></div>${back ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
+    (s < 0 ? `<div class="bwb tws" id="twBody">${twHubHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>${TW_TITLES[s]}</h2>${[twMoneyHtml, twDieselHtml, twOtherHtml, twKmHtml, twCheckHtml][s]()}</div>`) +
+    `<footer class="bwf${s === 4 && tw.edit && !tw.admin ? " two" : ""}">${s < 0 ? `<div class="twspent"><span>Spent so far</span><b>${rs(twSpent())}</b></div><button type="button" class="bwgo" data-goto="4">${tw.admin ? "Check and save" : "Check and send to office"} ${BW_ICON.next}</button>`
+      : s === 1 || s === 2 ? `<button type="button" class="bwgo" data-tw="donehome"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} Done</button>`
+      : s < 4 ? `<button type="button" class="bwgo" data-tw="savehome"${tw.saving ? " disabled" : ""}>${tw.saving ? "Saving…" : `${BW_ICON.ok} Save`}</button>`
       : !tw.edit ? `<button type="button" class="bwalt" data-tw="close">Close</button>`
       : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
       : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>` + twSheetHtml();
@@ -6642,7 +6666,8 @@ function twClick(e) {
   const a = t.dataset.tw;
   if (a === "shbg") { if (e.target === t) { tw.sheet = null; twRender(); } return; }
   if (a === "close") { twClose(); return; }
-  if (a === "back") { tw.step--; tw.fill = null; tw.askDel = ""; twRender(true); return; }
+  if (a === "back" || a === "home") { tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true); return; }
+  if (t.dataset.sec != null) { tw.step = +t.dataset.sec; tw.slide = "l"; if (t.dataset.addfill) tw.fill = { litres: "", amount: "", file: null }; twRender(true); if (tw.fill) $("tw").querySelector('[data-k="fl.litres"]')?.focus(); return; }
   if (a === "next") { tw.step++; tw.fill = null; tw.askDel = ""; twRender(true); return; }
   if (t.dataset.goto) { tw.step = +t.dataset.goto; tw.fill = null; tw.askDel = ""; twRender(true); return; }
   if (t.dataset.cam) { if (!tw.edit) return; if (!assetsCap) { toast("Photos can't be saved in this view."); return; } tw.camFor = t.dataset.cam; $("twCam").click(); return; }
@@ -6672,8 +6697,8 @@ function twClick(e) {
   if (a === "full") { const id = tw.id; twClose(); openBooking(id, null, true); setBkTab("trip"); return; }
   if (a === "save" || a === "draft" || a === "send") { twSave(a === "send"); return; }
   // Save keeps the driver on this step (e.g. just a toll paid on the way); Save & next saves and moves on.
-  if (a === "qsave" || a === "savenext") {
-    const go = () => twSave(false, a === "savenext" ? "next" : "stay");
+  if (a === "qsave" || a === "savenext" || a === "savehome" || a === "donehome") {
+    const go = a === "donehome" ? () => { tw.step = -1; tw.slide = "r"; twRender(true); } : () => twSave(false, a === "savenext" ? "next" : a === "savehome" ? "home" : "stay");
     if (tw.fill && (num(tw.fill.litres) > 0 || num(tw.fill.amount) > 0)) { twSaveFill().then(() => { if (tw && !tw.fill) go(); }); return; }
     tw.fill = null; go(); return;
   }
@@ -6764,7 +6789,7 @@ async function twSave(send, quick) {
       if (quick) { closeBkDrawer(); toast(msg); return; }
       twClose(); toast(msg); return;
     }
-    if (tw && quick) { const b = twBk(); if (b) tw.status = b.tsStatus || tw.status; toast("Saved"); if (quick === "next" && tw.step < 4) { tw.step++; tw.slide = "l"; tw.fill = null; twRender(true); } return; }
+    if (tw && quick) { const b = twBk(); if (b) tw.status = b.tsStatus || tw.status; toast("Saved"); if (quick === "home") { tw.step = -1; tw.slide = "r"; tw.fill = null; twRender(true); } else if (quick === "next" && tw.step < 4) { tw.step++; tw.slide = "l"; tw.fill = null; twRender(true); } return; }
     if (tw) { tw.done = info; twRender(true); }
   } finally { bwBusy = false; if (tw) { tw.saving = false; if (!tw.done) twRender(); } }
 }
