@@ -1192,6 +1192,8 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .danet { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-radius: 16px; padding: 14px 16px; background: var(--accent-soft); }
 .danet span { display: flex; flex-direction: column; font-weight: 700; font-size: 17px; } .danet small { font-weight: 500; font-size: 14px; color: var(--muted); }
 .danet b { font-size: 26px; white-space: nowrap; } .danet.neg { background: var(--danger-soft); } .danet.neg b { color: var(--danger); }
+.bhappr { border-radius: 16px; padding: 14px 16px; background: var(--warn-soft); color: var(--ink); display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
+.bhappr b { font-size: 18px; color: var(--warn); } .bhappr > span { color: var(--ink); } .bhappr.gone { background: var(--chip-bg); } .bhappr.gone b { color: var(--muted); }
 .bhclose { height: 56px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); font: 700 18px var(--body); cursor: pointer; }
 .bwleave input { box-sizing: border-box; width: 100%; height: 54px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 17px var(--body); }
 .bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
@@ -6222,6 +6224,7 @@ function bwBack() {
   if (!bw || bw.saving) return;
   if (bw.leave) { bw.leave = ""; bwRender(); return; }
   if (bw.lockAsk) { bw.lockAsk = ""; bwRender(); return; }
+  if (bw.ask) { bw.ask = ""; bwRender(); return; }
   if (bw.pay) { bw.pay = null; bwRender(); return; }
   if (bw.sheet) { bw.sheet = false; bwRender(); return; }
   if (bw.askCancel) { bw.askCancel = false; bwRender(); return; }
@@ -6237,6 +6240,52 @@ function bwLeave(to, sure) {
   if (!sure && bwDirty()) { bw.leave = to; bwRender(); return; }
   if (to === "home") { const b = bwBkNow(), driver = bw.driver; bwOpen(null, b, bw.readOnly); bw.sub = "home"; bw.home = true; bw.driver = driver; bw.slide = "r"; bwRender(true); return; }
   bwClose();
+}
+// Admin decisions on the phone booking page: approve or reject a booking waiting for approval, approve or send back a
+// trip sheet, and bring a cancelled booking back. Approving goes through the booking form, with all its checks.
+function bwApprCard(b) {
+  const busy = bw.apprBusy ? " disabled" : "", btn = (a, t, cls, how) => `<button type="button" class="${cls}" data-bw="${a}"${how ? ` data-how="${how}"` : ""}${busy}>${t}</button>`;
+  if (b.status === "pending") return `<div class="bhappr"><b>Awaiting approval</b><span>Sent by ${esc(b.submittedByName || "the booking planner")}${b.submittedOn ? ` on ${fmtDate(b.submittedOn)}` : ""}. Check Booking details and Payments, then decide.</span>` +
+    `<div class="bwseg c2">${btn("ask", "Reject", "bwdanger", "reject")}${btn("apprbk", bw.apprBusy ? "Saving…" : "Approve", "twsave")}</div></div>`;
+  if (b.tsStatus === "submitted" && !tripClosed(b)) return `<div class="bhappr"><b>Trip sheet sent for approval</b><span>By ${esc(b.tsSubmittedByName || "the driver")}${b.tsSubmittedOn ? ` on ${fmtDate(b.tsSubmittedOn)}` : ""}. Open Trip sheet to check it, then decide.</span>` +
+    `<div class="bwseg c2">${btn("ask", "Send back", "bwdanger", "tsback")}${btn("apprts", bw.apprBusy ? "Saving…" : "Approve", "twsave")}</div></div>`;
+  if (b.status === "cancelled" && !tripClosed(b)) return `<div class="bhappr gone"><b>Cancelled</b><span>This booking was cancelled. The admin can bring it back if the trip is on again.</span>` +
+    `<div class="bwseg">${btn("ask", "Bring back booking", "twsave", "restore")}</div></div>`;
+  return "";
+}
+const BW_ASK = { reject: ["Reject this booking?", "The booking planner sees your reason and can change and send it again.", "Why? e.g. bus not free on these days", "Reject"],
+  tsback: ["Send the trip sheet back?", "The driver sees your reason and can correct and send it again.", "What should be corrected?", "Send back"],
+  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"] };
+function bwAskHtml() {
+  const [t, p, ph, go] = BW_ASK[bw.ask];
+  return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwAkT"><div><b id="bwAkT">${t}</b><p>${p}</p>` +
+    (ph ? `<input type="text" id="bwAskNote" data-k="askNote" maxlength="200" placeholder="${ph}" aria-label="Reason" value="${esc(bw.askNote || "")}">` : "") +
+    `<div class="bwseg c2"><button type="button" data-bw="askno"${bw.apprBusy ? " disabled" : ""}>Cancel</button><button type="button" class="${bw.ask === "restore" ? "twsave" : "bwdanger"}" data-bw="askgo"${bw.apprBusy ? " disabled" : ""}>${bw.apprBusy ? "Saving…" : go}</button></div></div></div>`;
+}
+// Runs an action of the booking form (Approve, Reject, trip sheet Approve / Send back) behind the phone screen, then comes back to the booking page.
+async function bwDeskAct(prep) {
+  const id = bw.editId; if (!id || bw.apprBusy) return;
+  bw.apprBusy = true; bwRender(); bwBusy = true;
+  try {
+    openBooking(id, null, true); prep();
+    const failed = () => !$("bkDrawer").hidden && [...$("bkForm").querySelectorAll(".err")].some(x => x.textContent.trim());
+    for (let i = 0; i < 100 && !failed() && !$("bkDrawer").hidden; i++) await new Promise(r => setTimeout(r, 150));
+    if (!$("bkDrawer").hidden) { const msg = failed() ? [...$("bkForm").querySelectorAll(".err")].map(x => x.textContent.trim()).find(Boolean) : "Still saving. Try again."; closeBkDrawer(); toast(msg); }
+  } finally { bwBusy = false; }
+  if (!bw) return;
+  bw.apprBusy = false; bw.ask = ""; bwClose(); openBooking(id);
+}
+async function bwAskGo() {
+  const note = String(bw.askNote || "").trim(), cur = bwBkNow(); if (!cur) return;
+  if (bw.ask === "reject") { if (!note) { toast("Type the reason for rejecting."); return; } bwDeskAct(() => { $("bkRejectWhy").value = note; $("bkReject").click(); }); return; }
+  if (bw.ask === "tsback") { if (!note) { toast("Type what should be corrected."); return; } bwDeskAct(() => { $("tsRejectWhy").value = note; $("tsReject").click(); }); return; }
+  // Bring back: only if the bus is still free on those days.
+  const clash = clashOf({ ...cur, status: "booked" }, cur.id);
+  if (clash) { toast(`The bus is already taken on these days by booking ${clash.no || ""}. Change the dates or bus first.`); return; }
+  bw.apprBusy = true; bwRender();
+  try { await bwBkSave({ ...cur, status: "booked" }, "Brought back from cancelled"); toast(`Booking ${cur.no || ""} is booked again`); }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+  if (bw) { bw.apprBusy = false; bw.ask = ""; bwClose(); openBooking(cur.id); }
 }
 // Close trip / Reopen trip on the phone: a sheet that says what happens (reopening asks why).
 function bwLockHtml() {
@@ -6271,7 +6320,7 @@ const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) &
 function bwRender(top) {
   const el = $("bw"), s = bw.step, first = !bw.home && s === 0 && !bw.fromCheck;  // on the first screen Back already goes to the list, so there is no Close
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
-  if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (bw.lockAsk) el.insertAdjacentHTML("beforeend", bwLockHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
+  if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (bw.lockAsk) el.insertAdjacentHTML("beforeend", bwLockHtml()); if (bw.ask) el.insertAdjacentHTML("beforeend", bwAskHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
   el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div></header>` +
     `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
     `<div class="bwb s${s}" id="bwBody"><h2>${s === 5 && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
@@ -6421,6 +6470,11 @@ function bwClick(e) {
   if (a === "lockask") { bw.lockAsk = t.dataset.how; bw.lockNote = ""; bwRender(); setTimeout(() => $("bwLockNote")?.focus(), 30); return; }
   if (a === "lockno") { bw.lockAsk = ""; bwRender(); return; }
   if (a === "lockgo") { bwLockGo(); return; }
+  if (a === "ask") { bw.ask = t.dataset.how; bw.askNote = ""; bwRender(); setTimeout(() => $("bwAskNote")?.focus(), 30); return; }
+  if (a === "askno") { bw.ask = ""; bwRender(); return; }
+  if (a === "askgo") { bwAskGo(); return; }
+  if (a === "apprbk") { bwDeskAct(() => $("bkApprove").click()); return; }
+  if (a === "apprts") { bwDeskAct(() => $("tsApprove").click()); return; }
   if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b, t); return; }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
   if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
@@ -6876,7 +6930,7 @@ function bwHomeHtml(b) {
       `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}${tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span>`}</div>` +
       `<b class="bhplace">${esc(b.places || "—")}</b>` +
       `<span>${bwFmt(b.from)}${bkEnd(b) !== b.from ? ` to ${bwFmt(bkEnd(b))}` : ""} · ${bwHalfTxt(num(b.days) || inclDays(b.from, bkEnd(b)))} ${bwDayWord(num(b.days))}</span>` +
-    `</div><div class="bhbtns">` +
+    `</div><div class="bhbtns">` + (canBookings ? bwApprCard(b) : "") +
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
@@ -6886,7 +6940,7 @@ function bwHomeHtml(b) {
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
         `</div>` +
         (canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="reopen">Reopen trip</button>` : "")
-      : canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="close">🔒 Close trip</button>` : "") +
+      : canCloseTrips && confirmed ? `<button type="button" class="bhclose" data-bw="lockask" data-how="close">🔒 Close trip</button>` : "") +
     `</div></div>` + navBar("bw", false);
 }
 function bwSubHtml() {
@@ -7615,7 +7669,7 @@ async function tripLock(id, how, note) {
 }
 // Desktop booking window: the Close trip / Reopen trip strip.
 function syncBkLock(b) {
-  const closed = tripClosed(b), show = !!b && (closed || canCloseTrips);
+  const closed = tripClosed(b), show = !!b && (closed || (canCloseTrips && ["booked", "ontrip", "completed"].includes(b.status)));
   $("bkLock").hidden = !show; if (!show) return;
   $("bkLock").className = "bkappr" + (closed ? " draft" : " ok");
   $("bkLockText").innerHTML = closed ? `<b>🔒 Trip closed</b> on ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything is view only.`
