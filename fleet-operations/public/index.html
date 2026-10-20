@@ -1179,15 +1179,6 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 .bhlock { border-radius: 16px; padding: 14px 16px; background: var(--chip-bg); color: var(--ink); display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
 .bhlock b { font-size: 17px; } .bhlock span { color: var(--muted); }
-.bpstats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.bpst { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; min-width: 0; }
-.bpst span { font-size: 13px; color: var(--muted); } .bpst b { font-size: 19px; overflow-wrap: anywhere; } .bpst.due { background: var(--danger-soft); border-color: transparent; } .bpst.due b, .bpst.due span { color: var(--danger); }
-.bpbtn { min-height: 50px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 17px var(--body); display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
-.bpbtn.wa { color: var(--ok); } .bpbtn svg { width: 20px; height: 20px; }
-.bpsec { margin: 6px 0 -4px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
-.bptrip { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 62px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
-.bptrip > span { flex: 1; min-width: 0; display: flex; flex-direction: column; } .bptrip b { font-size: 17px; } .bptrip span span { font-size: 14px; color: var(--muted); }
-.bptrip em { font-style: normal; font-weight: 700; font-size: 14px; white-space: nowrap; } .bptrip em.due { color: var(--danger); } .bptrip em.ok { color: var(--ok); }
 .bhclose { height: 56px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); font: 700 18px var(--body); cursor: pointer; }
 .bwleave input { box-sizing: border-box; width: 100%; height: 54px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 17px var(--body); }
 .bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
@@ -6035,12 +6026,8 @@ function drvSpentOf(b) {
   return Math.round(num(b.padiPaid) + num(b.cleanerPadi) + num(b.permit) + num(b.toll) + num(b.otherExp) + diesel);
 }
 const drvLeft = b => num(b.drvAdvance) - drvSpentOf(b);  // more than 0: with the driver; less than 0: the office owes the driver
-// One party = one phone number (or the name when there is no number), as in the party list of the booking screens.
+// One party = one phone number (or the name when there is no number), in the party list of the booking screens.
 const partyKey = b => { const name = String(b?.party || "").trim(), ph = String(b?.phone || "").replace(/\D/g, "").slice(-10); return ph.length === 10 ? ph : name ? "n:" + name.toUpperCase() : ""; };
-function partyStats(b) {
-  const k = partyKey(b), all = k ? ops.bookings.filter(x => partyKey(x) === k) : [], conf = all.filter(x => ["booked", "ontrip", "completed"].includes(x.status));
-  return { all, n: conf.length, biz: conf.reduce((a, x) => a + bkCalc(x).due, 0), owe: conf.reduce((a, x) => a + Math.max(0, bkCalc(x).balance), 0) };
-}
 const stageName = b => tripClosed(b) ? "Closed" : BK_STAGES[b?.status] || "";
 const stageTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : bkSettled(b) ? '<span class="bstage completed">✓ Settled</span>' : `<span class="bstage ${b.status}">${BK_STAGES[b.status] || ""}</span>`;
 const clashOf = (b, ignoreId) => ops.bookings.find(x => x.id !== ignoreId && x.vehicleId === b.vehicleId && blocks(x) && x.from <= bkEnd(b) && bkEnd(x) >= b.from);
@@ -6151,7 +6138,6 @@ const BW_ICON = {
   ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
   book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M4 7h3M4 12h3M4 17h3"/><circle cx="12.5" cy="10" r="2.6"/><path d="M8.8 16.5a4 4 0 0 1 7.4 0"/></svg>',
   bus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 21v-3M16 21v-3"/><circle cx="8" cy="14.5" r="1"/><circle cx="16" cy="14.5" r="1"/></svg>',
-  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
   wa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"/></svg>'
 };
 const BW_TITLES = ["Trip dates", "Which bus?", "Who is booking?", "Where are they going?", "Rent and advance", "Check and save"];
@@ -6412,9 +6398,8 @@ function bwClick(e) {
   if (a === "lockno") { bw.lockAsk = ""; bwRender(); return; }
   if (a === "lockgo") { bwLockGo(); return; }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
-  if (a === "bookagain") { bwBookAgain(); return; }
   if (t.dataset.mmode) { bw.money.mode = t.dataset.mmode; bwRender(); return; }
-  if (t.dataset.bkopen) { const id = t.dataset.bkopen; if (id === bw.editId) { bw.sub = "home"; bw.slide = "r"; bwRender(true); } else { bwClose(); openBooking(id); } return; }
+
   if (a === "leavego") { const to = bw.leave; bw.leave = ""; bwLeave(to, true); return; }
   if (a === "paybg") { if (e.target.closest("[data-bw]") === t && e.target === t) { bw.pay = null; bwRender(); } return; }
   if (a === "payadd") { bw.pay = { amount: "", date: todayISO(), mode: "Cash", note: "" }; bwRender(); $("bw").querySelector('[data-k="pay.amount"]')?.focus(); return; }
@@ -6879,7 +6864,6 @@ function bwHomeHtml(b) {
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       (canBookings && confirmed ? tile('data-bw="sub" data-sub="money"', "💵", "Driver money", b.drvSettle ? "Settled" : !num(b.drvAdvance) ? "No advance given" : drvLeft(b) > 0 ? `${rs(drvLeft(b))} with driver` : drvLeft(b) < 0 ? `Office owes driver ${rs(-drvLeft(b))}` : "Nothing to settle", b.drvSettle ? "ok" : num(b.drvAdvance) && drvLeft(b) ? "due" : "") : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
-      (!bw.driver && partyKey(b) ? (ps => tile('data-bw="sub" data-sub="party"', "👤", esc(b.party), `${ps.n} trip${ps.n === 1 ? "" : "s"}${ps.owe ? ` · ${rs(ps.owe)} to collect` : ""}`, ps.owe ? "due" : ""))(partyStats(b)) : "") +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
         `</div>` +
         (canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="reopen">Reopen trip</button>` : "")
@@ -6891,7 +6875,6 @@ function bwSubHtml() {
   if (bw.sub === "home") return bwHomeHtml(b);
   const head = t => `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div></header>`;
   if (bw.sub === "money") return bwDrvMoneyHtml(b);
-  if (bw.sub === "party") return bwPartyPageHtml(b);
   if (bw.sub === "pay") {
     const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite && !tripClosed(b);
     const card = (p, i) => `<div class="twcard"><span class="twmain" style="cursor:default"><span class="twn twk" aria-hidden="true">₹</span><span class="twci"><b>${rs(num(p.amount))}</b><span>${[p.date ? fmtDate(p.date) : "", p.mode || "Cash", i === 0 && !p.note ? "Advance" : p.note].filter(Boolean).map(esc).join(" · ")}</span>${p.byName ? `<span>By ${esc(p.byName)}</span>` : ""}</span></span>` +
@@ -6940,26 +6923,6 @@ async function bwSettle(undo) {
   try { await bwBkSave(next, undo ? "Driver settlement undone" : "Driver settled"); toast(undo ? "Settlement undone" : "Driver settled"); }
   catch { toast("Couldn't save. Check your connection and try again."); }
   finally { if (bw) { bw.moneyBusy = false; bw.money = null; bwRender(); } }
-}
-// The party's page: their trips with us, total business, what is still to collect, and Book again.
-function bwPartyPageHtml(b) {
-  const ps = partyStats(b), list = ps.all.slice().sort((a, c) => String(c.from || "").localeCompare(String(a.from || ""))), pn = waNum(b.phone), ph = String(b.phone || "").replace(/[^\d+]/g, "");
-  const stat = (l, v, cls) => `<div class="bpst${cls ? " " + cls : ""}"><span>${l}</span><b>${v}</b></div>`;
-  const trip = x => { const c = bkCalc(x), st = tripClosed(x) ? "Closed" : BK_STAGES[x.status] || "", conf = ["booked", "ontrip", "completed"].includes(x.status);
-    return `<button type="button" class="bptrip" data-bkopen="${x.id}"><span><b>${esc(x.places || "—")}</b><span>${x.from ? bwFmt(x.from) : "No date"} · Booking ${esc(x.no || "")} · ${esc(st)}</span></span>` +
-      `<em class="${conf && c.balance > 0 ? "due" : conf ? "ok" : ""}">${conf ? (c.balance > 0 ? `${rs(c.balance)} due` : "Paid") : ""}</em></button>`; };
-  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">${esc(b.party || "Party")}</b><span>${esc([b.phone, b.address].filter(Boolean).join(" · "))}</span></div></header><div class="bwb tws" id="bwBody">` +
-    `<div class="bpstats">${stat("Trips", ps.n)}${stat("Business", rs(ps.biz))}${stat("To collect", rs(ps.owe), ps.owe ? "due" : "")}</div>` +
-    (ph || pn ? `<div class="bwseg c2">${ph ? `<a class="bpbtn" href="tel:${esc(ph)}">${BW_ICON.phone}Call</a>` : ""}${pn ? `<a class="bpbtn wa" href="https://wa.me/${pn}" target="_blank" rel="noopener">${BW_ICON.wa}WhatsApp</a>` : ""}</div>` : "") +
-    `<h3 class="bpsec">Trips</h3>` + list.slice(0, 15).map(trip).join("") + (list.length > 15 ? `<p class="bwnote">+ ${list.length - 15} older trips</p>` : "") + `</div>` +
-    (canBookReq ? `<footer class="bwf"><button type="button" class="bwgo" data-bw="bookagain">${TW_PLUS} Book again</button></footer>` : "") + navBar("bw", true);
-}
-// Book again: a new booking with this party's details, place and rent filled in; the dates and bus are chosen as usual.
-function bwBookAgain() {
-  const src = bwBkNow(); if (!src || !canBookReq) return;
-  bwClose(); bwOpen();
-  Object.assign(bw, { party: src.party || "", phone: src.phone || "", address: src.address || "", places: src.places || "", rate: src.rate ? String(src.rate) : "", padi: src.padi ? String(src.padi) : "" });
-  bwRender(true);
 }
 async function bwBkSave(next, action) {
   const cur = bwBkNow(); if (!cur) return false;
