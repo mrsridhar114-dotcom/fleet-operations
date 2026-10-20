@@ -1247,6 +1247,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpbin { width: 40px; height: 52px; flex: none; border: 0; background: none; color: var(--danger); display: grid; place-items: center; padding: 0; cursor: pointer; } .tpbin svg { width: 22px; height: 22px; }
 .tpadd { width: 100%; height: 50px; margin: 8px 0 4px; border-radius: 12px; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 8px; font: 700 17px var(--body); cursor: pointer; } .tpadd svg { width: 22px; height: 22px; }
 .tpnote { padding: 0 0 8px; margin-top: -2px; border-bottom: 1px solid var(--line); } .tpnote input { width: 100%; height: 46px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: 500 17px var(--body); background: var(--surface); color: var(--ink); }
+.tpcrew { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); } .tpcrew:last-of-type { border-bottom: 0; }
+.tpcrew .bwchips { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tpcrew .bwchips button { min-height: 48px; font-size: 16px; }
+.tpcrew .tpnote { border: 0; padding: 0; margin: 0; }
 .tphd { display: flex; gap: 8px; padding: 6px 0 0; font: 600 13px var(--body); color: var(--muted); }
 .tpst { font: 600 15px var(--body); color: var(--muted); } .tpst.ok { color: var(--ok); } .tpst.bad { color: var(--danger); }
 .twhub { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
@@ -6608,6 +6611,7 @@ function twCheckHtml() {
   const m = (l, v) => `<span class="bwm"><span>${l}</span><b>${v}</b></span>`;
   const st = { draft: "Draft", submitted: "Sent to the office", approved: "Approved", rejected: "Sent back" }[tw.status];
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : st && !tw.edit ? `<p class="bwnote"><b>${st}.</b></p>` : "") + `<div class="bwcard">` +
+    row("Driver and cleaner", m("Driver", esc(tpDriverName() || "—")) + m("Cleaner", tw.noCleaner ? "No cleaner" : esc(tw.cleaner.trim() || "—")), 0) +
     row("Padi, permit and toll", TW_MONEY.map(([k, l]) => m(l, rs(num(tw[k])))).join(""), 0) +
     row(`Diesel · ${rows.length} fill${rows.length === 1 ? "" : "s"}`, m(`${nf(L, 2)} L`, twPP("diesel") ? "Party pays" : rs(A)), 1) +
     row("Other expenses", tw.other.length ? tw.other.map(x => m(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(num(x.amt)))).join("") : "<b>None</b>", 2) +
@@ -6640,6 +6644,28 @@ function tpInit(b) {
   tw.rows = dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null }));
   if (!tw.rows.length && tw.edit) tw.rows.push({ litres: "", amount: "", file: null });
   tw.legacy = dslLegacyOf(b);
+  tw.drvId = b.driverId || ""; tw.drvName = b.driverId ? "" : (b.driverName || ""); tw.drvOther = !b.driverId && !!b.driverName;
+  tw.cleaner = b.cleanerName || ""; tw.noCleaner = !!b.noCleaner;
+}
+// Drivers who drive spare buses, plus whoever is on this trip; cleaners named on this bus's earlier trips, newest first.
+const tpDrivers = () => drivers.filter(d => (d.status !== "Inactive" && vCatsOf(d).includes("Spare bus")) || d.id === tw.drvId);
+function tpCleaners() {
+  const b = twBk(), seen = new Set(), out = [];
+  [...ops.bookings].filter(x => x.cleanerName && x.id !== b?.id).sort((a, c) => (a.vehicleId === b?.vehicleId ? 0 : 1) - (c.vehicleId === b?.vehicleId ? 0 : 1) || String(c.from).localeCompare(String(a.from)))
+    .forEach(x => { const n = x.cleanerName.trim(), k = n.toUpperCase(); if (!seen.has(k)) { seen.add(k); out.push(n); } });
+  return out.slice(0, 5);
+}
+const tpDriverName = () => tw.drvId ? drivers.find(d => d.id === tw.drvId)?.name || "" : tw.drvName.trim();
+function tpCrewHtml() {
+  const dr = tpDrivers(), cl = tpCleaners(), ro = tw.edit ? "" : " disabled";
+  if (tw.cleaner && !cl.some(n => n.toUpperCase() === tw.cleaner.trim().toUpperCase())) cl.unshift(tw.cleaner.trim());
+  const same = tw.cleaner.trim() && tpDriverName() && tw.cleaner.trim().toUpperCase() === tpDriverName().toUpperCase();
+  return `<div class="tpcrew"><span class="tpl">Driver</span><div class="bwchips">${dr.map(d => `<button type="button" data-drv="${d.id}" aria-pressed="${tw.drvId === d.id}"${ro}>${esc(d.name)}</button>`).join("")}<button type="button" data-drv="other" aria-pressed="${tw.drvOther}"${ro}>Other</button></div>` +
+    (tw.drvOther ? `<div class="tpnote"><input type="text" data-k="drvName" maxlength="60" value="${esc(tw.drvName)}" placeholder="Driver name" aria-label="Driver name"${tw.edit ? "" : " readonly"}></div>` : "") + `</div>` +
+    `<div class="tpcrew"><span class="tpl">Cleaner</span><div class="bwchips">${cl.map(n => `<button type="button" data-cln="${esc(n)}" aria-pressed="${!tw.noCleaner && !tw.clnOther && tw.cleaner.trim().toUpperCase() === n.toUpperCase()}"${ro}>${esc(n)}</button>`).join("")}` +
+    `<button type="button" data-cln="__other" aria-pressed="${!!tw.clnOther}"${ro}>Other</button><button type="button" data-cln="__none" aria-pressed="${tw.noCleaner}"${ro}>No cleaner</button></div>` +
+    (tw.clnOther ? `<div class="tpnote"><input type="text" data-k="cleaner" maxlength="60" value="${esc(tw.cleaner)}" placeholder="Cleaner name" aria-label="Cleaner name"${tw.edit ? "" : " readonly"}></div>` : "") +
+    `<span class="bwerr" id="tpCrewErr">${same ? "The cleaner can't be the same person as the driver." : ""}</span></div>`;
 }
 const tpOtherList = () => TP_OTHER.filter(([k]) => num(tw.oth[k].amt) > 0).map(([k, key]) => {
   const x = { kind: k, amt: Math.round(num(tw.oth[k].amt)), note: String(tw.oth[k].note || "").trim().replace(/\s+/g, " ") };
@@ -6658,6 +6684,7 @@ function tpPageHtml() {
   const km = num(tw.startKm) && num(tw.endKm) > num(tw.startKm) ? num(tw.endKm) - num(tw.startKm) : 0;
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     `<div class="tptip"><b>Just type the amount.</b> It saves by itself. Leave empty what you did not spend.</div>` +
+    sec("Driver and cleaner", tpCrewHtml()) +
     sec("Padi", tpRowHtml("Driver padi", "padiPaid", tw.padiPaid) + tpRowHtml("Cleaner padi", "cleanerPadi", tw.cleanerPadi)) +
     sec("On the way", tpRowHtml("Toll gate", "toll", tw.toll) + tpRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel", (pp ? `<p class="bwnote" style="margin:6px 0">Diesel is paid by the party: litres are enough.</p>` : "") +
@@ -6687,12 +6714,16 @@ async function tpSaveBooking() {
   const put = (k, v) => { const n = Math.round(num(v)); if (n > 0) next[k] = n; else delete next[k]; };
   TW_MONEY.forEach(([k]) => put(k, tw[k])); put("startKm", tw.startKm); put("endKm", tw.endKm);
   if (next.startKm && next.endKm && next.endKm <= next.startKm) { next.endKm = cur.endKm; if (!next.endKm) delete next.endKm; }
+  const dn = tpDriverName(), cn = tw.noCleaner ? "" : tw.cleaner.trim().replace(/\s+/g, " ");
+  if (tw.drvId) { next.driverId = tw.drvId; next.driverName = dn; } else { delete next.driverId; if (dn) next.driverName = dn.toUpperCase(); else delete next.driverName; }
+  if (!(cn && dn && cn.toUpperCase() === dn.toUpperCase())) { if (cn) next.cleanerName = cn; else delete next.cleanerName; }
+  if (tw.noCleaner) next.noCleaner = true; else delete next.noCleaner;
   if (tw.other.length) next.otherList = tw.other.map(x => ({ ...x })); else delete next.otherList;
   const os = tw.other.reduce((a, x) => a + x.amt, 0); if (os) next.otherExp = os; else delete next.otherExp;
   if (tw.files.length) next.attachments = tw.files.map(f => ({ ...f })); else delete next.attachments;
   if (!canBookings) { if (!cur.tsBy) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); } if (!cur.tsStatus) next.tsStatus = "draft"; next.tsDraftOn = todayISO(); }
   const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
-  const keys = [...TW_MONEY.map(([k]) => k), "startKm", "endKm", "otherList", "otherExp", "attachments", "tsStatus"];
+  const keys = [...TW_MONEY.map(([k]) => k), "startKm", "endKm", "otherList", "otherExp", "attachments", "tsStatus", "driverId", "driverName", "cleanerName", "noCleaner"];
   if (keys.every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { tpSaveState("✓ Saved"); return; }
   try {
     await opsSave("bookings", next);
@@ -6770,6 +6801,7 @@ function twInput(e) {
   if (k.startsWith("fl:")) { const [, i, f] = k.split(":"); tw.rows[+i][f] = v; tpRefresh(); tpSoon("row" + i, () => tpSaveRow(+i), 1200); return; }
   if (k.startsWith("o:")) { tw.oth[k.slice(2)].amt = v; tw.other = tpOtherList(); tpRefresh(); tpSoon("bk", tpSaveBooking); return; }
   if (k.startsWith("on:")) { tw.oth[k.slice(3)].note = v; tw.other = tpOtherList(); tpSoon("bk", tpSaveBooking); return; }
+  if (tw.step < 0 && (k === "drvName" || k === "cleaner")) { tw[k] = v; const d = tpDriverName(), c = tw.cleaner.trim(); if ($("tpCrewErr")) $("tpCrewErr").textContent = c && d && c.toUpperCase() === d.toUpperCase() ? "The cleaner can't be the same person as the driver." : ""; tpSoon("bk", tpSaveBooking); return; }
   if (tw.step < 0) { tw[k] = v; tpRefresh(); tpSoon("bk", tpSaveBooking); return; }
   if (k.startsWith("fl.")) { tw.fill[k.slice(3)] = v; return; }
   if (k.startsWith("sh.")) { tw.sheet[k.slice(3)] = v; return; }
@@ -6788,6 +6820,8 @@ function twClick(e) {
   if (a === "shbg") { if (e.target === t) { tw.sheet = null; twRender(); } return; }
   if (a === "close") { if (tw.step < 0 && tw.edit) { const go = () => twClose(); tpFlush().then(go, go); return; } twClose(); return; }
   if (a === "tocheck") { tpSaveState("Saving…"); tpFlush().then(() => { if (!tw) return; tw.step = 4; tw.slide = "l"; twRender(true); }); return; }
+  if (t.dataset.drv) { if (t.dataset.drv === "other") { tw.drvOther = true; tw.drvId = ""; } else { tw.drvOther = false; tw.drvId = t.dataset.drv; tw.drvName = ""; } twRender(); if (tw.drvOther) $("tw").querySelector('[data-k="drvName"]')?.focus(); tpSoon("bk", tpSaveBooking, 300); return; }
+  if (t.dataset.cln) { const v = t.dataset.cln; tw.noCleaner = v === "__none"; tw.clnOther = v === "__other"; if (v === "__none") tw.cleaner = ""; else if (v === "__other") tw.cleaner = ""; else tw.cleaner = v; twRender(); if (tw.clnOther) $("tw").querySelector('[data-k="cleaner"]')?.focus(); tpSoon("bk", tpSaveBooking, 300); return; }
   if (a === "rowadd") { tw.rows.push({ litres: "", amount: "", file: null }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
   if (t.dataset.rowdel != null) { tpDelRow(+t.dataset.rowdel); return; }
   if (a === "back" || a === "home") { tw.step = -1; tw.fill = null; tw.askDel = ""; tw.slide = "r"; twRender(true); return; }
