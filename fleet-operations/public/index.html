@@ -6621,9 +6621,9 @@ function twHubHtml() {
   const card = (i, icon, title, line, on, extra = "") => `<div class="twhub"><button type="button" class="twhm" data-sec="${i}"><span class="twhi" aria-hidden="true">${icon}</span><span class="twci"><b>${title}</b><span>${line}</span></span><span class="twhr">${tag(on)}${BW_ICON.next}</span></button>${extra}</div>`;
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     `<p class="bwhint" style="font-weight:500;color:var(--muted)">Tap what you want to enter. Fill each one when it happens.</p>` +
+    card(0, "💵", "Padi, permit and toll", money.length ? money.map(([k, l]) => `${l} ${rs(num(tw[k]))}`).join(" · ") : "Nothing yet", money.length > 0) +
     card(1, "⛽", "Diesel", fills.length ? `${fills.length} fill${fills.length === 1 ? "" : "s"} · ${nf(L, 2)} L${pp ? "" : ` · ${rs(A)}`}` : "No fills yet", fills.length > 0,
       `<button type="button" class="twhadd" data-sec="1" data-addfill="1">${TW_PLUS} Add diesel fill</button>`) +
-    card(0, "💵", "Padi, permit and toll", money.length ? money.map(([k, l]) => `${l} ${rs(num(tw[k]))}`).join(" · ") : "Nothing yet", money.length > 0) +
     card(2, "🧾", "Other expenses", tw.other.length ? tw.other.map(x => `${esc(x.kind)} ${rs(num(x.amt))}`).join(" · ") : "None yet", tw.other.length > 0) +
     card(3, "🚌", "Km meter", `Start ${s0 ? nf(s0) : "not yet"} · End ${e0 ? nf(e0) : "not yet"}`, !!(s0 && e0));
 }
