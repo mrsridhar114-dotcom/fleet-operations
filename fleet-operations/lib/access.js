@@ -57,7 +57,7 @@ const sameExcept = (x, y, keys) => {
 export const canCloseTrips = a => isAdmin(a);
 // A closed trip is final. Nobody, admin included, may change or delete it, or the diesel fills linked to it, until an
 // admin reopens it. Closing and reopening change only the closing details and the totals worked out from them.
-const CLOSE_KEYS = ["closedOn", "closedByName", "writeOff", "writeOffNote", "reopens", "due", "received", "balance", "expense", "profit"];
+const CLOSE_KEYS = ["closedOn", "closedByName", "reopens", "due", "received", "balance", "expense", "profit"];
 function closedRule(a, op, coll, prev, next, linkedClosed) {
   const shut = "This trip is closed. An admin must reopen it first.";
   if (coll === "fuelLog") return linkedClosed ? shut : "";
@@ -67,8 +67,7 @@ function closedRule(a, op, coll, prev, next, linkedClosed) {
   if (was && is) return sameExcept(prev, next, []) ? "" : shut;
   if (was === is) return "";
   if (!canCloseTrips(a)) return "Only an admin can close or reopen a trip.";
-  if (!prev || !sameExcept(prev, next, CLOSE_KEYS)) return "Closing or reopening a trip can't change anything else on the booking.";
-  return is && prev.status !== "completed" ? "Only a completed trip can be closed." : "";
+  return prev && sameExcept(prev, next, CLOSE_KEYS) ? "" : "Closing or reopening a trip can't change anything else on the booking.";
 }
 
 // May this person make this change? prev is the stored record (null when new); next is the record after the change.
