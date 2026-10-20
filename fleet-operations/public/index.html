@@ -718,6 +718,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .bstage.booked { background: var(--accent-soft); color: var(--accent); }
 .bstage.ontrip { background: var(--warn-soft); color: var(--warn); }
 .bstage.completed { background: var(--ok-soft); color: var(--ok); }
+.bstage.closed { background: var(--chip-bg); color: var(--muted); }
 .bstage.cancelled { background: var(--danger-soft); color: var(--danger); text-decoration: line-through; }
 #bkDrawer { width: min(1000px, 100%); }
 .bktabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); position: sticky; top: -20px; background: var(--surface); z-index: 2; margin: 0 -20px; padding: 8px 20px 0; overflow-x: auto; }
@@ -1176,6 +1177,10 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhcard { background: var(--surface); border: 3px solid var(--accent); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: var(--muted); }
 .bhcard b { color: var(--ink); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
 .bhbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.bhlock { border-radius: 16px; padding: 14px 16px; background: var(--chip-bg); color: var(--ink); display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
+.bhlock b { font-size: 17px; } .bhlock span { color: var(--muted); }
+.bhclose { height: 56px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); font: 700 18px var(--body); cursor: pointer; }
+.bwleave input { box-sizing: border-box; width: 100%; height: 54px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 17px var(--body); }
 .bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .bhbtn:disabled { opacity: .6; cursor: default; } .bhbtn { position: relative; }
 .bhpct { position: absolute; top: -9px; right: 10px; height: 24px; padding: 0 9px; border-radius: 12px; border: 2px solid var(--surface); background: var(--danger); color: #fff; font: 700 13px/20px var(--body); box-shadow: 0 2px 6px rgba(0,0,0,.18); }
@@ -2277,6 +2282,13 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <button class="btn primary" type="button" id="bkApprove">Approve</button>
       </span>
     </div>
+    <div class="bkappr" id="bkLock" hidden>
+      <span id="bkLockText"></span>
+      <span class="bkappr-act" id="bkLockAct">
+        <input id="bkLockWhy" maxlength="200" aria-label="Reason">
+        <button class="btn" type="button" id="bkLockBtn">Close trip</button>
+      </span>
+    </div>
     <div class="bkwarn" id="bkWarn" role="status" hidden></div>
     <div class="bktabs" role="tablist" id="bkTabs" aria-label="Booking sections">
       <button type="button" role="tab" data-tab="slip" id="bkTab-slip" aria-controls="bkSlipSet"><span class="tl">Booking slip</span><span class="ts">Slip</span><span class="tb" id="bkTb-slip"></span></button>
@@ -2904,6 +2916,7 @@ function applyAccess() {
   $("navTs").hidden = !acc.tripsheets || acc.tripsheets === "none";
   canTsUpd = platformWrite && (acc.tripsheets === "update" || acc.tripsheets === "edit");
   canFuel = platformWrite && acc.fuel === "edit";
+  canCloseTrips = platformWrite && acc.users === "edit";  // closing and reopening trips: admin only, until it gets a role of its own
   if (typeof updApprBadge === "function" && $("apprBadge")) updApprBadge();
   const roTrips = acc.trips === "view" || (acc.trips === "edit" && !platformWrite);
   $("tRoBanner").hidden = !roTrips; $("tRoTag").hidden = !roTrips;
@@ -4428,7 +4441,7 @@ async function saveRoute(a, b) {
   try { localStorage.setItem(TYLS, JSON.stringify(tripYearsLocal)); } catch {}
   loadLocalTrips(); renderTrips();
 }
-let trips = [], tripMonths = [], tripsLocal = [], tripMonthsLocal = [], canTrips = true, canBookings = true, canBookReq = true, canTsUpd = true, canFuel = true;
+let trips = [], tripMonths = [], tripsLocal = [], tripMonthsLocal = [], canTrips = true, canBookings = true, canBookReq = true, canTsUpd = true, canFuel = true, canCloseTrips = true;
 let tBusId = "", tFyStart = 0, tMonthIdx = 0, tEditDate = "", tFuelTouched = false, tSubKey = "";
 const TLS = "fleet-trips.v1", TMLS = "fleet-tripmonths.v1";
 const MONTHS = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
@@ -5929,14 +5942,14 @@ const B_TRACKED = [
   ["payments", "Payments"],
   ["driverName", "Driver"], ["cleanerName", "Cleaner"], ["padiPaid", "Driver padi (trip sheet)", "inr"], ["cleanerPadi", "Cleaner padi", "inr"], ["permit", "Permit expense", "inr"],
   ["toll", "Toll gate", "inr"], ["litres", "Litres"], ["fuelCost", "Fuel price", "inr"], ["otherExp", "Other exp.", "inr"], ["startKm", "Start km", "km"], ["endKm", "End km", "km"], ["tripNote", "Trip remarks"],
-  ["attachments", "Files"], ["_sent", "Message sent"], ["tsStatus", "Trip sheet status"], ["bookedByName", "Booked by"]
+  ["attachments", "Files"], ["_sent", "Message sent"], ["tsStatus", "Trip sheet status"], ["bookedByName", "Booked by"], ["closedOn", "Trip closed", "date"], ["writeOff", "Written off", "inr"]
 ];
 const B_FIELD_INFO = Object.fromEntries(B_TRACKED.map(([k, label, fmt]) => [k, { label, fmt }]));
 const B_KEYS = B_TRACKED.map(t => t[0]);
 const B_HIST_OPTS = () => {
   const ks = B_TRACKED.map(t => t[0]), g = (label, keys) => `<optgroup label="${label}">${keys.map(k => `<option value="${k}">${B_FIELD_INFO[k].label}</option>`).join("")}</optgroup>`;
   return `<option value="">All fields</option>` + g("Stage", ["status"]) + g("Booking slip", [...ks.slice(1, 17), "bookedByName"]) + g("Payments", ["payments"]) +
-    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]);
+    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn", "writeOff"]);
 };
 const BHLS = "fleet-bkhistory.v1";
 let bHistory = loadLS(BHLS), bHistRef = null;
@@ -5989,7 +6002,8 @@ let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bk
 // A booking waiting for approval already holds the bus, so two requests cannot take the same dates.
 const blocks = b => b.status === "draft" || b.status === "pending" || b.status === "booked" || b.status === "ontrip" || b.status === "completed";
 const META = ["tsStatus", "tsBy", "tsByName", "tsDraftOn", "tsSubmittedBy", "tsSubmittedByName", "tsSubmittedOn", "tsSubmitCount", "tsApprovedByName", "tsApprovedOn", "tsRejectedByName", "tsRejectedOn", "tsRejectReason", "tsRejections",
-  "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason"];
+  "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason",
+  "closedOn", "closedByName", "writeOff", "writeOffNote", "reopens"];
 const whoAmI = () => myRecord()?.name || me?.name || (store ? "Someone" : "This browser");
 const bkEnd = b => b.to || b.from;
 const bkCalc = b => {
@@ -5997,10 +6011,16 @@ const bkCalc = b => {
   const exp = Object.values(BK_EXP).reduce((a, k) => a + (partyKeys.includes(k) ? 0 : num(b[k])), 0);
   const due = num(b.rent) + num(b.toll) + num(b.extra), received = (b.payments || []).reduce((a, p) => a + num(p.amount), 0);
   const km = b.endKm && b.startKm && b.endKm > b.startKm ? b.endKm - b.startKm : 0;
-  return { due, received, balance: due - received, exp, profit: due - exp, km };
+  const writeOff = num(b.writeOff);  // the balance an admin wrote off when closing the trip
+  return { due, received, writeOff, balance: due - received - writeOff, exp, profit: due - writeOff - exp, km };
 };
 const bkSettled = b => b.status === "completed" && bkCalc(b).balance <= 0;
-const stageTag = b => bkSettled(b) ? '<span class="bstage completed">✓ Settled</span>' : `<span class="bstage ${b.status}">${BK_STAGES[b.status] || ""}</span>`;
+// A closed trip is final: its booking, payments, files, trip sheet and diesel lines are view-only for everyone (admin too)
+// until an admin reopens it. The server refuses changes to it as well. Closing and reopening are admin-only for now.
+const tripClosed = b => !!b?.closedOn;
+const closeReady = b => !!b && b.status === "completed" && b.tsStatus === "approved" && !b.closedOn;
+const stageName = b => tripClosed(b) ? "Closed" : BK_STAGES[b?.status] || "";
+const stageTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : bkSettled(b) ? '<span class="bstage completed">✓ Settled</span>' : `<span class="bstage ${b.status}">${BK_STAGES[b.status] || ""}</span>`;
 const clashOf = (b, ignoreId) => ops.bookings.find(x => x.id !== ignoreId && x.vehicleId === b.vehicleId && blocks(x) && x.from <= bkEnd(b) && bkEnd(x) >= b.from);
 const ymAdd = (ym, n) => { const d = new Date(+ym.slice(0, 4), +ym.slice(5, 7) - 1 + n, 1); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; };
 const nextBkNo = () => String(ops.bookings.reduce((a, b) => Math.max(a, parseInt(b.no, 10) || 0), 0) + 1).padStart(4, "0");
@@ -6168,6 +6188,7 @@ const bwDirty = () => !!bw && !bw.readOnly && !bw.done && !bw.sub && bw.snap !==
 function bwBack() {
   if (!bw || bw.saving) return;
   if (bw.leave) { bw.leave = ""; bwRender(); return; }
+  if (bw.lockAsk) { bw.lockAsk = ""; bwRender(); return; }
   if (bw.pay) { bw.pay = null; bwRender(); return; }
   if (bw.sheet) { bw.sheet = false; bwRender(); return; }
   if (bw.askCancel) { bw.askCancel = false; bwRender(); return; }
@@ -6184,6 +6205,26 @@ function bwLeave(to, sure) {
   if (to === "home") { const b = bwBkNow(), driver = bw.driver; bwOpen(null, b, bw.readOnly); bw.sub = "home"; bw.home = true; bw.driver = driver; bw.slide = "r"; bwRender(true); return; }
   bwClose();
 }
+// Close trip / Reopen trip on the phone: a sheet that says what happens and asks for the reason when one is needed.
+function bwLockHtml() {
+  const b = bwBkNow(), close = bw.lockAsk === "close", bal = b ? bkCalc(b).balance : 0;
+  const need = close ? bal > 0 : true;
+  return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwLkT"><div><b id="bwLkT">${close ? "Close this trip?" : "Reopen this trip?"}</b>` +
+    `<p>${close ? "The booking, payments, files and trip sheet become view only for everyone. Only an admin can reopen it." : "The booking can be changed again. Close it again when the corrections are done."}</p>` +
+    (close && bal > 0 ? `<p style="color:var(--danger);font-weight:600">${rs(bal)} is still to collect. Closing writes it off.</p>` : "") +
+    (need ? `<input type="text" id="bwLockNote" data-k="lockNote" maxlength="200" placeholder="${close ? "Why is it written off? e.g. discount" : "Why reopen? e.g. toll bill missed"}" aria-label="Reason" value="${esc(bw.lockNote || "")}">` : "") +
+    `<div class="bwseg c2"><button type="button" data-bw="lockno"${bw.lockBusy ? " disabled" : ""}>Cancel</button><button type="button" class="twsave" data-bw="lockgo"${bw.lockBusy ? " disabled" : ""}>${bw.lockBusy ? "Saving…" : close ? (bal > 0 ? "Write off and close" : "Close trip") : "Reopen trip"}</button></div></div></div>`;
+}
+async function bwLockGo() {
+  if (!bw || bw.lockBusy) return;
+  const id = bw.editId, how = bw.lockAsk;
+  bw.lockBusy = true; bwRender();
+  const err = await tripLock(id, how, bw?.lockNote || "");
+  if (!bw) return;
+  bw.lockBusy = false;
+  if (err) { toast(err); bwRender(); setTimeout(() => $("bwLockNote")?.focus(), 30); return; }
+  bwClose(); openBooking(id); toast(how === "close" ? "Trip closed" : "Trip reopened");
+}
 const bwLeaveHtml = () => `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwLvT"><div><b id="bwLvT">Leave without saving?</b><p>${bw.editId ? "The changes you made to this booking are not saved." : "This new booking is not saved yet."}</p>` +
   `<div class="bwseg c2"><button type="button" data-bw="leavestay">Keep editing</button><button type="button" class="bwdanger" data-bw="leavego">Discard</button></div></div></div>`;
 function bwCanNext() {
@@ -6199,7 +6240,7 @@ const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) &
 function bwRender(top) {
   const el = $("bw"), s = bw.step, first = !bw.home && s === 0 && !bw.fromCheck;  // on the first screen Back already goes to the list, so there is no Close
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
-  if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
+  if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (bw.lockAsk) el.insertAdjacentHTML("beforeend", bwLockHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
   el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div></header>` +
     `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
     `<div class="bwb s${s}" id="bwBody"><h2>${s === 5 && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
@@ -6345,6 +6386,9 @@ function bwClick(e) {
   if (a === "close") { bwLeave("list"); return; }
   if (a === "back") { bwBack(); return; }
   if (a === "leavestay") { bw.leave = ""; bwRender(); return; }
+  if (a === "lockask") { bw.lockAsk = t.dataset.how; bw.lockNote = ""; bwRender(); setTimeout(() => $("bwLockNote")?.focus(), 30); return; }
+  if (a === "lockno") { bw.lockAsk = ""; bwRender(); return; }
+  if (a === "lockgo") { bwLockGo(); return; }
   if (a === "leavego") { const to = bw.leave; bw.leave = ""; bwLeave(to, true); return; }
   if (a === "paybg") { if (e.target.closest("[data-bw]") === t && e.target === t) { bw.pay = null; bwRender(); } return; }
   if (a === "payadd") { bw.pay = { amount: "", date: todayISO(), mode: "Cash", note: "" }; bwRender(); $("bw").querySelector('[data-k="pay.amount"]')?.focus(); return; }
@@ -6471,7 +6515,7 @@ function twOpen(b, backTo) {
   if (!canBookings && !tsIsOpen(b)) { toast(`The trip sheet opens on ${fmtDate(tsOpenDate(b))}.`); return; }
   if (!canBookings && tsWorkerOnly() && acc.bookings === "none" && b.status === "completed" && !["draft", "rejected", "submitted"].includes(b.tsStatus)) { toast("This trip is closed."); return; }
   const locked = b.tsStatus === "submitted" || b.tsStatus === "approved", mine = !b.tsBy || b.tsBy === (myUserId || "");
-  const edit = canBookings || (canTsUpd && !locked && mine), v = vehicles.find(x => x.id === b.vehicleId);
+  const edit = (canBookings || (canTsUpd && !locked && mine)) && !tripClosed(b), v = vehicles.find(x => x.id === b.vehicleId);
   // The last km on record for this bus, from its earlier trips.
   const prevKm = ops.bookings.filter(x => x.id !== b.id && x.vehicleId === b.vehicleId && num(x.endKm) > 0 && String(x.from) < String(b.from)).sort((a, c) => String(a.from).localeCompare(String(c.from))).pop()?.endKm || 0;
   const str = n => n ? String(n) : "";
@@ -6720,7 +6764,7 @@ async function twSave(send) {
 /* ---------- payments any time ----------
    Parties pay in parts, so the admin and the booking planner can add a payment to any saved booking (not cancelled) at any time.
    Adding a payment changes nothing else on the booking; it is recorded in the booking's history with who added it. */
-const canPayAdd = b => platformWrite && (canBookings || canBookReq) && !!b && b.status !== "cancelled";
+const canPayAdd = b => platformWrite && (canBookings || canBookReq) && !!b && b.status !== "cancelled" && !tripClosed(b);
 async function payAdd(id, list) {
   const cur = ops.bookings.find(x => x.id === id); if (!cur || !list.length) return null;
   const add = list.map(p => ({ date: p.date || todayISO(), amount: Math.round(num(p.amount)), mode: p.mode || "Cash", note: String(p.note || "").trim(), byName: whoAmI(), addedOn: todayISO() }));
@@ -6771,7 +6815,7 @@ const BW_FILE_KINDS = ["Permit", "Trip sheet", "Diesel bill", "Others"];
 const fileKindOf = f => BW_FILE_KINDS.includes(f.kind) ? f.kind : "Others";
 const bwToll = () => bw?.editId ? num(ops.bookings.find(x => x.id === bw.editId)?.toll) : 0;
 const bwBkNow = () => ops.bookings.find(x => x.id === bw.editId);
-const bwCanFiles = b => !!b && platformWrite && (canBookings || canBookReq || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status))) && b.status !== "cancelled";
+const bwCanFiles = b => !!b && platformWrite && (canBookings || canBookReq || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status))) && b.status !== "cancelled" && !tripClosed(b);
 // How much of the trip sheet is filled in: driver, cleaner (or No cleaner), their padi, at least one diesel line, start and end km.
 // Toll, permit and other expenses are not counted, since a trip can rightly have none.
 function tsFill(b) {
@@ -6789,9 +6833,9 @@ function bwHomeHtml(b) {
   const fileBadge = `<span class="bhpct cnt" title="${n} file${n === 1 ? "" : "s"} added">${n}</span>`;
   const byKind = BW_FILE_KINDS.map(k => [k, (b.attachments || []).filter(f => fileKindOf(f) === k).length]).filter(x => x[1]);
   const fp = tsFill(b), fpBadge = tsOpen ? `<span class="bhpct ${fp.pct === 100 ? "ok" : fp.pct >= 50 ? "mid" : ""}" title="${fp.done} of ${fp.all} filled in${fp.left.length ? ": still to fill " + fp.left.join(", ") : ""}">${fp.pct}%</span>` : "";
-  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(BK_STAGES[b.status] || "")}</span></div></header>` +
+  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(stageName(b))}</span></div></header>` +
     `<div class="bwb tws" id="bwBody"><div class="bhcard">` +
-      `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span></div>` +
+      `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}${tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span>`}</div>` +
       `<b class="bhplace">${esc(b.places || "—")}</b>` +
       `<span>${bwFmt(b.from)}${bkEnd(b) !== b.from ? ` to ${bwFmt(bkEnd(b))}` : ""} · ${bwHalfTxt(num(b.days) || inclDays(b.from, bkEnd(b)))} ${bwDayWord(num(b.days))}</span>` +
     `</div><div class="bhbtns">` +
@@ -6799,6 +6843,10 @@ function bwHomeHtml(b) {
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
+      (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
+        (num(b.writeOff) ? `<span>${rs(num(b.writeOff))} written off${b.writeOffNote ? `: ${esc(b.writeOffNote)}` : ""}</span>` : "") + `</div>` +
+        (canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="reopen">Reopen trip</button>` : "")
+      : canCloseTrips && closeReady(b) ? `<button type="button" class="bhclose" data-bw="lockask" data-how="close">🔒 Close trip</button>` : "") +
     `</div></div>` + navBar("bw", false);
 }
 function bwSubHtml() {
@@ -6806,17 +6854,18 @@ function bwSubHtml() {
   if (bw.sub === "home") return bwHomeHtml(b);
   const head = t => `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div></header>`;
   if (bw.sub === "pay") {
-    const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite;
+    const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite && !tripClosed(b);
     const card = (p, i) => `<div class="twcard"><span class="twmain" style="cursor:default"><span class="twn twk" aria-hidden="true">₹</span><span class="twci"><b>${rs(num(p.amount))}</b><span>${[p.date ? fmtDate(p.date) : "", p.mode || "Cash", i === 0 && !p.note ? "Advance" : p.note].filter(Boolean).map(esc).join(" · ")}</span>${p.byName ? `<span>By ${esc(p.byName)}</span>` : ""}</span></span>` +
       (canRm ? `<button type="button" class="twdel" data-payrm="${i}" aria-label="Remove this payment"${bw.paySaving ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
     return head("Payments") + `<div class="bwb tws" id="bwBody">` +
       `<div class="bwcard"><div class="bwrow"><div><span class="bwm"><span>Rent${num(b.toll) ? " + toll" : ""}</span><b>${rs(c.due)}</b></span><span class="bwm"><span>Received (${pays.length} payment${pays.length === 1 ? "" : "s"})</span><b>${rs(c.received)}</b></span>` +
+      (c.writeOff ? `<span class="bwm"><span>Written off when closed</span><b>${rs(c.writeOff)}</b></span>` : "") +
       `<span class="bwm bal"><span>${c.balance > 0 ? "Still to collect" : c.balance < 0 ? "Paid extra" : "Balance"}</span><b>${rs(Math.abs(c.balance))}</b></span></div></div></div>` +
       (pays.length ? pays.map(card).join("") : `<p class="bwnote">No payments yet.</p>`) +
       (canAdd ? `<button type="button" class="twadd" data-bw="payadd">${TW_PLUS} Add payment</button>` : "") +
       (num(b.padi) ? `<p class="bwnote">Driver padi from the party (${rs(num(b.padi))}) goes to the driver and is not counted here.</p>` : "") + `</div>` + navBar("bw", true);
   }
-  const files = b.attachments || [], canAdd = bwCanFiles(b), canRm = canBookings && platformWrite;
+  const files = b.attachments || [], canAdd = bwCanFiles(b), canRm = canBookings && platformWrite && !tripClosed(b);
   const card = (f, i) => `<div class="twcard"><a class="twmain" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener"><span class="twn twk" aria-hidden="true">${/image/.test(f.type || "") || /\.(jpe?g|png|webp|heic)$/i.test(f.name || "") ? "🖼️" : "📄"}</span><span class="twci"><b>${esc(f.kind || "File")}</b><span>${esc(f.name || "")}</span><span>${[f.at ? fmtDate(f.at.slice(0, 10)) : "", f.byName].filter(Boolean).map(esc).join(" · ")}</span></span></a>` +
     (canRm ? `<button type="button" class="twdel" data-frm="${i}" aria-label="Remove this file"${bw.fileBusy ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
   return head("Files") + `<div class="bwb tws" id="bwBody">` +
@@ -6892,7 +6941,7 @@ function openBooking(id, preset, full) {
   const b = id ? ops.bookings.find(x => x.id === id) : null; bkEditId = b?.id || null;
   if (b && !bwBusy && !full && bwIsPhone()) {
     const own = (b.status === "draft" || b.status === "rejected") && (b.createdBy || b.submittedBy || "") === (myUserId || "");
-    const canEd = canBookings || (canBookReq && own);
+    const canEd = (canBookings || (canBookReq && own)) && !tripClosed(b);
     const tripWork = !canEd && canTsUpd && (b.status === "booked" || b.status === "ontrip" || b.status === "completed");
     // Every saved booking opens on its own page first: the card, then Booking details, Payments, Trip sheet and Files.
     bkEditId = null; bwOpen(null, b, !canEd || tripWork); bw.sub = "home"; bw.home = true; bw.driver = tripWork && !canBookReq; bwRender(true); return;
@@ -6907,6 +6956,7 @@ function openBooking(id, preset, full) {
   const confirmed = !!b && (b.status === "booked" || b.status === "ontrip" || b.status === "completed");
   if (bkMode === "view" && confirmed && canTsUpd) bkMode = "trip";
   if (bkMode === "trip" && tsWorkerOnly() && acc.bookings === "none" && b.status === "completed" && !["draft", "rejected", "submitted"].includes(b.tsStatus)) { bkEditId = null; toast("This trip is closed."); return; }
+  const closed = tripClosed(b); if (closed) bkMode = "view";  // a closed trip is view only, admin too
   const tsOpen = !!b && tsIsOpen(b), tsLocked = b?.tsStatus === "submitted" || b?.tsStatus === "approved";
   const tsMine = !b?.tsBy || b.tsBy === (myUserId || "");
   bkTripEdit = bkMode === "edit" || (bkMode === "trip" && tsOpen && !tsLocked && tsMine);
@@ -6955,14 +7005,14 @@ function openBooking(id, preset, full) {
   const pending = b?.status === "pending";
   // The stage buttons and the trip sheet belong to the admin; a pending booking is decided with Approve or Reject.
   // The stage buttons are for admins only; everyone else sees the stage in the title line.
-  document.querySelector("#bkDrawer .bkstages").hidden = !canBookings || pending;
+  document.querySelector("#bkDrawer .bkstages").hidden = !canBookings || pending || closed;
   // Admins can fill the trip sheet of any saved booking, whatever its stage; others follow the trip sheet rules.
   $("bkTab-trip").hidden = canBookings ? !b : bkMode === "request" || pending || (!canTsUpd && acc.tripsheets !== "view");
   $("bkTab-slip").hidden = $("bkTab-pay").hidden = tsOnly;
   $("bkTab-trip").disabled = bkMode === "trip" && !tsOpen;
   $("bkTab-trip").title = $("bkTab-trip").disabled ? `The trip sheet opens on ${fmtDate(tsOpenDate(b))}` : "";
   $("bkPrint").hidden = tsOnly;
-  syncTsAppr(b);
+  syncTsAppr(b); syncBkLock(b);
   $("bkAppr").hidden = !(pending || b?.status === "rejected" || b?.status === "draft");
   $("bkApprAct").hidden = !(pending && canBookings);
   $("bkRejectWhy").value = "";
@@ -6981,6 +7031,7 @@ function openBooking(id, preset, full) {
       : b.tsStatus === "approved" ? "Trip sheet approved." : !tsMine ? `This trip sheet is being filled in by ${b.tsByName || "another user"}.` : b.tsStatus === "rejected" ? "Make the changes asked for, then submit the trip sheet again." : "Save draft as often as you like, then submit the trip sheet for approval.")
     : bkMode === "edit" ? (b?.status === "pending" ? "" : "Admin: bookings you save are confirmed directly, no approval needed.")
     : bkMode === "request" ? (b?.status === "rejected" ? "Edit the booking and submit it again. You can resubmit as many times as needed." : "Save draft as often as you like, then submit for approval.")
+    : closed ? (canCloseTrips ? "This trip is closed. Reopen it to make changes." : "This trip is closed. Only an admin can reopen it.")
     : !platformWrite ? "View only: your access to this app doesn't allow changes. Ask the owner to share it with edit rights."
     : b?.status === "pending" ? "Sent for approval. The admin will approve or reject it."
     : canBookReq ? "Only drafts you created can be changed." : "View only."; $("bkDelete").textContent = "Delete"; delete $("bkDelete").dataset.confirm;
@@ -7166,7 +7217,7 @@ function renderReminders() {
   }).join("");
 }
 async function markReminder(id, how) {
-  const cur = ops.bookings.find(x => x.id === id); if (!cur || !canBookings) return;
+  const cur = ops.bookings.find(x => x.id === id); if (!cur || !canBookings || tripClosed(cur)) return;
   auditAction("message", "Bookings", `Trip reminder by ${how}`, `Booking ${cur.no || ""} · ${cur.party || ""}`);
   const next = { ...cur, reminderFor: cur.from, reminderOn: todayISO(), reminderBy: whoAmI(), reminderHow: how };
   try {
@@ -7228,8 +7279,8 @@ $("flList").addEventListener("keydown", e => { const r = e.target.closest("tr[da
 function openFlDrawer(id, ctx) {
   const f = id ? ops.fuelLog.find(x => x.id === id) : null; flEditId = f?.id || null; flPending = f?.file || null;
   const bk = ctx?.bookingId ? ops.bookings.find(x => x.id === ctx.bookingId) : null; flCtx = bk ? { bookingId: bk.id } : null;
-  const buses = fuelBuses(), canE = canFuel || (!!flCtx && bkTripEdit);
-  $("flTitle").textContent = f ? (canE ? "Edit fill" : "Fill") : "Add fill";
+  const buses = fuelBuses(), shut = tripClosed(ops.bookings.find(x => x.id === (f?.bookingId || bk?.id))), canE = (canFuel || (!!flCtx && bkTripEdit)) && !shut;
+  $("flTitle").textContent = f ? (canE ? "Edit fill" : shut ? "Fill · trip closed" : "Fill") : "Add fill";
   $("flBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))} · ${esc(vName(v))}</option>`).join("");
   $("flBus").value = bk ? bk.vehicleId : f?.vehicleId || flBus || (buses.length === 1 ? buses[0].id : "");
   $("flDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, ops.fuelLog);
@@ -7268,8 +7319,9 @@ function flBkOptions(keep) {
   $("flBkF").hidden = !spare;
   if (!spare) { $("flBk").innerHTML = ""; return; }
   const d = $("flDate").value || todayISO(), gap = b => b.from <= d && bkEnd(b) >= d ? 0 : Math.abs(dayDiff(b.from <= d ? bkEnd(b) : b.from, d));
-  const list = ops.bookings.filter(b => b.vehicleId === vid && b.from && (b.status === "booked" || b.status === "ontrip" || b.status === "completed")).sort((a, c) => gap(a) - gap(c) || c.from.localeCompare(a.from)).slice(0, 40);
   const cur = keep ?? $("flBk").value;
+  // A closed trip takes no new fills.
+  const list = ops.bookings.filter(b => b.vehicleId === vid && b.from && (b.status === "booked" || b.status === "ontrip" || b.status === "completed") && (!tripClosed(b) || b.id === cur)).sort((a, c) => gap(a) - gap(c) || c.from.localeCompare(a.from)).slice(0, 40);
   $("flBk").innerHTML = `<option value="">No booking</option>` + list.map(b => `<option value="${b.id}">${esc(b.no || "")} · ${esc(b.party || "No party")} · ${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` – ${fmtShort(bkEnd(b))}` : ""}</option>`).join("");
   $("flBk").value = list.some(b => b.id === cur) ? cur : "";
 }
@@ -7448,6 +7500,57 @@ $("tsReject").onclick = async () => {
   try { await opsSave("bookings", next); await addBHistory(bookingChanges(cur, next, `Trip sheet sent back: ${why}`)).catch(() => {}); closeBkDrawer(); toast(`Trip sheet for booking ${cur.no || ""} sent back`); renderOps(); }
   catch { toast("Couldn't save. Try again."); }
 };
+// Close a completed trip (writing off any balance, with a reason) or reopen a closed one (reason needed). Returns "" or the problem.
+async function tripLock(id, how, note) {
+  const cur = ops.bookings.find(x => x.id === id); note = String(note || "").trim();
+  if (!cur || !canCloseTrips) return "Only an admin can close or reopen a trip.";
+  let next, action;
+  if (how === "close") {
+    if (!closeReady(cur)) return tripClosed(cur) ? "This trip is already closed." : "Approve the trip sheet first.";
+    const bal = bkCalc(cur).balance;
+    if (bal > 0 && !note) return "Type why the balance is written off.";
+    next = { ...cur, closedOn: todayISO(), closedByName: whoAmI() };
+    delete next.writeOff; delete next.writeOffNote;
+    if (bal > 0) { next.writeOff = bal; next.writeOffNote = note; }
+    action = bal > 0 ? `Trip closed · ${rs(bal)} written off: ${note}` : "Trip closed";
+  } else {
+    if (!tripClosed(cur)) return "This trip is not closed.";
+    if (!note) return "Type why the trip is reopened.";
+    next = { ...cur, reopens: [...(cur.reopens || []), { on: todayISO(), by: whoAmI(), why: note, writeOff: num(cur.writeOff) || undefined }] };
+    ["closedOn", "closedByName", "writeOff", "writeOffNote"].forEach(k => delete next[k]);
+    action = `Trip reopened: ${note}`;
+  }
+  const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
+  try { await opsSave("bookings", next); } catch { return "Couldn't save. Check your connection and try again."; }
+  const i = ops.bookings.findIndex(x => x.id === id); if (i >= 0) ops.bookings[i] = next;
+  await addBHistory(bookingChanges(cur, next, action)).catch(() => {});
+  renderOps();
+  return "";
+}
+// Desktop booking window: the Close trip / Reopen trip strip.
+function syncBkLock(b) {
+  const closed = tripClosed(b), ready = closeReady(b), show = !!b && (closed || (ready && canCloseTrips));
+  $("bkLock").hidden = !show; if (!show) return;
+  const bal = bkCalc(b).balance;
+  $("bkLock").className = "bkappr" + (closed ? " draft" : " ok");
+  $("bkLockText").innerHTML = closed ? `<b>🔒 Trip closed</b> on ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything is view only.${num(b.writeOff) ? ` ${rs(num(b.writeOff))} written off${b.writeOffNote ? `: ${esc(b.writeOffNote)}` : ""}.` : ""}`
+    : `<b>Trip sheet approved.</b> ${bal > 0 ? `${rs(bal)} still to collect: closing writes it off.` : "Fully paid."} Close the trip to lock it.`;
+  $("bkLockAct").hidden = !canCloseTrips;
+  $("bkLockWhy").disabled = false; $("bkLockWhy").value = "";
+  $("bkLockWhy").hidden = !closed && bal <= 0;
+  $("bkLockWhy").placeholder = closed ? "Why reopen? e.g. toll bill missed" : "Why is it written off?";
+  $("bkLockBtn").textContent = closed ? "Reopen trip" : bal > 0 ? "Write off and close" : "Close trip";
+  $("bkLockBtn").className = "btn " + (closed ? "" : "primary");
+}
+$("bkLockBtn").onclick = async () => {
+  const cur = ops.bookings.find(x => x.id === bkEditId); if (!cur) return;
+  const how = tripClosed(cur) ? "reopen" : "close";
+  $("bkLockBtn").disabled = true;
+  const err = await tripLock(cur.id, how, $("bkLockWhy").value);
+  $("bkLockBtn").disabled = false;
+  if (err) { toast(err); $("bkLockWhy").focus(); return; }
+  closeBkDrawer(); openBooking(cur.id, null, true); toast(how === "close" ? "Trip closed" : "Trip reopened");
+};
 // Trip sheets page: what to fill, what is waiting for the admin, and what opens next.
 // Trip update sees only open trips: nothing already completed (closed) unless its trip sheet is still in progress with them,
 // and none of the approved history. Admins and viewers see everything.
@@ -7560,7 +7663,7 @@ $("bkDslBox").addEventListener("click", e => {
 });
 // When a fill linked to a booking is saved or deleted (from the trip sheet or the Fuel log), the booking's diesel totals follow.
 async function syncBookingDiesel(bid) {
-  const b = ops.bookings.find(x => x.id === bid); if (!b) return;
+  const b = ops.bookings.find(x => x.id === bid); if (!b || tripClosed(b)) return;
   const rows = [...dslLegacyOf(b), ...dslLinked(bid).map(flToDsl)];
   const lit = Math.round(rows.reduce((a, r) => a + num(r.litres), 0) * 100) / 100, amt = Math.round(rows.reduce((a, r) => a + num(r.amount), 0));
   const next = { ...b, diesel: rows };
