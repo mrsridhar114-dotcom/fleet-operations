@@ -10,6 +10,15 @@ const MAX_DOC = 256 * 1024;
 const KEEP_DAYS = 30; // deleted records can be restored for this long
 const ALL_COLLS = ["bookings", "bookingHistory", "auditLog", "auditSessions"]; // the ones canRead may hide
 
+// A diesel fill belongs to a closed trip when the booking it is linked to (before or after the change) is closed.
+async function fuelTripClosed(coll, prev, next) {
+  if (coll !== "fuelLog") return false;
+  const ids = [...new Set([prev?.bookingId, next?.bookingId].filter(x => typeof x === "string" && x))];
+  if (!ids.length) return false;
+  const r = await q(`select 1 from fleet_docs where coll = 'bookings' and id = any($1::text[]) and not deleted and coalesce(data->>'closedOn', '') <> '' limit 1`, [ids]);
+  return r.length > 0;
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") return fail(res, 405, "bad_request", "Method not allowed");
@@ -36,7 +45,7 @@ export default async function handler(req, res) {
       const prev = cur[0]?.data || null;
       if (op === "delete") {
         if (!prev) return send(res, 200, { ok: true, ver: 0 });
-        const why = canWrite(me.access, me, op, coll, id, prev, null);
+        const why = canWrite(me.access, me, op, coll, id, prev, null, await fuelTripClosed(coll, prev, null));
         if (why) return fail(res, 403, "permission_denied", why);
         // The record goes to the recycle bin first, so an admin can bring it back for 30 days.
         await q(`insert into fleet_trash (coll, id, data, deleted_by, deleted_by_name) values ($1, $2, $3::jsonb, $4, $5)`, [coll, id, JSON.stringify(prev), me.id, me.name || me.email]);
@@ -46,7 +55,8 @@ export default async function handler(req, res) {
       }
       const data = b.data && typeof b.data === "object" && !Array.isArray(b.data) ? b.data : null;
       if (!data) return fail(res, 400, "invalid_argument", "Data must be an object");
-      const why = canWrite(me.access, me, op, coll, id, prev, op === "update" ? { ...(prev || {}), ...data } : data);
+      const next = op === "update" ? { ...(prev || {}), ...data } : data;
+      const why = canWrite(me.access, me, op, coll, id, prev, next, await fuelTripClosed(coll, prev, next));
       if (why) return fail(res, 403, "permission_denied", why);
       const json = JSON.stringify(data);
       if (Buffer.byteLength(json) > MAX_DOC) return fail(res, 400, "invalid_argument", "Record is larger than 256 KB");
