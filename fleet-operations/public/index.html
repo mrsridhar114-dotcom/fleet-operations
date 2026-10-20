@@ -92,7 +92,6 @@ nav.paths { padding: 14px 10px 20px; display: flex; flex-direction: column; gap:
 .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: flex; flex-direction: column; gap: 20px; }
 @media (min-width: 1000px) { .wrap { padding-inline: 32px; } }
 header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
 h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 42px); line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
 h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin: 0; line-height: 1.1; }
 .sechead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 16px; }
@@ -181,8 +180,6 @@ tbody tr:hover { background: var(--accent-soft); }
 .sub { color: var(--muted); font-size: 12px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; background: var(--chip-bg); font-size: 12px; font-weight: 600; white-space: nowrap; }
 .chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-.cyl { display: inline-flex; gap: 2px; vertical-align: middle; margin-left: 6px; }
-.cyl b { width: 4px; height: 10px; border-radius: 1px; background: var(--muted); opacity: .55; }
 .rowact { display: flex; gap: 6px; justify-content: flex-end; }
 .icon { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 5px 9px; border-radius: 5px; font-size: 13px; font-weight: 600; }
 .icon:hover { border-color: var(--line); color: var(--ink); }
@@ -296,29 +293,14 @@ fieldset.docs legend { font-family: var(--mono); font-size: 11px; letter-spacing
 .side .preview { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
 .side .preview label { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
 .side .preview select { font: inherit; font-size: 13px; background: var(--side-active); color: var(--side-ink); border: 1px solid var(--side-line); border-radius: 5px; padding: 5px 8px; }
-/* ---------- renewal history ---------- */
-.hhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-.hhead h3 { margin: 0; }
-.hhead select { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; max-width: 100%; }
-.hlist { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
 .hrow { position: relative; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .hrow::before { content: ""; position: absolute; left: -20px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--dot, var(--accent)); }
-.hrow .hwhen { font-family: var(--mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.hrow .hwhat { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: 14px; }
-.hrow .hwhat b { font-weight: 600; }
-.hrow .hdates { font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
-.hrow .hdates s { color: var(--muted); }
-.hrow .hby { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
-.hrow .hnote { font-size: 13px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; overflow-wrap: anywhere; }
 .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; border-radius: 3px; padding: 1px 6px; font-weight: 600; }
 .tag.renewed { background: var(--ok-soft); color: var(--ok); }
 .tag.recorded { background: var(--accent-soft); color: var(--accent); }
 .tag.corrected { background: var(--warn-soft); color: var(--warn); }
 .tag.cleared, .tag.removed { background: var(--chip-bg); color: var(--muted); }
 .tag.created, .tag.added, .tag.changed { background: var(--accent-soft); color: var(--accent); }
-.hrow .hval { font-size: 13px; overflow-wrap: anywhere; white-space: pre-line; }
-.hrow .hval s { color: var(--muted); }
-.hempty { font-size: 13px; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 14px; }
 .lastchg { font-size: 11px; color: var(--muted); }
 .docblocks { display: flex; flex-direction: column; gap: 14px; }
 .docblock { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
@@ -472,26 +454,7 @@ details.older summary { cursor: pointer; color: var(--muted); font-weight: 600; 
 details.older summary:hover { color: var(--accent); }
 details.older ul { list-style: none; margin: 6px 0 0; padding: 0 0 0 10px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
 details.older li { display: flex; flex-direction: column; gap: 1px; }
-/* change history: one card per save, with a Field | Before | After table */
-.hgroups { display: flex; flex-direction: column; gap: 12px; }
-.hcard { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
-.hcard > header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 10px; padding: 10px 12px; background: var(--bg); border-bottom: 1px solid var(--line); }
-.hcard .hwho { font-weight: 600; font-size: 14px; }
-.hcard .hwho span { font-weight: 400; color: var(--muted); }
-.hcard .hwhen2 { font-family: var(--mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.hcard .hreason { padding: 8px 12px; font-size: 13px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
-.hcard .hreason b { font-weight: 600; color: var(--muted); margin-right: 4px; }
-table.hdiff { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
-table.hdiff th { text-align: left; font-family: var(--mono); font-weight: 600; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 7px 12px; border-bottom: 1px solid var(--line); white-space: normal; }
-table.hdiff td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; white-space: pre-line; }
-table.hdiff tr:last-child td { border-bottom: 0; }
-table.hdiff tbody tr:hover { background: transparent; }
-table.hdiff .f { font-weight: 600; width: 34%; }
-table.hdiff .b { color: var(--muted); }
-table.hdiff .b.has { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent); }
-table.hdiff .a { font-weight: 600; }
-table.hdiff .a.none { font-weight: 400; color: var(--muted); font-style: italic; }
-table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
+/* change history: one card per save { display: flex; flex-direction: column; gap: 12px; }
 .field textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; width: 100%; resize: vertical; min-height: 76px; }
 .field textarea[aria-invalid="true"] { border-color: var(--danger); }
 .dl dd.addr { white-space: pre-line; font-weight: 400; }
@@ -579,16 +542,11 @@ table.hdiff .tag { margin-left: 6px; vertical-align: 1px; }
 .lblrow { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .lblrow label { font-size: 13px; font-weight: 600; }
 .hdrawer { z-index: 43; width: min(680px, 100%); }
-.hfilters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-@media (max-width: 520px) { .hfilters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 .hf { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .hf label { font-size: 12px; font-weight: 600; color: var(--muted); }
 .hf select, .hf input { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px; width: 100%; min-width: 0; }
 .hrange { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
-.hbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-top: 2px; }
 .hresult { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.hbar .hview { margin-left: auto; }
-.hbar .hview span { padding: 5px 10px; font-size: 12px; }
 .htable-wrap { border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
 table.hflat { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
 table.hflat th { text-align: left; font-family: var(--mono); font-weight: 600; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); background: var(--bg); white-space: nowrap; }
@@ -612,8 +570,6 @@ table.hflat tfoot td { border-bottom: 0; border-top: 1px solid var(--line); back
 .hfoot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 table.hflat td.hnone { text-align: center; color: var(--muted); padding: 22px 10px; font-weight: 400; }
 .backbtn { padding: 2px 0; margin-bottom: 6px; display: block; }
-.hhead { margin-bottom: 4px; }
-.hhead label { margin: 0; }
 /* ---------- user master ---------- */
 .pill.admin { background: var(--accent-soft); color: var(--accent); }
 .pill.role { background: var(--chip-bg); color: var(--ink); }
@@ -717,7 +673,7 @@ table.ttable tr.grp td .grpin b { font-size: 13px; }
 table.ttable tr.grp .rbtn { font-size: 12px; }
 table.ttable tbody tr[data-hid], table.ttable tbody tr[data-lid] { cursor: pointer; }
 table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
-#hiDrawer, #lgDrawer { width: min(940px, 100%); }
+#lgDrawer { width: min(940px, 100%); }
 .payrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .paylist { display: flex; flex-direction: column; gap: 8px; }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
@@ -728,7 +684,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .vcls .chk { font-weight: 500; }
 .crumbs a:not(.home) { color: inherit; text-decoration: none; }
 .crumbs a:not(.home):hover { color: var(--accent); text-decoration: underline; }
-.ta { font-size: 11px; color: var(--muted); font-weight: 400; }
 .bplan { display: flex; flex-direction: column; gap: 12px; }
 .bcalhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .bmonth { display: flex; align-items: center; gap: 8px; }
@@ -858,7 +813,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .dslrow { font-size: 13px; padding: 4px 0; border-top: 1px solid var(--line); } .dslrow .n { text-align: right; }
 .dslrow input { font: inherit; font-size: 14px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); min-width: 0; width: 100%; box-sizing: border-box; }
 .dslrow input:disabled { background: var(--bg); }
-.dslrow .lk { font-size: 11px; color: var(--muted); }
 #bkDrawer input.dsum { background: var(--bg); border-style: dashed; }
 @media (max-width: 700px) { .dslcols { display: none; } .dslrow { grid-template-columns: 70px 1fr 1fr 56px; } .dslrow > .sub { grid-column: 1 / -1; grid-row: 2; } }
 /* booking window on phones */
@@ -946,8 +900,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   .g6 .s2, .g6 .s3, .g6 .s4, .g6 .s6 { grid-column: 1 / -1; }
   .bksum { padding: 6px 14px; }
 }
-.tsgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-@media (max-width: 700px) { .tsgrid { grid-template-columns: 1fr 1fr; } }
 .calcbox { display: block; font-family: var(--mono); font-size: 14px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 6px; background: var(--surface); min-height: 42px; color: var(--ink); }
 .calcbox.neg { color: var(--danger); } .calcbox.pos { color: var(--ok); }
 .bkpp { display: flex; flex-wrap: wrap; gap: 6px 18px; }
@@ -965,7 +917,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   .brow { grid-template-columns: minmax(0, 1fr) auto; } .brow .bwhat { grid-column: 1 / -1; grid-row: 2; }
   .payrow.bk { grid-template-columns: 1fr 1fr; }
 }
-#printArea { display: none; }
 .hbtns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 #vPrintBtn { display: inline-flex; align-items: center; gap: 6px; }
 :is(#view-vehicles, #view-drivers, #view-conductors) td.c-name { position: relative; padding-right: 104px; }
@@ -992,24 +943,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .duepop .dlist .fn { display: block; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .cprint[disabled] { opacity: .5; }
 @media (max-width: 760px) { :is(#view-vehicles, #view-drivers, #view-conductors) td.c-name { padding-right: 136px !important; } .cacts { top: 18px; right: 34px; transform: none; } .cdue { top: -27px; left: auto; right: -27px; } :is(#rows, #dRows, #cRows) tr { margin-bottom: 16px; } }
-@media print {
-  body > *:not(#printArea) { display: none !important; }
-  #printArea { display: block !important; color: #000; background: #fff; }
-  @page { margin: 12mm; }
-}
-.slip { font-family: var(--body, sans-serif); color: #000; border: 2px solid #1b2a6b; border-radius: 6px; padding: 14px 18px; max-width: 700px; }
-.slip-h { display: flex; justify-content: space-between; gap: 10px; border-bottom: 2px solid #1b2a6b; padding-bottom: 8px; margin-bottom: 8px; font-size: 14px; }
-.slip-h span:nth-child(2) { font-weight: 700; font-size: 16px; }
-.slip table { width: 100%; border-collapse: collapse; margin: 4px 0; }
-.slip th { text-align: left; font-weight: 600; font-size: 13px; padding: 6px 8px 6px 0; width: 30%; vertical-align: bottom; white-space: nowrap; }
-.slip th span { display: block; } .slip th small { font-weight: 400; color: #444; font-size: 11px; }
-.slip td { border-bottom: 1px dotted #555; padding: 6px 4px; font-size: 15px; }
-.slip table.t3, .slip table.t2 { table-layout: fixed; }
-.slip table.t3 th { width: 19%; } .slip table.t3 td { width: 14%; white-space: nowrap; }
-.slip table.t2 th { width: 26%; } .slip table.t2 td { width: 24%; }
-.slip table.t2 tr:nth-child(n+3) td:nth-child(2) { border-bottom: 0; }
-.slip .terms { font-size: 13px; margin: 12px 0; } .slip .terms small { color: #444; }
-.slip .sign { display: flex; justify-content: space-between; margin-top: 40px; font-size: 12px; }
 .bkappr.draft { background: var(--chip-bg); color: var(--ink); }
 .bchip.draft, .bstage.draft { background: var(--surface); color: var(--muted); border: 1px dashed var(--muted); }
 #bkDrawer footer { flex-wrap: wrap; align-items: center; row-gap: 8px; }
@@ -1237,7 +1170,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhcard b { color: var(--ink); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
 .bhbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 .bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
-.bhbtn:disabled { opacity: .6; cursor: default; }
+.bhbtn:disabled { opacity: .6; cursor: default; } .bhbtn { position: relative; }
+.bhpct { position: absolute; top: -9px; right: 10px; height: 24px; padding: 0 9px; border-radius: 12px; border: 2px solid var(--surface); background: var(--danger); color: #fff; font: 700 13px/20px var(--body); box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.bhpct.mid { background: var(--warn); } .bhpct.ok { background: var(--ok); }
 .bhi { width: 48px; height: 48px; flex: none; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; font-size: 24px; font-weight: 700; color: var(--accent); }
 .bht { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .bht b { font-size: 19px; } .bht span { font-size: 15px; font-weight: 600; color: var(--muted); } .bht span.due { color: var(--danger); } .bht span.ok { color: var(--ok); }
 .bhbtn > svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
@@ -2544,7 +2479,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   </footer>
 </aside>
 <div class="toast" id="toast" role="status" hidden></div>
-<div id="printArea" aria-hidden="true"></div>
 
 <script>
 /* ---------- reference data ---------- */
@@ -6786,11 +6720,21 @@ const BW_FILE_KINDS = ["ID proof", "Signed slip", "Payment proof", "Trip bills",
 const bwToll = () => bw?.editId ? num(ops.bookings.find(x => x.id === bw.editId)?.toll) : 0;
 const bwBkNow = () => ops.bookings.find(x => x.id === bw.editId);
 const bwCanFiles = b => !!b && platformWrite && (canBookings || canBookReq || (canTsUpd && ["booked", "ontrip", "completed"].includes(b.status))) && b.status !== "cancelled";
+// How much of the trip sheet is filled in: driver, cleaner (or No cleaner), their padi, at least one diesel line, start and end km.
+// Toll, permit and other expenses are not counted, since a trip can rightly have none.
+function tsFill(b) {
+  const items = [["driver", !!(b.driverId || b.driverName)], ["cleaner", !!(b.cleanerName || b.noCleaner)], ["driver padi", num(b.padiPaid) > 0],
+    ...(b.noCleaner ? [] : [["cleaner padi", num(b.cleanerPadi) > 0]]), ["diesel", dslLinked(b.id).some(f => num(f.litres) > 0) || dslLegacyOf(b).length > 0],
+    ["start km", num(b.startKm) > 0], ["end km", num(b.endKm) > 0]];
+  const done = items.filter(x => x[1]).length;
+  return { pct: Math.round(done / items.length * 100), done, all: items.length, left: items.filter(x => !x[1]).map(x => x[0]) };
+}
 function bwHomeHtml(b) {
   const v = vehicles.find(x => x.id === b.vehicleId), c = bkCalc(b), n = (b.attachments || []).length;
   const confirmed = ["booked", "ontrip", "completed"].includes(b.status);
   const tripOk = canBookings || (canTsUpd && confirmed), tsOpen = canBookings || tsIsOpen(b);
-  const tile = (attrs, icon, title, line, cls = "", off = false) => `<button type="button" class="bhbtn" ${attrs}${off ? " disabled" : ""}><span class="bhi" aria-hidden="true">${icon}</span><span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span>${BW_ICON.next}</button>`;
+  const tile = (attrs, icon, title, line, cls = "", off = false, badge = "") => `<button type="button" class="bhbtn" ${attrs}${off ? " disabled" : ""}>${badge}<span class="bhi" aria-hidden="true">${icon}</span><span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span>${BW_ICON.next}</button>`;
+  const fp = tsFill(b), fpBadge = tsOpen ? `<span class="bhpct ${fp.pct === 100 ? "ok" : fp.pct >= 50 ? "mid" : ""}" title="${fp.done} of ${fp.all} filled in${fp.left.length ? ": still to fill " + fp.left.join(", ") : ""}">${fp.pct}%</span>` : "";
   return `<header class="bwh"><button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(BK_STAGES[b.status] || "")}</span></div></header>` +
     `<div class="bwb tws" id="bwBody"><div class="bhcard">` +
       `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span></div>` +
@@ -6799,7 +6743,7 @@ function bwHomeHtml(b) {
     `</div><div class="bhbtns">` +
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
-      (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen) : "") +
+      (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", n ? `${n} file${n === 1 ? "" : "s"}` : "None yet") +
     `</div></div>`;
 }
