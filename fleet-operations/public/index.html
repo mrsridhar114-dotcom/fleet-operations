@@ -1168,7 +1168,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpfc .tpin.pl input { font: 600 15px var(--body); } .tpfc .tpbin { width: 26px; height: 48px; } .tpfc .tpbin svg { width: 20px; height: 20px; }
 .tprun { margin: 4px 0 6px; } .tprun .avg { font-weight: 700; color: var(--ink); }
 .tpcheer { margin: 8px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ink); font: 600 15px var(--body); }
-.tpcheer.top { background: color-mix(in srgb, #f2b705 18%, transparent); }
+.tpcheer.top { background: color-mix(in srgb, #f2b705 18%, transparent); } .tpcheer p { margin: 0; } .tpcheer p + p { margin-top: 6px; }
 .tpbadges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; } .tpbadges span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: #f2b705; color: #3a2a00; font: 700 13px var(--body); }
 .tpbin { width: 40px; height: 52px; flex: none; border: 0; background: none; color: var(--danger); display: grid; place-items: center; padding: 0; cursor: pointer; } .tpbin svg { width: 22px; height: 22px; }
 .tpadd { width: 100%; height: 50px; margin: 8px 0 4px; border-radius: 12px; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 8px; font: 700 17px var(--body); cursor: pointer; } .tpadd svg { width: 22px; height: 22px; }
@@ -6697,13 +6697,28 @@ function twPageHtml() {
       `<div class="bwnote tprun" id="tpRun">${twRunHtml()}</div>`);
 }
 // Km run, and once diesel is in, the average km per litre. Above 4 the driver gets a word of thanks; above 4.5, badges too.
+// It is also compared with the same driver's last trip and with his best trip so far.
 const twAvg = () => { const s = num(tw.startKm), e = num(tw.endKm), l = twLitres(); return s && e > s && l > 0 ? (e - s) / l : 0; };
+function twDrvTrips() {
+  const b = twBk(), id = tw.drvId, nm = twDriverName().toUpperCase(); if (!b || (!id && !nm)) return [];
+  return ops.bookings.filter(x => x.id !== b.id && x.status !== "cancelled" && (id ? x.driverId === id : !x.driverId && String(x.driverName || "").trim().toUpperCase() === nm))
+    .map(x => { const k = num(x.endKm) - num(x.startKm), l = num(x.litres); return { from: String(x.from), avg: num(x.startKm) && k > 0 && l > 0 ? k / l : 0 }; })
+    .filter(x => x.avg > 0 && x.avg < 15).sort((a, c) => a.from.localeCompare(c.from));
+}
 function twRunHtml() {
   const s = num(tw.startKm), e = num(tw.endKm), a = twAvg(); if (!(s && e > s)) return "";
   const run = `${nf(e - s)} km run` + (a ? ` · <span class="avg">Average ${nf(a, 2)} km per litre</span>` : "");
-  if (a > 4.5) return run + `<div class="tpcheer top">Excellent driving! ${nf(a, 2)} km per litre is top mileage. Thank you for saving fuel.<div class="tpbadges"><span>🏆 Top mileage</span><span>⛽ Fuel saver</span><span>⭐ Star driver</span></div></div>`;
-  if (a > 4) return run + `<div class="tpcheer">Well done! ${nf(a, 2)} km per litre is good mileage. Keep it up.</div>`;
-  return run;
+  if (!a) return run;
+  const b = twBk(), past = twDrvTrips(), last = past.filter(x => x.from <= String(b?.from || "")).pop(), best = past.length ? Math.max(...past.map(x => x.avg)) : 0;
+  const r2 = n => Math.round(n * 100) / 100, top = past.length && r2(a) > r2(best);
+  const cmp = !last ? "" : r2(a) > r2(last.avg) ? `<p>📈 You have improved from your last trip: ${nf(last.avg, 2)} → ${nf(a, 2)} km per litre. Great going!</p>`
+    : r2(a) === r2(last.avg) ? `<p>👍 Same as your last trip (${nf(last.avg, 2)} km per litre). Nice and steady.</p>`
+    : `<p>Your last trip was ${nf(last.avg, 2)} km per litre. A little lower this time, and that happens with hills, traffic and load. Smooth driving and steady speed will bring it back up. You can do it! 💪</p>`;
+  const badges = [top && "🥇 Best ever", a > 4.5 && "🏆 Top mileage", a > 4.5 && "⛽ Fuel saver", a > 4.5 && "⭐ Star driver"].filter(Boolean);
+  const head = top ? `<p><b>This is your highest mileage of all your trips!</b> ${nf(a, 2)} km per litre beats your best of ${nf(best, 2)}.</p>` : "";
+  const praise = a > 4.5 ? `<p>Excellent driving! ${nf(a, 2)} km per litre is top mileage. Thank you for saving fuel.</p>` : a > 4 ? `<p>Well done! ${nf(a, 2)} km per litre is good mileage. Keep it up.</p>` : "";
+  if (!head && !praise && !cmp) return run;
+  return run + `<div class="tpcheer${a > 4.5 || top ? " top" : ""}">${head}${praise}${cmp}${badges.length ? `<div class="tpbadges">${badges.map(x => `<span>${x}</span>`).join("")}</div>` : ""}</div>`;
 }
 function twCheckHtml() {
   const s = num(tw.startKm), e = num(tw.endKm), lines = tw.rows.filter(r => num(r.litres) > 0).length + tw.legacy.length;
