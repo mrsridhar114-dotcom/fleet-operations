@@ -1179,6 +1179,15 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 .bhlock { border-radius: 16px; padding: 14px 16px; background: var(--chip-bg); color: var(--ink); display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
 .bhlock b { font-size: 17px; } .bhlock span { color: var(--muted); }
+.bpstats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bpst { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; min-width: 0; }
+.bpst span { font-size: 13px; color: var(--muted); } .bpst b { font-size: 19px; overflow-wrap: anywhere; } .bpst.due { background: var(--danger-soft); border-color: transparent; } .bpst.due b, .bpst.due span { color: var(--danger); }
+.bpbtn { min-height: 50px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 17px var(--body); display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.bpbtn.wa { color: var(--ok); } .bpbtn svg { width: 20px; height: 20px; }
+.bpsec { margin: 6px 0 -4px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.bptrip { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 62px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.bptrip > span { flex: 1; min-width: 0; display: flex; flex-direction: column; } .bptrip b { font-size: 17px; } .bptrip span span { font-size: 14px; color: var(--muted); }
+.bptrip em { font-style: normal; font-weight: 700; font-size: 14px; white-space: nowrap; } .bptrip em.due { color: var(--danger); } .bptrip em.ok { color: var(--ok); }
 .bhclose { height: 56px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); font: 700 18px var(--body); cursor: pointer; }
 .bwleave input { box-sizing: border-box; width: 100%; height: 54px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 17px var(--body); }
 .bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
@@ -5942,14 +5951,14 @@ const B_TRACKED = [
   ["payments", "Payments"],
   ["driverName", "Driver"], ["cleanerName", "Cleaner"], ["padiPaid", "Driver padi (trip sheet)", "inr"], ["cleanerPadi", "Cleaner padi", "inr"], ["permit", "Permit expense", "inr"],
   ["toll", "Toll gate", "inr"], ["litres", "Litres"], ["fuelCost", "Fuel price", "inr"], ["otherExp", "Other exp.", "inr"], ["startKm", "Start km", "km"], ["endKm", "End km", "km"], ["tripNote", "Trip remarks"],
-  ["attachments", "Files"], ["_sent", "Message sent"], ["tsStatus", "Trip sheet status"], ["bookedByName", "Booked by"], ["closedOn", "Trip closed", "date"]
+  ["attachments", "Files"], ["_sent", "Message sent"], ["tsStatus", "Trip sheet status"], ["bookedByName", "Booked by"], ["closedOn", "Trip closed", "date"], ["drvAdvance", "Driver advance", "inr"], ["drvSettle", "Driver settlement"]
 ];
 const B_FIELD_INFO = Object.fromEntries(B_TRACKED.map(([k, label, fmt]) => [k, { label, fmt }]));
 const B_KEYS = B_TRACKED.map(t => t[0]);
 const B_HIST_OPTS = () => {
   const ks = B_TRACKED.map(t => t[0]), g = (label, keys) => `<optgroup label="${label}">${keys.map(k => `<option value="${k}">${B_FIELD_INFO[k].label}</option>`).join("")}</optgroup>`;
   return `<option value="">All fields</option>` + g("Stage", ["status"]) + g("Booking slip", [...ks.slice(1, 17), "bookedByName"]) + g("Payments", ["payments"]) +
-    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn"]);
+    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn"]) + g("Driver money", ["drvAdvance", "drvSettle"]);
 };
 const BHLS = "fleet-bkhistory.v1";
 let bHistory = loadLS(BHLS), bHistRef = null;
@@ -5961,6 +5970,7 @@ function bHistVal(k, b) {
   if (k === "payments") return (b.payments || []).map(p => `${p.date ? fmtShort(p.date) : "No date"} ${rs(p.amount)} ${p.mode || ""}${p.note ? ` (${p.note})` : ""}`).join("; ");
   if (k === "attachments") return (b.attachments || []).map(f => `${f.kind}: ${f.name}`).join("; ");
   if (k === "_sent") return "";
+  if (k === "drvSettle") { const st = b.drvSettle; return st ? `${st.dir === "pay" ? "Paid to driver" : "Returned by driver"} ${rs(num(st.amount))} (${st.mode})` : ""; }
   if (k === "tsStatus") return TS_STAGES[b.tsStatus] || "";
   if (k === "driverName") return b.driverId ? (drivers.find(d => d.id === b.driverId)?.name || b.driverName || "") : (b.driverName || "");
   return histVal(b[k]);
@@ -6003,7 +6013,7 @@ let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bk
 const blocks = b => b.status === "draft" || b.status === "pending" || b.status === "booked" || b.status === "ontrip" || b.status === "completed";
 const META = ["tsStatus", "tsBy", "tsByName", "tsDraftOn", "tsSubmittedBy", "tsSubmittedByName", "tsSubmittedOn", "tsSubmitCount", "tsApprovedByName", "tsApprovedOn", "tsRejectedByName", "tsRejectedOn", "tsRejectReason", "tsRejections",
   "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason",
-  "closedOn", "closedByName", "reopens"];
+  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvSettle"];
 const whoAmI = () => myRecord()?.name || me?.name || (store ? "Someone" : "This browser");
 const bkEnd = b => b.to || b.from;
 const bkCalc = b => {
@@ -6017,6 +6027,20 @@ const bkSettled = b => b.status === "completed" && bkCalc(b).balance <= 0;
 // A closed trip is final: its booking, payments, files, trip sheet and diesel lines are view-only for everyone (admin too)
 // until an admin reopens it. The server refuses changes to it as well. An admin can close or reopen a trip at any time.
 const tripClosed = b => !!b?.closedOn;
+// Driver money: the office gives the driver an advance; the trip's cash expenses (padi, toll, permit, other, diesel not paid
+// by fuel card or by the party) come out of it; what is left is settled with the driver after the trip.
+function drvSpentOf(b) {
+  const pp = !!(b.partyPays || ppDefaults(b.rentType || "mt")).diesel;
+  const diesel = pp ? 0 : dslLinked(b.id).filter(f => f.pay !== "Fuel card").reduce((a, f) => a + num(f.amount), 0) + dslLegacyOf(b).reduce((a, r) => a + num(r.amount), 0);
+  return Math.round(num(b.padiPaid) + num(b.cleanerPadi) + num(b.permit) + num(b.toll) + num(b.otherExp) + diesel);
+}
+const drvLeft = b => num(b.drvAdvance) - drvSpentOf(b);  // more than 0: with the driver; less than 0: the office owes the driver
+// One party = one phone number (or the name when there is no number), as in the party list of the booking screens.
+const partyKey = b => { const name = String(b?.party || "").trim(), ph = String(b?.phone || "").replace(/\D/g, "").slice(-10); return ph.length === 10 ? ph : name ? "n:" + name.toUpperCase() : ""; };
+function partyStats(b) {
+  const k = partyKey(b), all = k ? ops.bookings.filter(x => partyKey(x) === k) : [], conf = all.filter(x => ["booked", "ontrip", "completed"].includes(x.status));
+  return { all, n: conf.length, biz: conf.reduce((a, x) => a + bkCalc(x).due, 0), owe: conf.reduce((a, x) => a + Math.max(0, bkCalc(x).balance), 0) };
+}
 const stageName = b => tripClosed(b) ? "Closed" : BK_STAGES[b?.status] || "";
 const stageTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : bkSettled(b) ? '<span class="bstage completed">✓ Settled</span>' : `<span class="bstage ${b.status}">${BK_STAGES[b.status] || ""}</span>`;
 const clashOf = (b, ignoreId) => ops.bookings.find(x => x.id !== ignoreId && x.vehicleId === b.vehicleId && blocks(x) && x.from <= bkEnd(b) && bkEnd(x) >= b.from);
@@ -6127,6 +6151,7 @@ const BW_ICON = {
   ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
   book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M4 7h3M4 12h3M4 17h3"/><circle cx="12.5" cy="10" r="2.6"/><path d="M8.8 16.5a4 4 0 0 1 7.4 0"/></svg>',
   bus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 21v-3M16 21v-3"/><circle cx="8" cy="14.5" r="1"/><circle cx="16" cy="14.5" r="1"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
   wa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"/></svg>'
 };
 const BW_TITLES = ["Trip dates", "Which bus?", "Who is booking?", "Where are they going?", "Rent and advance", "Check and save"];
@@ -6192,7 +6217,7 @@ function bwBack() {
   if (bw.askCancel) { bw.askCancel = false; bwRender(); return; }
   if (bw.done) { bwClose(); return; }
   if (bw.sub === "home") { bwClose(); return; }
-  if (bw.sub) { bw.sub = "home"; bw.slide = "r"; bwRender(true); return; }
+  if (bw.sub) { bw.sub = "home"; bw.money = null; bw.slide = "r"; bwRender(true); return; }
   if (bw.fromCheck) { bw.step = 5; bw.fromCheck = false; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
   if (bw.step > 0 && !(bw.home && bw.step === 5)) { bw.step--; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
   bwLeave(bw.home ? "home" : "list");
@@ -6336,7 +6361,7 @@ function bwParties() {
   const m = new Map();
   ops.bookings.forEach(b => {
     const name = String(b.party || "").trim(); if (!name) return;
-    const ph = String(b.phone || "").replace(/\D/g, "").slice(-10), key = ph.length === 10 ? ph : "n:" + name.toUpperCase();
+    const key = partyKey(b);
     const cur = m.get(key), when = b.from || b.bookedOn || "";
     if (!cur) m.set(key, { name, phone: b.phone || "", address: b.address || "", last: when, n: 1 });
     else { cur.n++; if (when > cur.last) Object.assign(cur, { name, phone: b.phone || cur.phone, address: b.address || cur.address, last: when }); }
@@ -6356,6 +6381,7 @@ function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]')
 function bwInput(e) {
   const k = e.target.dataset.k; if (!k || !bw) return;
   if (k.startsWith("pay.")) { bw.pay[k.slice(4)] = e.target.value; return; }
+  if (k.startsWith("money.")) { bw.money[k.slice(6)] = e.target.value; return; }
   bw[k] = e.target.value;
   if (k === "q") { bw[k] = e.target.value; $("bwPl").innerHTML = bwPartyRows(); return; }
   if (k === "party" && bw.fromContact) bw.fromContact = false;
@@ -6385,6 +6411,10 @@ function bwClick(e) {
   if (a === "lockask") { bw.lockAsk = t.dataset.how; bw.lockNote = ""; bwRender(); setTimeout(() => $("bwLockNote")?.focus(), 30); return; }
   if (a === "lockno") { bw.lockAsk = ""; bwRender(); return; }
   if (a === "lockgo") { bwLockGo(); return; }
+  if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
+  if (a === "bookagain") { bwBookAgain(); return; }
+  if (t.dataset.mmode) { bw.money.mode = t.dataset.mmode; bwRender(); return; }
+  if (t.dataset.bkopen) { const id = t.dataset.bkopen; if (id === bw.editId) { bw.sub = "home"; bw.slide = "r"; bwRender(true); } else { bwClose(); openBooking(id); } return; }
   if (a === "leavego") { const to = bw.leave; bw.leave = ""; bwLeave(to, true); return; }
   if (a === "paybg") { if (e.target.closest("[data-bw]") === t && e.target === t) { bw.pay = null; bwRender(); } return; }
   if (a === "payadd") { bw.pay = { amount: "", date: todayISO(), mode: "Cash", note: "" }; bwRender(); $("bw").querySelector('[data-k="pay.amount"]')?.focus(); return; }
@@ -6505,6 +6535,10 @@ const twOtherSum = () => TW_OTHER.reduce((a, [k]) => a + num(tw.oth[k].amt), 0);
 const twDiesel = () => tw.rows.reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0);
 const twLitres = () => tw.rows.reduce((a, r) => a + num(r.litres), 0) + tw.legacy.reduce((a, r) => a + num(r.litres), 0);
 const twTotal = () => twSumMoney() + (twPP("diesel") ? 0 : twDiesel()) + twOtherSum();
+// Spent from the driver's advance: everything except diesel paid by fuel card (or by the party).
+const twCashSpent = () => twSumMoney() + twOtherSum() + (twPP("diesel") ? 0 : tw.rows.filter(r => (ops.fuelLog.find(f => f.id === r.id)?.pay || "Cash") !== "Fuel card").reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0));
+const twCashLine = () => { const adv = num(tw.drvAdvance), left = Math.round(adv - twCashSpent());
+  return !adv ? "" : left >= 0 ? `Cash with driver: <b>${rs(left)}</b> (${rs(adv)} advance − ${rs(Math.round(twCashSpent()))} spent)` : `Spent ${rs(-left)} more than the advance: the office pays the driver.`; };
 const twMissing = () => { const s = num(tw.startKm), e = num(tw.endKm); return [!s && "start km", !e && "end km", s && e && e <= s && "end km more than start km"].filter(Boolean); };
 function twOpen(b, backTo) {
   if (!b) return;
@@ -6517,7 +6551,7 @@ function twOpen(b, backTo) {
   const str = n => n ? String(n) : "";
   tw = { id: b.id, no: b.no || "", plate: v ? plateOf(v) : "", places: b.places || b.party || "", dates: `${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtShort(bkEnd(b))}` : ""}`,
     view: edit ? "page" : "check", edit, admin: canBookings, status: b.tsStatus || "", rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "",
-    padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
+    padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), drvAdvance: str(b.drvAdvance), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
     files: (b.attachments || []).map(f => ({ ...f })), saving: false, backTo: backTo || "",
     drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
     rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null })), legacy: dslLegacyOf(b) };
@@ -6573,7 +6607,7 @@ function twCrewHtml() {
     `<span class="bwerr" id="tpCrewErr">${twSameCrew() ? "The cleaner can't be the same person as the driver." : ""}</span>`;
 }
 function twRowHtml(label, key, val, opts = {}) {
-  return `<div class="tprow"><span class="tpl">${label}</span><span class="bwin tpin${opts.km ? " km" : ""}">${opts.km ? "" : "<b>₹</b>"}<input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${opts.ph ?? (opts.km ? "" : "0")}" aria-label="${label}"${tw.edit ? "" : " readonly"}>${opts.km ? "<b>km</b>" : ""}</span>${opts.km ? "" : twCamBtn(opts.cam || key, label)}</div>`;
+  return `<div class="tprow"><span class="tpl">${label}</span><span class="bwin tpin${opts.km ? " km" : ""}">${opts.km ? "" : "<b>₹</b>"}<input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${opts.ph ?? (opts.km ? "" : "0")}" aria-label="${label}"${tw.edit ? "" : " readonly"}>${opts.km ? "<b>km</b>" : ""}</span>${opts.km || opts.noCam ? "" : twCamBtn(opts.cam || key, label)}</div>`;
 }
 function twPageHtml() {
   const pp = twPP("diesel"), rd = tw.edit ? "" : " readonly", sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
@@ -6584,6 +6618,8 @@ function twPageHtml() {
   const s = num(tw.startKm), e = num(tw.endKm);
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     `<div class="tptip"><b>Just type the amount.</b> It saves by itself. Leave empty what you did not spend.</div>` +
+    (tw.admin || num(tw.drvAdvance) ? sec("Driver advance", (tw.admin ? twRowHtml("Advance given", "drvAdvance", tw.drvAdvance, { noCam: true }) : `<div class="tprow"><span class="tpl">Advance given</span><b style="font-size:20px">${rs(num(tw.drvAdvance))}</b></div>`) +
+      `<p class="bwnote" id="tpCash" style="margin:4px 0 6px">${twCashLine()}</p>`) : "") +
     sec("Driver and cleaner", twCrewHtml()) +
     sec("On the way", twRowHtml("Toll gate", "toll", tw.toll) + twRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel", (pp ? `<p class="bwnote" style="margin:6px 0">Diesel is paid by the party: litres are enough.</p>` : "") +
@@ -6610,6 +6646,7 @@ function twCheckHtml() {
     row(`Diesel · ${lines} fill${lines === 1 ? "" : "s"}`, m(`${nf(twLitres(), 2)} L`, twPP("diesel") ? "Party pays" : rs(twDiesel()))) +
     row("Other expenses", other.length ? other.map(x => m(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") : "<b>None</b>") +
     row("Km meter", m(`${s ? nf(s) : "—"} → ${e ? nf(e) : "—"}`, s && e > s ? `${nf(e - s)} km` : "—")) +
+    (num(tw.drvAdvance) ? row("Driver advance", m("Advance given", rs(num(tw.drvAdvance))) + m(num(tw.drvAdvance) >= twCashSpent() ? "Cash with driver" : "Office pays driver", rs(Math.abs(Math.round(num(tw.drvAdvance) - twCashSpent()))))) : "") +
     `<div class="bwrow"><div>${m("<b style='font-size:19px;color:var(--ink)'>Total spent</b>", `<span style="font-size:20px">${rs(twTotal())}</span>`)}</div></div></div>` +
     (tw.edit && !tw.admin ? `<p class="bwnote">${twMissing().length ? `<b>Still needed to send:</b> ${twMissing().join(", ")}. Save for later and finish it after the trip.` : "Save to finish later, or send it to the office when the trip is over."}</p>` : "");
 }
@@ -6627,6 +6664,7 @@ function twRender(top) {
 function twSaveState(t) { const el = $("tpSt"); if (el) { el.textContent = t; el.className = "tpst" + (t.startsWith("✓") ? " ok" : t.startsWith("Not") ? " bad" : ""); } }
 function twRefresh() {
   if ($("tpTot")) $("tpTot").textContent = rs(twTotal());
+  if ($("tpCash")) $("tpCash").innerHTML = twCashLine();
   const s = num(tw.startKm), e = num(tw.endKm);
   if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
   if ($("tpRun")) $("tpRun").textContent = s && e > s ? `${nf(e - s)} km run` : "";
@@ -6687,6 +6725,7 @@ async function twSaveBooking() {
   const next = { ...cur }, other = twOtherList();
   const put = (k, v) => { const n = Math.round(num(v)); if (n > 0) next[k] = n; else delete next[k]; };
   TW_MONEY.forEach(([k]) => put(k, tw[k])); put("startKm", tw.startKm); put("endKm", tw.endKm);
+  if (tw.admin) { put("drvAdvance", tw.drvAdvance); if (num(next.drvAdvance) !== num(cur.drvAdvance)) { next.drvAdvanceOn = todayISO(); next.drvAdvanceBy = whoAmI(); } }
   if (next.startKm && next.endKm && next.endKm <= next.startKm) { if (cur.endKm) next.endKm = cur.endKm; else delete next.endKm; }
   const dn = twDriverName(), cn = tw.noCleaner ? "" : tw.cleaner.trim().replace(/\s+/g, " ");
   if (tw.drvId) { next.driverId = tw.drvId; next.driverName = dn; } else { delete next.driverId; if (dn) next.driverName = dn.toUpperCase(); else delete next.driverName; }
@@ -6696,7 +6735,7 @@ async function twSaveBooking() {
   if (tw.files.length) next.attachments = tw.files.map(f => ({ ...f })); else delete next.attachments;
   if (!canBookings) { if (!cur.tsBy) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); } if (!cur.tsStatus) next.tsStatus = "draft"; next.tsDraftOn = todayISO(); }
   const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
-  const keys = [...TW_MONEY.map(([k]) => k), "startKm", "endKm", "otherList", "otherExp", "attachments", "tsStatus", "driverId", "driverName", "cleanerName", "noCleaner"];
+  const keys = [...TW_MONEY.map(([k]) => k), "drvAdvance", "startKm", "endKm", "otherList", "otherExp", "attachments", "tsStatus", "driverId", "driverName", "cleanerName", "noCleaner"];
   if (keys.every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { twSaveState("✓ Saved"); return; }
   try {
     await opsSave("bookings", next);
@@ -6838,7 +6877,9 @@ function bwHomeHtml(b) {
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
+      (canBookings && confirmed ? tile('data-bw="sub" data-sub="money"', "💵", "Driver money", b.drvSettle ? "Settled" : !num(b.drvAdvance) ? "No advance given" : drvLeft(b) > 0 ? `${rs(drvLeft(b))} with driver` : drvLeft(b) < 0 ? `Office owes driver ${rs(-drvLeft(b))}` : "Nothing to settle", b.drvSettle ? "ok" : num(b.drvAdvance) && drvLeft(b) ? "due" : "") : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
+      (!bw.driver && partyKey(b) ? (ps => tile('data-bw="sub" data-sub="party"', "👤", esc(b.party), `${ps.n} trip${ps.n === 1 ? "" : "s"}${ps.owe ? ` · ${rs(ps.owe)} to collect` : ""}`, ps.owe ? "due" : ""))(partyStats(b)) : "") +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
         `</div>` +
         (canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="reopen">Reopen trip</button>` : "")
@@ -6849,6 +6890,8 @@ function bwSubHtml() {
   const b = bwBkNow(); if (!b) { bw.sub = ""; return ""; }
   if (bw.sub === "home") return bwHomeHtml(b);
   const head = t => `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div></header>`;
+  if (bw.sub === "money") return bwDrvMoneyHtml(b);
+  if (bw.sub === "party") return bwPartyPageHtml(b);
   if (bw.sub === "pay") {
     const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite && !tripClosed(b);
     const card = (p, i) => `<div class="twcard"><span class="twmain" style="cursor:default"><span class="twn twk" aria-hidden="true">₹</span><span class="twci"><b>${rs(num(p.amount))}</b><span>${[p.date ? fmtDate(p.date) : "", p.mode || "Cash", i === 0 && !p.note ? "Advance" : p.note].filter(Boolean).map(esc).join(" · ")}</span>${p.byName ? `<span>By ${esc(p.byName)}</span>` : ""}</span></span>` +
@@ -6867,6 +6910,56 @@ function bwSubHtml() {
     (canAdd ? `<div class="bwbox"><span style="font-weight:600;font-size:17px">What is it?</span><div class="bwchips">${BW_FILE_KINDS.map(k => { const c = files.filter(f => fileKindOf(f) === k).length; return `<button type="button" data-fkind="${esc(k)}" aria-pressed="${(bw.fkind || "Permit") === k}">${esc(k)}${c ? ` <span class="fkc">${c}</span>` : ""}</button>`; }).join("")}</div>` +
       `<div class="bwseg c2"><button type="button" class="twsave" data-bw="fcam"${bw.fileBusy ? " disabled" : ""}>📷 Take photo</button><button type="button" data-bw="fpick"${bw.fileBusy ? " disabled" : ""}>+ Choose file</button></div>${bw.fileBusy ? `<small>Uploading…</small>` : ""}</div>` : "") +
     (files.length ? files.map(card).join("") : `<p class="bwnote">No files yet.</p>`) + `<p class="bwnote">Tap a file to open it.</p></div>` + navBar("bw", true);
+}
+// Driver money: the advance (entered in the trip sheet), what was spent from it, and settling the rest. Admin only.
+function bwDrvMoneyHtml(b) {
+  const adv = num(b.drvAdvance), sp = drvSpentOf(b), left = adv - sp, st = b.drvSettle, ed = canBookings && platformWrite && !tripClosed(b);
+  const pp = !!(b.partyPays || ppDefaults(b.rentType || "mt")).diesel, dsl = sp - num(b.padiPaid) - num(b.cleanerPadi) - num(b.permit) - num(b.toll) - num(b.otherExp);
+  const m = bw.money ||= { amt: String(Math.abs(left)), mode: "Cash" };
+  const r = (l, v, big) => `<span class="bwm${big ? " bal" : ""}"><span>${l}</span><b>${v}</b></span>`;
+  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Driver money</b><span>Booking ${esc(b.no || "")} · ${esc(b.driverName || "No driver yet")}</span></div></header><div class="bwb tws" id="bwBody">` +
+    `<div class="bwcard"><div class="bwrow"><div>${r("Advance given", adv ? rs(adv) : "None")}` +
+      `<span class="bwm"><span>Spent from it</span><b>− ${rs(sp)}</b></span>` +
+      `<small class="bwnote">Padi ${rs(num(b.padiPaid) + num(b.cleanerPadi))} · Toll and permit ${rs(num(b.toll) + num(b.permit))} · Diesel ${pp ? "paid by party" : rs(dsl)} · Other ${rs(num(b.otherExp))}</small>` +
+      r(left > 0 ? "Driver returns" : left < 0 ? "Office pays driver" : "Balance", rs(Math.abs(left)), true) + `</div></div></div>` +
+    (!adv ? `<p class="bwnote">Enter the advance in the trip sheet (Driver advance) when the office gives it.</p>` : "") +
+    (!st && b.tsStatus !== "approved" ? `<p class="bwnote">The trip sheet is not approved yet, so the spent amount can still change.</p>` : "") +
+    (st ? `<div class="bhlock"><b>✓ Settled</b><span>${st.dir === "pay" ? "Paid to the driver" : "Returned by the driver"}: ${rs(num(st.amount))} · ${esc(st.mode)}</span><span>On ${fmtDate(st.on)}${st.by ? ` by ${esc(st.by)}` : ""}</span></div>` +
+      (ed ? `<button type="button" class="bwlink" data-bw="unsettle"${bw.moneyBusy ? " disabled" : ""}>Undo settlement</button>` : "")
+    : ed && (adv || sp) ? `<div class="bwbox"><label class="bwf1"><span>${left < 0 ? "Amount paid to the driver" : "Amount received back"}</span><span class="bwin main"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="money.amt" value="${esc(m.amt)}" aria-label="Amount"></span></label>` +
+      `<span style="font-weight:600;font-size:17px">How</span><div class="bwseg c3">${["Cash", "UPI", "Next trip"].map(x => `<button type="button" data-mmode="${x}" aria-pressed="${m.mode === x}">${x}</button>`).join("")}</div>` +
+      `<small class="bwnote">Next trip: the money stays with the driver for his next trip.</small></div>` : "") +
+    `</div>` + (!st && ed && (adv || sp) ? `<footer class="bwf"><button type="button" class="bwgo" data-bw="settle"${bw.moneyBusy ? " disabled" : ""}>${bw.moneyBusy ? "Saving…" : "Mark settled"}</button></footer>` : "") + navBar("bw", true);
+}
+async function bwSettle(undo) {
+  const cur = bwBkNow(); if (!cur || bw.moneyBusy || !canBookings || tripClosed(cur)) return;
+  const left = drvLeft(cur), next = { ...cur };
+  if (undo) delete next.drvSettle;
+  else next.drvSettle = { on: todayISO(), by: whoAmI(), amount: Math.round(num(bw.money?.amt)), mode: bw.money?.mode || "Cash", dir: left < 0 ? "pay" : "back" };
+  bw.moneyBusy = true; bwRender();
+  try { await bwBkSave(next, undo ? "Driver settlement undone" : "Driver settled"); toast(undo ? "Settlement undone" : "Driver settled"); }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+  finally { if (bw) { bw.moneyBusy = false; bw.money = null; bwRender(); } }
+}
+// The party's page: their trips with us, total business, what is still to collect, and Book again.
+function bwPartyPageHtml(b) {
+  const ps = partyStats(b), list = ps.all.slice().sort((a, c) => String(c.from || "").localeCompare(String(a.from || ""))), pn = waNum(b.phone), ph = String(b.phone || "").replace(/[^\d+]/g, "");
+  const stat = (l, v, cls) => `<div class="bpst${cls ? " " + cls : ""}"><span>${l}</span><b>${v}</b></div>`;
+  const trip = x => { const c = bkCalc(x), st = tripClosed(x) ? "Closed" : BK_STAGES[x.status] || "", conf = ["booked", "ontrip", "completed"].includes(x.status);
+    return `<button type="button" class="bptrip" data-bkopen="${x.id}"><span><b>${esc(x.places || "—")}</b><span>${x.from ? bwFmt(x.from) : "No date"} · Booking ${esc(x.no || "")} · ${esc(st)}</span></span>` +
+      `<em class="${conf && c.balance > 0 ? "due" : conf ? "ok" : ""}">${conf ? (c.balance > 0 ? `${rs(c.balance)} due` : "Paid") : ""}</em></button>`; };
+  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">${esc(b.party || "Party")}</b><span>${esc([b.phone, b.address].filter(Boolean).join(" · "))}</span></div></header><div class="bwb tws" id="bwBody">` +
+    `<div class="bpstats">${stat("Trips", ps.n)}${stat("Business", rs(ps.biz))}${stat("To collect", rs(ps.owe), ps.owe ? "due" : "")}</div>` +
+    (ph || pn ? `<div class="bwseg c2">${ph ? `<a class="bpbtn" href="tel:${esc(ph)}">${BW_ICON.phone}Call</a>` : ""}${pn ? `<a class="bpbtn wa" href="https://wa.me/${pn}" target="_blank" rel="noopener">${BW_ICON.wa}WhatsApp</a>` : ""}</div>` : "") +
+    `<h3 class="bpsec">Trips</h3>` + list.slice(0, 15).map(trip).join("") + (list.length > 15 ? `<p class="bwnote">+ ${list.length - 15} older trips</p>` : "") + `</div>` +
+    (canBookReq ? `<footer class="bwf"><button type="button" class="bwgo" data-bw="bookagain">${TW_PLUS} Book again</button></footer>` : "") + navBar("bw", true);
+}
+// Book again: a new booking with this party's details, place and rent filled in; the dates and bus are chosen as usual.
+function bwBookAgain() {
+  const src = bwBkNow(); if (!src || !canBookReq) return;
+  bwClose(); bwOpen();
+  Object.assign(bw, { party: src.party || "", phone: src.phone || "", address: src.address || "", places: src.places || "", rate: src.rate ? String(src.rate) : "", padi: src.padi ? String(src.padi) : "" });
+  bwRender(true);
 }
 async function bwBkSave(next, action) {
   const cur = bwBkNow(); if (!cur) return false;
