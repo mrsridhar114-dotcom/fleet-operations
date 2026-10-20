@@ -1176,7 +1176,8 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .twspent { display: flex; justify-content: space-between; align-items: baseline; font: 600 16px var(--body); color: var(--muted); margin-bottom: 8px; } .twspent b { color: var(--ink); font-size: 19px; }
 .bhcard { background: var(--surface); border: 3px solid var(--accent); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: var(--muted); }
 .bhcard b { color: var(--ink); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
-.bhbtns { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.bhbtns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
+.bhbtns > .bhlock, .bhbtns > .bhclose, .bhbtns > .bhappr { grid-column: 1 / -1; }
 .bhlock { border-radius: 16px; padding: 14px 16px; background: var(--chip-bg); color: var(--ink); display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
 .bhlock b { font-size: 17px; } .bhlock span { color: var(--muted); }
 .daadv { display: flex; gap: 10px; align-items: stretch; } .daadv .bwin { flex: 1 1 0; min-width: 0; }
@@ -1196,13 +1197,12 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhappr b { font-size: 18px; color: var(--warn); } .bhappr > span { color: var(--ink); } .bhappr.gone { background: var(--chip-bg); } .bhappr.gone b { color: var(--muted); }
 .bhclose { height: 56px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface); color: var(--ink); font: 700 18px var(--body); cursor: pointer; }
 .bwleave input { box-sizing: border-box; width: 100%; height: 54px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 17px var(--body); }
-.bhbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.bhbtn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 104px; padding: 12px 8px 10px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: center; cursor: pointer; }
 .bhbtn:disabled { opacity: .6; cursor: default; } .bhbtn { position: relative; }
 .bhpct { position: absolute; top: -9px; right: 10px; height: 24px; padding: 0 9px; border-radius: 12px; border: 2px solid var(--surface); background: var(--danger); color: #fff; font: 700 13px/20px var(--body); box-shadow: 0 2px 6px rgba(0,0,0,.18); }
 .bhpct.mid { background: var(--warn); } .bhpct.ok { background: var(--ok); } .bhpct.cnt { background: var(--accent); color: var(--accent-ink); min-width: 24px; text-align: center; }
 .bhi { width: 48px; height: 48px; flex: none; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; font-size: 24px; font-weight: 700; color: var(--accent); }
-.bht { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .bht b { font-size: 19px; } .bht span { font-size: 15px; font-weight: 600; color: var(--muted); } .bht span.due { color: var(--danger); } .bht span.ok { color: var(--ok); }
-.bhbtn > svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
+.bht { min-width: 0; max-width: 100%; display: flex; flex-direction: column; gap: 1px; } .bht b { font-size: 15px; line-height: 1.2; } .bht span { font-size: 12.5px; font-weight: 600; color: var(--muted); line-height: 1.25; } .bht span.due { color: var(--danger); } .bht span.ok { color: var(--ok); }
 a.twmain { text-decoration: none; color: inherit; }
 .bwchips .fkc { display: inline-block; min-width: 22px; height: 22px; margin-left: 4px; padding: 0 6px; border-radius: 11px; background: var(--accent-soft); color: var(--accent); font: 700 13px/22px var(--body); vertical-align: 1px; }
 .bwchips button[aria-pressed="true"] .fkc { background: var(--accent-ink); }
@@ -6921,7 +6921,7 @@ function bwHomeHtml(b) {
   const v = vehicles.find(x => x.id === b.vehicleId), c = bkCalc(b), n = (b.attachments || []).length;
   const confirmed = ["booked", "ontrip", "completed"].includes(b.status);
   const tripOk = canBookings || (canTsUpd && confirmed), tsOpen = canBookings || tsIsOpen(b);
-  const tile = (attrs, icon, title, line, cls = "", off = false, badge = "") => `<button type="button" class="bhbtn" ${attrs}${off ? " disabled" : ""}>${badge}<span class="bhi" aria-hidden="true">${icon}</span><span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span>${BW_ICON.next}</button>`;
+  const tile = (attrs, icon, title, line, cls = "", off = false, badge = "") => `<button type="button" class="bhbtn" ${attrs}${off ? " disabled" : ""}>${badge}<span class="bhi" aria-hidden="true">${icon}</span>${title ? `<span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span>` : ""}</button>`;
   const fileBadge = `<span class="bhpct cnt" title="${n} file${n === 1 ? "" : "s"} added">${n}</span>`;
   const byKind = BW_FILE_KINDS.map(k => [k, (b.attachments || []).filter(f => fileKindOf(f) === k).length]).filter(x => x[1]);
   const fp = tsFill(b), fpBadge = tsOpen ? `<span class="bhpct ${fp.pct === 100 ? "ok" : fp.pct >= 50 ? "mid" : ""}" title="${fp.done} of ${fp.all} filled in${fp.left.length ? ": still to fill " + fp.left.join(", ") : ""}">${fp.pct}%</span>` : "";
@@ -6936,7 +6936,7 @@ function bwHomeHtml(b) {
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       (canBookings && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", "Driver advance", b.drvSettle ? "Settled" : !d.total ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle", b.drvSettle ? "ok" : d.total && d.net ? "due" : ""))(drvCalc(b)) : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
-      (b.tsStatus === "approved" || tsFill(b).pct === 100 ? tile('data-bw="tsprint"', "🖨️", "Print trip sheet", "PDF · front and back") : "") +
+      (b.tsStatus === "approved" || tsFill(b).pct === 100 ? tile('data-bw="tsprint" aria-label="Print trip sheet" title="Print trip sheet"', "🖨️", "") : "") +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
         `</div>` +
         (canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="reopen">Reopen trip</button>` : "")
@@ -7008,10 +7008,18 @@ async function bwAdvSave() {
 async function bwSettle(undo) {
   const cur = bwBkNow(); if (!cur || bw.advBusy || !canBookings || tripClosed(cur)) return;
   clearTimeout(bw.advTimer);
-  if (!undo) await bwAdvSave();
-  const now = bwBkNow(), d = drvCalc(now), next = { ...now };
+  // One save with exactly what is on the screen (advance, Toll gate, ticked expenses) plus the settlement, so an
+  // earlier save arriving late from the server can't undo the ticks.
+  const next = { ...cur };
   if (undo) delete next.drvSettle;
-  else next.drvSettle = { on: todayISO(), by: whoAmI(), amount: Math.abs(d.net), mode: bw.da?.mode || "Cash", dir: d.net < 0 ? "pay" : "back" };
+  else {
+    const v = bw.da || { amt: cur.drvAdvance, toll: !!cur.drvAdvToll, off: drvCalc(cur).off }, d = drvCalc(cur, v), amt = Math.round(num(v.amt));
+    if (amt > 0) next.drvAdvance = amt; else delete next.drvAdvance;
+    if (v.toll) next.drvAdvToll = true; else delete next.drvAdvToll;
+    next.drvExpOff = v.off.slice();
+    if (num(next.drvAdvance) !== num(cur.drvAdvance)) { next.drvAdvanceOn = todayISO(); next.drvAdvanceBy = whoAmI(); }
+    next.drvSettle = { on: todayISO(), by: whoAmI(), amount: Math.abs(d.net), mode: v.mode || "Cash", dir: d.net < 0 ? "pay" : "back" };
+  }
   bw.advBusy = true; bwRender();
   try { await bwBkSave(next, undo ? "Driver settlement undone" : "Driver settled"); toast(undo ? "Settlement undone" : "Driver settled"); }
   catch { toast("Couldn't save. Check your connection and try again."); }
