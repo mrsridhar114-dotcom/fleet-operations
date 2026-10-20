@@ -6421,6 +6421,7 @@ function bwClick(e) {
   if (a === "lockask") { bw.lockAsk = t.dataset.how; bw.lockNote = ""; bwRender(); setTimeout(() => $("bwLockNote")?.focus(), 30); return; }
   if (a === "lockno") { bw.lockAsk = ""; bwRender(); return; }
   if (a === "lockgo") { bwLockGo(); return; }
+  if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b, t); return; }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
   if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
   if (a === "advtoll") { bw.da.toll = !bw.da.toll; bwRender(); bwAdvSoon(50); return; }
@@ -6881,6 +6882,7 @@ function bwHomeHtml(b) {
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       (canBookings && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", "Driver advance", b.drvSettle ? "Settled" : !d.total ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle", b.drvSettle ? "ok" : d.total && d.net ? "due" : ""))(drvCalc(b)) : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
+      (b.tsStatus === "approved" || tsFill(b).pct === 100 ? tile('data-bw="tsprint"', "🖨️", "Print trip sheet", "PDF · front and back") : "") +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
         `</div>` +
         (canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="reopen">Reopen trip</button>` : "")
@@ -7948,6 +7950,108 @@ async function slipPdf(L, d) {
   wrap(terms, reg, 9.5, X1 - X0).forEach(ln => { text(ln, X0, y, { size: 9.5, color: grey }); y -= 13; });
   text("Party signature", X0, 40, { size: 9.5 }); text("Owner signature", X1, 40, { size: 9.5, align: "right" });
   return new Blob([await pdf.save()], { type: "application/pdf" });
+}
+// Trip sheet PDF, laid out like the printed VBS trip sheet book. Front: trip, crew, km, expenses and totals.
+// Back: every diesel fill and the driver advance. A5, the size of the book.
+async function tsPdf(L, b) {
+  const pdf = await L.PDFDocument.create(), W = 419.53, H = 595.28, X0 = 30, X1 = W - 30;
+  const reg = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
+  const ink = L.rgb(0.106, 0.165, 0.42), grey = L.rgb(0.35, 0.35, 0.35), black = L.rgb(0, 0, 0), shade = L.rgb(0.93, 0.94, 0.97);
+  const c = bkCalc(b), bus = vehicles.find(v => v.id === b.vehicleId), fd = iso => iso ? iso.split("-").reverse().join("-") : "";
+  const n0 = v => num(v) ? nf(Math.round(num(v))) : "", days = num(b.days) || inclDays(b.from, bkEnd(b));
+  const fills = dslLinked(b.id), legacy = dslLegacyOf(b), litres = Math.round((fills.reduce((a, f) => a + num(f.litres), 0) + legacy.reduce((a, r) => a + num(r.litres), 0)) * 100) / 100;
+  const km = c.km, pp = !!(b.partyPays || ppDefaults(b.rentType || "mt")).diesel;
+  const drv = b.driverId ? (drivers.find(d => d.id === b.driverId)?.name || b.driverName) : b.driverName;
+  let page;
+  const text = (t, x, y, o = {}) => { const f = o.bold ? bold : reg, sz = o.size || 10, str = pdfSafe(t), w = f.widthOfTextAtSize(str, sz);
+    page.drawText(str, { x: o.align === "right" ? x - w : o.align === "center" ? x - w / 2 : x, y, size: sz, font: f, color: o.color || black }); return w; };
+  const fit = (t, f, sz, w) => { let str = pdfSafe(t); while (str && f.widthOfTextAtSize(str, sz) > w) str = str.slice(0, -1); return str; };
+  const hline = (x0, x1, y, o = {}) => page.drawLine({ start: { x: x0, y }, end: { x: x1, y }, thickness: o.t || 0.8, color: o.color || ink, ...(o.dash ? { dashArray: [1.2, 1.8] } : {}) });
+  const vline = (x, y0, y1) => page.drawLine({ start: { x, y: y0 }, end: { x, y: y1 }, thickness: 0.8, color: ink });
+  const field = (label, value, x, w, y) => { const lw = text(label, x, y, { size: 8.5, color: grey }) + 6;
+    text(fit(value || "", reg, 11, w - lw - 2), x + lw, y + 1, { size: 11 }); hline(x + lw - 2, x + w, y - 3, { dash: true, color: grey, t: 0.5 }); };
+  const head = sub => {
+    page = pdf.addPage([W, H]);
+    page.drawRectangle({ x: 14, y: 14, width: W - 28, height: H - 28, borderColor: ink, borderWidth: 1.4 });
+    page.drawEllipse({ x: X0 + 26, y: H - 44, xScale: 24, yScale: 13, borderColor: ink, borderWidth: 1.6 });
+    text("VBS", X0 + 26, H - 48, { size: 11, bold: true, align: "center", color: ink });
+    text("VINAYAGAR BUS SERVICE", W / 2 + 22, H - 44, { size: 14, bold: true, align: "center", color: ink });
+    text("NO. 15, 4TH MAIN ROAD, ANNANAGAR WEST, VELLORE - 632001.", W / 2 + 22, H - 56, { size: 6.5, bold: true, align: "center", color: ink });
+    text("Cell : 9944463648", X1, H - 28, { size: 7, bold: true, align: "right", color: ink }); text("8940812733", X1, H - 36, { size: 7, bold: true, align: "right", color: ink });
+    text(sub, W / 2, H - 74, { size: 9.5, bold: true, align: "center", color: ink });
+    text(`S.No.  ${b.no || ""}`, X0, H - 74, { size: 10, bold: true });
+  };
+  // ---- front
+  head("TRIP SHEET");
+  let y = H - 98; const half = (X1 - X0) / 2;
+  [["Vehicle no.", plateOf(bus), "Permit no.", bus?.permitNo || ""], ["Driver", drv || "", "Cleaner", b.noCleaner ? "No cleaner" : b.cleanerName || ""],
+   ["Trip start date", fd(b.from), "Trip end date", fd(bkEnd(b))], ["Start km", n0(b.startKm), "End km", n0(b.endKm)]].forEach(([l1, v1, l2, v2]) => {
+    field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 22; });
+  // trip / rent box
+  const boxTop = y + 6; y -= 8;
+  text("Trip / rent details :", X0 + 6, y, { size: 8.5, color: grey }); y -= 16;
+  text(fit(b.places || "", reg, 11, X1 - X0 - 14), X0 + 10, y, { size: 11 }); y -= 18;
+  text(num(b.toll) ? `${nf(num(b.rent))} + ${nf(num(b.toll))} = ${nf(c.due)}` : nf(c.due), X0 + 10, y, { size: 12, bold: true }); y -= 10;
+  // expenses table
+  const cx = X1 - 92, rowH = 19, other = (b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : []).slice(0, 4);
+  hline(X0, X1, y); text("Expense", (cx + X1) / 2, y - 13, { size: 9, bold: true, align: "center" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y);
+  const per = v => days && num(v) && Number.isInteger(num(v) / days) ? `${nf(num(v) / days)} x ${fmtDays(days)}` : "";
+  const rows = [["Driver padi", per(b.padiPaid), n0(b.padiPaid)], ["Cleaner padi", per(b.cleanerPadi), n0(b.cleanerPadi)], ["Permit", "", n0(b.permit)], ["Toll gate", "", n0(b.toll)],
+    [`Diesel filled (${litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) : "   "} L)  bill`, "", pp ? "Party pays" : n0(b.fuelCost)], ["Other expenses", "", n0(b.otherExp)],
+    ...[0, 1, 2, 3].map(i => [`${i + 1})  ${other[i] ? [other[i].kind, other[i].note].filter(Boolean).join(" - ") : ""}`, "", other[i] ? n0(other[i].amt) : ""])];
+  rows.forEach(([l, m, v]) => { text(fit(l, reg, 9.5, cx - X0 - 90), X0 + 6, y - 13, { size: 9.5 }); if (m) text(m, cx - 14, y - 13, { size: 9.5, align: "right" });
+    text(v, X1 - 8, y - 13, { size: 10.5, align: "right" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y, { t: 0.5 }); });
+  page.drawRectangle({ x: X0, y, width: X1 - X0, height: boxTop - y, borderColor: ink, borderWidth: 0.8 });
+  text("Total", cx - 8, y - 14, { size: 10, bold: true, align: "right" }); text(nf(c.exp), X1 - 8, y - 14, { size: 12, bold: true, align: "right" }); vline(cx, y, y - rowH);
+  page.drawRectangle({ x: cx, y: y - rowH, width: X1 - cx, height: rowH, borderColor: ink, borderWidth: 0.8 }); y -= rowH + 22;
+  [["Total income", nf(c.due), "Total km", km ? nf(km) : ""], ["Total expense", nf(c.exp), "Total diesel", litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) + " L" : ""],
+   ["Balance", nf(c.profit), "Mileage", km && litres ? nf(km / litres, 1) + " km/L" : ""]].forEach(([l1, v1, l2, v2]) => { field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 24; });
+  text("Driver signature", X1, 30, { size: 9, align: "right" }); hline(X1 - 110, X1, 42, { t: 0.5, color: grey });
+  if (b.tsStatus === "approved") text(`Approved${b.tsApprovedByName ? " by " + b.tsApprovedByName : ""}${b.tsApprovedOn ? " on " + fd(b.tsApprovedOn) : ""}`, X0, 30, { size: 8, color: grey });
+  // ---- back
+  head("TRIP SHEET  -  BACK");
+  y = H - 96; text(`${plateOf(bus)}  ·  ${b.places || ""}  ·  ${fd(b.from)} to ${fd(bkEnd(b))}`, W / 2, y, { size: 8.5, align: "center", color: grey }); y -= 20;
+  text("DIESEL FILL-UPS", X0, y, { size: 10, bold: true, color: ink }); y -= 8;
+  const cols = [["#", 16], ["Date", 52], ["Fuel station", 92], ["Litres", 42, 1], ["Rate", 38, 1], ["Amount", 50, 1], ["Paid by", 44], ["Bill no.", 0]];
+  cols[cols.length - 1][1] = X1 - X0 - cols.reduce((a, c2) => a + c2[1], 0);
+  const trow = (cells, o = {}) => { if (o.fill) page.drawRectangle({ x: X0, y: y - 15, width: X1 - X0, height: 15, color: shade });
+    let x = X0; cols.forEach(([, w, right], i) => { const v = fit(cells[i] ?? "", o.bold ? bold : reg, 8.5, w - 6); right ? text(v, x + w - 4, y - 11, { size: 8.5, bold: o.bold, align: "right" }) : text(v, x + 3, y - 11, { size: 8.5, bold: o.bold }); x += w; });
+    y -= 15; hline(X0, X1, y, { t: 0.4, color: grey }); };
+  hline(X0, X1, y, { t: 0.6 }); trow(cols.map(c2 => c2[0]), { bold: true, fill: true });
+  const all = [...fills.map(f => [fd(f.date), f.bunk || "", f.litres, f.rate, f.amount, f.pay || "Cash", f.bill || ""]), ...legacy.map(r => ["", r.note || "Entered on the trip sheet", r.litres, "", r.amount, "", ""])];
+  all.forEach((r, i) => { if (y < 200) return; trow([String(i + 1), r[0], r[1], r[2] ? nf(num(r[2]), 2) : "", r[3] ? nf(num(r[3]), 2) : "", r[4] ? nf(num(r[4])) : "", r[5], r[6]]); });
+  if (!all.length) { text("No diesel fills entered.", X0 + 4, y - 12, { size: 9, color: grey }); y -= 16; }
+  else trow(["", "", "Total", nf(litres, 2), "", nf(all.reduce((a, r) => a + num(r[4]), 0)), "", ""], { bold: true, fill: true });
+  y -= 22;
+  text("DRIVER ADVANCE", X0, y, { size: 10, bold: true, color: ink }); y -= 18;
+  const d = drvCalc(b), line = (l, v, o = {}) => { text(l, X0 + (o.in || 0), y, { size: o.size || 9.5, bold: o.bold, color: o.color }); text(v, X1, y, { size: o.size || 9.5, bold: o.bold, align: "right", color: o.color }); y -= o.gap || 14; };
+  if (!d.total && !d.spent) text("No advance given.", X0, y, { size: 9.5, color: grey });
+  else {
+    line("Advance given", nf(d.adv)); if (d.toll) line("Toll gate money added", nf(d.toll));
+    line("Total advance", nf(d.total), { bold: true, gap: 18 });
+    text("Expenses paid from the advance", X0, y, { size: 9, color: grey }); y -= 13;
+    d.exp.filter(x => !d.off.includes(x.key)).forEach(x => { if (y > 70) line(x.label, nf(x.amt), { in: 8, size: 9, gap: 12 }); });
+    y -= 2; line("Total expenses", nf(d.spent), { bold: true, gap: 18 });
+    hline(X0, X1, y + 10, { t: 0.6 });
+    line(d.net < 0 ? "Office pays the driver" : "Driver gives to office", (d.net < 0 ? "- " : "") + nf(Math.abs(d.net)), { bold: true, size: 11, gap: 16 });
+    if (b.drvSettle) line(`Settled on ${fd(b.drvSettle.on)}${b.drvSettle.by ? " by " + b.drvSettle.by : ""}`, `${nf(num(b.drvSettle.amount))} · ${b.drvSettle.mode}`, { size: 9, color: grey });
+  }
+  text("Driver signature", X0, 30, { size: 9 }); hline(X0, X0 + 110, 42, { t: 0.5, color: grey });
+  text("Office signature", X1, 30, { size: 9, align: "right" }); hline(X1 - 110, X1, 42, { t: 0.5, color: grey });
+  return new Blob([await pdf.save()], { type: "application/pdf" });
+}
+async function tsPrint(b, btn) {
+  let downloads = null;
+  try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view."); return; }
+  if (btn) btn.disabled = true; toast("Preparing the trip sheet…");
+  try {
+    const blob = await tsPdf(await loadPdfLib(), b);
+    await downloads.save({ filename: `Trip sheet ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf", data: blob });
+    toast("Trip sheet saved as a PDF. Open it to print.");
+  } catch (e) {
+    toast(e?.code === "declined" ? "Trip sheet not saved." : e?.message === "load failed" ? "Couldn't prepare the trip sheet. Check your internet connection and try again." : "Couldn't save the trip sheet. Try again.");
+  } finally { if (btn) btn.disabled = false; }
 }
 // Vehicle renewal dates sheet: every vehicle in service with all its renewal dates, as a PDF to print or share.
 // Only admins get full vehicle numbers; for everyone else the number is masked except its last four characters.
