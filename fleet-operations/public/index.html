@@ -1161,9 +1161,15 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpin { width: 128px; height: 54px; flex: none; padding: 0 10px; } .tpin input { font-size: 21px; } .tpin b { font-size: 17px; }
 .tpin.km { width: 180px; } .tpin.km input { font-family: var(--mono); font-size: 20px; }
 .tpin input { width: 100%; min-width: 0; }
-.tpfc { padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 84px minmax(0, 1fr) 92px auto; gap: 8px; align-items: end; }
-.tpfc label { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .tpfc label > span:first-child { font: 600 13px var(--body); color: var(--muted); }
-.tpfc .tpin { width: 100%; padding: 0 8px; } .tpfc .tpin input { font-size: 19px; } .tpfc .tpin b { font-size: 15px; } .tpfc .tpsel { padding: 0 6px; font-size: 17px; }
+.tpfc { padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 48px 84px 56px minmax(0, 1fr) 26px; gap: 4px; align-items: end; }
+.tpfc label { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .tpfc label > span:first-child { font: 600 12px var(--body); color: var(--muted); white-space: nowrap; }
+.tpfc .tpin { width: 100%; height: 48px; padding: 0 5px; gap: 2px; } .tpfc .tpin input { font-size: 16px; } .tpfc .tpin b { font-size: 13px; } .tpfc .tpsel { height: 48px; padding: 0 4px; font-size: 15px; appearance: none; -webkit-appearance: none; text-align: center; text-align-last: center; }
+.tpfc input::-webkit-inner-spin-button, .tpfc input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } .tpfc input[type=number] { -moz-appearance: textfield; }
+.tpfc .tpin.pl input { font: 600 15px var(--body); } .tpfc .tpbin { width: 26px; height: 48px; } .tpfc .tpbin svg { width: 20px; height: 20px; }
+.tprun { margin: 4px 0 6px; } .tprun .avg { font-weight: 700; color: var(--ink); }
+.tpcheer { margin: 8px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ink); font: 600 15px var(--body); }
+.tpcheer.top { background: color-mix(in srgb, #f2b705 18%, transparent); }
+.tpbadges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; } .tpbadges span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: #f2b705; color: #3a2a00; font: 700 13px var(--body); }
 .tpbin { width: 40px; height: 52px; flex: none; border: 0; background: none; color: var(--danger); display: grid; place-items: center; padding: 0; cursor: pointer; } .tpbin svg { width: 22px; height: 22px; }
 .tpadd { width: 100%; height: 50px; margin: 8px 0 4px; border-radius: 12px; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface)); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 8px; font: 700 17px var(--body); cursor: pointer; } .tpadd svg { width: 22px; height: 22px; }
 .tpnote { padding: 0 0 8px; margin-top: -2px; border-bottom: 1px solid var(--line); } .tpnote input { width: 100%; height: 46px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--line); padding: 0 12px; font: 500 17px var(--body); background: var(--surface); color: var(--ink); }
@@ -6613,7 +6619,7 @@ function twOpen(b, backTo) {
     padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
     files: (b.attachments || []).map(f => ({ ...f })), saving: false, backTo: backTo || "",
     drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
-    rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", pay: f.pay || "Cash", file: f.file || null })), legacy: dslLegacyOf(b) };
+    rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", pay: f.pay || "Cash", place: f.bunk || "", file: f.file || null })), legacy: dslLegacyOf(b) };
   if (!tw.rows.length && edit) tw.rows.push(twNewRow());
   // Other expenses: one row each for Pooja, Mechanic and Other (older trip sheets with several items are added up per kind).
   tw.oth = Object.fromEntries(TW_OTHER.map(([k]) => [k, { amt: "", note: "" }]));
@@ -6664,14 +6670,15 @@ function twRowHtml(label, key, val, opts = {}) {
   return `<div class="tprow"><span class="tpl">${label}</span><span class="bwin tpin${opts.km ? " km" : ""}">${opts.km ? "" : "<b>₹</b>"}<input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${opts.ph ?? (opts.km ? "" : "0")}" aria-label="${label}"${tw.edit ? "" : " readonly"}>${opts.km ? "<b>km</b>" : ""}</span></div>`;
 }
 // A new diesel line: paid by card unless the driver picks Cash.
-const twNewRow = () => ({ litres: "", amount: "", pay: "Fuel card", file: null });
+const twNewRow = () => ({ litres: "", amount: "", pay: "Fuel card", place: "", file: null });
 function twPageHtml() {
   const pp = twPP("diesel"), rd = tw.edit ? "" : " readonly", sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
-  // One diesel fill on one line: litres, amount and how it was paid.
+  // One diesel fill on one line: litres, amount, how it was paid and where.
   const fill = (r, i) => `<div class="tpfc">` +
     `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" placeholder="0" aria-label="Litres, fill ${i + 1}"${rd}></span></label>` +
     `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="${pp ? "Party" : "0"}" aria-label="Amount, fill ${i + 1}"${rd}></span></label>` +
-    `<label><span>Paid by</span><select class="tpsel" data-k="fl:${i}:pay" aria-label="Paid by, fill ${i + 1}"${tw.edit ? "" : " disabled"}>${[["Fuel card", "Card"], ["Cash", "Cash"]].map(([v, l]) => `<option value="${v}"${(r.pay || "Cash") === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>` +
+    `<label><span>Paid</span><select class="tpsel" data-k="fl:${i}:pay" aria-label="Paid by, fill ${i + 1}"${tw.edit ? "" : " disabled"}>${[["Fuel card", "Card"], ["Cash", "Cash"]].map(([v, l]) => `<option value="${v}"${(r.pay || "Cash") === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>` +
+    `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="60" data-k="fl:${i}:place" value="${esc(r.place || "")}" placeholder="Where" aria-label="Place, fill ${i + 1}"${rd}></span></label>` +
     (tw.edit ? `<button type="button" class="tpbin" data-rowdel="${i}" aria-label="Remove diesel line ${i + 1}">${TW_BIN}</button>` : "") + `</div>`;
   const s = num(tw.startKm), e = num(tw.endKm);
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
@@ -6687,7 +6694,16 @@ function twPageHtml() {
       (tw.prevKm ? `<p class="bwnote" style="margin:-2px 0 4px">Last trip of this bus ended at <b style="color:var(--ink)">${nf(num(tw.prevKm))} km</b></p>` : "") +
       twRowHtml("End km", "endKm", tw.endKm, { km: true, ph: "When back" }) +
       `<span class="bwerr" id="twKmErr">${s && e && e <= s ? "End km must be more than start km." : ""}</span>` +
-      `<p class="bwnote" id="tpRun" style="margin:4px 0 6px">${s && e > s ? `${nf(e - s)} km run` : ""}</p>`);
+      `<div class="bwnote tprun" id="tpRun">${twRunHtml()}</div>`);
+}
+// Km run, and once diesel is in, the average km per litre. Above 4 the driver gets a word of thanks; above 4.5, badges too.
+const twAvg = () => { const s = num(tw.startKm), e = num(tw.endKm), l = twLitres(); return s && e > s && l > 0 ? (e - s) / l : 0; };
+function twRunHtml() {
+  const s = num(tw.startKm), e = num(tw.endKm), a = twAvg(); if (!(s && e > s)) return "";
+  const run = `${nf(e - s)} km run` + (a ? ` · <span class="avg">Average ${nf(a, 2)} km per litre</span>` : "");
+  if (a > 4.5) return run + `<div class="tpcheer top">Excellent driving! ${nf(a, 2)} km per litre is top mileage. Thank you for saving fuel.<div class="tpbadges"><span>🏆 Top mileage</span><span>⛽ Fuel saver</span><span>⭐ Star driver</span></div></div>`;
+  if (a > 4) return run + `<div class="tpcheer">Well done! ${nf(a, 2)} km per litre is good mileage. Keep it up.</div>`;
+  return run;
 }
 function twCheckHtml() {
   const s = num(tw.startKm), e = num(tw.endKm), lines = tw.rows.filter(r => num(r.litres) > 0).length + tw.legacy.length;
@@ -6700,7 +6716,7 @@ function twCheckHtml() {
     row("Padi, permit and toll", TW_MONEY.map(([k, l]) => m(l, rs(num(tw[k])))).join("")) +
     row(`Diesel · ${lines} fill${lines === 1 ? "" : "s"}`, m(`${nf(twLitres(), 2)} L`, twPP("diesel") ? "Party pays" : rs(twDiesel()))) +
     row("Other expenses", other.length ? other.map(x => m(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") : "<b>None</b>") +
-    row("Km meter", m(`${s ? nf(s) : "—"} → ${e ? nf(e) : "—"}`, s && e > s ? `${nf(e - s)} km` : "—")) +
+    row("Km meter", m(`${s ? nf(s) : "—"} → ${e ? nf(e) : "—"}`, s && e > s ? `${nf(e - s)} km` : "—") + (twAvg() ? m("Average", `${nf(twAvg(), 2)} km per litre`) : "")) +
     `<div class="bwrow"><div>${m("<b style='font-size:19px;color:var(--ink)'>Total spent</b>", `<span style="font-size:20px">${rs(twTotal())}</span>`)}</div></div></div>` +
     (tw.edit && !tw.admin ? `<p class="bwnote">${twMissing().length ? `<b>Still needed to send:</b> ${twMissing().join(", ")}. Save for later and finish it after the trip.` : "Save to finish later, or send it to the office when the trip is over."}</p>` : "");
 }
@@ -6720,7 +6736,7 @@ function twRefresh() {
   if ($("tpTot")) $("tpTot").textContent = rs(twTotal());
   const s = num(tw.startKm), e = num(tw.endKm);
   if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
-  if ($("tpRun")) $("tpRun").textContent = s && e > s ? `${nf(e - s)} km run` : "";
+  if ($("tpRun")) { const h = twRunHtml(); if ($("tpRun").innerHTML !== h) $("tpRun").innerHTML = h; }
   if ($("tpCrewErr")) $("tpCrewErr").textContent = twSameCrew() ? "The cleaner can't be the same person as the driver." : "";
 }
 function twInput(e) {
@@ -6784,15 +6800,15 @@ async function twSaveRow(i) {
   const litres = Math.round(num(r.litres) * 100) / 100, amount = Math.round(num(r.amount) * 100) / 100, pp = twPP("diesel");
   if (!(litres > 0) || (!pp && !(amount > 0))) { twSaveState("✓ Saved"); return; }
   const prev = r.id ? ops.fuelLog.find(x => x.id === r.id) : null, t = todayISO();
-  const rate = amount > 0 ? Math.round(amount / litres * 100) / 100 : 0, pay = r.pay || "Cash";  // the Fuel log keeps the rate per litre
-  if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && num(prev.rate || 0) === rate && (prev.pay || "Cash") === pay && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { twSaveState("✓ Saved"); return; }
-  const last = flSorted(b.vehicleId).pop();
+  const rate = amount > 0 ? Math.round(amount / litres * 100) / 100 : 0, pay = r.pay || "Cash", bunk = String(r.place || "").trim().replace(/\s+/g, " ");  // the Fuel log keeps the rate per litre
+  if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && num(prev.rate || 0) === rate && (prev.pay || "Cash") === pay && (prev.bunk || "") === bunk && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { twSaveState("✓ Saved"); return; }
   const f = { ...(prev || {}), id: prev?.id || r.id || genId("fl"), date: prev?.date || (t < b.from ? b.from : t > bkEnd(b) ? bkEnd(b) : t), vehicleId: b.vehicleId, pay, litres, bookingId: b.id, bookingNo: b.no || "" };
   if (amount > 0) f.amount = amount; else delete f.amount;
   if (rate > 0) f.rate = rate; else delete f.rate;
+  if (bunk) f.bunk = bunk; else delete f.bunk;
   if (r.file) f.file = r.file; else delete f.file;
   if (prev) f.updatedByName = whoAmI();
-  else { if (b.driverId) { f.driverId = b.driverId; f.driverName = drivers.find(d => d.id === b.driverId)?.name || b.driverName || ""; } else if (b.driverName) f.driverName = b.driverName; if (last?.bunk) f.bunk = last.bunk; f.createdByName = whoAmI(); f.createdOn = t; }
+  else { if (b.driverId) { f.driverId = b.driverId; f.driverName = drivers.find(d => d.id === b.driverId)?.name || b.driverName || ""; } else if (b.driverName) f.driverName = b.driverName; f.createdByName = whoAmI(); f.createdOn = t; }
   f.fy = fyOf(f.date); f.month = f.date.slice(0, 7);
   r.id = f.id;
   try {
