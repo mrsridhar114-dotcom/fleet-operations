@@ -1045,8 +1045,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bw { position: fixed; inset: 0; z-index: 45; background: var(--bg); color: var(--ink); display: flex; flex-direction: column; font-family: var(--body); padding-top: env(safe-area-inset-top, 0px); }
 .bwh { background: var(--side-bg); color: var(--side-ink); display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 44px; }
 .bwh div { display: flex; flex-direction: column; } .bwh b { font: 700 22px/1.1 var(--display); } .bwh span { font-size: 14px; color: var(--side-muted); }
-.bwx { width: 44px; height: 44px; flex: none; border-radius: 10px; border: 1px solid var(--side-line); background: transparent; color: var(--side-ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
-.bwx svg, .bwnav svg { width: 22px; height: 22px; }
+.bwnav svg { width: 22px; height: 22px; }
 .bwbar { background: var(--side-bg); padding: 0 16px 14px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
 .bwbar i, .bwbar .bwseg-i { height: 6px; border-radius: 3px; background: var(--side-line); } .bwbar i.on, .bwbar .bwseg-i.on { background: #8ccf5e; }
 .bwbar .bwseg-i { border: 0; padding: 0; cursor: pointer; position: relative; } .bwbar .bwseg-i::after { content: ""; position: absolute; inset: -14px 0; } .bwbar .bwseg-i.cur { box-shadow: 0 0 0 2px #e3efe6; }
@@ -1107,7 +1106,10 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwcancel { border: 2px solid var(--danger); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--danger-soft); } .bwcancel p { margin: 0; font-size: 16px; }
 .bwseg button.bwdanger { background: var(--danger); border-color: var(--danger); color: #fff; }
 .bwerr { color: var(--danger); font-size: 14px; font-weight: 600; } .bwerr:empty { display: none; }
-.bwf { background: var(--surface); border-top: 1px solid var(--line); padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px)); } .bwf.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bwf { background: var(--surface); border-top: 1px solid var(--line); padding: 12px 20px 10px; } .bwf:last-child { padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.bwnb { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; background: var(--surface); border-top: 1px solid var(--line); padding: 10px 20px calc(14px + env(safe-area-inset-bottom, 0px)); } .bwnb.one { grid-template-columns: 1fr; }
+.bwf + .bwnb { border-top: 0; padding-top: 0; }
+.bwnb button { height: 54px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 18px var(--body); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; } .bwnb svg { width: 22px; height: 22px; flex: none; } .bwf.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .bwgo, .bwalt, .bwwa { box-sizing: border-box; width: 100%; height: 58px; border-radius: 14px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 20px var(--body); display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; cursor: pointer; }
 .bwgo:disabled { background: var(--chip-bg); color: var(--muted); cursor: default; } .bwgo svg, .bwwa svg { width: 22px; height: 22px; flex: none; }
 .bwalt { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-size: 18px; } .bwf.two .bwgo { font-size: 18px; }
@@ -6154,6 +6156,8 @@ function bwOpen(preset, bk, readOnly) {
   $("bw").hidden = false; document.documentElement.classList.add("bw-on"); ovOpened();
   bwRender(true);
 }
+// ← Back and ✕ Close sit at the bottom of every booking and trip sheet screen, where a thumb reaches them.
+const navBar = (k, x) => `<nav class="bwnb${x ? "" : " one"}" aria-label="Go back"><button type="button" data-${k}="back">${BW_ICON.back} Back</button>${x ? `<button type="button" data-${k}="close">${BW_ICON.x} Close</button>` : ""}</nav>`;
 function bwClose() { if ($("bw")) $("bw").hidden = true; document.documentElement.classList.remove("bw-on"); bw = null; ovClosed(); }
 // One rule on every booking screen: ← (or the phone's Back) goes one screen back; ✕ leaves the booking and goes back to the list.
 const BW_KEEP = ["from", "to", "half", "vehicleId", "phone", "party", "bookedBy", "bbName", "places", "address", "rate", "padi", "adv", "mode", "remarks"];
@@ -6191,16 +6195,15 @@ function bwCanNext() {
 // What is still needed before a booking can be sent for approval (a draft can be saved without these).
 const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) && "rent for one day"].filter(Boolean);
 function bwRender(top) {
-  const el = $("bw"), s = bw.step, first = !bw.home && s === 0 && !bw.fromCheck;  // on the first screen ← already goes back to the list, so there is no ✕
+  const el = $("bw"), s = bw.step, first = !bw.home && s === 0 && !bw.fromCheck;  // on the first screen Back already goes to the list, so there is no Close
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
   if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
-  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="back" aria-label="Back">${BW_ICON.back}</button><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div>${first ? "" : `<button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button>`}</header>` +
+  el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div></header>` +
     `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
     `<div class="bwb s${s}" id="bwBody"><h2>${s === 5 && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
-    `<footer class="bwf">${s < 5 ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>${bw.fromCheck ? `${BW_ICON.ok} Done` : `Next ${BW_ICON.next}`}</button>`
-      : bw.readOnly ? `<button type="button" class="bwalt" data-bw="back">Back</button>`
+    (s === 5 && bw.readOnly ? "" : `<footer class="bwf">${s < 5 ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>${bw.fromCheck ? `${BW_ICON.ok} Done` : `Next ${BW_ICON.next}`}</button>`
       : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
-      : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`;
+      : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`) + navBar("bw", !first);
   if (bw.sheet) el.insertAdjacentHTML("beforeend", bwSheetHtml());
   if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml());
   if (bw.leave) el.insertAdjacentHTML("beforeend", bwLeaveHtml());
@@ -6307,9 +6310,9 @@ function bwPartyRows() {
   if (!list.length) return `<p class="bwnote" style="padding:18px 4px">${bw.plist?.length ? "No party matches this search." : "No past parties yet. They appear here after the first bookings are saved."}</p>`;
   return list.slice(0, 80).map(x => `<button type="button" class="bwpr" data-party="${x.i}"><span class="bwav" aria-hidden="true">${esc(x.name.charAt(0).toUpperCase())}</span><span class="bwpi"><b>${esc(x.name)}</b><span>${esc(x.phone || "No number")}</span><small>Last trip ${fmtDate(x.last)} · ${x.n} booking${x.n === 1 ? "" : "s"}</small></span>${BW_ICON.next}</button>`).join("");
 }
-const bwSheetHtml = () => `<div class="bwsheet" role="dialog" aria-modal="true" aria-label="Choose a party"><header class="bwh"><button type="button" class="bwx" data-bw="sheetclose" aria-label="Close">${BW_ICON.x}</button><div><b>Choose a party</b><span>From past bookings</span></div></header>` +
+const bwSheetHtml = () => `<div class="bwsheet" role="dialog" aria-modal="true" aria-label="Choose a party"><header class="bwh"><div><b>Choose a party</b><span>From past bookings</span></div></header>` +
   `<div class="bwsb">${bwHasContacts() ? `<button type="button" class="bwpc" data-bw="contacts">${BW_ICON.book}<span><b>Open phone contacts</b><small>For a new party not in this list</small></span>${BW_ICON.next}</button>` : ""}` +
-  `<input type="search" data-k="q" placeholder="Search name or phone number" aria-label="Search parties" autocomplete="off" value="${esc(bw.q || "")}"></div><div class="bwpl" id="bwPl">${bwPartyRows()}</div></div>`;
+  `<input type="search" data-k="q" placeholder="Search name or phone number" aria-label="Search parties" autocomplete="off" value="${esc(bw.q || "")}"></div><div class="bwpl" id="bwPl">${bwPartyRows()}</div><nav class="bwnb one"><button type="button" data-bw="sheetclose">${BW_ICON.x} Close</button></nav></div>`;
 function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext(); }
 function bwInput(e) {
   const k = e.target.dataset.k; if (!k || !bw) return;
@@ -6572,13 +6575,12 @@ function twRender(top) {
       `<p>${d.line}<br>${d.sent ? 'The office will check it. You will see "Approved" in Trip sheets.' : d.admin ? "The trip sheet is updated." : "Open it again from Trip sheets to finish and send it."}</p></div><footer class="bwf"><button type="button" class="bwgo" data-tw="back">${tw.backTo ? "Back to booking" : "Done"}</button></footer>`;
     return;
   }
-  const x = tw.backTo || (!page && tw.edit);  // ✕ only when ← would not already go back to the list
-  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="back" aria-label="Back">${BW_ICON.back}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${esc([tw.places, tw.dates].filter(Boolean).join(" · "))}</span></div>${x ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
+  const x = tw.backTo || (!page && tw.edit);  // Close only when Back would not already go back to the list
+  el.innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${esc([tw.places, tw.dates].filter(Boolean).join(" · "))}</span></div></header>` +
     (page ? `<div class="bwb tws tpage" id="twBody">${twPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>Check and send</h2>${twCheckHtml()}</div>`) +
-    `<footer class="bwf${!page && tw.edit && !tw.admin ? " two" : ""}">${page ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span><span>Total <b id="tpTot">${rs(twTotal())}</b></span></div><button type="button" class="bwgo" data-tw="check">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
-      : !tw.edit ? `<button type="button" class="bwalt" data-tw="back">Back</button>`
+    (!page && !tw.edit ? "" : `<footer class="bwf${!page && !tw.admin ? " two" : ""}">${page ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span><span>Total <b id="tpTot">${rs(twTotal())}</b></span></div><button type="button" class="bwgo" data-tw="check">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
       : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
-      : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>`;
+      : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>`) + navBar("tw", x);
   if (top) $("twBody").scrollTop = 0; else if (keep) $("twBody").scrollTop = keep;
   if (tw.slide) { $("twBody").classList.add("bwsl-" + tw.slide); tw.slide = ""; }
 }
@@ -6787,7 +6789,7 @@ function bwHomeHtml(b) {
   const fileBadge = `<span class="bhpct cnt" title="${n} file${n === 1 ? "" : "s"} added">${n}</span>`;
   const byKind = BW_FILE_KINDS.map(k => [k, (b.attachments || []).filter(f => fileKindOf(f) === k).length]).filter(x => x[1]);
   const fp = tsFill(b), fpBadge = tsOpen ? `<span class="bhpct ${fp.pct === 100 ? "ok" : fp.pct >= 50 ? "mid" : ""}" title="${fp.done} of ${fp.all} filled in${fp.left.length ? ": still to fill " + fp.left.join(", ") : ""}">${fp.pct}%</span>` : "";
-  return `<header class="bwh"><button type="button" class="bwx" data-bw="back" aria-label="Back to the list">${BW_ICON.back}</button><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(BK_STAGES[b.status] || "")}</span></div></header>` +
+  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(BK_STAGES[b.status] || "")}</span></div></header>` +
     `<div class="bwb tws" id="bwBody"><div class="bhcard">` +
       `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span></div>` +
       `<b class="bhplace">${esc(b.places || "—")}</b>` +
@@ -6797,12 +6799,12 @@ function bwHomeHtml(b) {
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
-    `</div></div>`;
+    `</div></div>` + navBar("bw", false);
 }
 function bwSubHtml() {
   const b = bwBkNow(); if (!b) { bw.sub = ""; return ""; }
   if (bw.sub === "home") return bwHomeHtml(b);
-  const head = t => `<header class="bwh"><button type="button" class="bwx" data-bw="back" aria-label="Back">${BW_ICON.back}</button><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div><button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button></header>`;
+  const head = t => `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div></header>`;
   if (bw.sub === "pay") {
     const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite;
     const card = (p, i) => `<div class="twcard"><span class="twmain" style="cursor:default"><span class="twn twk" aria-hidden="true">₹</span><span class="twci"><b>${rs(num(p.amount))}</b><span>${[p.date ? fmtDate(p.date) : "", p.mode || "Cash", i === 0 && !p.note ? "Advance" : p.note].filter(Boolean).map(esc).join(" · ")}</span>${p.byName ? `<span>By ${esc(p.byName)}</span>` : ""}</span></span>` +
@@ -6812,7 +6814,7 @@ function bwSubHtml() {
       `<span class="bwm bal"><span>${c.balance > 0 ? "Still to collect" : c.balance < 0 ? "Paid extra" : "Balance"}</span><b>${rs(Math.abs(c.balance))}</b></span></div></div></div>` +
       (pays.length ? pays.map(card).join("") : `<p class="bwnote">No payments yet.</p>`) +
       (canAdd ? `<button type="button" class="twadd" data-bw="payadd">${TW_PLUS} Add payment</button>` : "") +
-      (num(b.padi) ? `<p class="bwnote">Driver padi from the party (${rs(num(b.padi))}) goes to the driver and is not counted here.</p>` : "") + `</div>`;
+      (num(b.padi) ? `<p class="bwnote">Driver padi from the party (${rs(num(b.padi))}) goes to the driver and is not counted here.</p>` : "") + `</div>` + navBar("bw", true);
   }
   const files = b.attachments || [], canAdd = bwCanFiles(b), canRm = canBookings && platformWrite;
   const card = (f, i) => `<div class="twcard"><a class="twmain" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener"><span class="twn twk" aria-hidden="true">${/image/.test(f.type || "") || /\.(jpe?g|png|webp|heic)$/i.test(f.name || "") ? "🖼️" : "📄"}</span><span class="twci"><b>${esc(f.kind || "File")}</b><span>${esc(f.name || "")}</span><span>${[f.at ? fmtDate(f.at.slice(0, 10)) : "", f.byName].filter(Boolean).map(esc).join(" · ")}</span></span></a>` +
@@ -6820,7 +6822,7 @@ function bwSubHtml() {
   return head("Files") + `<div class="bwb tws" id="bwBody">` +
     (canAdd ? `<div class="bwbox"><span style="font-weight:600;font-size:17px">What is it?</span><div class="bwchips">${BW_FILE_KINDS.map(k => { const c = files.filter(f => fileKindOf(f) === k).length; return `<button type="button" data-fkind="${esc(k)}" aria-pressed="${(bw.fkind || "Permit") === k}">${esc(k)}${c ? ` <span class="fkc">${c}</span>` : ""}</button>`; }).join("")}</div>` +
       `<div class="bwseg c2"><button type="button" class="twsave" data-bw="fcam"${bw.fileBusy ? " disabled" : ""}>📷 Take photo</button><button type="button" data-bw="fpick"${bw.fileBusy ? " disabled" : ""}>+ Choose file</button></div>${bw.fileBusy ? `<small>Uploading…</small>` : ""}</div>` : "") +
-    (files.length ? files.map(card).join("") : `<p class="bwnote">No files yet.</p>`) + `<p class="bwnote">Tap a file to open it.</p></div>`;
+    (files.length ? files.map(card).join("") : `<p class="bwnote">No files yet.</p>`) + `<p class="bwnote">Tap a file to open it.</p></div>` + navBar("bw", true);
 }
 async function bwBkSave(next, action) {
   const cur = bwBkNow(); if (!cur) return false;
