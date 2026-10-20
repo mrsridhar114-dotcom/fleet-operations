@@ -6197,13 +6197,13 @@ const bwClash = () => bw.vehicleId && bw.from ? clashOf({ vehicleId: bw.vehicleI
 function bwOpen(preset, bk, readOnly) {
   const t = todayISO(), start = bk ? bk.from : preset?.from && preset.from >= t ? preset.from : "";
   bw = { step: 0, y: +(start || t).slice(0, 4), m: +(start || t).slice(5, 7) - 1, from: start, to: start ? (bk ? bkEnd(bk) : preset.to || start) : "", half: "none",
-    vehicleId: preset?.vehicleId || "", phone: "", party: "", fromContact: false, tels: null, bookedBy: "", places: "", address: "",
+    vehicleId: preset?.vehicleId || "", phone: "", party: "", fromContact: false, tels: null, bookedBy: "", bbName: "", places: "", address: "",
     rate: "", padi: "", adv: "", mode: "Cash", remarks: "", showRem: false, saving: false, done: null, editId: null };
   if (bk) {
     // An existing booking opens on its summary in the same screens (Check and save); a draft or a booking the admin sent back is carried on from there.
     // Carry on with a draft (or a booking the admin sent back): its details come back into the steps, and it opens on Check and save.
     const p1 = bk.payments?.[0], w = inclDays(bk.from, bkEnd(bk));
-    Object.assign(bw, { editId: bk.id, vehicleId: bk.vehicleId || "", phone: bk.phone || "", party: bk.party || "", bookedBy: bk.bookedById || "", places: bk.places || "", address: bk.address || "",
+    Object.assign(bw, { editId: bk.id, vehicleId: bk.vehicleId || "", phone: bk.phone || "", party: bk.party || "", bookedBy: bk.bookedById || (bk.bookedByName ? "other" : ""), bbName: bk.bookedById ? "" : bk.bookedByName || "", places: bk.places || "", address: bk.address || "",
       rate: bk.rate ? String(bk.rate) : "", padi: bk.padi ? String(bk.padi) : "", adv: p1?.amount ? String(p1.amount) : "", mode: p1?.mode || "Cash", remarks: bk.remarks || "", showRem: !!bk.remarks,
       half: w && num(bk.days) === w - .5 ? (bk.halfDay || "last") : "none", step: 5, status: bk.status, readOnly: !!readOnly,
       orig: { rate: bk.rate ? String(bk.rate) : "", days: num(bk.days), rent: num(bk.rent) }, extraPaid: (bk.payments || []).slice(1).reduce((a, p) => a + num(p.amount), 0), pays: (bk.payments || []).slice(1), rejectReason: bk.status === "rejected" ? (bk.rejectReason || bk.rejections?.[bk.rejections.length - 1]?.reason || "") : "", no: bk.no });
@@ -6236,11 +6236,11 @@ function bwCanNext() {
   if (s === 0) return !!(bw.from && bw.to);
   if (s === 1) return !!bw.vehicleId && !bwClash();
   if (s === 2) { const d = bw.phone.replace(/\D/g, "").length; return (d === 0 || d >= 10) && (!canBookings || !!bw.party.trim()); }
-  if (s === 4) return !canBookings || (num(bw.rate) > 0 && num(bw.adv) > 0);
+  if (s === 4) return !canBookings || num(bw.rate) > 0;
   return true;
 }
 // What is still needed before a booking can be sent for approval (a draft can be saved without these).
-const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) && "rent for one day", !(num(bw.adv) > 0) && "advance"].filter(Boolean);
+const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) && "rent for one day"].filter(Boolean);
 function bwRender(top) {
   const el = $("bw"), s = bw.step, bk = s > 0 && !bw.readOnly;  // an opened booking starts on its summary and can still be stepped through
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
@@ -6295,8 +6295,9 @@ function bwPartyHtml() {
       `<button type="button" class="bwct" data-bw="parties" aria-label="Choose a party" title="Choose a party">${BW_ICON.book}</button></span><span class="bwerr" id="bwPhErr"></span></label>` +
     (bw.tels ? `<div class="bwtels"><p>Which number?</p>${bw.tels.map(t => `<button type="button" data-tel="${t}">${t.slice(0, 5)} ${t.slice(5)}</button>`).join("")}</div>` : "") +
     `<label class="bwf1"><span class="bwlr">Party name${bw.fromContact ? ` <em>${bw.fromContact === "past" ? "From past bookings" : "From contacts"}</em>` : ""}</span><input type="text" data-k="party" autocomplete="off" maxlength="80" value="${esc(bw.party)}">${bw.fromContact ? "<small>Change it if the name is not right.</small>" : ""}</label>` +
-    `<div class="bwf1"><span>Booked by</span>${dr.length ? `<div class="bwchips">${dr.map(d => `<button type="button" data-bb="${d.id}" aria-pressed="${bw.bookedBy === d.id}">${esc(d.name)}</button>`).join("")}</div>`
-      : "<small>No spare bus drivers yet. In Driver master, tick Bus and then Spare bus for the drivers who bring bookings.</small>"}</div>`;
+    `<div class="bwf1"><span>Booked by</span>${dr.length ? `<div class="bwchips">${dr.map(d => `<button type="button" data-bb="${d.id}" aria-pressed="${bw.bookedBy === d.id}">${esc(d.name)}</button>`).join("")}<button type="button" data-bb="other" aria-pressed="${bw.bookedBy === "other"}">Other</button></div>`
+      : `<div class="bwchips"><button type="button" data-bb="other" aria-pressed="${bw.bookedBy === "other"}">Other</button></div><small>No spare bus drivers yet. In Driver master, tick Bus and then Spare bus for the drivers who bring bookings.</small>`}` +
+      (bw.bookedBy === "other" ? `<input type="text" data-k="bbName" maxlength="60" autocomplete="off" value="${esc(bw.bbName || "")}" placeholder="Name of the person who brought it" aria-label="Booked by name">` : "") + `</div>`;
 }
 function bwPlacesHtml() {
   return `<label class="bwf1"><span>Places</span><textarea rows="3" data-k="places" maxlength="200" placeholder="e.g. Palani, Kodaikanal">${esc(bw.places)}</textarea></label>` +
@@ -6310,12 +6311,12 @@ function bwMoneyHtml() {
     `<small class="bwsm">Driver padi is not added to the rent.</small><div class="bwtot" id="bwTot">${bwTotHtml()}</div>` +
     `<div class="bwf1"><span>Advance received</span><div class="bwbox"><span class="bwin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="adv" value="${esc(bw.adv)}" placeholder="Amount" aria-label="Advance amount"></span>` +
     `<div class="bwseg c4" role="group" aria-label="Paid by">${PAY_MODES.map(m => `<button type="button" data-mode="${esc(m)}" aria-pressed="${bw.mode === m}">${m === "Bank transfer" ? "Bank" : esc(m)}</button>`).join("")}</div></div>` +
-    `<small>${num(bw.extraPaid) ? `First payment. Other payments (${rs(num(bw.extraPaid))}) are under Payments on the last step.` : "An advance is needed to hold the bus."}</small></div>` +
+    `<small>${num(bw.extraPaid) ? `First payment. Other payments (${rs(num(bw.extraPaid))}) are under Payments on the last step.` : "Leave it empty if no advance is paid yet. Payments can be added later."}</small></div>` +
     (bw.showRem ? `<label class="bwf1"><span>Remarks</span><textarea rows="2" data-k="remarks" maxlength="300">${esc(bw.remarks)}</textarea></label>` : `<button type="button" class="bwlink" data-bw="rem">+ Add remarks</button>`);
 }
 function bwCheckHtml() {
   const v = vehicles.find(x => x.id === bw.vehicleId), dd = bwDays(), rent = bwRent(), adv = Math.round(num(bw.adv));
-  const bb = drivers.find(d => d.id === bw.bookedBy)?.name, padi = Math.round(num(bw.padi));
+  const bb = bw.bookedBy === "other" ? String(bw.bbName || "").trim() : drivers.find(d => d.id === bw.bookedBy)?.name, padi = Math.round(num(bw.padi));
   const row = (k, body, step) => `<div class="bwrow"><div><small>${k}</small>${body}</div>${bw.readOnly ? "" : `<button type="button" class="bwlink" data-goto="${step}">Change</button>`}</div>`;
   const more = num(bw.extraPaid);
   return (bw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the admin:</b> ${esc(bw.rejectReason)}</p>` : "") + `<div class="bwcard">` +
@@ -6421,7 +6422,7 @@ function bwClick(e) {
   if (t.dataset.day) { const v = t.dataset.day; if (!bw.from || bw.to) { bw.from = v; bw.to = ""; bw.half = "none"; } else if (v < bw.from) bw.from = v; else bw.to = v; bwRender(); return; }
   if (t.dataset.half) { bw.half = t.dataset.half; bwRender(); return; }
   if (t.dataset.bus) { bw.vehicleId = t.dataset.bus; bwRender(); return; }
-  if (t.dataset.bb) { bw.bookedBy = bw.bookedBy === t.dataset.bb ? "" : t.dataset.bb; bwRender(); return; }
+  if (t.dataset.bb) { bw.bookedBy = bw.bookedBy === t.dataset.bb ? "" : t.dataset.bb; bwRender(); if (bw.bookedBy === "other") $("bw").querySelector('[data-k="bbName"]')?.focus(); return; }
   if (t.dataset.tel) { bw.phone = t.dataset.tel.slice(0, 5) + " " + t.dataset.tel.slice(5); bw.tels = null; bwRender(); return; }
   if (t.dataset.mode) { bw.mode = t.dataset.mode; bwRender(); return; }
   if (t.dataset.goto) { bw.step = +t.dataset.goto; bw.fromCheck = !t.classList.contains("bwseg-i") && bw.step < 5; bw.slide = ""; bwRender(true); }
@@ -6452,7 +6453,11 @@ async function bwSave(asDraft) {
     bkHalfDay = bw.half;
     $("bkParty").value = bw.party.trim(); $("bkPhone").value = bw.phone.trim(); $("bkAddress").value = bw.address.trim();
     $("bkPlaces").value = bw.places.trim(); $("bkRemarks").value = bw.remarks.trim();
-    $("bkBookedBy").value = bw.bookedBy ? "id:" + bw.bookedBy : "";
+    if (bw.bookedBy === "other") {
+      const nm = String(bw.bbName || "").trim().replace(/\s+/g, " ");
+      if (nm && ![...$("bkBookedBy").options].some(o => o.value === "name:" + nm)) $("bkBookedBy").insertAdjacentHTML("beforeend", `<option value="name:${esc(nm)}">${esc(nm)}</option>`);
+      $("bkBookedBy").value = nm ? "name:" + nm : "";
+    } else $("bkBookedBy").value = bw.bookedBy ? "id:" + bw.bookedBy : "";
     $("bkDays").value = bwDays(); bkDaysTouched = true;
     $("bkRate").value = bw.rate; $("bkPadi").value = bw.padi;
     if (!bw.editId || bw.rate !== bw.orig.rate || bwDays() !== bw.orig.days) bkRentTouched = false;
@@ -7661,7 +7666,7 @@ $("bkForm").addEventListener("submit", async e => {
   if (!b.from) err("bkFrom", "Enter the start date."); else if (b.to < b.from) err("bkTo", "Must be on or after the start date.");
   if (!(b.days > 0) && b.from) b.days = inclDays(b.from, b.to) || 1;
   // A planner's draft can be saved without a payment; one sent for approval, and every new booking an admin saves, needs it.
-  const needPay = bkMode === "request" ? bkSaveAs === "submit" : !prev;
+  const needPay = false;  // an advance is not always paid at booking time; payments can be added later
   if (needPay && !b.payments.length) {
     $("e-bkPays").textContent = "Enter the payment received from the party (amount above 0)."; ok = false;
     const amt = $("bkPays").querySelector("[data-pa]"); if (amt) amt.setAttribute("aria-invalid", "true"); else $("bkAddPay").setAttribute("aria-invalid", "true");
