@@ -1109,7 +1109,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwf { background: var(--surface); border-top: 1px solid var(--line); padding: 12px 20px 10px; } .bwf:last-child { padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
 .bwnb { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; background: var(--surface); border-top: 1px solid var(--line); padding: 10px 20px calc(14px + env(safe-area-inset-bottom, 0px)); } .bwnb.one { grid-template-columns: 1fr; }
 .bwf + .bwnb { border-top: 0; padding-top: 0; }
-.bwnb button { height: 54px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 18px var(--body); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; } .bwnb svg { width: 22px; height: 22px; flex: none; } .bwf.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bwnb button { height: 54px; border-radius: 14px; border: 1.5px solid color-mix(in srgb, var(--accent) 35%, transparent); background: var(--accent-soft); color: var(--accent); font: 700 18px var(--body); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; } .bwnb svg { width: 22px; height: 22px; flex: none; }
+.bwnb [data-bw="close"], .bwnb [data-tw="close"], .bwnb [data-bw="sheetclose"] { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, transparent); }
+.bwnb button:active { filter: brightness(.94); } .bwf.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .bwgo, .bwalt, .bwwa { box-sizing: border-box; width: 100%; height: 58px; border-radius: 14px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 20px var(--body); display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; cursor: pointer; }
 .bwgo:disabled { background: var(--chip-bg); color: var(--muted); cursor: default; } .bwgo svg, .bwwa svg { width: 22px; height: 22px; flex: none; }
 .bwalt { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-size: 18px; } .bwf.two .bwgo { font-size: 18px; }
@@ -6476,7 +6478,7 @@ function twOpen(b, backTo) {
   tw = { id: b.id, no: b.no || "", plate: v ? plateOf(v) : "", places: b.places || b.party || "", dates: `${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtShort(bkEnd(b))}` : ""}`,
     view: edit ? "page" : "check", edit, admin: canBookings, status: b.tsStatus || "", rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "",
     padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
-    files: (b.attachments || []).map(f => ({ ...f })), saving: false, done: null, backTo: backTo || "",
+    files: (b.attachments || []).map(f => ({ ...f })), saving: false, backTo: backTo || "",
     drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
     rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null })), legacy: dslLegacyOf(b) };
   if (!tw.rows.length && edit) tw.rows.push({ litres: "", amount: "", file: null });
@@ -6499,8 +6501,8 @@ function twClose() { const back = tw?.backTo; if ($("tw")) $("tw").hidden = true
 function twBack(toList) {
   if (!tw || tw.saving) return;
   if (toList) tw.backTo = "";
-  if (!toList && !tw.done && tw.view === "check" && tw.edit) { tw.view = "page"; tw.slide = "r"; twRender(true); return; }
-  if (tw.view === "page" && tw.edit && !tw.done) { const go = () => twClose(); twFlush().then(go, go); return; }
+  if (!toList && tw.view === "check" && tw.edit) { tw.view = "page"; tw.slide = "r"; twRender(true); return; }
+  if (tw.view === "page" && tw.edit) { const go = () => twClose(); twFlush().then(go, go); return; }
   twClose();
 }
 function twCamBtn(key, label) {
@@ -6573,12 +6575,6 @@ function twCheckHtml() {
 }
 function twRender(top) {
   const el = $("tw"), page = tw.view === "page", keep = !top && $("twBody") ? $("twBody").scrollTop : 0;
-  if (tw.done) {
-    const d = tw.done;
-    el.innerHTML = `<header class="bwh"><div><b id="twTitle">Trip sheet</b></div></header><div class="bwb bwdone"><span class="bwbig">${BW_ICON.ok}</span><h2>${d.sent ? "Sent to the office" : "Saved"}</h2><p class="bwno">Booking ${esc(tw.no)} · ${esc(tw.plate)}</p>` +
-      `<p>${d.line}<br>${d.sent ? 'The office will check it. You will see "Approved" in Trip sheets.' : d.admin ? "The trip sheet is updated." : "Open it again from Trip sheets to finish and send it."}</p></div><footer class="bwf"><button type="button" class="bwgo" data-tw="back">${tw.backTo ? "Back to booking" : "Done"}</button></footer>`;
-    return;
-  }
   const x = tw.backTo || (!page && tw.edit);  // Close only when Back would not already go back to the list
   el.innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${esc([tw.places, tw.dates].filter(Boolean).join(" · "))}</span></div></header>` +
     (page ? `<div class="bwb tws tpage" id="twBody">${twPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>Check and send</h2>${twCheckHtml()}</div>`) +
@@ -6711,14 +6707,14 @@ async function twSave(send) {
     put("bkOther", twOtherSum()); put("bkStartKm", tw.startKm); put("bkEndKm", tw.endKm);
     bkOtherList = twOtherList(); bkFiles = tw.files.map(f => ({ ...f }));
     bkSaveAs = send ? "submit" : "draft"; syncBk();
-    const s = num(tw.startKm), e = num(tw.endKm);
-    const info = { sent: send, admin: tw.admin, line: [s && e > s ? `${nf(e - s)} km` : "", `${rs(twTotal())} spent`].filter(Boolean).join(" · ") };
+    const msg = send ? "Sent to the office" : tw.admin ? "Trip sheet saved" : "Saved. Send it to the office after the trip.";
     $("bkForm").requestSubmit();
     const failed = () => !$("bkDrawer").hidden && [...$("bkForm").querySelectorAll(".err")].some(x => x.textContent.trim());
     for (let i = 0; i < 100 && !failed() && !$("bkDrawer").hidden; i++) await new Promise(r => setTimeout(r, 150));
     if (!$("bkDrawer").hidden) { const msg = failed() ? [...$("bkForm").querySelectorAll(".err")].map(x => x.textContent.trim()).find(Boolean) : "Still saving. Try again."; closeBkDrawer(); toast(msg); return; }
-    if (tw) { tw.done = info; twRender(true); }
-  } finally { bwBusy = false; if (tw) { tw.saving = false; if (!tw.done) twRender(); } }
+    // Saved: straight back to the booking page (or the list), no "saved" screen in between.
+    if (tw) { tw.saving = false; bwBusy = false; twClose(); toast(msg); }
+  } finally { bwBusy = false; if (tw) { tw.saving = false; twRender(); } }
 }
 
 /* ---------- payments any time ----------
