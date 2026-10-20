@@ -1127,6 +1127,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .s0 .bwsr > div:last-child { font-size: 17px; }
 .s0 .bwhalf { padding-top: 8px; gap: 6px; } .s0 .bwhalf p { font-size: 16px; } .s0 .bwseg button { min-height: 44px; }
 @media (max-height: 780px) { .bwb.s0 { gap: 10px; padding-top: 12px; } .bwb.s0 h2 { font-size: 26px; } .s0 .bwd { height: 35px; } .s0 .bwsum { padding: 10px 12px; } }
+.bwleave { position: absolute; inset: 0; z-index: 3; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; }
+.bwleave > div { width: 100%; box-sizing: border-box; background: var(--surface); border-radius: 18px 18px 0 0; padding: 20px 20px calc(22px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; }
+.bwleave b { font-size: 21px; } .bwleave p { margin: 0 0 6px; color: var(--muted); font-size: 16px; }
 .bwsheet { position: absolute; inset: 0; z-index: 2; background: var(--bg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); }
 .bwsb { padding: 12px 16px 14px; background: var(--side-bg); display: flex; flex-direction: column; gap: 10px; }
 .bwpc { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 8px 14px; border-radius: 12px; border: 0; background: #8ccf5e; color: #0a1f16; text-align: left; font: inherit; cursor: pointer; }
@@ -3368,7 +3371,14 @@ function refreshVDrawer() {
 const VIEW_DRAWERS = ["vDrawer", "dvDrawer", "cvDrawer"];
 function viewOpened() { try { if (window.history.state?.foView !== 1) window.history.pushState({ ...(window.history.state || {}), foView: 1 }, ""); } catch {} }
 function viewClosed() { try { if (window.history.state?.foView === 1 && !VIEW_DRAWERS.some(id => !$(id).hidden)) window.history.back(); } catch {} }
-window.addEventListener("popstate", () => { if (!$("vDrawer").hidden) closeVDrawer(); if (!$("dvDrawer").hidden) closeDvDrawer(); if (!$("cvDrawer").hidden) closeCvDrawer(); });
+// On the phone screens of a booking and its trip sheet, the phone's Back button does the same as the ← button.
+let ovSkipPop = false;
+function ovOpened() { try { if (window.history.state?.foOv !== 1) window.history.pushState({ ...(window.history.state || {}), foOv: 1 }, ""); } catch {} }
+function ovClosed() { setTimeout(() => { try { if (!bw && !tw && window.history.state?.foOv === 1) { ovSkipPop = true; window.history.back(); } } catch {} }, 0); }
+window.addEventListener("popstate", () => {
+  if (ovSkipPop) { ovSkipPop = false; return; }
+  if (bw || tw) { if (tw) twBack(); else bwBack(); if (bw || tw) ovOpened(); return; }
+  if (!$("vDrawer").hidden) closeVDrawer(); if (!$("dvDrawer").hidden) closeDvDrawer(); if (!$("cvDrawer").hidden) closeCvDrawer(); });
 function closeVDrawer() { closeDuePop(); $("vDrawer").hidden = true; vViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
 $("vCloseBtn").onclick = closeVDrawer;
 $("vHistBtn").onclick = () => openHDrawer(vViewId, "");
@@ -6131,18 +6141,45 @@ function bwOpen(preset, bk, readOnly) {
     $("bw").addEventListener("touchstart", e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; sOk = e.touches.length === 1 && !e.target.closest("input, textarea, .bwhalf, .bwseg"); }, { passive: true });
     $("bw").addEventListener("touchend", e => {
       if (!sOk || !bw || bw.done || bw.saving || bw.sheet || bw.pay) return;
-      if (bw.sub) { const t = e.changedTouches[0]; if (bw.sub !== "home" && t.clientX - sx > 80 && Math.abs(t.clientX - sx) > Math.abs(t.clientY - sy) * 1.5) { bw.sub = bw.home ? "home" : ""; bw.slide = "r"; bwRender(true); } return; } sOk = false;
-      const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      sOk = false; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-      const b = $("bw").querySelector(dx < 0 ? '.bwgo[data-bw="next"]' : '.bwh [data-bw="back"]');
-      if (b && !b.disabled) { bw.slide = dx < 0 ? "l" : "r"; b.click(); }
+      // Swiping right is ← (but never leaves the booking by itself); swiping left is Next.
+      if (dx > 0) { if (bw.sub !== "home" && (bw.sub || bw.fromCheck || (bw.step > 0 && !(bw.home && bw.step === 5)))) bwBack(); return; }
+      const b = bw.sub ? null : $("bw").querySelector('.bwgo[data-bw="next"]');
+      if (b && !b.disabled) { bw.slide = "l"; b.click(); }
       else if (dx < 0 && $("bw").querySelector('.bwgo[data-bw="next"]')) { const f = $("bw").querySelector("footer"); f.classList.remove("bwnudge"); void f.offsetWidth; f.classList.add("bwnudge"); }
     }, { passive: true });
   }
-  $("bw").hidden = false; document.documentElement.classList.add("bw-on");
+  bw.snap = bwSnap();
+  $("bw").hidden = false; document.documentElement.classList.add("bw-on"); ovOpened();
   bwRender(true);
 }
-function bwClose() { if ($("bw")) $("bw").hidden = true; document.documentElement.classList.remove("bw-on"); bw = null; }
+function bwClose() { if ($("bw")) $("bw").hidden = true; document.documentElement.classList.remove("bw-on"); bw = null; ovClosed(); }
+// One rule on every booking screen: ← (or the phone's Back) goes one screen back; ✕ leaves the booking and goes back to the list.
+const BW_KEEP = ["from", "to", "half", "vehicleId", "phone", "party", "bookedBy", "bbName", "places", "address", "rate", "padi", "adv", "mode", "remarks"];
+const bwSnap = () => JSON.stringify(BW_KEEP.map(k => String(bw[k] ?? "")));
+const bwDirty = () => !!bw && !bw.readOnly && !bw.done && !bw.sub && bw.snap !== bwSnap();
+function bwBack() {
+  if (!bw || bw.saving) return;
+  if (bw.leave) { bw.leave = ""; bwRender(); return; }
+  if (bw.pay) { bw.pay = null; bwRender(); return; }
+  if (bw.sheet) { bw.sheet = false; bwRender(); return; }
+  if (bw.askCancel) { bw.askCancel = false; bwRender(); return; }
+  if (bw.done) { const id = bw.home && bw.editId; bwClose(); if (id) openBooking(id); return; }
+  if (bw.sub === "home") { bwClose(); return; }
+  if (bw.sub) { bw.sub = "home"; bw.slide = "r"; bwRender(true); return; }
+  if (bw.fromCheck) { bw.step = 5; bw.fromCheck = false; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
+  if (bw.step > 0 && !(bw.home && bw.step === 5)) { bw.step--; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
+  bwLeave(bw.home ? "home" : "list");
+}
+// Leaving booking details (to the booking page or the list) with changes that are not saved asks first.
+function bwLeave(to, sure) {
+  if (!sure && bwDirty()) { bw.leave = to; bwRender(); return; }
+  if (to === "home") { const b = bwBkNow(), driver = bw.driver; bwOpen(null, b, bw.readOnly); bw.sub = "home"; bw.home = true; bw.driver = driver; bw.slide = "r"; bwRender(true); return; }
+  bwClose();
+}
+const bwLeaveHtml = () => `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwLvT"><div><b id="bwLvT">Leave without saving?</b><p>${bw.editId ? "The changes you made to this booking are not saved." : "This new booking is not saved yet."}</p>` +
+  `<div class="bwseg c2"><button type="button" data-bw="leavestay">Keep editing</button><button type="button" class="bwdanger" data-bw="leavego">Discard</button></div></div></div>`;
 function bwCanNext() {
   const s = bw.step;
   if (s === 0) return !!(bw.from && bw.to);
@@ -6154,18 +6191,19 @@ function bwCanNext() {
 // What is still needed before a booking can be sent for approval (a draft can be saved without these).
 const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) && "rent for one day"].filter(Boolean);
 function bwRender(top) {
-  const el = $("bw"), s = bw.step, bk = (s > 0 && !bw.readOnly) || (bw.home && s === 5);  // an opened booking starts on its summary and can still be stepped through
+  const el = $("bw"), s = bw.step, first = !bw.home && s === 0 && !bw.fromCheck;  // on the first screen ← already goes back to the list, so there is no ✕
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
   if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
-  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="${bw.home && s === 5 ? "subhome" : bk ? "back" : "close"}" aria-label="${bk ? "Back" : "Close"}">${bk ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div>${bk ? `<button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
+  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-bw="back" aria-label="Back">${BW_ICON.back}</button><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div>${first ? "" : `<button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button>`}</header>` +
     `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
     `<div class="bwb s${s}" id="bwBody"><h2>${s === 5 && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
     `<footer class="bwf">${s < 5 ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>${bw.fromCheck ? `${BW_ICON.ok} Done` : `Next ${BW_ICON.next}`}</button>`
-      : bw.readOnly ? `<button type="button" class="bwalt" data-bw="close">Close</button>`
+      : bw.readOnly ? `<button type="button" class="bwalt" data-bw="back">Back</button>`
       : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
       : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`;
   if (bw.sheet) el.insertAdjacentHTML("beforeend", bwSheetHtml());
   if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml());
+  if (bw.leave) el.insertAdjacentHTML("beforeend", bwLeaveHtml());
   if (top) $("bwBody").scrollTop = 0;
   if (bw.slide) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; }
 }
@@ -6249,7 +6287,7 @@ function bwDoneHtml() {
     `<h2>${d.cancelled ? "Booking cancelled" : d.draft ? "Draft saved" : d.pending ? "Sent for approval" : d.edited ? "Changes saved" : "Booking saved"}</h2><p class="bwno">Booking no. ${esc(d.no)}</p><p>${esc(d.line1)}<br>${esc(d.line2)}</p>` +
     (d.draft ? `<p style="margin-top:10px">To finish it, open it from the planner. It opens here again, ready to complete and send for approval.</p>` : "") +
     (pn && !d.draft ? `<a class="bwwa" href="https://wa.me/${pn}?text=${encodeURIComponent(d.msg)}" target="_blank" rel="noopener">${BW_ICON.wa} Send to party on WhatsApp</a>` : "") +
-    `</div><footer class="bwf two"><button type="button" class="bwgo" data-bw="again">+ New booking</button><button type="button" class="bwalt" data-bw="close">See planner</button></footer>`;
+    `</div>` + (bw.home ? `<footer class="bwf"><button type="button" class="bwgo" data-bw="back">Back to booking</button></footer>` : `<footer class="bwf two"><button type="button" class="bwgo" data-bw="again">+ New booking</button><button type="button" class="bwalt" data-bw="close">See planner</button></footer>`);
 }
 // Parties from past bookings, newest trip first, one row per phone number (or name when there is no number).
 function bwParties() {
@@ -6299,14 +6337,16 @@ function bwClick(e) {
   if (!bw) return;
   const t = e.target.closest("button, a, [data-bw=\"paybg\"]"); if (!t || t.disabled) return;
   const a = t.dataset.bw;
-  if (a === "close") { bwClose(); return; }
+  if (a === "close") { bwLeave("list"); return; }
+  if (a === "back") { bwBack(); return; }
+  if (a === "leavestay") { bw.leave = ""; bwRender(); return; }
+  if (a === "leavego") { const to = bw.leave; bw.leave = ""; bwLeave(to, true); return; }
   if (a === "paybg") { if (e.target.closest("[data-bw]") === t && e.target === t) { bw.pay = null; bwRender(); } return; }
   if (a === "payadd") { bw.pay = { amount: "", date: todayISO(), mode: "Cash", note: "" }; bwRender(); $("bw").querySelector('[data-k="pay.amount"]')?.focus(); return; }
   if (a === "payclose") { bw.pay = null; bwRender(); return; }
   if (a === "paysave") { bwPaySave(); return; }
   if (t.dataset.pmode) { bw.pay.mode = t.dataset.pmode; bwRender(); return; }
   if (a === "again") { bwOpen(); return; }
-  if (a === "back") { if (bw.fromCheck) { bw.step = 5; bw.fromCheck = false; } else bw.step--; bw.tels = null; bwRender(true); return; }
   if (a === "next") { if (bwCanNext()) { bw.step = bw.fromCheck ? (bw.step === 0 && bwClash() ? 1 : 5) : bw.step + 1; if (bw.step === 5) bw.fromCheck = false; bwRender(true); } return; }
   if (a === "pm" || a === "nm") { const d = new Date(bw.y, bw.m + (a === "nm" ? 1 : -1), 1); bw.y = d.getFullYear(); bw.m = d.getMonth(); bwRender(); return; }
   if (a === "parties") { bw.sheet = true; bw.q = ""; bw.plist = bwParties(); bwRender(); return; }
@@ -6325,13 +6365,12 @@ function bwClick(e) {
   if (a === "keep") { bw.askCancel = false; bwRender(); return; }
   if (a === "cancelyes") { bwCancel(); return; }
   if (a === "sub") { bw.sub = t.dataset.sub; bw.slide = "l"; bwRender(true); return; }
-  if (a === "subback" || a === "subhome") { bw.sub = bw.home ? "home" : ""; bw.slide = "r"; bwRender(true); return; }
   if (a === "details") { bw.sub = ""; bw.step = 5; bw.slide = "l"; bwRender(true); return; }
   if (t.dataset.payrm != null) { bwPayRemove(+t.dataset.payrm); return; }
   if (t.dataset.fkind) { bw.fkind = t.dataset.fkind; bwRender(); return; }
   if (a === "fcam" || a === "fpick") { if (!assetsCap) { toast("Attaching files isn't available in this view."); return; } $(a === "fcam" ? "bwFileCam" : "bwFileIn").click(); return; }
   if (t.dataset.frm != null) { bwFileRemove(+t.dataset.frm); return; }
-  if (a === "trip") { const id = bw.editId, home = bw.home; bwClose(); twOpen(ops.bookings.find(x => x.id === id)); if (tw && home) tw.backTo = id; return; }
+  if (a === "trip") { const id = bw.editId, home = bw.home; bwClose(); twOpen(ops.bookings.find(x => x.id === id), home ? id : ""); return; }
   if (t.dataset.day) { const v = t.dataset.day; if (!bw.from || bw.to) { bw.from = v; bw.to = ""; bw.half = "none"; } else if (v < bw.from) bw.from = v; else bw.to = v; bwRender(); return; }
   if (t.dataset.half) { bw.half = t.dataset.half; bwRender(); return; }
   if (t.dataset.bus) { bw.vehicleId = t.dataset.bus; bwRender(); return; }
@@ -6418,7 +6457,7 @@ const twDiesel = () => tw.rows.reduce((a, r) => a + num(r.amount), 0) + tw.legac
 const twLitres = () => tw.rows.reduce((a, r) => a + num(r.litres), 0) + tw.legacy.reduce((a, r) => a + num(r.litres), 0);
 const twTotal = () => twSumMoney() + (twPP("diesel") ? 0 : twDiesel()) + twOtherSum();
 const twMissing = () => { const s = num(tw.startKm), e = num(tw.endKm); return [!s && "start km", !e && "end km", s && e && e <= s && "end km more than start km"].filter(Boolean); };
-function twOpen(b) {
+function twOpen(b, backTo) {
   if (!b) return;
   if (!canBookings && !tsIsOpen(b)) { toast(`The trip sheet opens on ${fmtDate(tsOpenDate(b))}.`); return; }
   if (!canBookings && tsWorkerOnly() && acc.bookings === "none" && b.status === "completed" && !["draft", "rejected", "submitted"].includes(b.tsStatus)) { toast("This trip is closed."); return; }
@@ -6430,7 +6469,7 @@ function twOpen(b) {
   tw = { id: b.id, no: b.no || "", plate: v ? plateOf(v) : "", places: b.places || b.party || "", dates: `${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtShort(bkEnd(b))}` : ""}`,
     view: edit ? "page" : "check", edit, admin: canBookings, status: b.tsStatus || "", rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "",
     padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
-    files: (b.attachments || []).map(f => ({ ...f })), saving: false, done: null,
+    files: (b.attachments || []).map(f => ({ ...f })), saving: false, done: null, backTo: backTo || "",
     drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
     rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", file: f.file || null })), legacy: dslLegacyOf(b) };
   if (!tw.rows.length && edit) tw.rows.push({ litres: "", amount: "", file: null });
@@ -6445,10 +6484,18 @@ function twOpen(b) {
     $("tw").addEventListener("change", twSelect);
     $("twCam").addEventListener("change", twPhoto);
   }
-  $("tw").hidden = false; document.documentElement.classList.add("bw-on");
+  $("tw").hidden = false; document.documentElement.classList.add("bw-on"); ovOpened();
   twRender(true);
 }
-function twClose() { const back = tw?.backTo; if ($("tw")) $("tw").hidden = true; document.documentElement.classList.remove("bw-on"); tw = null; renderOps(); if (back && ops.bookings.some(x => x.id === back)) openBooking(back); }
+function twClose() { const back = tw?.backTo; if ($("tw")) $("tw").hidden = true; document.documentElement.classList.remove("bw-on"); tw = null; renderOps(); if (back && ops.bookings.some(x => x.id === back)) openBooking(back); ovClosed(); }
+// ← (or the phone's Back): from Check and send to the sheet, from the sheet to the booking page. ✕ goes straight to the list. Both save what was typed first.
+function twBack(toList) {
+  if (!tw || tw.saving) return;
+  if (toList) tw.backTo = "";
+  if (!toList && !tw.done && tw.view === "check" && tw.edit) { tw.view = "page"; tw.slide = "r"; twRender(true); return; }
+  if (tw.view === "page" && tw.edit && !tw.done) { const go = () => twClose(); twFlush().then(go, go); return; }
+  twClose();
+}
 function twCamBtn(key, label) {
   const n = tw.files.filter(f => f.for === key).length;
   return `<button type="button" class="twcam${n ? " on" : ""}" data-cam="${key}" aria-label="Photo of ${esc(label)} bill"${tw.edit ? "" : " disabled"}>${TW_CAM}${n ? `<i>${n}</i>` : ""}</button>`;
@@ -6522,14 +6569,14 @@ function twRender(top) {
   if (tw.done) {
     const d = tw.done;
     el.innerHTML = `<header class="bwh"><div><b id="twTitle">Trip sheet</b></div></header><div class="bwb bwdone"><span class="bwbig">${BW_ICON.ok}</span><h2>${d.sent ? "Sent to the office" : "Saved"}</h2><p class="bwno">Booking ${esc(tw.no)} · ${esc(tw.plate)}</p>` +
-      `<p>${d.line}<br>${d.sent ? 'The office will check it. You will see "Approved" in Trip sheets.' : d.admin ? "The trip sheet is updated." : "Open it again from Trip sheets to finish and send it."}</p></div><footer class="bwf"><button type="button" class="bwgo" data-tw="close">Back</button></footer>`;
+      `<p>${d.line}<br>${d.sent ? 'The office will check it. You will see "Approved" in Trip sheets.' : d.admin ? "The trip sheet is updated." : "Open it again from Trip sheets to finish and send it."}</p></div><footer class="bwf"><button type="button" class="bwgo" data-tw="back">${tw.backTo ? "Back to booking" : "Done"}</button></footer>`;
     return;
   }
-  const back = !page && tw.edit;
-  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="${back ? "page" : "close"}" aria-label="${back ? "Back" : "Close"}">${back ? BW_ICON.back : BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${esc([tw.places, tw.dates].filter(Boolean).join(" · "))}</span></div>${back ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
+  const x = tw.backTo || (!page && tw.edit);  // ✕ only when ← would not already go back to the list
+  el.innerHTML = `<header class="bwh"><button type="button" class="bwx" data-tw="back" aria-label="Back">${BW_ICON.back}</button><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${esc([tw.places, tw.dates].filter(Boolean).join(" · "))}</span></div>${x ? `<button type="button" class="bwx" data-tw="close" aria-label="Close">${BW_ICON.x}</button>` : ""}</header>` +
     (page ? `<div class="bwb tws tpage" id="twBody">${twPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>Check and send</h2>${twCheckHtml()}</div>`) +
     `<footer class="bwf${!page && tw.edit && !tw.admin ? " two" : ""}">${page ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span><span>Total <b id="tpTot">${rs(twTotal())}</b></span></div><button type="button" class="bwgo" data-tw="check">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
-      : !tw.edit ? `<button type="button" class="bwalt" data-tw="close">Close</button>`
+      : !tw.edit ? `<button type="button" class="bwalt" data-tw="back">Back</button>`
       : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
       : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>`;
   if (top) $("twBody").scrollTop = 0; else if (keep) $("twBody").scrollTop = keep;
@@ -6565,7 +6612,7 @@ function twClick(e) {
   if (!tw) return;
   const t = e.target.closest("button"); if (!t || t.disabled) return;
   const a = t.dataset.tw;
-  if (a === "close") { if (tw.view === "page" && tw.edit) { const go = () => twClose(); twFlush().then(go, go); return; } twClose(); return; }
+  if (a === "back" || a === "close") { twBack(a === "close"); return; }
   if (a === "check") { twSaveState("Saving…"); twFlush().then(() => { if (!tw) return; tw.view = "check"; tw.slide = "l"; twRender(true); }); return; }
   if (a === "page") { tw.view = "page"; tw.slide = "r"; twRender(true); return; }
   if (a === "rowadd") { tw.rows.push({ litres: "", amount: "", file: null }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
@@ -6740,7 +6787,7 @@ function bwHomeHtml(b) {
   const fileBadge = `<span class="bhpct cnt" title="${n} file${n === 1 ? "" : "s"} added">${n}</span>`;
   const byKind = BW_FILE_KINDS.map(k => [k, (b.attachments || []).filter(f => fileKindOf(f) === k).length]).filter(x => x[1]);
   const fp = tsFill(b), fpBadge = tsOpen ? `<span class="bhpct ${fp.pct === 100 ? "ok" : fp.pct >= 50 ? "mid" : ""}" title="${fp.done} of ${fp.all} filled in${fp.left.length ? ": still to fill " + fp.left.join(", ") : ""}">${fp.pct}%</span>` : "";
-  return `<header class="bwh"><button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(BK_STAGES[b.status] || "")}</span></div></header>` +
+  return `<header class="bwh"><button type="button" class="bwx" data-bw="back" aria-label="Back to the list">${BW_ICON.back}</button><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(BK_STAGES[b.status] || "")}</span></div></header>` +
     `<div class="bwb tws" id="bwBody"><div class="bhcard">` +
       `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span></div>` +
       `<b class="bhplace">${esc(b.places || "—")}</b>` +
@@ -6755,7 +6802,7 @@ function bwHomeHtml(b) {
 function bwSubHtml() {
   const b = bwBkNow(); if (!b) { bw.sub = ""; return ""; }
   if (bw.sub === "home") return bwHomeHtml(b);
-  const head = t => `<header class="bwh"><button type="button" class="bwx" data-bw="subback" aria-label="Back">${BW_ICON.back}</button><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div><button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button></header>`;
+  const head = t => `<header class="bwh"><button type="button" class="bwx" data-bw="back" aria-label="Back">${BW_ICON.back}</button><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div><button type="button" class="bwx" data-bw="close" aria-label="Close">${BW_ICON.x}</button></header>`;
   if (bw.sub === "pay") {
     const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite;
     const card = (p, i) => `<div class="twcard"><span class="twmain" style="cursor:default"><span class="twn twk" aria-hidden="true">₹</span><span class="twci"><b>${rs(num(p.amount))}</b><span>${[p.date ? fmtDate(p.date) : "", p.mode || "Cash", i === 0 && !p.note ? "Advance" : p.note].filter(Boolean).map(esc).join(" · ")}</span>${p.byName ? `<span>By ${esc(p.byName)}</span>` : ""}</span></span>` +
