@@ -123,7 +123,7 @@ function bookingRule(a, op, prev, next) {
   return false;
 }
 
-const DRV_MONEY = ["drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvSettle"];
+const DRV_MONEY = ["drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle"];
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o?.[k] != null).map(k => [k, o[k]]));
 function paymentsAdded(prev, next) {
   const p = prev.payments || [], n = next.payments || [];
