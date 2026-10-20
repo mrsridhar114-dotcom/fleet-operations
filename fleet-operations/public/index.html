@@ -8026,8 +8026,35 @@ async function slipPdf(L, d) {
 }
 // Trip sheet PDF, laid out like the printed VBS trip sheet book. Front: trip, crew, km, expenses and totals.
 // Back: every diesel fill and the driver advance. A5, the size of the book.
-async function tsPdf(L, b) {
-  const pdf = await L.PDFDocument.create(), W = 419.53, H = 595.28, X0 = 30, X1 = W - 30;
+// The trip sheet is drawn on canvases and saved as JPG images (front and back), like the vehicle master's validity print.
+// A PDF opened in some phone PDF viewers came with an advert page; images open in the gallery and print cleanly.
+// tsLayout draws through a small pdf-style drawing kit, so the same layout code fills the canvases (y counts up from the bottom).
+function tsCanvasKit(scale = 3) {
+  const FAM = "Helvetica, Arial, sans-serif", meas = document.createElement("canvas").getContext("2d");
+  const font = bold => ({ bold, widthOfTextAtSize: (t, sz) => { meas.font = `${bold ? "bold " : ""}${sz}px ${FAM}`; return meas.measureText(t).width; } });
+  const col = c => `rgb(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)})`;
+  const pages = [];
+  const doc = {
+    pages,
+    embedFont: async f => font(f === "bold"),
+    addPage: ([W, H]) => {
+      const cv = document.createElement("canvas"); cv.width = Math.round(W * scale); cv.height = Math.round(H * scale);
+      const g = cv.getContext("2d"); g.scale(scale, scale); g.fillStyle = "#fff"; g.fillRect(0, 0, W, H); g.textBaseline = "alphabetic";
+      const Y = y => H - y, stroke = (o, def) => { g.lineWidth = o.borderWidth ?? o.thickness ?? def; g.strokeStyle = col(o.borderColor || o.color); };
+      const page = {
+        drawText: (t, o) => { g.font = `${o.font.bold ? "bold " : ""}${o.size}px ${FAM}`; g.fillStyle = col(o.color); g.fillText(t, o.x, Y(o.y)); },
+        drawLine: o => { g.beginPath(); g.setLineDash(o.dashArray || []); stroke(o, 1); g.moveTo(o.start.x, Y(o.start.y)); g.lineTo(o.end.x, Y(o.end.y)); g.stroke(); g.setLineDash([]); },
+        drawRectangle: o => { if (o.color) { g.fillStyle = col(o.color); g.fillRect(o.x, Y(o.y + o.height), o.width, o.height); }
+          if (o.borderColor) { stroke(o, 1); g.strokeRect(o.x, Y(o.y + o.height), o.width, o.height); } },
+        drawEllipse: o => { g.beginPath(); g.ellipse(o.x, Y(o.y), o.xScale, o.yScale, 0, 0, Math.PI * 2); stroke(o, 1); g.stroke(); }
+      };
+      pages.push(cv); return page;
+    }
+  };
+  return { doc, L: { rgb: (r, g2, b2) => ({ r, g: g2, b: b2 }), StandardFonts: { Helvetica: "reg", HelveticaBold: "bold" } } };
+}
+async function tsLayout(L, pdf, b) {
+  const W = 419.53, H = 595.28, X0 = 30, X1 = W - 30;
   const reg = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
   const ink = L.rgb(0.106, 0.165, 0.42), grey = L.rgb(0.35, 0.35, 0.35), black = L.rgb(0, 0, 0), shade = L.rgb(0.93, 0.94, 0.97);
   const c = bkCalc(b), bus = vehicles.find(v => v.id === b.vehicleId), fd = iso => iso ? iso.split("-").reverse().join("-") : "";
@@ -8126,7 +8153,6 @@ async function tsPdf(L, b) {
   }
   text("Driver signature", X0, 30, { size: 9 }); hline(X0, X0 + 110, 42, { t: 0.5, color: grey });
   text("Office signature", X1, 30, { size: 9, align: "right" }); hline(X1 - 110, X1, 42, { t: 0.5, color: grey });
-  return new Blob([await pdf.save()], { type: "application/pdf" });
 }
 async function tsPrint(b, btn) {
   let downloads = null;
@@ -8134,11 +8160,15 @@ async function tsPrint(b, btn) {
   if (!downloads) { toast("Saving files isn't available in this view."); return; }
   if (btn) btn.disabled = true; toast("Preparing the trip sheet…");
   try {
-    const blob = await tsPdf(await loadPdfLib(), b);
-    await downloads.save({ filename: `Trip sheet ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf", data: blob });
-    toast("Trip sheet saved as a PDF. Open it to print.");
+    const { doc, L } = tsCanvasKit(); await tsLayout(L, doc, b);
+    const base = `Trip sheet ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ");
+    for (const [i, cv] of doc.pages.entries()) {
+      const blob = await new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92));
+      await downloads.save({ filename: `${base} ${i === 0 ? "front" : i === 1 ? "back" : "back " + i}.jpg`, data: blob });
+    }
+    toast("Trip sheet saved as images (front and back). Open them to print.");
   } catch (e) {
-    toast(e?.code === "declined" ? "Trip sheet not saved." : e?.message === "load failed" ? "Couldn't prepare the trip sheet. Check your internet connection and try again." : "Couldn't save the trip sheet. Try again.");
+    toast(e?.code === "declined" ? "Trip sheet not saved." : e?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't save the trip sheet. Try again.");
   } finally { if (btn) btn.disabled = false; }
 }
 // Vehicle renewal dates sheet: every vehicle in service with all its renewal dates, as a PDF to print or share.
