@@ -182,7 +182,7 @@ tbody tr:hover { background: var(--accent-soft); }
 .chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .rowact { display: flex; gap: 6px; justify-content: flex-end; }
 /* renewal schedule: a date being updated in its row */
-tr.redit > td { background: var(--accent-soft); } .rdate { font: 600 14px var(--body); padding: 6px 8px; border: 1px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--ink); max-width: 100%; }
+tr.redit > td { background: var(--accent-soft); } .rnew { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; } .rfile { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .rfile .sub { font-size: 12px; overflow-wrap: anywhere; } .rdate { font: 600 14px var(--body); padding: 6px 8px; border: 1px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--ink); max-width: 100%; }
 tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width: 760px) { tr.redit .rowact .btn { flex: 1; } }
 .icon { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 5px 9px; border-radius: 5px; font-size: 13px; font-weight: 600; }
 .icon:hover { border-color: var(--line); color: var(--ink); }
@@ -3085,6 +3085,11 @@ function allItems() {
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }
 const rKey = i => `${i.kind}:${i.rec.id}:${i.k}`;
+// Where the copy of each document is kept in its master: a vehicle document sits under its own date's name; a driver's
+// licence dates go with the licence front; a conductor's licence and first-aid dates with their own copies.
+const R_SLOT = { valTR: "dlFront", valNT: "dlFront", clValid: "clCopy", faValid: "faCopy" };
+const rSlot = (kind, k) => kind === "vehicle" ? k : R_SLOT[k];
+let rFile = null;
 const rCan = kind => kind === "vehicle" ? canWrite : kind === "driver" ? canDrivers : canConductors;
 let rEdit = "";
 
@@ -3158,7 +3163,7 @@ function renderDash() {
       return `<tr${ed ? ' class="redit"' : ""}>
       <td class="c-name">${who}</td>
       <td data-label="Document">${esc(i.short)}</td>
-      <td data-label="Expiry date">${ed ? `<input type="date" class="rdate" id="rDate" value="${i.date}" min="1900-01-01" max="2100-12-31" aria-label="New ${esc(i.short)} date"><span class="err" id="rDateErr"></span>` : `<span class="num">${fmtDate(i.date)}</span>`}</td>
+      <td data-label="Expiry date">${ed ? `<div class="rnew"><input type="date" class="rdate" id="rDate" value="${i.date}" min="1900-01-01" max="2100-12-31" aria-label="New ${esc(i.short)} date">${rFileHtml(i)}<span class="err" id="rDateErr"></span></div>` : `<span class="num">${fmtDate(i.date)}</span>`}</td>
       <td data-label="Status"><span class="pill ${i.band}">${whenText(i.days)}</span></td>
       <td class="c-act"><div class="rowact">${ed
         ? `<button class="icon" data-act="rcancel">Cancel</button><button class="btn primary" data-act="rsave" data-key="${key}">Save</button>`
@@ -3969,14 +3974,29 @@ $("rRows").addEventListener("click", e => {
   const b = e.target.closest("button[data-act]"); if (!b) return;
   const a = b.dataset.act;
   if (a === "view") { const v = vehicles.find(x => x.id === b.dataset.id); if (v) openVDrawer(v); return; }
-  if (a === "renew") { rEdit = b.dataset.key; renderDash(); setTimeout(() => $("rDate")?.focus(), 0); return; }
-  if (a === "rcancel") { rEdit = ""; renderDash(); return; }
+  if (a === "rfilex") { const d = $("rDate").value; rFile = null; renderDash(); if ($("rDate")) $("rDate").value = d; return; }
+  if (a === "renew") { rEdit = b.dataset.key; rFile = null; renderDash(); setTimeout(() => $("rDate")?.focus(), 0); return; }
+  if (a === "rcancel") { rEdit = ""; rFile = null; renderDash(); return; }
   if (a === "rsave") rSave(b);
 });
 $("rRows").addEventListener("keydown", e => {
   if (e.target.id !== "rDate") return;
   if (e.key === "Enter") { e.preventDefault(); rSave($("rRows").querySelector('[data-act="rsave"]')); }
-  if (e.key === "Escape") { rEdit = ""; renderDash(); }
+  if (e.key === "Escape") { rEdit = ""; rFile = null; renderDash(); }
+});
+// Optional new copy of the document, attached while the date is updated; it replaces the copy in the master (the old one stays in history).
+function rFileHtml(i) {
+  if (!assetsCap) return "";
+  const cur = fileOf(i.rec, rSlot(i.kind, i.k));
+  return `<div class="rfile"><label class="btn filebtn">📎 ${rFile ? "Change file" : cur ? "Attach new copy" : "Attach copy"}<input type="file" id="rFile" accept="${FILE_TYPES.join(",")}" hidden></label>` +
+    `<span class="sub" id="rFileName">${rFile ? `New: ${esc(rFile.name)}` : cur ? `Now: ${esc(cur.name)}` : "No copy attached yet"}</span>${rFile ? `<button type="button" class="icon" data-act="rfilex" aria-label="Don't attach this file">✕</button>` : ""}</div>`;
+}
+$("rRows").addEventListener("change", e => {
+  if (e.target.id !== "rFile") return;
+  const f = e.target.files?.[0]; e.target.value = ""; if (!f) return;
+  if (!FILE_TYPES.includes(f.type)) { $("rDateErr").textContent = "Attach a PDF, JPG or PNG file."; return; }
+  if (f.size > 20 * 1024 * 1024) { $("rDateErr").textContent = "That file is over 20 MB. Attach a smaller scan."; return; }
+  const d = $("rDate").value; rFile = f; renderDash(); if ($("rDate")) $("rDate").value = d;
 });
 // Save one renewal date from the schedule: the record keeps everything else; the change goes into that master's history.
 async function rSave(btn) {
@@ -3985,17 +4005,27 @@ async function rSave(btn) {
   const list = kind === "vehicle" ? vehicles : kind === "driver" ? drivers : conductors, cur = list.find(x => x.id === id); if (!cur) { rEdit = ""; renderDash(); return; }
   if (!val || val < "1900-01-01" || val > "2100-12-31") return err("Enter a valid date.");
   if (kind === "vehicle" && k === "permitExp" && cur.permitFrom && cur.permitFrom > val) return err("Can't be before the permit's Valid from date.");
-  if (val === cur[k]) { rEdit = ""; renderDash(); return; }
+  if (val === cur[k] && !rFile) { rEdit = ""; renderDash(); return; }
   const next = { ...cur, [k]: val }, who = { at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", note: "Updated from the renewal schedule" };
-  const label = kind === "vehicle" ? vName(cur) : cur.name;
+  const label = kind === "vehicle" ? vName(cur) : cur.name, slot = rSlot(kind, k), idKey = { vehicle: "vehicleId", driver: "driverId", conductor: "conductorId" }[kind];
+  const hist = val !== cur[k] ? [{ [idKey]: id, field: k, from: histVal(cur[k]), to: val, ...who }] : [];
   btn.disabled = true;
   try {
-    if (kind === "vehicle") { await saveVehicle(next); await addHistory([{ vehicleId: id, field: k, from: histVal(cur[k]), to: val, ...who }]).catch(() => {}); }
-    else if (kind === "driver") { await saveDriver(next); await addDHistory([{ driverId: id, field: k, from: histVal(cur[k]), to: val, ...who }]).catch(() => {}); }
-    else { await saveConductor(next); await addCHistory([{ conductorId: id, field: k, from: histVal(cur[k]), to: val, ...who }]).catch(() => {}); }
+    // The new copy is uploaded first, then saved into the document's place in the master together with the date.
+    if (rFile && slot) {
+      btn.textContent = "Uploading…";
+      const r = await assetsCap.upload(rFile, { type: rFile.type });
+      next[slot + "File"] = r.id; next[slot + "FileName"] = rFile.name;
+      hist.push({ [idKey]: id, field: slot + "FileName", from: cur[slot + "FileName"] || "", to: rFile.name, fromFileId: cur[slot + "File"] || "", toFileId: r.id, ...who });
+    }
+    if (kind === "vehicle") { await saveVehicle(next); await addHistory(hist).catch(() => {}); }
+    else if (kind === "driver") { await saveDriver(next); await addDHistory(hist).catch(() => {}); }
+    else { await saveConductor(next); await addCHistory(hist).catch(() => {}); }
     const i = list.findIndex(x => x.id === id); if (i >= 0) list[i] = next;
-    rEdit = ""; renderDash(); toast(`${label}: date updated to ${fmtDate(val)}`);
-  } catch { btn.disabled = false; toast("Couldn't save. Check your connection and try again."); }
+    const filed = !!(rFile && slot);
+    rEdit = ""; rFile = null; renderDash();
+    toast(`${label}: ${val !== cur[k] ? `date updated to ${fmtDate(val)}` : "date unchanged"}${filed ? " · new copy attached" : ""}`);
+  } catch { btn.disabled = false; btn.textContent = "Save"; toast("Couldn't save. Check your connection and try again."); }
 }
 /* ================= Driver master ================= */
 // Driver change history: one entry per changed field, like vehicles.
