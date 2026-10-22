@@ -1871,8 +1871,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <section class="panel upform">
         <div class="hf"><label for="upKind">What is in the file</label><select id="upKind"></select></div>
         <div class="hf" id="upBusRow"><label for="upBus">Bus</label><select id="upBus"></select></div>
+        <div class="hf" id="upMonRow" hidden><label for="upMonth">Month of the sheet</label><input type="month" id="upMonth"></div>
         <div class="hf"><label for="upFile">Excel file (.xlsx) or CSV</label><input id="upFile" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></div>
-        <label class="chk upchk"><input type="checkbox" id="upPaid" checked> These trips are fully paid (record the collection as received)</label>
+        <label class="chk upchk" id="upPaidRow"><input type="checkbox" id="upPaid" checked> These trips are fully paid (record the collection as received)</label>
         <div class="uptpl"><p class="sub" id="upNote" style="margin:0"></p><button class="btn" type="button" id="upTpl">⬇ Download Excel template</button></div>
         <p class="sub" id="upTplMsg" style="margin:0;grid-column:1/-1" hidden></p>
       </section>
@@ -5726,15 +5727,113 @@ function upTemplate(kind) {
 }
 $("upTpl").addEventListener("click", async () => {
   const msg = $("upTplMsg"), v = vehicles.find(x => x.id === $("upBus").value), digits = v ? (plateKey(v.plateNo).match(/\d{4}$/) || [""])[0] : "";
-  const filename = `${digits ? digits + "_" : ""}spare-bus-trips-template.xlsx`;
+  const K = UP_KINDS[upState.kind], ym = $("upMonth").value;
+  if (K.route && !ym) { msg.hidden = false; msg.textContent = "Choose the month first: the template lists its days."; return; }
+  const filename = K.route ? `${digits ? digits + "_" : ""}route-bus-${ym}.xlsx` : `${digits ? digits + "_" : ""}spare-bus-trips-template.xlsx`;
   msg.hidden = false;
   try {
     const dl = await auDownloads();
     if (!dl) { msg.textContent = "Saving files isn't available in this view. Reload the page and try again."; return; }
-    await dl.save({ filename, data: upTemplate(upState.kind) });
+    await dl.save({ filename, data: K.route ? upRouteTemplate($("upBus").value, ym) : upTemplate(upState.kind) });
     msg.textContent = `Saved ${filename}. Fill in the Trips sheet${digits ? "" : " (name the file with the bus number, e.g. 3366_2026.xlsx, and the bus is picked for you)"}, then choose it above.`;
   } catch (er) { msg.textContent = er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."; }
 });
+
+// ---- route bus: one bus, one month, one row per day (the office's monthly Excel sheet)
+// Headings as in the office sheet: Date (day of the month), Starting, Day, Driver, Conductor, Checker, Diesel Rate, No. Litre,
+// Fuel Price, then Driver / Conductor / Checker again (their pay), S1–S5, Collection, Expense, Balance, Total Balance, KMS.
+const UP_ROUTE = {
+  label: "Route bus day sheet (one bus, one month)",
+  note: "Columns used: Date (1 to 31), Starting, Day, Driver, Conductor, Checker, Diesel Rate, No. Litre, Fuel Price, Driver, Conductor and Checker pay (the second Driver, Conductor and Checker columns), S1–S5, Expense and KMS (odometer). Choose the bus and the month: the Date column only gives the day. Collection and balance are worked out again by the app; any expense beyond diesel and pay goes in as Other.",
+  needsBus: true, needsMonth: true, route: true,
+  cols: { day: /^date$/, start: /^start/, wday: /^day$/, driver: /^driver/, conductor: /^conductor/, checker: /^checker/, rate: /rate/, litres: /litre/, fuel: /fuel|diesel/,
+    s1: /^s\s*1$/, s2: /^s\s*2$/, s3: /^s\s*3$/, s4: /^s\s*4$/, s5: /^s\s*5$/, collection: /^collection/, expense: /^expense/, odo: /^kms?$|odo|km\s*reading|meter/ },
+  twice: { driver: "payD", conductor: "payC", checker: "payK" }
+};
+UP_KINDS.route = UP_ROUTE;
+const UP_MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+// "2277Octobr.xlsx" → the latest October that is not in the future.
+function upMonthFromName(name) {
+  const t = String(name).toLowerCase(), i = UP_MONTHS.findIndex(m => t.includes(m)); if (i < 0) return "";
+  const now = todayISO(), y = +now.slice(0, 4), ym = `${y}-${pad2(i + 1)}`;
+  return ym > now.slice(0, 7) ? `${y - 1}-${pad2(i + 1)}` : ym;
+}
+function upMatchConductor(name) {
+  const n = upText(name).toUpperCase(); if (!n) return null;
+  const words = s => String(s || "").toUpperCase().replace(/[^A-Z ]/g, " ").split(/\s+/).filter(w => w.length > 1);
+  const hit = conductors.filter(d => { const w = words(d.name); return String(d.name || "").toUpperCase() === n || words(n).every(x => w.includes(x)); });
+  return hit.length === 1 ? hit[0] : null;
+}
+function upRouteRows(rows, bus, ym, file) {
+  const head = rows[0] || [], at = upColumns("route", head), out = [], cell = (r, k) => at[k] == null ? undefined : r[at[k]];
+  if (at.day == null) return { error: "The first row must hold the column names, with Date in the first column (1 to 31)." };
+  const n = daysIn(ym), wd = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  let prevOdo = prevOdoFor(bus, `${ym}-01`), wrongDay = 0, dated = 0;
+  rows.slice(1).forEach((r, i) => {
+    r = r || []; const raw = cell(r, "day"); if (raw == null || raw === "") return;
+    const line = i + 2, num0 = upNum(raw), dd = num0 && num0 >= 1 && num0 <= 31 ? Math.round(num0) : (upDate(raw).a || "").slice(0, 7) === ym ? +upDate(raw).a.slice(8) : 0;
+    const row = { line, problems: [], notes: [], date: "", t: null };
+    if (!dd || dd > n) { row.problems.push(`"${upText(raw)}" is not a day of ${new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long" })}`); out.push(row); return; }
+    const date = row.date = `${ym}-${pad2(dd)}`, sheetDay = upText(cell(r, "wday")).toLowerCase();
+    if (sheetDay) { dated++; const real = wd[new Date(date + "T00:00:00").getDay()]; if (!real.startsWith(sheetDay.slice(0, 3))) { wrongDay++; row.notes.push(`the sheet says ${upText(cell(r, "wday"))}, but ${fmtShort(date)} is a ${real[0].toUpperCase() + real.slice(1)}`); } }
+    const v = k => { const x = upNum(cell(r, k)); return x && x > 0 ? x : 0; };
+    const has = ["s1", "s2", "s3", "s4", "s5", "litres", "fuel", "payD", "payC", "payK", "expense", "odo", "collection"].some(k => v(k)) || upText(cell(r, "driver"));
+    if (!has) { row.empty = true; out.push(row); return; }
+    const t = { id: `${bus}_${date}`, vehicleId: bus, date, importedFrom: file, importedOn: todayISO() };
+    const start = upText(cell(r, "start")); if (start) t.start = placeName(start);
+    const crew = (kind, k, match) => { const nm = upText(cell(r, k)); if (!nm) return ""; const p = match(nm); if (p) { t[kind + "Id"] = p.id; t[kind + "Name"] = p.name; return `${p.name}`; } t[kind + "Name"] = nm.toUpperCase(); return `${nm} (not in master)`; };
+    row.crew = [crew("driver", "driver", upMatchDriver), crew("conductor", "conductor", upMatchConductor), crew("checker", "checker", upMatchConductor)].filter(Boolean).join(" · ");
+    if (v("rate")) t.dieselRate = Math.round(v("rate") * 100) / 100;
+    if (v("litres")) t.litres = Math.round(v("litres") * 10) / 10;
+    if (v("fuel")) t.fuelCost = Math.round(v("fuel"));
+    else if (t.litres && t.dieselRate) { t.fuelCost = Math.round(t.litres * t.dieselRate); row.notes.push(`no fuel price; worked out as ${t.litres} L × ₹${t.dieselRate}`); }
+    if (v("payD")) t.driverPay = Math.round(v("payD")); if (v("payC")) t.conductorPay = Math.round(v("payC")); if (v("payK")) t.checkerPay = Math.round(v("payK"));
+    [1, 2, 3, 4, 5].forEach(i => { if (v("s" + i)) t["s" + i] = Math.round(v("s" + i)); });
+    const base = num(t.fuelCost) + tripPay(t), sheetExp = Math.round(v("expense"));
+    if (sheetExp > base) { t.ex_misc = sheetExp - base; if (!t.fuelCost) row.notes.push(`no diesel amount; the expense ${rs(t.ex_misc)} goes in as Other`); }
+    else if (sheetExp && sheetExp < base) row.notes.push(`the sheet's expense ${rs(sheetExp)} is less than diesel and pay (${rs(base)}); diesel and pay are kept`);
+    t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
+    t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
+    if (v("collection") && Math.round(v("collection")) !== t.collection) row.notes.push(`the sheet's collection ${rs(Math.round(v("collection")))} is not S1–S5 added up (${rs(t.collection)})`);
+    const odo = Math.round(v("odo"));
+    if (odo) { if (prevOdo != null && odo <= prevOdo) row.notes.push(`km reading ${nf(odo)} is not more than the day before (${nf(prevOdo)}); left out`); else { if (prevOdo != null && odo - prevOdo > 1500) row.notes.push(`${nf(odo - prevOdo)} km in a day: please check`); t.odo = odo; prevOdo = odo; } }
+    row.t = t;
+    const have = winTrips().find(x => x.id === t.id || (x.vehicleId === bus && x.date === date));
+    if (have) row.skip = `already in the app${have.importedFrom ? " (imported)" : ""}`;
+    out.push(row);
+  });
+  return { rows: out, ym, wrongMonth: dated >= 3 && wrongDay > dated / 2 };
+}
+function upRouteTable(res) {
+  const list = res.rows, ready = list.filter(x => x.t && !x.problems.length && !x.skip), skip = list.filter(x => x.skip), empty = list.filter(x => x.empty), bad = list.filter(x => x.problems.length);
+  const tot = k => ready.reduce((a, x) => a + num(x.t[k]), 0);
+  const mon = new Date(res.ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+  return `<div class="upsum"><span><b>${ready.length}</b> day${ready.length === 1 ? "" : "s"} ready to import</span><span><b>${skip.length}</b> already in the app</span><span><b>${empty.length}</b> empty (left out)</span><span><b>${bad.length}</b> with a problem</span>` +
+    `<span>Collection <b>${rs(tot("collection"))}</b></span><span>Expenses <b>${rs(tot("expense"))}</b></span><span>Balance <b>${rs(tot("collection") - tot("expense"))}</b></span></div>` +
+    (res.wrongMonth ? `<p class="err" style="margin:0">The day names in the sheet don't match ${mon}. Check that the right month is chosen.</p>` : `<p class="sub" style="margin:0">Month: <b>${mon}</b>. Days with nothing entered are left out.</p>`) +
+    `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Row</th><th>Day</th><th>Starting</th><th>Crew</th><th class="n">Collection</th><th class="n">Diesel</th><th class="n">Pay</th><th class="n">Other</th><th class="n">Balance</th><th class="n">Km reading</th><th>Upload</th></tr></thead><tbody>` +
+    list.map(x => { const t = x.t;
+      return `<tr class="${x.problems.length ? "bad" : x.skip || x.empty ? "skip" : ""}"><td class="num">${x.line}</td><td class="num" style="white-space:nowrap">${x.date ? `${DAYS[new Date(x.date + "T00:00:00").getDay()].slice(0, 3)} ${fmtShort(x.date)}` : "?"}</td>` +
+        `<td>${esc(t?.start || "—")}</td><td>${esc(x.crew || "—")}</td><td class="n">${t ? nf(t.collection) : ""}</td><td class="n">${t?.fuelCost ? nf(t.fuelCost) : t ? "—" : ""}</td><td class="n">${t ? nf(tripPay(t)) : ""}</td><td class="n">${t?.otherExp ? nf(t.otherExp) : t ? "—" : ""}</td>` +
+        `<td class="n">${t ? nf(t.balance) : ""}</td><td class="n">${t?.odo ? nf(t.odo) : t ? "—" : ""}</td>` +
+        `<td>${x.problems.length ? `<span class="pill expired">Problem</span> ${esc(x.problems.join("; "))}` : x.empty ? `<span class="pill off">Empty</span>` : x.skip ? `<span class="pill off">Skipped</span> ${esc(x.skip)}` : `<span class="pill ok">Ready</span>`}${x.notes.length ? ` <span class="sub">${esc(x.notes.join("; "))}</span>` : ""}</td></tr>`; }).join("") + `</tbody></table></div>` +
+    `<div class="rxbtns"><span class="sub" style="flex:1">Each day goes into the route trip sheet of the bus, the same as an entry in Daily entry. Days already in the app are not changed.</span><button class="btn primary" type="button" id="upGo"${!ready.length || upState.busy ? " disabled" : ""}>${upState.busy ? "Importing…" : `Import ${ready.length} day${ready.length === 1 ? "" : "s"}`}</button></div>`;
+}
+// The office sheet as a template: the chosen month's days, the starting place of each day and the weekday filled in.
+function upRouteTemplate(bus, ym) {
+  const S = XL.S, ws = XL.sheet(new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }));
+  const H = [["Date", 6], ["Starting", 12], ["Day", 11], ["Driver", 16], ["Conductor", 16], ["Checker", 14], ["Diesel Rate", 10], ["No. Litre", 9], ["Fuel Price", 10], ["Driver", 9], ["Conductor", 10], ["Checker", 9],
+    ["S1", 8], ["S2", 8], ["S3", 8], ["S4", 8], ["S5", 8], ["Collection", 11], ["Expense", 10], ["Balance", 10], ["KMS", 10]];
+  H.forEach(([h, w], i) => { const c = XL.col(i); XL.put(ws, `${c}1`, h, S.head); ws.widths[c] = w; });
+  for (let d = 1; d <= daysIn(ym); d++) {
+    const date = `${ym}-${pad2(d)}`, r = d + 1;
+    XL.put(ws, `A${r}`, d, S.int); XL.put(ws, `B${r}`, bus ? plannedFor(bus, date) : "", S.text); XL.put(ws, `C${r}`, DAYS[new Date(date + "T00:00:00").getDay()], S.text);
+    for (let c = 3; c < H.length; c++) XL.put(ws, `${XL.col(c)}${r}`, "", c >= 6 ? S.int : S.text);
+    XL.put(ws, `R${r}`, 0, S.int, `IF(SUM(M${r}:Q${r})=0,"",SUM(M${r}:Q${r}))`); XL.put(ws, `T${r}`, 0, S.int, `IF(R${r}="","",R${r}-S${r})`);
+  }
+  ws.freeze = 1;
+  return XL.build([ws]);
+}
 
 // ---- screen
 let upState = { kind: "spare", file: null, rows: null, busy: false, done: null };
@@ -5743,14 +5842,18 @@ function renderUpload() {
   const S = upState, K = UP_KINDS[S.kind];
   $("upKind").innerHTML = Object.entries(UP_KINDS).map(([k, x]) => `<option value="${k}"${k === S.kind ? " selected" : ""}>${esc(x.label)}</option>`).join("");
   $("upNote").textContent = K.note;
-  const buses = spareBuses(), cur = $("upBus").value;
+  const buses = K.route ? routeBuses() : spareBuses(), cur = $("upBus").value;
   $("upBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))}</option>`).join("");
   $("upBus").value = buses.some(v => v.id === cur) ? cur : "";
-  $("upBusRow").hidden = !K.needsBus;
+  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route;
+  $("upMonth").max = todayISO().slice(0, 7);
   const res = S.rows, list = res?.rows || [];
+  if (S.done && K.route) { $("upOut").innerHTML = `<div class="upok"><b>${S.done.n} day${S.done.n === 1 ? "" : "s"} imported</b> into ${esc(S.done.bus)} for ${esc(S.done.mon)}${S.done.failed ? `, ${S.done.failed} could not be saved${S.done.why ? ` (${esc(S.done.why)})` : ""}. Upload the same file again: days already in the app are skipped` : ""}. They are in the route trip sheet (Daily entry and Monthly sheet).</div>`; return; }
   if (S.done) { $("upOut").innerHTML = `<div class="upok"><b>${S.done.n} trip${S.done.n === 1 ? "" : "s"} imported</b> into ${esc(S.done.bus)}${S.done.failed ? `, ${S.done.failed} could not be saved${S.done.why ? ` (${esc(S.done.why)})` : ""}. Check the connection and upload the same file again: rows already in the app are skipped` : ""}. They are in the Booking planner and in Reports.</div>`; return; }
   if (!res) { $("upOut").innerHTML = ""; return; }
   if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
+  if (res.loading) { $("upOut").innerHTML = `<p class="sub" style="margin:0">Loading the days already in the app for this month…</p>`; return; }
+  if (K.route) { $("upOut").innerHTML = upRouteTable(res); return; }
   const ready = list.filter(x => !x.problems.length && !x.skip), skip = list.filter(x => x.skip), bad = list.filter(x => x.problems.length);
   const tot = k => ready.filter(x => x.st !== "Cancelled").reduce((a, x) => a + num(x.c[k]), 0);
   $("upOut").innerHTML = `<div class="upsum"><span><b>${ready.length}</b> ready to import</span><span><b>${skip.length}</b> already in the app</span><span><b>${bad.length}</b> with a problem</span>` +
@@ -5765,24 +5868,41 @@ function renderUpload() {
 async function upLoad() {
   const f = $("upFile").files?.[0]; upState.done = null;
   if (!f) { upState.rows = null; renderUpload(); return; }
-  if (UP_KINDS[upState.kind].needsBus && !$("upBus").value) { upState.rows = { error: "Choose the bus these trips belong to first." }; renderUpload(); return; }
+  const K = UP_KINDS[upState.kind];
+  if (K.needsBus && !$("upBus").value) { upState.rows = { error: K.route ? "Choose the route bus of this sheet first." : "Choose the bus these trips belong to first." }; renderUpload(); return; }
+  if (K.needsMonth && !$("upMonth").value) { upState.rows = { error: "Choose the month of this sheet first." }; renderUpload(); return; }
+  if (K.route) {
+    // The days already in the app for that month are needed to skip them: load them first.
+    const ym = $("upMonth").value, end = `${ym}-${pad2(daysIn(ym))}`;
+    if (opDate !== end) { opDate = end; subscribeDay(); }
+    if (!dayReady()) { upState.rows = { loading: true }; upState.waitDay = true; renderUpload(); return; }
+  }
   try {
     const buf = await f.arrayBuffer();
     const rows = /\.csv$/i.test(f.name) ? upReadCsv(new TextDecoder().decode(buf)) : /\.xlsx$/i.test(f.name) ? await upReadXlsx(buf) : null;
     if (!rows) { upState.rows = { error: "Choose an Excel file saved as .xlsx (or a .csv file). Older .xls files: open in Excel and save as .xlsx." }; renderUpload(); return; }
-    upState.file = f.name; upState.rows = upSpareRows(rows, $("upBus").value, $("upPaid").checked, f.name);
+    upState.file = f.name; upState.rows = K.route ? upRouteRows(rows, $("upBus").value, $("upMonth").value, f.name) : upSpareRows(rows, $("upBus").value, $("upPaid").checked, f.name);
   } catch { upState.rows = { error: "This file could not be read. Open it in Excel, save it as .xlsx and try again." }; }
   renderUpload();
 }
 // Guess the bus from the file name (e.g. "3366_2026.xlsx" is the bus whose number ends in 3366).
 $("upFile").addEventListener("change", () => {
-  const f = $("upFile").files?.[0]; if (f && !$("upBus").value) { const d = (f.name.match(/\d{4}/g) || []).find(x => spareBuses().some(v => plateKey(v.plateNo).endsWith(x))); if (d) $("upBus").value = spareBuses().find(v => plateKey(v.plateNo).endsWith(d)).id; }
+  const f = $("upFile").files?.[0], K = UP_KINDS[upState.kind], list = K.route ? routeBuses() : spareBuses();
+  if (f && !$("upBus").value) { const d = (f.name.match(/\d{4}/g) || []).find(x => list.some(v => plateKey(v.plateNo).endsWith(x))); if (d) $("upBus").value = list.find(v => plateKey(v.plateNo).endsWith(d)).id; }
+  if (f && K.needsMonth && !$("upMonth").value) $("upMonth").value = upMonthFromName(f.name);
   upLoad();
 });
-["upBus", "upPaid"].forEach(id => $(id).addEventListener("change", upLoad));
-$("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; upLoad(); });
+["upBus", "upPaid", "upMonth"].forEach(id => $(id).addEventListener("change", upLoad));
+$("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; $("upBus").value = ""; renderUpload(); upLoad(); });
 $("upOut").addEventListener("click", async e => {
   if (e.target.id !== "upGo" || upState.busy || acc.users !== "edit") return;
+  if (UP_KINDS[upState.kind].route) {
+    const ready = upState.rows.rows.filter(x => x.t && !x.problems.length && !x.skip), ym = upState.rows.ym; upState.busy = true; renderUpload();
+    let n = 0, failed = 0, why = "";
+    for (const x of ready) { try { await dayTripSave(x.t); n++; } catch (e) { failed++; why ||= e?.message || ""; } }
+    upState.busy = false; upState.done = { n, failed, why, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)), mon: new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
+    $("upFile").value = ""; upState.rows = null; renderUpload(); toast(`${n} day${n === 1 ? "" : "s"} imported`); return;
+  }
   const ready = upState.rows.rows.filter(x => !x.problems.length && !x.skip); upState.busy = true; renderUpload();
   let n = 0, failed = 0, why = "";
   for (const x of ready) {
@@ -6942,6 +7062,7 @@ function renderOps() {
   try { autoOnTrip(); } catch {}
   updApprBadge();
   if (rsh && !rsh.ready) { rsLoad(); if (rsh.ready) rsRender(); }
+  if (upState.waitDay && dayReady()) { upState.waitDay = false; upLoad(); }
   if (view === "trsheet") { renderRsList(); return; }
   if (view === "tappr") { renderApprovals(); return; }
   if (view === "trep") { renderBkReports(); return; }
