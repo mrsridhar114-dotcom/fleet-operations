@@ -181,6 +181,9 @@ tbody tr:hover { background: var(--accent-soft); }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; background: var(--chip-bg); font-size: 12px; font-weight: 600; white-space: nowrap; }
 .chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .rowact { display: flex; gap: 6px; justify-content: flex-end; }
+/* renewal schedule: a date being updated in its row */
+tr.redit > td { background: var(--accent-soft); } .rdate { font: 600 14px var(--body); padding: 6px 8px; border: 1px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--ink); max-width: 100%; }
+tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width: 760px) { tr.redit .rowact .btn { flex: 1; } }
 .icon { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 5px 9px; border-radius: 5px; font-size: 13px; font-weight: 600; }
 .icon:hover { border-color: var(--line); color: var(--ink); }
 .icon.del:hover { color: var(--danger); }
@@ -809,6 +812,30 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 #e-bkPays { color: var(--danger); font-size: 13px; font-weight: 600; }
 #e-bkPays:empty { display: none; }
 .dsl { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+/* Route expenses and padi slabs */
+.rxlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; align-items: start; }
+.rxcard { display: flex; flex-direction: column; gap: 8px; }
+.rxhead { display: flex; align-items: center; gap: 8px; } .rxhead h2 { margin: 0; flex: 1; font-size: 18px; } .rxhead .icon { font-size: 13px; }
+.rxrow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 32px; gap: 6px; align-items: center; }
+.rxrow input, .pdtable input, .rxnew input { font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px; width: 100%; min-width: 0; box-sizing: border-box; }
+.rxrow input[readonly], .pdtable input[readonly] { background: transparent; border-color: transparent; }
+.rxrow .n, .pdtable input[type=number] { text-align: right; }
+.rxdel { width: 32px; height: 32px; border: 0; background: none; color: var(--danger); cursor: pointer; font-size: 18px; padding: 0; }
+.rxtot { display: flex; justify-content: space-between; font-weight: 700; border-top: 2px solid var(--line); padding-top: 8px; }
+.rxbtns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.rxnew { display: flex; flex-direction: column; gap: 8px; max-width: 420px; margin-bottom: 14px; }
+.rxsaved { font-size: 12px; color: var(--muted); }
+.pdcheck { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 14px; align-items: end; margin-bottom: 14px; }
+.pdres { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; } .pdres b { font-size: 17px; }
+.pdtable td { padding: 4px 6px; } .pdtable th { white-space: nowrap; }
+@media (max-width: 700px) { .rxlist { grid-template-columns: minmax(0, 1fr); } .pdcheck { grid-template-columns: minmax(0, 1fr); }
+  /* each slab as a small card of labelled boxes */
+  #pdTable thead { display: none; } #pdTable, #pdTable tbody { display: block; }
+  #pdTable tr { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; padding: 10px 0; margin: 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none; box-shadow: none; }
+  #pdTable td { display: flex !important; flex-direction: column; gap: 3px; padding: 0 !important; border: 0 !important; grid-column: auto; background: none; }
+  #pdTable td::before { content: attr(data-label); font-size: 12px; font-weight: 600; color: var(--muted); }
+  #pdTable td.pdx { grid-column: 2; grid-row: 3; align-items: flex-end; justify-content: flex-end; } #pdTable td.pdx::before { content: none; }
+  #pdTable td[colspan] { grid-column: 1 / -1; } #pdTable td[colspan]::before { content: none; } }
 /* Desktop trip sheet: one card per part, two cards a row on wide screens. */
 .tsg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tsc { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); min-width: 0; }
@@ -1255,6 +1282,12 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li data-mod="vehicles"><a class="nav" href="#vehicles" data-view="vehicles">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 16V8a2 2 0 0 1 2-2h9l4 4h1a2 2 0 0 1 2 2v4h-2"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5"/></svg>
             Vehicle</a></li>
+          <li data-mod="trips"><a class="nav" href="#route-expenses" data-view="trexp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+            Route expenses</a></li>
+          <li data-mod="trips"><a class="nav" href="#padi-slabs" data-view="tpadi">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20h4v-6H4zM10 20h4V9h-4zM16 20h4V4h-4z"/></svg>
+            Padi slabs</a></li>
         </ul>
       </div>
       <div class="group">
@@ -1358,7 +1391,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <section style="display:flex;flex-direction:column;gap:12px">
         <div class="sechead"><h2 class="sec">Renewal schedule</h2><p>Sorted by expiry date, soonest first</p></div>
         <div class="toolbar">
-          <input type="search" id="rq" placeholder="Search plate, make, model or owner" aria-label="Search plate, make, model or owner">
+          <input type="search" id="rq" placeholder="Search plate, make, model, owner or name" aria-label="Search plate, make, model, owner or name">
           <select id="rWin" aria-label="Time window">
             <option value="act">Overdue + next 30 days</option>
             <option value="expired">Expired only</option>
@@ -1368,12 +1401,12 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
             <option value="all">All recorded dates</option>
           </select>
           <select id="rDoc" aria-label="Document"><option value="">All documents</option></select>
-          <select id="rType" aria-label="Vehicle class"><option value="">All vehicle classes</option></select>
+          <select id="rType" aria-label="Vehicle class or people"><option value="">All vehicles and people</option></select>
           <span class="count" id="rCount"></span>
         </div>
         <div class="register">
           <table>
-            <thead><tr><th>Vehicle</th><th>Document</th><th>Expiry date</th><th>Status</th><th><span class="vh">Actions</span></th></tr></thead>
+            <thead><tr><th>Vehicle or person</th><th>Document</th><th>Expiry date</th><th>Status</th><th><span class="vh">Actions</span></th></tr></thead>
             <tbody id="rRows"></tbody>
           </table>
         </div>
@@ -1690,6 +1723,41 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </section>
 
     <!-- ================= Truck trips ================= -->
+    <!-- ================= Route bus masters: standard expenses by starting place, padi by total collection ================= -->
+    <section class="wrap twrap" id="view-trexp" hidden>
+      <header class="top">
+        <div>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Masters</span><span class="slash">/</span><span>Route expenses</span></nav>
+          <h1>Route expenses<span class="ro-tag" id="rxRoTag" hidden>View only</span></h1>
+          <p class="sync">The standard expenses of a route bus for one day, kept separately for each starting place (Vellore, Thiruthani and so on).</p>
+        </div>
+        <div class="tcontrols"><button class="btn primary" type="button" id="rxAdd">+ Add starting place</button></div>
+      </header>
+      <div class="rxnew panel" id="rxNew" hidden>
+        <div class="hf"><label for="rxNewPlace">Starting place</label><input id="rxNewPlace" list="rxPlaces" autocomplete="off" maxlength="60" placeholder="e.g. Vellore"><datalist id="rxPlaces"></datalist></div>
+        <span class="err" id="rxNewErr"></span>
+        <div class="rxbtns"><button class="btn" type="button" id="rxNewCancel">Cancel</button><button class="btn primary" type="button" id="rxNewSave">Add</button></div>
+      </div>
+      <div class="rxlist" id="rxList"></div>
+    </section>
+
+    <section class="wrap twrap" id="view-tpadi" hidden>
+      <header class="top">
+        <div>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Masters</span><span class="slash">/</span><span>Padi slabs</span></nav>
+          <h1>Padi slabs<span class="ro-tag" id="pdRoTag" hidden>View only</span></h1>
+          <p class="sync">The padi for the driver, conductor and checker of a route bus, worked out from the day's total collection.</p>
+        </div>
+      </header>
+      <section class="panel pdcheck"><div class="hf"><label for="pdTry">Check a day's collection</label><input id="pdTry" type="number" inputmode="numeric" min="0" placeholder="Total collection, e.g. 14500"></div><div class="pdres" id="pdRes" aria-live="polite"></div></section>
+      <section class="panel">
+        <div class="sechead"><h2 class="sec">Slabs</h2><p id="pdInfo"></p></div>
+        <div class="tscroll" style="margin-top:10px"><table class="ctable pdtable" id="pdTable"></table></div>
+        <span class="err" id="pdErr"></span>
+        <div class="rxbtns" id="pdActs"><button class="btn" type="button" id="pdAddRow">+ Add slab</button><span style="flex:1"></span><button class="btn" type="button" id="pdUndo">Undo changes</button><button class="btn primary" type="button" id="pdSave">Save slabs</button></div>
+      </section>
+    </section>
+
     <section class="wrap twrap" id="view-tfuel" hidden>
       <header class="top">
         <div>
@@ -2857,10 +2925,10 @@ async function connect() {
   accessReady = false; applyAccess();
   reqRef = db.collection("accessRequests");
   driversRef = db.collection("drivers");
-  driversRef.onSnapshot(snap => { drivers = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderDrivers(); }, () => {});
+  driversRef.onSnapshot(snap => { drivers = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderDrivers(); renderDash(); }, () => {});
   tripDb = db; subscribeTrips(); subscribeOps(); dayKey = ""; renderOps();
   conductorsRef = db.collection("conductors");
-  conductorsRef.onSnapshot(snap => { conductors = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderConductors(); }, () => {});
+  conductorsRef.onSnapshot(snap => { conductors = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderConductors(); renderDash(); }, () => {});
   cHistRef = db.collection("conductorHistory");
   cHistRef.onSnapshot(snap => {
     cHistory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -2894,17 +2962,17 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck" };
+const TRIP_PAGES = { "route-expenses": "trexp", "padi-slabs": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
   // Someone without the dashboard (the booking office, say) lands on the first application they can use.
   if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tfuel", "fuel"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
   view = acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit") && acc.users !== "edit") ? "denied" : want;
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets" || VIEW_MOD[view] === "fuel") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
@@ -2998,29 +3066,43 @@ function openNav() { $("side").classList.add("open"); $("navScrim").hidden = fal
 function closeNav() { $("side").classList.remove("open"); $("navScrim").hidden = true; $("menuBtn").setAttribute("aria-expanded", "false"); }
 
 /* ---------- renewals dashboard ---------- */
-function allItems() {
+// Vehicle renewals, plus driver and conductor validity dates (for those who may see those masters), soonest first.
+// kind: "vehicle" | "driver" | "conductor"; rec is the record; key identifies the row for in-place updating.
+const R_PEOPLE = [["driver", () => drivers, "drivers"], ["conductor", () => conductors, "conductors"]];
+function vehItems() {
   const out = [];
   inService().forEach(v => DOCS.forEach(([k, , short]) => {
-    if (v[k] && docApplies(k, v.type, v.usage)) { const days = daysUntil(v[k]); out.push({ v, k, short, date: v[k], days, band: band(days) }); }
+    if (v[k] && docApplies(k, v.type, v.usage)) { const days = daysUntil(v[k]); out.push({ kind: "vehicle", v, rec: v, k, short, date: v[k], days, band: band(days) }); }
   }));
+  return out;
+}
+function allItems() {
+  const out = vehItems();
+  R_PEOPLE.forEach(([kind, list, mod]) => { if (acc[mod] === "none") return;
+    list().filter(pActive).forEach(p => P_CFG[kind].dates.forEach(([k, short]) => {
+      if (p[k]) { const days = daysUntil(p[k]); out.push({ kind, rec: p, k, short, date: p[k], days, band: band(days) }); }
+    })); });
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }
+const rKey = i => `${i.kind}:${i.rec.id}:${i.k}`;
+const rCan = kind => kind === "vehicle" ? canWrite : kind === "driver" ? canDrivers : canConductors;
+let rEdit = "";
 
 function renderDash() {
-  const items = allItems();
+  const items = allItems(), vItems = items.filter(i => i.kind === "vehicle");
   const total = inService().reduce((s, v) => s + DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).length, 0);
   const c = { expired: 0, d7: 0, d30: 0, ok: 0 };
   items.forEach(i => c[i.band]++);
-  const missing = total - items.length;
-  const vehAffected = b => new Set(items.filter(i => b.includes(i.band)).map(i => i.v.id)).size;
+  const missing = total - vItems.length;
+  const vehAffected = b => new Set(items.filter(i => b.includes(i.band)).map(i => i.kind + i.rec.id)).size;
 
   const win = $("rWin").value;
   const kpi = (key, label, n, sub, color) =>
     `<button type="button" class="kpi" data-win="${key}" aria-pressed="${win === key}" style="--c:${color}"><span class="k">${label}</span><span class="v">${n}</span><span class="s">${sub}</span></button>`;
   $("kpis").innerHTML =
-    kpi("expired", "Expired", c.expired, `${vehAffected(["expired"])} vehicle${vehAffected(["expired"]) === 1 ? "" : "s"} affected`, "var(--danger)") +
-    kpi("d7", "Due in 7 days", c.d7, `${vehAffected(["d7"])} vehicle${vehAffected(["d7"]) === 1 ? "" : "s"}`, "var(--hot)") +
-    kpi("d30", "Due in 8–30 days", c.d30, `${vehAffected(["d30"])} vehicle${vehAffected(["d30"]) === 1 ? "" : "s"}`, "var(--warn)") +
+    kpi("expired", "Expired", c.expired, `${vehAffected(["expired"])} vehicle${vehAffected(["expired"]) === 1 ? "" : "s"} or ${vehAffected(["expired"]) === 1 ? "person" : "people"}`, "var(--danger)") +
+    kpi("d7", "Due in 7 days", c.d7, `${vehAffected(["d7"])} vehicle${vehAffected(["d7"]) === 1 ? "" : "s"} or ${vehAffected(["d7"]) === 1 ? "person" : "people"}`, "var(--hot)") +
+    kpi("d30", "Due in 8–30 days", c.d30, `${vehAffected(["d30"])} vehicle${vehAffected(["d30"]) === 1 ? "" : "s"} or ${vehAffected(["d30"]) === 1 ? "person" : "people"}`, "var(--warn)") +
     kpi("all", "Valid beyond 30 days", c.ok, "No action needed", "var(--ok)") +
     `<a class="kpi" href="#vehicles" style="--c:var(--muted)"><span class="k">Not recorded</span><span class="v">${missing}</span><span class="s">Dates missing in vehicle records</span></a>`;
 
@@ -3040,7 +3122,7 @@ function renderDash() {
 
   // by document
   $("doclist").innerHTML = DOCS.map(([k, , short]) => {
-    const its = items.filter(i => i.k === k);
+    const its = vItems.filter(i => i.k === k);
     const cc = { expired: 0, d7: 0, d30: 0, ok: 0 }; its.forEach(i => cc[i.band]++);
     const elig = inService().filter(v => docApplies(k, v.type, v.usage)).length;
     const miss = elig - its.length, n = elig || 1;
@@ -3059,7 +3141,8 @@ function renderDash() {
     act: i.days <= 30, expired: i.days < 0, d7: i.days >= 0 && i.days <= 7, d30: i.days >= 0 && i.days <= 30,
     d90: i.days >= 0 && i.days <= 90, all: true
   })[win];
-  const list = items.filter(i => inWin(i) && (!doc || i.k === doc) && (!ty || i.v.type === ty) && (!q || vFull(i.v).toLowerCase().includes(q) || plateKey(i.v.plateNo).toLowerCase().includes(plateKey(q).toLowerCase() || "\u0000")));
+  const hit = i => i.kind === "vehicle" ? vFull(i.v).toLowerCase().includes(q) || plateKey(i.v.plateNo).toLowerCase().includes(plateKey(q).toLowerCase() || "\u0000") : String(i.rec.name || "").toLowerCase().includes(q);
+  const list = items.filter(i => (inWin(i) || rKey(i) === rEdit) && (!doc || i.k === doc) && (!ty || (ty === "_driver" || ty === "_conductor" ? "_" + i.kind === ty : i.kind === "vehicle" && i.v.type === ty)) && (!q || hit(i)));
   $("rCount").textContent = `${list.length} renewal${list.length === 1 ? "" : "s"}`;
   if (!vehicles.length) {
     $("rRows").innerHTML = `<tr><td colspan="5"><div class="empty"><strong>No vehicles yet</strong>Add vehicles and their renewal dates under Masters › Vehicle.</div></td></tr>`;
@@ -3068,14 +3151,19 @@ function renderDash() {
   } else if (!list.length) {
     $("rRows").innerHTML = `<tr><td colspan="5"><div class="empty"><strong>Nothing in this window</strong>No renewals match these filters. Try “All recorded dates”.</div></td></tr>`;
   } else {
-    $("rRows").innerHTML = list.map(i => `<tr>
-      <td class="c-name">${plateHtml(i.v)}<div class="mk">${esc(vName(i.v))}</div><div class="sub">${vTypeText(i.v)}</div></td>
+    // "Update date" turns the expiry date into a date box right in the row; Save records it (with history) without opening the master.
+    $("rRows").innerHTML = list.map(i => { const key = rKey(i), ed = key === rEdit, who = i.kind === "vehicle"
+        ? `${plateHtml(i.v)}<div class="mk">${esc(vName(i.v))}</div><div class="sub">${vTypeText(i.v)}</div>`
+        : `<div class="mk">${esc(i.rec.name || "")}</div><div class="sub">${i.kind === "driver" ? "Driver" : "Conductor"}</div>`;
+      return `<tr${ed ? ' class="redit"' : ""}>
+      <td class="c-name">${who}</td>
       <td data-label="Document">${esc(i.short)}</td>
-      <td data-label="Expiry date"><span class="num">${fmtDate(i.date)}</span></td>
+      <td data-label="Expiry date">${ed ? `<input type="date" class="rdate" id="rDate" value="${i.date}" min="1900-01-01" max="2100-12-31" aria-label="New ${esc(i.short)} date"><span class="err" id="rDateErr"></span>` : `<span class="num">${fmtDate(i.date)}</span>`}</td>
       <td data-label="Status"><span class="pill ${i.band}">${whenText(i.days)}</span></td>
-      <td class="c-act"><div class="rowact">${canWrite
-        ? `<button class="icon" data-act="renew" data-id="${i.v.id}" data-k="${i.k}">Update date</button>`
-        : acc.vehicles !== "none" ? `<button class="icon" data-act="view" data-id="${i.v.id}">View</button>` : ""}</div></td></tr>`).join("");
+      <td class="c-act"><div class="rowact">${ed
+        ? `<button class="icon" data-act="rcancel">Cancel</button><button class="btn primary" data-act="rsave" data-key="${key}">Save</button>`
+        : rCan(i.kind) ? `<button class="icon" data-act="renew" data-key="${key}">Update date</button>`
+        : i.kind === "vehicle" && acc.vehicles !== "none" ? `<button class="icon" data-act="view" data-id="${i.v.id}">View</button>` : ""}</div></td></tr>`; }).join("");
   }
 }
 
@@ -3616,8 +3704,9 @@ function buildForm() {
   $("hTo").max = $("hFrom").max = todayISO();
   $("hClear").onclick = () => { $("vHistDoc").value = ""; $("hPeriod").value = "all"; $("hWho").value = ""; $("hFrom").value = ""; $("hTo").value = ""; $("hText").value = ""; renderHist(); };
   $("regDate").max = todayISO();
-  $("rType").innerHTML += TYPES.map(t => `<option>${t}</option>`).join("");
-  $("rDoc").innerHTML += DOCS.map(([k, , s]) => `<option value="${k}">${s}</option>`).join("");
+  $("rType").innerHTML += TYPES.map(t => `<option>${t}</option>`).join("") + `<optgroup label="People"><option value="_driver">Drivers</option><option value="_conductor">Conductors</option></optgroup>`;
+  $("rDoc").innerHTML += `<optgroup label="Vehicle">${DOCS.map(([k, , s]) => `<option value="${k}">${s}</option>`).join("")}</optgroup>` +
+    `<optgroup label="Driver and conductor">${[...P_CFG.driver.dates, ...P_CFG.conductor.dates].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>`;
   $("type").addEventListener("change", syncOp);
 }
 const kg = n => `${Number(n).toLocaleString("en-IN")} kg`;
@@ -3878,10 +3967,36 @@ delAsk("v", () => canWrite, async () => {
 });
 $("rRows").addEventListener("click", e => {
   const b = e.target.closest("button[data-act]"); if (!b) return;
-  const v = vehicles.find(x => x.id === b.dataset.id); if (!v) return;
-  if (b.dataset.act === "renew" && canWrite) openDrawer(v, b.dataset.k);
-  if (b.dataset.act === "view") openVDrawer(v);
+  const a = b.dataset.act;
+  if (a === "view") { const v = vehicles.find(x => x.id === b.dataset.id); if (v) openVDrawer(v); return; }
+  if (a === "renew") { rEdit = b.dataset.key; renderDash(); setTimeout(() => $("rDate")?.focus(), 0); return; }
+  if (a === "rcancel") { rEdit = ""; renderDash(); return; }
+  if (a === "rsave") rSave(b);
 });
+$("rRows").addEventListener("keydown", e => {
+  if (e.target.id !== "rDate") return;
+  if (e.key === "Enter") { e.preventDefault(); rSave($("rRows").querySelector('[data-act="rsave"]')); }
+  if (e.key === "Escape") { rEdit = ""; renderDash(); }
+});
+// Save one renewal date from the schedule: the record keeps everything else; the change goes into that master's history.
+async function rSave(btn) {
+  const [kind, id, k] = rEdit.split(":"), val = $("rDate")?.value || "", err = t => { $("rDateErr").textContent = t; $("rDate").focus(); };
+  if (!rCan(kind)) return;
+  const list = kind === "vehicle" ? vehicles : kind === "driver" ? drivers : conductors, cur = list.find(x => x.id === id); if (!cur) { rEdit = ""; renderDash(); return; }
+  if (!val || val < "1900-01-01" || val > "2100-12-31") return err("Enter a valid date.");
+  if (kind === "vehicle" && k === "permitExp" && cur.permitFrom && cur.permitFrom > val) return err("Can't be before the permit's Valid from date.");
+  if (val === cur[k]) { rEdit = ""; renderDash(); return; }
+  const next = { ...cur, [k]: val }, who = { at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", note: "Updated from the renewal schedule" };
+  const label = kind === "vehicle" ? vName(cur) : cur.name;
+  btn.disabled = true;
+  try {
+    if (kind === "vehicle") { await saveVehicle(next); await addHistory([{ vehicleId: id, field: k, from: histVal(cur[k]), to: val, ...who }]).catch(() => {}); }
+    else if (kind === "driver") { await saveDriver(next); await addDHistory([{ driverId: id, field: k, from: histVal(cur[k]), to: val, ...who }]).catch(() => {}); }
+    else { await saveConductor(next); await addCHistory([{ conductorId: id, field: k, from: histVal(cur[k]), to: val, ...who }]).catch(() => {}); }
+    const i = list.findIndex(x => x.id === id); if (i >= 0) list[i] = next;
+    rEdit = ""; renderDash(); toast(`${label}: date updated to ${fmtDate(val)}`);
+  } catch { btn.disabled = false; toast("Couldn't save. Check your connection and try again."); }
+}
 /* ================= Driver master ================= */
 // Driver change history: one entry per changed field, like vehicles.
 // "Son of" / "Daughter of" / "Wife of" for a driver or conductor; older records without a choice keep the combined label.
@@ -3980,7 +4095,7 @@ function dSaveLocal() { try { localStorage.setItem(DLS, JSON.stringify(drivers))
 async function saveDriver(d) {
   const { id, ...body } = d;
   if (driversRef) await driversRef.doc(id).set(body);
-  else { const i = drivers.findIndex(x => x.id === id); i >= 0 ? drivers[i] = d : drivers.push(d); dSaveLocal(); renderDrivers(); }
+  else { const i = drivers.findIndex(x => x.id === id); i >= 0 ? drivers[i] = d : drivers.push(d); dSaveLocal(); renderDrivers(); renderDash(); }
 }
 async function removeDriver(id) {
   if (driversRef) await driversRef.doc(id).delete();
@@ -4241,7 +4356,7 @@ function cSaveLocal() { try { localStorage.setItem(CLS, JSON.stringify(conductor
 async function saveConductor(c) {
   const { id, ...body } = c;
   if (conductorsRef) await conductorsRef.doc(id).set(body);
-  else { const i = conductors.findIndex(x => x.id === id); i >= 0 ? conductors[i] = c : conductors.push(c); cSaveLocal(); renderConductors(); }
+  else { const i = conductors.findIndex(x => x.id === id); i >= 0 ? conductors[i] = c : conductors.push(c); cSaveLocal(); renderConductors(); renderDash(); }
 }
 async function removeConductor(id) {
   if (conductorsRef) await conductorsRef.doc(id).delete();
@@ -5019,8 +5134,8 @@ let tt; function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidde
 /* ================= Trip sheet home · route bus daily entry · spare bus bookings · truck trips ================= */
 // Spare bus bookings live in "bookings", truck trips in "truckTrips" (grouped into round trips by roundId),
 // and the open / closed state of each round trip in "truckRounds".
-const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1" };
-const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [] };
+const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1" };
+const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [] };
 let opsUnsubs = [], allTripMonths = [], allTripYears = [], dayTrips = [], dayUnsub = null, dayKey = "", dayLoaded = "";
 let opDate = todayISO();
 const genId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5071,6 +5186,148 @@ async function opsDelete(c, id) {
   try { localStorage.setItem(OPS_LS[c], JSON.stringify(ops[c])); } catch {}
   renderOps();
 }
+/* ---------- Route bus masters ----------
+   Route expenses: one record per starting place, with the list of standard expenses for a day ({ name, amount }).
+   Padi slabs: one record (id "slabs") holding rows { from, to, driver, conductor, checker } on the day's total collection;
+   an empty "to" means "and above". Both are edited by whoever may edit route trip sheets. */
+const placeName = s => String(s || "").trim().replace(/\s+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+const rxStamp = () => ({ updatedOn: todayISO(), updatedByName: whoAmI() });
+let rxAdding = false;
+function rxKnownPlaces() {
+  const set = new Set();
+  [...yearsAll(), ...allTripYears].forEach(y => { if (y.a) set.add(placeName(y.a)); if (y.b) set.add(placeName(y.b)); });
+  [...winTrips(), ...trips].forEach(t => { if (t.start) set.add(placeName(t.start)); });
+  ops.routeExpenses.forEach(x => set.delete(placeName(x.place)));
+  return [...set].filter(Boolean).sort();
+}
+function renderRxp() {
+  const can = canTrips, list = [...ops.routeExpenses].sort((a, b) => String(a.place).localeCompare(String(b.place)));
+  $("rxRoTag").hidden = can; $("rxAdd").hidden = !can || rxAdding; $("rxNew").hidden = !rxAdding;
+  $("rxPlaces").innerHTML = rxKnownPlaces().map(p => `<option value="${esc(p)}">`).join("");
+  if (document.activeElement?.closest?.("#rxList")) return;  // don't redraw under someone typing
+  $("rxList").innerHTML = list.length ? list.map(x => {
+    const items = x.items || [], tot = items.reduce((a, i) => a + num(i.amount), 0), ro = can ? "" : " readonly";
+    return `<section class="panel rxcard" data-rx="${x.id}"><div class="rxhead"><h2>${esc(x.place)}</h2>${can ? `<button class="icon" type="button" data-rxa="rename">Rename</button><button class="icon del" type="button" data-rxa="delete">Delete</button>` : ""}</div>` +
+      (items.length ? items.map((i, k) => `<div class="rxrow"><input data-rxi="${k}" data-f="name" maxlength="60" value="${esc(i.name)}" aria-label="Expense name"${ro}><input class="n" data-rxi="${k}" data-f="amount" type="number" inputmode="numeric" min="0" value="${esc(String(i.amount ?? ""))}" aria-label="Amount for ${esc(i.name)}"${ro}>${can ? `<button class="rxdel" type="button" data-rxa="rm" data-k="${k}" aria-label="Remove ${esc(i.name)}">✕</button>` : "<span></span>"}</div>`).join("")
+        : `<p class="sub" style="margin:0">No expenses yet.${can ? " Add the first one below." : ""}</p>`) +
+      (can ? `<div class="rxrow"><input data-new="name" maxlength="60" placeholder="New expense" aria-label="New expense name"><input class="n" data-new="amount" type="number" inputmode="numeric" min="0" placeholder="₹" aria-label="New expense amount"><button class="rxdel" type="button" data-rxa="add" aria-label="Add expense" style="color:var(--accent)">＋</button></div><span class="err" data-err></span>` : "") +
+      `<div class="rxtot"><span>Total for a day</span><span>${rs(tot)}</span></div>${x.updatedOn ? `<span class="rxsaved">Last changed ${fmtDate(x.updatedOn)}${x.updatedByName ? ` by ${esc(x.updatedByName)}` : ""}</span>` : ""}</section>`;
+  }).join("") : `<div class="empty panel"><strong>No starting places yet</strong>${can ? "Use + Add starting place, then add its standard expenses." : "Nothing has been set up yet."}</div>`;
+}
+async function rxSave(doc, msg) {
+  try { await opsSave("routeExpenses", { ...doc, ...rxStamp() }); toast(msg); return true; }
+  catch { toast("Couldn't save. Check your connection and try again."); return false; }
+}
+$("rxAdd").onclick = () => { rxAdding = true; $("rxNewErr").textContent = ""; $("rxNewPlace").value = ""; renderRxp(); $("rxNewPlace").focus(); };
+$("rxNewCancel").onclick = () => { rxAdding = false; renderRxp(); };
+$("rxNewPlace").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("rxNewSave").click(); } });
+$("rxNewSave").onclick = async () => {
+  const place = placeName($("rxNewPlace").value);
+  if (!place) { $("rxNewErr").textContent = "Enter the starting place."; return; }
+  if (ops.routeExpenses.some(x => placeName(x.place).toLowerCase() === place.toLowerCase())) { $("rxNewErr").textContent = `${place} is already in the list.`; return; }
+  const id = genId("rx");
+  if (await rxSave({ id, place, items: [] }, `${place} added`)) { rxAdding = false; renderRxp(); $("rxList").querySelector(`[data-rx="${id}"] [data-new="name"]`)?.focus(); }
+};
+$("rxList").addEventListener("click", async e => {
+  const b = e.target.closest("[data-rxa]"); if (!b || !canTrips) return;
+  const card = b.closest("[data-rx]"), x = ops.routeExpenses.find(r => r.id === card.dataset.rx); if (!x) return;
+  const a = b.dataset.rxa, items = [...(x.items || [])], errEl = card.querySelector("[data-err]");
+  if (a === "add") {
+    const nm = card.querySelector('[data-new="name"]').value.trim().replace(/\s+/g, " "), amt = card.querySelector('[data-new="amount"]').value;
+    if (!nm) { errEl.textContent = "Enter the expense name."; card.querySelector('[data-new="name"]').focus(); return; }
+    if (items.some(i => i.name.toLowerCase() === nm.toLowerCase())) { errEl.textContent = `${nm} is already in this list.`; return; }
+    if (amt === "" || num(amt) < 0) { errEl.textContent = "Enter the amount (0 if it changes every day)."; card.querySelector('[data-new="amount"]').focus(); return; }
+    items.push({ name: nm, amount: Math.round(num(amt)) });
+    document.activeElement?.blur();
+    if (await rxSave({ ...x, items }, `${nm} added to ${x.place}`)) { renderRxp(); $("rxList").querySelector(`[data-rx="${x.id}"] [data-new="name"]`)?.focus(); }
+    return;
+  }
+  if (a === "rm") { const [gone] = items.splice(+b.dataset.k, 1); document.activeElement?.blur(); if (await rxSave({ ...x, items }, `${gone?.name || "Expense"} removed`)) renderRxp(); return; }
+  if (a === "rename") {
+    const head = card.querySelector(".rxhead");
+    head.innerHTML = `<input data-ren maxlength="60" value="${esc(x.place)}" aria-label="Starting place" style="flex:1;font:inherit;font-size:16px;padding:6px 8px;border:1px solid var(--accent);border-radius:6px"><button class="icon" type="button" data-rxa="rencancel">Cancel</button><button class="btn primary" type="button" data-rxa="rensave" style="padding:6px 12px">Save</button>`;
+    head.querySelector("[data-ren]").focus(); return;
+  }
+  if (a === "rencancel") { document.activeElement?.blur(); renderRxp(); return; }
+  if (a === "rensave") {
+    const place = placeName(card.querySelector("[data-ren]").value);
+    if (!place) return;
+    if (ops.routeExpenses.some(r => r.id !== x.id && placeName(r.place).toLowerCase() === place.toLowerCase())) { toast(`${place} is already in the list.`); return; }
+    document.activeElement?.blur(); if (await rxSave({ ...x, place }, `Renamed to ${place}`)) renderRxp(); return;
+  }
+  if (a === "delete") {
+    if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "Tap again to delete"; return; }
+    try { await opsDelete("routeExpenses", x.id); toast(`${x.place} deleted`); } catch { toast("Couldn't delete. Try again."); }
+    renderRxp();
+  }
+});
+// Changing an expense's name or amount saves it when the box is left.
+$("rxList").addEventListener("change", async e => {
+  const el = e.target; if (el.dataset.rxi == null || !canTrips) return;
+  const card = el.closest("[data-rx]"), x = ops.routeExpenses.find(r => r.id === card.dataset.rx); if (!x) return;
+  const items = (x.items || []).map(i => ({ ...i })), i = items[+el.dataset.rxi]; if (!i) return;
+  if (el.dataset.f === "name") { const nm = el.value.trim().replace(/\s+/g, " "); if (!nm) { el.value = i.name; return; } i.name = nm; }
+  else { if (el.value === "" || num(el.value) < 0) { el.value = i.amount; return; } i.amount = Math.round(num(el.value)); }
+  await rxSave({ ...x, items }, `${x.place}: ${i.name} saved`);
+});
+$("rxList").addEventListener("focusout", () => setTimeout(() => { if (!document.activeElement?.closest?.("#rxList") && view === "trexp") renderRxp(); }, 0));
+
+// Padi slabs: edited as a table, checked, then saved together.
+let pdRows = null;
+const pdDoc = () => ops.padiSlabs.find(x => x.id === "slabs");
+const pdSorted = rows => [...rows].sort((a, b) => num(a.from) - num(b.from));
+function padiFor(collection, rows = pdDoc()?.rows || []) {
+  const c = num(collection); return pdSorted(rows).find(r => c >= num(r.from) && (r.to === "" || r.to == null || c <= num(r.to))) || null;
+}
+function pdCheck(rows) {
+  if (!rows.length) return "";
+  const s = pdSorted(rows);
+  for (const [i, r] of s.entries()) {
+    if (r.from === "" || num(r.from) < 0) return `Row ${i + 1}: enter the collection it starts from.`;
+    if (r.to !== "" && num(r.to) < num(r.from)) return `Row ${i + 1}: "to" must be more than "from".`;
+    if (r.to === "" && i < s.length - 1) return `Only the last slab can be left open ("and above").`;
+    if (i && s[i - 1].to !== "" && num(r.from) <= num(s[i - 1].to)) return `Slabs ${i} and ${i + 1} overlap: ₹${nf(num(r.from))} is inside the slab before it.`;
+    if (["driver", "conductor", "checker"].some(k => r[k] !== "" && num(r[k]) < 0)) return `Row ${i + 1}: padi can't be negative.`;
+  }
+  return "";
+}
+function renderPadi() {
+  const can = canTrips, d = pdDoc();
+  if (!pdRows) pdRows = (d?.rows || []).map(r => ({ ...r }));
+  $("pdRoTag").hidden = can; $("pdActs").hidden = !can;
+  $("pdInfo").textContent = d?.updatedOn ? `Last saved ${fmtDate(d.updatedOn)}${d.updatedByName ? ` by ${d.updatedByName}` : ""}` : "Not saved yet";
+  if (document.activeElement?.closest?.("#pdTable")) { pdTry(); return; }
+  const LBL = { from: "Collection from (₹)", to: "To (₹)", driver: "Driver padi (₹)", conductor: "Conductor padi (₹)", checker: "Checker padi (₹)" };
+  const ro = can ? "" : " readonly", cell = (i, k, ph) => `<td data-label="${LBL[k]}"><input type="number" inputmode="numeric" min="0" data-pd="${i}" data-f="${k}" value="${esc(String(pdRows[i][k] ?? ""))}" placeholder="${ph}" aria-label="${LBL[k]}, slab ${i + 1}"${ro}></td>`;
+  $("pdTable").innerHTML = `<thead><tr><th>Collection from (₹)</th><th>To (₹)</th><th>Driver padi (₹)</th><th>Conductor padi (₹)</th><th>Checker padi (₹)</th>${can ? "<th></th>" : ""}</tr></thead><tbody>` +
+    (pdRows.length ? pdRows.map((r, i) => `<tr>${cell(i, "from", "0")}${cell(i, "to", "and above")}${cell(i, "driver", "0")}${cell(i, "conductor", "0")}${cell(i, "checker", "0")}${can ? `<td class="pdx"><button class="rxdel" type="button" data-pdrm="${i}" aria-label="Remove slab ${i + 1}">✕</button></td>` : ""}</tr>`).join("")
+      : `<tr><td colspan="6" class="sub" style="padding:14px">No slabs yet.${can ? " Use + Add slab, for example ₹0 to ₹10,000, then ₹10,001 to ₹15,000, and so on." : ""}</td></tr>`) + `</tbody>`;
+  $("pdUndo").disabled = JSON.stringify(pdRows) === JSON.stringify((d?.rows || []));
+  pdTry();
+}
+function pdTry() {
+  const v = $("pdTry").value, r = v === "" ? null : padiFor(v, pdRows || []);
+  $("pdRes").innerHTML = v === "" ? `<span class="sub">Type a day's total collection to see the padi.</span>` : !r ? `<span class="sub">No slab covers ${rs(num(v))}.</span>`
+    : `<span>Driver <b>${rs(num(r.driver))}</b></span><span>Conductor <b>${rs(num(r.conductor))}</b></span><span>Checker <b>${rs(num(r.checker))}</b></span><span>Total <b>${rs(num(r.driver) + num(r.conductor) + num(r.checker))}</b></span>`;
+}
+$("pdTry").addEventListener("input", pdTry);
+$("pdTable").addEventListener("input", e => { const el = e.target; if (el.dataset.pd == null) return; pdRows[+el.dataset.pd][el.dataset.f] = el.value === "" ? "" : Math.round(num(el.value)); $("pdErr").textContent = ""; $("pdUndo").disabled = false; pdTry(); });
+$("pdTable").addEventListener("click", e => { const b = e.target.closest("[data-pdrm]"); if (!b) return; pdRows.splice(+b.dataset.pdrm, 1); renderPadi(); });
+$("pdAddRow").onclick = () => {
+  const last = pdSorted(pdRows).at(-1), from = last ? (last.to === "" ? "" : num(last.to) + 1) : 0;
+  pdRows.push({ from, to: "", driver: "", conductor: "", checker: "" }); renderPadi();
+  $("pdTable").querySelector(`[data-pd="${pdRows.length - 1}"][data-f="${from === "" ? "from" : "to"}"]`)?.focus();
+};
+$("pdUndo").onclick = () => { pdRows = null; $("pdErr").textContent = ""; renderPadi(); };
+$("pdSave").onclick = async () => {
+  const why = pdCheck(pdRows); if (why) { $("pdErr").textContent = why; return; }
+  const rows = pdSorted(pdRows).map(r => ({ from: num(r.from), to: r.to === "" ? "" : num(r.to), driver: num(r.driver), conductor: num(r.conductor), checker: num(r.checker) }));
+  $("pdSave").disabled = true;
+  try { await opsSave("padiSlabs", { id: "slabs", rows, ...rxStamp() }); pdRows = null; document.activeElement?.blur(); renderPadi(); toast(`Padi slabs saved · ${rows.length} slab${rows.length === 1 ? "" : "s"}`); }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+  finally { $("pdSave").disabled = false; }
+};
+
 async function dayTripSave(t) {
   if (tripDb) { const { id, ...b } = t; return tripDb.collection("trips").doc(id).set(b); }
   const i = tripsLocal.findIndex(x => x.id === t.id); i >= 0 ? tripsLocal[i] = t : tripsLocal.push(t);
@@ -5137,7 +5394,7 @@ function renderApprovals() {
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
 const AU_PAGE = { renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Day entry", tspare: "Booking planner",
-  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", tfuel: "Fuel log", users: "User master", storage: "Storage & backup", audit: "Admin console" };
+  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", tfuel: "Fuel log", trexp: "Route expenses", tpadi: "Padi slabs", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
   if (!auditDb || !auditSess) return;
@@ -5338,7 +5595,7 @@ const stAreas = () => [
   ["appUsers", "Users", "fleet-users.v1"], ["accessRequests", "Access requests", ""],
   ["trips", "Route bus trip sheets (daily)", TLS], ["tripMonths", "Route bus monthly sheets", TMLS], ["tripYears", "Route bus yearly sheets", TYLS],
   ["bookings", "Spare bus bookings", OPS_LS.bookings], ["bookingHistory", "Booking change history", BHLS],
-  ["truckTrips", "Truck trips", OPS_LS.truckTrips], ["truckRounds", "Truck rounds", OPS_LS.truckRounds], ["fuelLog", "Fuel log", OPS_LS.fuelLog], ["auditSessions", "Sign-in records", ""], ["auditLog", "Activity log", ""],
+  ["truckTrips", "Truck trips", OPS_LS.truckTrips], ["truckRounds", "Truck rounds", OPS_LS.truckRounds], ["fuelLog", "Fuel log", OPS_LS.fuelLog], ["routeExpenses", "Route expenses (by starting place)", OPS_LS.routeExpenses], ["padiSlabs", "Padi slabs", OPS_LS.padiSlabs], ["auditSessions", "Sign-in records", ""], ["auditLog", "Activity log", ""],
   ["appMeta", "App settings", ""]
 ];
 let stData = null, stBusy = false;
@@ -5736,6 +5993,8 @@ function renderOps() {
   if (view === "trep") { renderBkReports(); return; }
   if (view === "ttsheet") { renderTsList(); return; }
   if (view === "tfuel") { renderFuel(); return; }
+  if (view === "trexp") { renderRxp(); return; }
+  if (view === "tpadi") { renderPadi(); return; }
   const ro = !canTrips;
   ["dbRoTag", "kRoTag"].forEach(id => $(id).hidden = !ro); $("sRoTag").hidden = canBookings;
   if (view === "thub") renderHub();
