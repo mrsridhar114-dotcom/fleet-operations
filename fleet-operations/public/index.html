@@ -1121,17 +1121,22 @@ html.bw-on, html.bw-on body { overflow: hidden; }
   @keyframes bwsl { from { transform: translateX(40px); opacity: .4; } } @keyframes bwsr { from { transform: translateX(-40px); opacity: .4; } }
   @keyframes bwnd { 30% { transform: scale(1.04); } }
 }
-/* the dates step fits a phone screen without scrolling */
-.bwb.s0 { gap: 12px; padding-top: 16px; padding-bottom: 14px; }
-.s0 .bwsum { padding: 12px 14px; gap: 8px; } .s0 .bwsr { gap: 12px; }
-.s0 .bwdays { min-width: 52px; height: 52px; border-radius: 12px; } .s0 .bwdays b { font-size: 24px; } .s0 .bwdays span { font-size: 12px; }
-.s0 .bwsr > div:last-child { font-size: 17px; }
-.s0 .bwhalf { padding-top: 8px; gap: 6px; } .s0 .bwhalf p { font-size: 16px; } .s0 .bwseg button { min-height: 44px; }
-@media (max-height: 780px) { .bwb.s0 { gap: 10px; padding-top: 12px; } .bwb.s0 h2 { font-size: 26px; } .s0 .bwsum { padding: 10px 12px; } }
-/* Trip dates as two date fields (easier to read than a month calendar), with the bus list on the same screen. */
-.bwdt .bwin { height: 60px; padding: 0 12px; } .bwdt input[type=date] { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: inherit; font: 700 19px var(--body); outline: none; padding: 0; }
-.bwdt small { font-weight: 600; color: var(--ink); }
-.bwsh { margin: 6px 0 0; font-size: 22px; }
+/* Dates and bus fits a phone screen without scrolling: slim date boxes, a one-row summary with the half-day choice beside it, compact bus rows. */
+.bwb.s0 { gap: 8px; padding: 10px 16px; }
+.bwb.s0 h2 { font-size: 22px; }
+.s0 .bw2 .bwf1 > span:first-child { min-height: 0; font-size: 14px; }
+.s0 .bwf1 { gap: 4px; }
+.bwdt .bwin { height: 48px; padding: 0 10px; border-radius: 12px; } .bwdt input[type=date] { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: inherit; font: 700 17px var(--body); outline: none; padding: 0; }
+.s0 .bwnote { font-size: 13px; }
+.s0 .bwsum { padding: 8px 10px; border-radius: 12px; } .s0 .bwsum.bwsr { flex-direction: row; align-items: center; gap: 10px; }
+.s0 .bwdays { min-width: 44px; height: 44px; border-radius: 10px; } .s0 .bwdays b { font-size: 20px; } .s0 .bwdays span { font-size: 11px; }
+.s0 .bwsr > .bwhalf { padding-top: 0; border-top: 0; gap: 8px; flex: 1; min-width: 0; flex-direction: row; align-items: center; font-size: inherit; } .s0 .bwhalf p { font-size: 13px; flex: none; width: 3.6em; line-height: 1.15; }
+.s0 .bwhalf .bwseg { flex: 1; gap: 6px; } .s0 .bwseg button { min-height: 36px; font-size: 13px; border-radius: 10px; padding: 0 2px; }
+.bwsh { margin: 2px 0 0; font-size: 17px; }
+.s0 .bwbus { padding: 6px 8px; gap: 10px; border-radius: 12px; } .s0 .bwbus.sel { padding: 4px 6px; }
+.s0 .bwph { width: 56px; height: 42px; border-radius: 8px; } .s0 .bwph svg { width: 24px; height: 24px; }
+.s0 .bwbi { gap: 2px; font-size: 13px; } .s0 .bwbi .plate { font-size: 15px; } .s0 .bwbi .warn { font-size: 12px; }
+.s0 .bwtick { width: 26px; height: 26px; } .s0 .bwtick svg { width: 16px; height: 16px; }
 .bwleave { position: absolute; inset: 0; z-index: 3; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; }
 .bwleave > div { width: 100%; box-sizing: border-box; background: var(--surface); border-radius: 18px 18px 0 0; padding: 20px 20px calc(22px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; }
 .bwleave b { font-size: 21px; } .bwleave p { margin: 0 0 6px; color: var(--muted); font-size: 16px; }
@@ -6355,11 +6360,12 @@ function bwRender(top) {
 function bwDatesHtml() {
   const { from, to } = bw, t = todayISO(), w = bwWhole(), dd = bwDays(), opt = (v, l) => `<button type="button" data-half="${v}" aria-pressed="${bw.half === v}">${l}</button>`;
   const field = (k, l, v, min) => `<label class="bwf1 bwdt"><span>${l}</span><span class="bwin${v ? "" : " main"}"><input type="date" data-k="${k}" value="${v || ""}"${min ? ` min="${min}"` : ""} aria-label="${l}"></span>` +
-    `<small>${v ? new Date(v + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long" }) : "&nbsp;"}</small></label>`;
+    `</label>`;
   return `<div class="bw2">${field("from", "Start date", from)}${field("to", "End date", to, from)}</div>` +
     (from && from < t ? `<p class="bwnote">The start date is in the past (backdated booking).</p>` : "") +
-    (from && to ? `<div class="bwsum"><div class="bwsr"><div class="bwdays"><b>${bwHalfTxt(dd)}</b><span>${bwDayWord(dd)}</span></div><div><span style="color:var(--ink);font-weight:700">${bwFmt(from)}</span><span>to ${bwFmt(to)}</span></div></div>` +
-      `<div class="bwhalf"><p>${w === 1 ? "Only half a day?" : "Is any day only half a day?"}</p><div class="bwseg ${w === 1 ? "c2" : "c3"}">${w === 1 ? opt("none", "No, full day") + opt("last", "Yes, half day") : opt("none", "No") + opt("first", "First day") + opt("last", "Last day")}</div></div></div>` : "") +
+    // One row: how many days, then whether any day is only half a day (the dates are in the boxes above).
+    (from && to ? `<div class="bwsum bwsr"><div class="bwdays"><b>${bwHalfTxt(dd)}</b><span>${bwDayWord(dd)}</span></div>` +
+      `<div class="bwhalf"><p>Half day?</p><div class="bwseg ${w === 1 ? "c2" : "c3"}">${w === 1 ? opt("none", "No") + opt("last", "Yes") : opt("none", "No") + opt("first", "First day") + opt("last", "Last day")}</div></div></div>` : "") +
     `<h3 class="bwsh">Which bus?</h3>` + (from && to ? bwBusHtml() : `<p class="bwnote">Choose the start and end dates to see which buses are free.</p>`);
 }
 function bwBusHtml() {
@@ -6371,7 +6377,7 @@ function bwBusHtml() {
     return `<button type="button" class="bwbus${sel ? " sel" : ""}" data-bus="${v.id}"${c ? " disabled" : ""} aria-pressed="${sel}">` +
       `<span class="bwph">${ph ? `<img src="/_blob/${encodeURIComponent(ph.id)}" alt="Photo of ${esc(plateOf(v))}" loading="lazy">` : BW_ICON.bus}</span>` +
       `<span class="bwbi"><span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` +
-      `<span class="${c ? "bad" : "ok"}">${c ? `Already booked ${fmtShort(c.from)}${bkEnd(c) !== c.from ? ` – ${fmtShort(bkEnd(c))}` : ""}` : "Free on these days"}</span>` +
+      `<span class="${c ? "bad" : "ok"}">${c ? `Booked ${c.from.slice(8, 10)}/${c.from.slice(5, 7)}${bkEnd(c) !== c.from ? ` – ${bkEnd(c).slice(8, 10)}/${bkEnd(c).slice(5, 7)}` : ""}` : "Free on these days"}</span>` +
       (bad.length ? `<span class="warn">${esc(bad[0].msg)}</span>` : "") + `</span>${sel ? `<span class="bwtick">${BW_ICON.ok}</span>` : ""}</button>`;
   }).join("");
 }
