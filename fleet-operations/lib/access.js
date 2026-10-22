@@ -4,7 +4,7 @@
 
 const VE = ["none", "view", "edit"];
 const LEVELS = {
-  dashboard: ["none", "view"], vehicles: VE, drivers: VE, conductors: VE, trips: VE,
+  dashboard: ["none", "view"], vehicles: VE, drivers: VE, conductors: VE, trips: ["none", "view", "update", "edit"],
   bookings: ["none", "view", "request", "edit"], tripsheets: ["none", "view", "update", "edit"],
   fuel: VE, maintenance: VE, users: VE
 };
@@ -29,6 +29,7 @@ const MOD_OF = {
   conductors: "conductors", conductorHistory: "conductors",
   trips: "trips", tripMonths: "trips", tripYears: "trips", truckTrips: "trips", truckRounds: "trips",
   routeExpenses: "trips", padiSlabs: "trips", // route bus masters: standard expenses by starting place, padi slabs
+  routeSheets: "trips", // the conductor's day sheet, approved into trips by an admin
   fuelLog: "fuel"
 };
 const HISTORY = /History$/;
@@ -92,6 +93,14 @@ export function canWrite(a, me, op, coll, id, prev, next, linkedClosed) {
     return m && a[m] === "edit" && op !== "delete" && !prev ? "" : no;
   }
   if (coll === "bookings") return bookingRule(a, op, prev, next) ? "" : no;
+  // Conductor (route trip sheet: fill & submit): his day sheets while they are not sent yet or were sent back, which he
+  // may save or send to the office. Approving, and everything in the route trip sheet itself, stays with the office.
+  if (coll === "routeSheets" && a.trips === "update") {
+    if (op === "delete") return prev?.status === "draft" ? "" : no;
+    const open = !prev || prev.status === "draft" || prev.status === "rejected";
+    return open && ["draft", "rejected", "submitted"].includes(next?.status) && !next.approvedOn && (next.status !== "rejected" || prev?.status === "rejected")
+      && (next.rejectReason || "") === (next.status === "rejected" ? prev?.rejectReason || "" : "") ? "" : no;
+  }
 
   // Trip sheet diesel: someone who fills in trip sheets may add, change and delete fills linked to a booking.
   if (coll === "fuelLog" && a.fuel !== "edit" && (a.tripsheets === "update" || a.tripsheets === "edit"))
