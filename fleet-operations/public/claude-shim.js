@@ -6,13 +6,13 @@
   const POLL_MS = 4000, POLL_HIDDEN_MS = 20000;
 
   /* ---------- start-up cover ----------
-     The app's screens stay hidden behind a plain "Fleet Operations" cover until we know who is signed in and their
+     The app's screens stay hidden behind a plain cover with the app's name (VBS, as in the installed app) until we know who is signed in and their
      records (and permissions) have loaded, so nobody sees the full menu flash up before the sign-in screen. */
   document.documentElement.classList.add("fo-boot");
   const bootCss = document.createElement("style");
   bootCss.textContent = `html.fo-boot,html.fo-boot body{background:#0a1f16!important}
 html.fo-boot body>*:not(#foLogin):not(#foPin){visibility:hidden!important}
-html.fo-boot body::before{content:"Fleet Operations";position:fixed;inset:0;z-index:9990;display:grid;place-items:center;color:#dbe4ec;font:700 26px/1 "Barlow Condensed",system-ui,sans-serif;letter-spacing:.02em}
+html.fo-boot body::before{content:"VBS";position:fixed;inset:0;z-index:9990;display:grid;place-items:center;color:#dbe4ec;font:700 26px/1 "Barlow Condensed",system-ui,sans-serif;letter-spacing:.02em}
 html.fo-boot.fo-login body::before{content:none}`;
   document.head.appendChild(bootCss);
   let bootDone = false;

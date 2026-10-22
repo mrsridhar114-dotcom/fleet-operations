@@ -322,14 +322,16 @@ details.older { font-size: 12px; margin-top: 2px; }
 .lthumb { width: 56px; height: 40px; flex: none; object-fit: contain; border-radius: 5px; border: 1px solid var(--line); background: var(--bg); display: block; }
 .lthumb.none { display: grid; place-items: center; color: var(--muted); border-style: dashed; }
 .lthumb.none svg { width: 22px; height: 22px; opacity: .6; }
-.lthumb.dthumb { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-/* Vehicle photos fill one upright frame of the same size on every card (most vehicle photos are taken upright, front-on); the full photo is in the vehicle record. */
-img.lthumb:not(.dthumb) { width: 52px; height: 64px; object-fit: cover; object-position: center 55%; background: none; }
-.lthumb.none:not(.dthumb) { width: 52px; height: 64px; }
+/* Vehicle, driver and conductor photos fill one upright frame of the same size on every card; the full photo is in the record.
+   Vehicle photos are centred a little low (the plate); passport-style people photos keep the top, so the whole face shows. */
+img.lthumb { width: 52px; height: 64px; object-fit: cover; object-position: center 55%; background: none; }
+img.lthumb.dthumb { object-position: center 15%; }
+.lthumb.none { width: 52px; height: 64px; }
 img.fthumb { width: auto; max-width: 100px; background: none; }
 .dvphoto img { width: 140px; height: 170px; max-height: none; object-fit: cover; }
 .dvphoto .nophoto { width: 140px; }
 .dname { min-width: 11em; }
+@media (max-width: 760px) { .vid .dname { min-width: 0; flex: 1 1 0; } }
 .dname .sub { display: block; }
 .nmrow { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .agetag { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; padding: 1px 7px; border-radius: 999px; background: var(--chip-bg); }
@@ -807,6 +809,16 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 #e-bkPays { color: var(--danger); font-size: 13px; font-weight: 600; }
 #e-bkPays:empty { display: none; }
 .dsl { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+/* Desktop trip sheet: one card per part, two cards a row on wide screens. */
+.tsg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tsc { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); min-width: 0; }
+.tsc.tsw { grid-column: 1 / -1; }
+.tsc h4 { margin: 0; font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+.tsf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 10px; }
+.tsf .tsx { grid-column: span 2; }
+.tsc .dsl { border: 0; padding: 0; }
+@media (max-width: 900px) { .tsg { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .tsf { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .dslhead { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-size: 14px; }
 .dslhead .btn { padding: 4px 10px; font-size: 12px; }
 .dslcols, .dslrow { display: grid; grid-template-columns: 90px 100px 110px minmax(0, 1fr) 64px; gap: 8px; align-items: center; }
@@ -1047,25 +1059,12 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bw { position: fixed; inset: 0; z-index: 45; background: var(--bg); color: var(--ink); display: flex; flex-direction: column; font-family: var(--body); padding-top: env(safe-area-inset-top, 0px); }
 .bwh { background: var(--side-bg); color: var(--side-ink); display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 44px; }
 .bwh div { display: flex; flex-direction: column; } .bwh b { font: 700 22px/1.1 var(--display); } .bwh span { font-size: 14px; color: var(--side-muted); }
-.bwnav svg { width: 22px; height: 22px; }
 .bwbar { background: var(--side-bg); padding: 0 16px 14px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
 .bwbar i, .bwbar .bwseg-i { height: 6px; border-radius: 3px; background: var(--side-line); } .bwbar i.on, .bwbar .bwseg-i.on { background: #8ccf5e; }
 .bwbar .bwseg-i { border: 0; padding: 0; cursor: pointer; position: relative; } .bwbar .bwseg-i::after { content: ""; position: absolute; inset: -14px 0; } .bwbar .bwseg-i.cur { box-shadow: 0 0 0 2px #e3efe6; }
 .bwb { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 16px; overscroll-behavior: contain; }
 .bwb h2 { margin: 0; font: 700 30px/1.1 var(--display); }
 .bwhint { margin: -8px 0 0; font-size: 18px; font-weight: 600; line-height: 1.3; } .bwhint.ok { color: var(--accent); }
-.bwcal { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px 10px 14px; display: flex; flex-direction: column; gap: 8px; }
-.bwmh { display: flex; align-items: center; justify-content: space-between; } .bwmh b { font-size: 21px; }
-.bwnav { width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; } .bwnav:disabled { opacity: .3; cursor: default; }
-.bwwk, .bwgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
-.bwwk span { text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); }
-.bwd { height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 700 19px var(--body); padding: 0; cursor: pointer; }
-.bwd:disabled { border-color: transparent; background: transparent; color: var(--muted); opacity: .45; font-weight: 500; cursor: default; }
-.bwd.t { box-shadow: inset 0 -3px 0 var(--accent); }
-.bwd.p:not(.e):not(.in) { background: var(--bg); color: var(--muted); font-weight: 600; }
-.bwd.in { background: var(--accent-soft); border-color: var(--accent-soft); }
-.bwd.e { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: none; }
-.bwd.h { background: #8ccf5e; border: 2px dashed var(--accent); color: #0a1f16; }
 .bwsum { background: var(--accent-soft); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
 .bwsr { display: flex; align-items: center; gap: 14px; }
 .bwdays { min-width: 64px; height: 64px; padding: 0 6px; box-sizing: border-box; border-radius: 14px; background: var(--accent); color: var(--accent-ink); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; } .bwdays b { font-size: 28px; } .bwdays span { font-size: 13px; font-weight: 600; }
@@ -1124,15 +1123,15 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 }
 /* the dates step fits a phone screen without scrolling */
 .bwb.s0 { gap: 12px; padding-top: 16px; padding-bottom: 14px; }
-.s0 .bwhint { margin-top: -6px; font-size: 17px; }
-.s0 .bwcal { padding: 8px 8px 10px; gap: 4px; border-radius: 16px; }
-.s0 .bwnav { width: 40px; height: 40px; } .s0 .bwmh b { font-size: 19px; }
-.s0 .bwgrid { gap: 3px; } .s0 .bwd { height: 38px; font-size: 18px; border-radius: 10px; }
 .s0 .bwsum { padding: 12px 14px; gap: 8px; } .s0 .bwsr { gap: 12px; }
 .s0 .bwdays { min-width: 52px; height: 52px; border-radius: 12px; } .s0 .bwdays b { font-size: 24px; } .s0 .bwdays span { font-size: 12px; }
 .s0 .bwsr > div:last-child { font-size: 17px; }
 .s0 .bwhalf { padding-top: 8px; gap: 6px; } .s0 .bwhalf p { font-size: 16px; } .s0 .bwseg button { min-height: 44px; }
-@media (max-height: 780px) { .bwb.s0 { gap: 10px; padding-top: 12px; } .bwb.s0 h2 { font-size: 26px; } .s0 .bwd { height: 35px; } .s0 .bwsum { padding: 10px 12px; } }
+@media (max-height: 780px) { .bwb.s0 { gap: 10px; padding-top: 12px; } .bwb.s0 h2 { font-size: 26px; } .s0 .bwsum { padding: 10px 12px; } }
+/* Trip dates as two date fields (easier to read than a month calendar), with the bus list on the same screen. */
+.bwdt .bwin { height: 60px; padding: 0 12px; } .bwdt input[type=date] { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: inherit; font: 700 19px var(--body); outline: none; padding: 0; }
+.bwdt small { font-weight: 600; color: var(--ink); }
+.bwsh { margin: 6px 0 0; font-size: 22px; }
 .bwleave { position: absolute; inset: 0; z-index: 3; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; }
 .bwleave > div { width: 100%; box-sizing: border-box; background: var(--surface); border-radius: 18px 18px 0 0; padding: 20px 20px calc(22px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; }
 .bwleave b { font-size: 21px; } .bwleave p { margin: 0 0 6px; color: var(--muted); font-size: 16px; }
@@ -1156,6 +1155,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpage { gap: 12px; padding: 14px 14px 18px; }
 .tptip { background: var(--accent-soft); border-radius: 14px; padding: 10px 14px; font-size: 16px; line-height: 1.35; }
 .tpsec { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 4px 12px 8px; }
+.tpmoney .bwm { padding: 8px 0; border-top: 1px solid var(--line); } .tpmoney .bwm:first-of-type { border-top: 0; } .tpmoney .bwm.net b { font-size: 20px; } .tpmoney .bwm.net.neg b { color: var(--danger); } .tpmoney .bwm.net:not(.neg) b { color: var(--accent); }
 .tpsec h3 { margin: 8px 0 2px; font: 700 14px var(--body); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
 .tprow { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); } .tprow:last-of-type { border-bottom: 0; }
 .tpl { flex: 1; min-width: 0; font: 700 18px/1.15 var(--body); }
@@ -2356,36 +2356,51 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </span>
       </div>
       <p class="hint" id="bkTripHint" style="margin:0"></p>
-      <div class="g6" id="bkExpGrid">
-        <div class="field"><span class="lbl">From date</span><output class="calcbox" id="bkT_from"></output></div>
-        <div class="field"><span class="lbl">To date</span><output class="calcbox" id="bkT_to"></output></div>
-        <div class="field"><span class="lbl">Days</span><output class="calcbox" id="bkT_days"></output></div>
-        <div class="field"><span class="lbl">Total rent</span><output class="calcbox" id="bkT_rent"></output></div>
-        <div class="field s2"><label for="bkDriver">Driver</label><select id="bkDriver"></select><span class="hint" id="bkDrvHint"></span><span class="err" id="e-bkDriver"></span></div>
-        <div class="field"><label for="bkCleaner">Cleaner</label><input id="bkCleaner" list="bkCleaners" autocomplete="off" maxlength="60"><datalist id="bkCleaners"></datalist><span class="err" id="e-bkCleaner"></span></div>
-        <div class="field"><label for="bkPadiPaid">Driver padi</label><input id="bkPadiPaid" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="bkCleanerPadi">Cleaner padi</label><input id="bkCleanerPadi" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="bkPermit">Permit expense</label><input id="bkPermit" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="bkToll">Toll gate</label><input id="bkToll" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="bkLitres">Litres <span class="sub" style="font-weight:400">(total)</span></label><input id="bkLitres" type="number" readonly tabindex="-1" class="dsum" title="Sum of the diesel fills below"></div>
-        <div class="field" data-pp="diesel"><label for="bkFuel">Fuel price <span class="sub" style="font-weight:400">(total)</span></label><input id="bkFuel" type="number" readonly tabindex="-1" class="dsum" title="Sum of the diesel fills below"></div>
-        <div class="field"><label for="bkOther">Other exp.</label><input id="bkOther" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><span class="lbl">Total expense</span><output class="calcbox" id="bkT_exp"></output></div>
-        <div class="field"><span class="lbl">Collection</span><output class="calcbox" id="bkT_col"></output></div>
-        <div class="field"><span class="lbl">Balance</span><output class="calcbox" id="bkT_bal"></output></div>
-        <div class="field"><span class="lbl">Avg col / day</span><output class="calcbox" id="bkT_avg"></output></div>
-        <div class="field"><label for="bkStartKm">Start km</label><input id="bkStartKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkStartKm"></span></div>
-        <div class="field"><label for="bkEndKm">End km</label><input id="bkEndKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkEndKm"></span></div>
-        <div class="field"><span class="lbl">Km run</span><output class="calcbox" id="bkT_km"></output></div>
-        <div class="field"><span class="lbl">Avg km / day</span><output class="calcbox" id="bkT_kmday"></output></div>
-        <div class="field"><span class="lbl">Mileage</span><output class="calcbox" id="bkT_mil"></output></div>
-        <div class="field s6"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div>
-      </div>
-      <div class="dsl" id="bkDslBox">
-        <div class="dslhead"><b>Diesel fills</b><span class="sub" id="bkDslSum"></span></div>
-        <div class="dslcols"><span>Date</span><span>Litres</span><span>Amount</span><span>Fuel station · bill</span><span></span></div>
-        <div id="bkDsl"></div>
-        <div><button class="btn" type="button" id="bkDslAdd" style="padding:5px 12px;font-size:13px">+ Add diesel</button></div>
+      <!-- Trip sheet grouped the way it is filled in (same order as the phone trip sheet). -->
+      <div class="tsg" id="bkExpGrid">
+        <div class="tsc tsw"><h4>Trip</h4><div class="tsf">
+          <div class="field"><span class="lbl">From date</span><output class="calcbox" id="bkT_from"></output></div>
+          <div class="field"><span class="lbl">To date</span><output class="calcbox" id="bkT_to"></output></div>
+          <div class="field"><span class="lbl">Days</span><output class="calcbox" id="bkT_days"></output></div>
+          <div class="field"><span class="lbl">Total rent</span><output class="calcbox" id="bkT_rent"></output></div>
+        </div></div>
+        <div class="tsc"><h4>Driver and cleaner</h4><div class="tsf">
+          <div class="field tsx"><label for="bkDriver">Driver</label><select id="bkDriver"></select><span class="hint" id="bkDrvHint"></span><span class="err" id="e-bkDriver"></span></div>
+          <div class="field tsx"><label for="bkCleaner">Cleaner</label><input id="bkCleaner" list="bkCleaners" autocomplete="off" maxlength="60"><datalist id="bkCleaners"></datalist><span class="err" id="e-bkCleaner"></span></div>
+          <div class="field"><label for="bkPadiPaid">Driver padi</label><input id="bkPadiPaid" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkCleanerPadi">Cleaner padi</label><input id="bkCleanerPadi" type="number" inputmode="numeric" min="0"></div>
+        </div></div>
+        <div class="tsc"><h4>On the way and other expenses</h4><div class="tsf">
+          <div class="field"><label for="bkToll">Toll gate</label><input id="bkToll" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkPermit">Permit expense</label><input id="bkPermit" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkOther">Other exp.</label><input id="bkOther" type="number" inputmode="numeric" min="0"></div>
+        </div></div>
+        <div class="tsc tsw"><h4>Diesel</h4>
+          <div class="dsl" id="bkDslBox">
+            <div class="dslhead"><b>Diesel fills</b><span class="sub" id="bkDslSum"></span></div>
+            <div class="dslcols"><span>Date</span><span>Litres</span><span>Amount</span><span>Fuel station · bill</span><span></span></div>
+            <div id="bkDsl"></div>
+            <div><button class="btn" type="button" id="bkDslAdd" style="padding:5px 12px;font-size:13px">+ Add diesel</button></div>
+          </div>
+          <div class="tsf">
+            <div class="field"><label for="bkLitres">Litres <span class="sub" style="font-weight:400">(total)</span></label><input id="bkLitres" type="number" readonly tabindex="-1" class="dsum" title="Sum of the diesel fills above"></div>
+            <div class="field"><label for="bkFuel">Diesel amount <span class="sub" style="font-weight:400">(total)</span></label><input id="bkFuel" type="number" readonly tabindex="-1" class="dsum" title="Sum of the diesel fills above"></div>
+          </div>
+        </div>
+        <div class="tsc"><h4>Km meter</h4><div class="tsf">
+          <div class="field"><label for="bkStartKm">Start km</label><input id="bkStartKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkStartKm"></span></div>
+          <div class="field"><label for="bkEndKm">End km</label><input id="bkEndKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkEndKm"></span></div>
+          <div class="field"><span class="lbl">Km run</span><output class="calcbox" id="bkT_km"></output></div>
+          <div class="field"><span class="lbl">Avg km / day</span><output class="calcbox" id="bkT_kmday"></output></div>
+          <div class="field"><span class="lbl">Mileage</span><output class="calcbox" id="bkT_mil"></output></div>
+        </div></div>
+        <div class="tsc"><h4>Trip money</h4><div class="tsf">
+          <div class="field"><span class="lbl">Collection</span><output class="calcbox" id="bkT_col"></output></div>
+          <div class="field"><span class="lbl">Total expense</span><output class="calcbox" id="bkT_exp"></output></div>
+          <div class="field"><span class="lbl">Balance</span><output class="calcbox" id="bkT_bal"></output></div>
+          <div class="field"><span class="lbl">Avg col / day</span><output class="calcbox" id="bkT_avg"></output></div>
+        </div></div>
+        <div class="tsc tsw"><div class="field"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div></div>
       </div>
     </section>
     <section class="bkpanel" id="bkFilesSet" role="tabpanel" aria-labelledby="bkTab-files">
@@ -6012,11 +6027,12 @@ function syncBkHistBtn() {
 // The driver padi on the booking slip is extra money the party gives the driver: recorded only. The trip sheet driver padi is our expense.
 // "draft" is a booking the booking planner is still working on; "pending" is one sent by the booking planner and waiting for an admin; "rejected" is one the admin turned down.
 const BK_STAGES = { draft: "Draft", pending: "Awaiting approval", rejected: "Rejected", enquiry: "Enquiry", booked: "Booked", ontrip: "On trip", completed: "Completed", cancelled: "Cancelled" };
-const PARTY_ITEMS = [["diesel", "Diesel"], ["toll", "Toll / FASTag"], ["parking", "Parking"], ["route", "Route expenses"]];
+// Diesel is not a "paid by the party" item: whatever diesel amount is entered on the trip sheet is our expense.
+const PARTY_ITEMS = [["toll", "Toll / FASTag"], ["parking", "Parking"], ["route", "Route expenses"]];
 // Expenses on the trip sheet, in the order of the spare bus sheet. Parking and route expenses go under Other when we pay them.
 const BK_EXP = { bkPadiPaid: "padiPaid", bkCleanerPadi: "cleanerPadi", bkPermit: "permit", bkToll: "toll", bkFuel: "fuelCost", bkOther: "otherExp" };
 // Toll is always entered on the trip sheet: it counts as an expense and is collected back from the party along with the rent.
-const PP_FIELD = { diesel: "fuelCost", parking: "parking", route: "routeExp" };
+const PP_FIELD = { parking: "parking", route: "routeExp" };
 const BK_NUM = { bkRate: "rate", bkRent: "rent", bkPadi: "padi", bkStartKm: "startKm", bkEndKm: "endKm", ...BK_EXP };
 const PAY_MODES = ["Cash", "UPI", "Bank transfer", "Cheque"];
 let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bkRentTouched = false, bkDaysTouched = false;
@@ -6043,10 +6059,8 @@ const tripClosed = b => !!b?.closedOn;
 function drvExpenses(b) {
   const out = [], add = (key, label, amt, card) => { if (num(amt) > 0) out.push({ key, label, amt: Math.round(num(amt)), card: !!card }); };
   add("padiPaid", "Driver padi", b.padiPaid); add("cleanerPadi", "Cleaner padi", b.cleanerPadi); add("toll", "Toll gate", b.toll); add("permit", "Permit", b.permit);
-  if (!(b.partyPays || ppDefaults(b.rentType || "mt")).diesel) {
-    dslLinked(b.id).forEach(f => add("fl:" + f.id, `Diesel${f.date ? " " + fmtShort(f.date) : ""} · ${nf(num(f.litres), 2)} L${f.pay === "Fuel card" ? " · fuel card" : ""}`, f.amount, f.pay === "Fuel card"));
-    dslLegacyOf(b).forEach((r, i) => add("dl:" + i, `Diesel · ${nf(num(r.litres), 2)} L`, r.amount));
-  }
+  dslLinked(b.id).forEach(f => add("fl:" + f.id, `Diesel${f.date ? " " + fmtShort(f.date) : ""} · ${nf(num(f.litres), 2)} L${f.pay === "Fuel card" ? " · fuel card" : ""}`, f.amount, f.pay === "Fuel card"));
+  dslLegacyOf(b).forEach((r, i) => add("dl:" + i, `Diesel · ${nf(num(r.litres), 2)} L`, r.amount));
   (b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other expenses", amt: b.otherExp }] : []).forEach((x, i) => add("o:" + i, x.note ? `${x.kind} · ${x.note}` : x.kind, x.amt));
   return out;
 }
@@ -6171,7 +6185,8 @@ const BW_ICON = {
   bus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 21v-3M16 21v-3"/><circle cx="8" cy="14.5" r="1"/><circle cx="16" cy="14.5" r="1"/></svg>',
   wa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"/></svg>'
 };
-const BW_TITLES = ["Trip dates", "Which bus?", "Who is booking?", "Where are they going?", "Rent and advance", "Check and save"];
+const BW_TITLES = ["Dates and bus", "Who is booking?", "Where are they going?", "Rent and advance", "Check and save"];
+const BW_LAST = BW_TITLES.length - 1;  // Check and save
 const bwFmt = iso => iso ? `${new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short" })} ${fmtDate(iso)}` : "";
 const bwHalfTxt = d => d === .5 ? "½" : Number.isInteger(d) ? String(d) : Math.floor(d) + "½";
 const bwWhole = () => bw.from && bw.to ? dayDiff(bw.from, bw.to) + 1 : 0;
@@ -6182,7 +6197,7 @@ const bwClash = () => bw.vehicleId && bw.from ? clashOf({ vehicleId: bw.vehicleI
 
 function bwOpen(preset, bk, readOnly) {
   const t = todayISO(), start = bk ? bk.from : preset?.from && preset.from >= t ? preset.from : "";
-  bw = { step: 0, y: +(start || t).slice(0, 4), m: +(start || t).slice(5, 7) - 1, from: start, to: start ? (bk ? bkEnd(bk) : preset.to || start) : "", half: "none",
+  bw = { step: 0, from: start, to: start ? (bk ? bkEnd(bk) : preset.to || start) : "", half: "none",
     vehicleId: preset?.vehicleId || "", phone: "", party: "", fromContact: false, tels: null, bookedBy: "", bbName: "", places: "", address: "",
     rate: "", padi: "", adv: "", mode: "Cash", remarks: "", showRem: false, saving: false, done: null, editId: null };
   if (bk) {
@@ -6191,7 +6206,7 @@ function bwOpen(preset, bk, readOnly) {
     const p1 = bk.payments?.[0], w = inclDays(bk.from, bkEnd(bk));
     Object.assign(bw, { editId: bk.id, vehicleId: bk.vehicleId || "", phone: bk.phone || "", party: bk.party || "", bookedBy: bk.bookedById || (bk.bookedByName ? "other" : ""), bbName: bk.bookedById ? "" : bk.bookedByName || "", places: bk.places || "", address: bk.address || "",
       rate: bk.rate ? String(bk.rate) : "", padi: bk.padi ? String(bk.padi) : "", adv: p1?.amount ? String(p1.amount) : "", mode: p1?.mode || "Cash", remarks: bk.remarks || "", showRem: !!bk.remarks,
-      half: w && num(bk.days) === w - .5 ? (bk.halfDay || "last") : "none", step: 5, status: bk.status, readOnly: !!readOnly,
+      half: w && num(bk.days) === w - .5 ? (bk.halfDay || "last") : "none", step: BW_LAST, status: bk.status, readOnly: !!readOnly,
       orig: { rate: bk.rate ? String(bk.rate) : "", days: num(bk.days), rent: num(bk.rent) }, extraPaid: (bk.payments || []).slice(1).reduce((a, p) => a + num(p.amount), 0), pays: (bk.payments || []).slice(1), rejectReason: bk.status === "rejected" ? (bk.rejectReason || bk.rejections?.[bk.rejections.length - 1]?.reason || "") : "", no: bk.no });
   }
   if (!$("bw")) {
@@ -6208,7 +6223,7 @@ function bwOpen(preset, bk, readOnly) {
       sOk = false; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
       // Swiping right is ← (but never leaves the booking by itself); swiping left is Next.
-      if (dx > 0) { if (bw.sub !== "home" && (bw.sub || bw.fromCheck || (bw.step > 0 && !(bw.home && bw.step === 5)))) bwBack(); return; }
+      if (dx > 0) { if (bw.sub !== "home" && (bw.sub || bw.fromCheck || (bw.step > 0 && !(bw.home && bw.step === BW_LAST)))) bwBack(); return; }
       const b = bw.sub ? null : $("bw").querySelector('.bwgo[data-bw="next"]');
       if (b && !b.disabled) { bw.slide = "l"; b.click(); }
       else if (dx < 0 && $("bw").querySelector('.bwgo[data-bw="next"]')) { const f = $("bw").querySelector("footer"); f.classList.remove("bwnudge"); void f.offsetWidth; f.classList.add("bwnudge"); }
@@ -6236,8 +6251,8 @@ function bwBack() {
   if (bw.done) { bwClose(); return; }
   if (bw.sub === "home") { bwClose(); return; }
   if (bw.sub) { if (bw.da) { clearTimeout(bw.advTimer); bwAdvSave(); } bw.sub = "home"; bw.da = null; bw.advSaved = ""; bw.slide = "r"; bwRender(true); return; }
-  if (bw.fromCheck) { bw.step = 5; bw.fromCheck = false; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
-  if (bw.step > 0 && !(bw.home && bw.step === 5)) { bw.step--; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
+  if (bw.fromCheck) { bw.step = BW_LAST; bw.fromCheck = false; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
+  if (bw.step > 0 && !(bw.home && bw.step === BW_LAST)) { bw.step--; bw.tels = null; bw.slide = "r"; bwRender(true); return; }
   bwLeave(bw.home ? "home" : "list");
 }
 // Leaving booking details (to the booking page or the list) with changes that are not saved asks first.
@@ -6314,10 +6329,9 @@ const bwLeaveHtml = () => `<div class="bwleave" role="alertdialog" aria-modal="t
   `<div class="bwseg c2"><button type="button" data-bw="leavestay">Keep editing</button><button type="button" class="bwdanger" data-bw="leavego">Discard</button></div></div></div>`;
 function bwCanNext() {
   const s = bw.step;
-  if (s === 0) return !!(bw.from && bw.to);
-  if (s === 1) return !!bw.vehicleId && !bwClash();
-  if (s === 2) { const d = bw.phone.replace(/\D/g, "").length; return (d === 0 || d >= 10) && (!canBookings || !!bw.party.trim()); }
-  if (s === 4) return !canBookings || num(bw.rate) > 0;
+  if (s === 0) return !!(bw.from && bw.to && bw.to >= bw.from && bw.vehicleId) && !bwClash();
+  if (s === 1) { const d = bw.phone.replace(/\D/g, "").length; return (d === 0 || d >= 10) && (!canBookings || !!bw.party.trim()); }
+  if (s === 3) return !canBookings || num(bw.rate) > 0;
   return true;
 }
 // What is still needed before a booking can be sent for approval (a draft can be saved without these).
@@ -6326,10 +6340,10 @@ function bwRender(top) {
   const el = $("bw"), s = bw.step, first = !bw.home && s === 0 && !bw.fromCheck;  // on the first screen Back already goes to the list, so there is no Close
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
   if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (bw.lockAsk) el.insertAdjacentHTML("beforeend", bwLockHtml()); if (bw.ask) el.insertAdjacentHTML("beforeend", bwAskHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
-  el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of 6` : `Step ${s + 1} of 6`}</span></div></header>` +
+  el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of ${BW_LAST + 1}` : `Step ${s + 1} of ${BW_LAST + 1}`}</span></div></header>` +
     `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
-    `<div class="bwb s${s}" id="bwBody"><h2>${s === 5 && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwBusHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
-    (s === 5 && bw.readOnly ? "" : `<footer class="bwf">${s < 5 ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>${bw.fromCheck ? `${BW_ICON.ok} Done` : `Next ${BW_ICON.next}`}</button>`
+    `<div class="bwb s${s}" id="bwBody"><h2>${s === BW_LAST && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
+    (s === BW_LAST && bw.readOnly ? "" : `<footer class="bwf">${s < BW_LAST ? `<button type="button" class="bwgo" data-bw="next"${bwCanNext() ? "" : " disabled"}>${bw.fromCheck ? `${BW_ICON.ok} Done` : `Next ${BW_ICON.next}`}</button>`
       : canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
       : `<div class="bwf two" style="padding:0;border:0"><button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button></div>`}</footer>`) + navBar("bw", !first);
   if (bw.sheet) el.insertAdjacentHTML("beforeend", bwSheetHtml());
@@ -6339,28 +6353,19 @@ function bwRender(top) {
   if (bw.slide) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; }
 }
 function bwDatesHtml() {
-  const { y, m, from, to } = bw, t = todayISO(), first = new Date(y, m, 1).getDay(), n = new Date(y, m + 1, 0).getDate();
-  const iso = d => `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-  let cells = "";
-  for (let i = 0; i < first; i++) cells += "<span></span>";
-  for (let d = 1; d <= n; d++) {
-    const v = iso(d), past = v < t, edge = v === from || v === to, inside = !!(from && to && v > from && v < to);
-    const half = !!(from && to && ((bw.half === "first" && v === from) || (bw.half === "last" && v === to)));
-    cells += `<button type="button" class="bwd${edge ? " e" : ""}${inside ? " in" : ""}${half ? " h" : ""}${v === t ? " t" : ""}${past ? " p" : ""}" data-day="${v}" aria-pressed="${edge || inside}" aria-label="${bwFmt(v)}">${d}${half ? "½" : ""}</button>`;
-  }
-  const atStart = false;  // backdated bookings are allowed, so earlier months can be opened too
-  const hint = from && !to && from < t ? "Now tap the last day. This is a past date (backdated booking)." : !from ? "Tap the day the trip starts" : !to ? "Now tap the last day (the same day again for a 1-day trip)" : "";
-  const w = bwWhole(), dd = bwDays(), opt = (v, l) => `<button type="button" data-half="${v}" aria-pressed="${bw.half === v}">${l}</button>`;
-  return (hint ? `<p class="bwhint">${hint}</p>` : "") +
-    `<div class="bwcal"><div class="bwmh"><button type="button" class="bwnav" data-bw="pm" aria-label="Previous month"${atStart ? " disabled" : ""}>${BW_ICON.back}</button><b>${new Date(y, m, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</b><button type="button" class="bwnav" data-bw="nm" aria-label="Next month">${BW_ICON.next}</button></div>` +
-    `<div class="bwwk" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="bwgrid">${cells}</div></div>` +
+  const { from, to } = bw, t = todayISO(), w = bwWhole(), dd = bwDays(), opt = (v, l) => `<button type="button" data-half="${v}" aria-pressed="${bw.half === v}">${l}</button>`;
+  const field = (k, l, v, min) => `<label class="bwf1 bwdt"><span>${l}</span><span class="bwin${v ? "" : " main"}"><input type="date" data-k="${k}" value="${v || ""}"${min ? ` min="${min}"` : ""} aria-label="${l}"></span>` +
+    `<small>${v ? new Date(v + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long" }) : "&nbsp;"}</small></label>`;
+  return `<div class="bw2">${field("from", "Start date", from)}${field("to", "End date", to, from)}</div>` +
+    (from && from < t ? `<p class="bwnote">The start date is in the past (backdated booking).</p>` : "") +
     (from && to ? `<div class="bwsum"><div class="bwsr"><div class="bwdays"><b>${bwHalfTxt(dd)}</b><span>${bwDayWord(dd)}</span></div><div><span style="color:var(--ink);font-weight:700">${bwFmt(from)}</span><span>to ${bwFmt(to)}</span></div></div>` +
-      `<div class="bwhalf"><p>${w === 1 ? "Only half a day?" : "Is any day only half a day?"}</p><div class="bwseg ${w === 1 ? "c2" : "c3"}">${w === 1 ? opt("none", "No, full day") + opt("last", "Yes, half day") : opt("none", "No") + opt("first", "First day") + opt("last", "Last day")}</div></div></div>` : "");
+      `<div class="bwhalf"><p>${w === 1 ? "Only half a day?" : "Is any day only half a day?"}</p><div class="bwseg ${w === 1 ? "c2" : "c3"}">${w === 1 ? opt("none", "No, full day") + opt("last", "Yes, half day") : opt("none", "No") + opt("first", "First day") + opt("last", "Last day")}</div></div></div>` : "") +
+    `<h3 class="bwsh">Which bus?</h3>` + (from && to ? bwBusHtml() : `<p class="bwnote">Choose the start and end dates to see which buses are free.</p>`);
 }
 function bwBusHtml() {
   const buses = spareBuses();
   if (!buses.length) return `<p class="bwnote">No spare buses yet. Add a vehicle with class Bus and operation type Spare under Masters › Vehicle.</p>`;
-  return `<p class="bwhint">${bwFmt(bw.from)}${bw.to !== bw.from ? ` to ${bwFmt(bw.to)}` : ""}</p>` + buses.map(v => {
+  return buses.map(v => {
     const c = clashOf({ vehicleId: v.id, from: bw.from, to: bw.to }, bw.editId), ph = fileOf(v, "photo"), sel = bw.vehicleId === v.id && !c;
     const bad = c ? [] : busChecks(v.id, bw.from, bw.to).filter(x => x.lvl === "bad");
     return `<button type="button" class="bwbus${sel ? " sel" : ""}" data-bus="${v.id}"${c ? " disabled" : ""} aria-pressed="${sel}">` +
@@ -6402,11 +6407,11 @@ function bwCheckHtml() {
   const more = num(bw.extraPaid);
   return (bw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the admin:</b> ${esc(bw.rejectReason)}</p>` : "") + `<div class="bwcard">` +
     row("Dates", `<b>${bwFmt(bw.from)}${bw.to !== bw.from ? ` to ${bwFmt(bw.to)}` : ""} (${bwHalfTxt(dd)} ${bwDayWord(dd)})</b>${bw.half !== "none" && bwWhole() > 1 ? `<span>Half day on the ${bw.half} day</span>` : ""}`, 0) +
-    row("Bus", v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : "<b>—</b>", 1) +
-    row("Party", `<b>${esc(bw.party.trim() || "—")}${bw.phone.trim() ? ` · ${esc(bw.phone.trim())}` : ""}</b>${bb ? `<span>Booked by ${esc(bb)}</span>` : ""}`, 2) +
-    row("Going to", `<b>${esc(bw.places.trim() || "—")}</b>${bw.address.trim() ? `<span>Pick-up: ${esc(bw.address.trim())}</span>` : ""}`, 3) +
+    row("Bus", v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : "<b>—</b>", 0) +
+    row("Party", `<b>${esc(bw.party.trim() || "—")}${bw.phone.trim() ? ` · ${esc(bw.phone.trim())}` : ""}</b>${bb ? `<span>Booked by ${esc(bb)}</span>` : ""}`, 1) +
+    row("Going to", `<b>${esc(bw.places.trim() || "—")}</b>${bw.address.trim() ? `<span>Pick-up: ${esc(bw.address.trim())}</span>` : ""}`, 2) +
     row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span>${(bw.pays || []).map(p => `<span class="bwm"><span>${p.date ? fmtShort(p.date) : "Payment"} · ${esc(p.mode || "Cash")}${p.note ? ` · ${esc(p.note)}` : ""}</span><b>${rs(num(p.amount))}</b></span>`).join("")}${bwToll() ? `<span class="bwm"><span>Toll (collected from the party)</span><b>${rs(bwToll())}</b></span>` : ""}<span class="bwm bal"><span>Balance</span><b>${rs(rent + bwToll() - adv - more)}</b></span>` +
-      (padi ? `<span class="bwm padi"><span>Driver padi (paid to driver, not office)</span><b>${rs(padi)}</b></span>` : "") + (bw.remarks.trim() ? `<span>Remarks: ${esc(bw.remarks.trim())}</span>` : ""), 4) +
+      (padi ? `<span class="bwm padi"><span>Driver padi (paid to driver, not office)</span><b>${rs(padi)}</b></span>` : "") + (bw.remarks.trim() ? `<span>Remarks: ${esc(bw.remarks.trim())}</span>` : ""), 3) +
     `</div>` +
     (bw.editId && canBookings && !["cancelled", "completed", "pending"].includes(bw.status) ? (bw.askCancel
       ? `<div class="bwcancel"><p><b>Cancel booking ${esc(bw.no || "")}?</b> The bus becomes free on these days. Money already received stays on record.</p><div class="bwseg c2"><button type="button" data-bw="keep">No, keep it</button><button type="button" class="bwdanger" data-bw="cancelyes">Yes, cancel</button></div></div>`
@@ -6451,6 +6456,12 @@ function bwInput(e) {
   if (k === "party" && bw.fromContact) bw.fromContact = false;
   if (k === "phone") { const d = bw.phone.replace(/\D/g, "").length; $("bwPhErr").textContent = d && d < 10 ? "Enter all 10 digits." : ""; }
   if (k === "rate" && $("bwTot")) $("bwTot").innerHTML = bwTotHtml();
+  // A new start date moves the end date with it when the end would be earlier (a 1-day trip to start with); the bus list follows the dates.
+  if (k === "from" || k === "to") {
+    if (bw.from && (!bw.to || bw.to < bw.from)) bw.to = bw.from;
+    if (bwWhole() === 1 && bw.half === "first") bw.half = "last";
+    bwRender(); return;
+  }
   bwSyncNext();
 }
 async function bwPickContact() {
@@ -6493,8 +6504,7 @@ function bwClick(e) {
   if (a === "paysave") { bwPaySave(); return; }
   if (t.dataset.pmode) { bw.pay.mode = t.dataset.pmode; bwRender(); return; }
   if (a === "again") { bwOpen(); return; }
-  if (a === "next") { if (bwCanNext()) { bw.step = bw.fromCheck ? (bw.step === 0 && bwClash() ? 1 : 5) : bw.step + 1; if (bw.step === 5) bw.fromCheck = false; bwRender(true); } return; }
-  if (a === "pm" || a === "nm") { const d = new Date(bw.y, bw.m + (a === "nm" ? 1 : -1), 1); bw.y = d.getFullYear(); bw.m = d.getMonth(); bwRender(); return; }
+  if (a === "next") { if (bwCanNext()) { bw.step = bw.fromCheck ? BW_LAST : bw.step + 1; if (bw.step === BW_LAST) bw.fromCheck = false; bwRender(true); } return; }
   if (a === "parties") { bw.sheet = true; bw.q = ""; bw.plist = bwParties(); bwRender(); return; }
   if (a === "sheetclose") { bw.sheet = false; bwRender(); return; }
   if (a === "contacts") { bw.sheet = false; bwRender(); bwPickContact(); return; }
@@ -6511,19 +6521,18 @@ function bwClick(e) {
   if (a === "keep") { bw.askCancel = false; bwRender(); return; }
   if (a === "cancelyes") { bwCancel(); return; }
   if (a === "sub") { bw.sub = t.dataset.sub; bw.slide = "l"; bwRender(true); return; }
-  if (a === "details") { bw.sub = ""; bw.step = 5; bw.slide = "l"; bwRender(true); return; }
+  if (a === "details") { bw.sub = ""; bw.step = BW_LAST; bw.slide = "l"; bwRender(true); return; }
   if (t.dataset.payrm != null) { bwPayRemove(+t.dataset.payrm); return; }
   if (t.dataset.fkind) { bw.fkind = t.dataset.fkind; bwRender(); return; }
   if (a === "fcam" || a === "fpick") { if (!assetsCap) { toast("Attaching files isn't available in this view."); return; } $(a === "fcam" ? "bwFileCam" : "bwFileIn").click(); return; }
   if (t.dataset.frm != null) { bwFileRemove(+t.dataset.frm); return; }
   if (a === "trip") { const id = bw.editId, home = bw.home; bwClose(); twOpen(ops.bookings.find(x => x.id === id), home ? id : ""); return; }
-  if (t.dataset.day) { const v = t.dataset.day; if (!bw.from || bw.to) { bw.from = v; bw.to = ""; bw.half = "none"; } else if (v < bw.from) bw.from = v; else bw.to = v; bwRender(); return; }
   if (t.dataset.half) { bw.half = t.dataset.half; bwRender(); return; }
   if (t.dataset.bus) { bw.vehicleId = t.dataset.bus; bwRender(); return; }
   if (t.dataset.bb) { bw.bookedBy = bw.bookedBy === t.dataset.bb ? "" : t.dataset.bb; bwRender(); if (bw.bookedBy === "other") $("bw").querySelector('[data-k="bbName"]')?.focus(); return; }
   if (t.dataset.tel) { bw.phone = t.dataset.tel.slice(0, 5) + " " + t.dataset.tel.slice(5); bw.tels = null; bwRender(); return; }
   if (t.dataset.mode) { bw.mode = t.dataset.mode; bwRender(); return; }
-  if (t.dataset.goto) { bw.step = +t.dataset.goto; bw.fromCheck = !t.classList.contains("bwseg-i") && bw.step < 5; bw.slide = ""; bwRender(true); }
+  if (t.dataset.goto) { bw.step = +t.dataset.goto; bw.fromCheck = !t.classList.contains("bwseg-i") && bw.step < BW_LAST; bw.slide = ""; bwRender(true); }
 }
 // Cancel: the booking's stage becomes Cancelled, saved through the full booking form like any other change.
 async function bwCancel() {
@@ -6596,7 +6605,6 @@ const TW_OTHER = [["Pooja", "pooja"], ["Mechanic", "mechanic"], ["Other", "othr"
 const TW_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 const TW_BIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
 const twBk = () => tw ? ops.bookings.find(x => x.id === tw.id) : null;
-const twPP = k => { const b = twBk(); return !!b && !!(b.partyPays || ppDefaults(b.rentType || "mt"))[k]; };
 const twSumMoney = () => TW_MONEY.reduce((a, [k]) => a + num(tw[k]), 0);
 const twOtherList = () => TW_OTHER.filter(([k]) => num(tw.oth[k].amt) > 0).map(([k, key]) => {
   const x = { kind: k, amt: Math.round(num(tw.oth[k].amt)), note: String(tw.oth[k].note || "").trim().replace(/\s+/g, " ") };
@@ -6604,7 +6612,13 @@ const twOtherList = () => TW_OTHER.filter(([k]) => num(tw.oth[k].amt) > 0).map((
 const twOtherSum = () => TW_OTHER.reduce((a, [k]) => a + num(tw.oth[k].amt), 0);
 const twDiesel = () => tw.rows.reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0);
 const twLitres = () => tw.rows.reduce((a, r) => a + num(r.litres), 0) + tw.legacy.reduce((a, r) => a + num(r.litres), 0);
-const twTotal = () => twSumMoney() + (twPP("diesel") ? 0 : twDiesel()) + twOtherSum();
+const twTotal = () => twSumMoney() + twDiesel() + twOtherSum();
+// Trip money for the office (admin): collection is the rent plus the toll collected back from the party; balance = collection − expenses.
+const twCollect = () => { const b = twBk(); return b ? num(b.rent) + num(tw.toll) + num(b.extra) : 0; };
+function twMoneyHtml() {
+  const col = twCollect(), exp = twTotal(), net = col - exp, m = (l, v, cls = "") => `<span class="bwm${cls}"><span>${l}</span><b>${v}</b></span>`;
+  return m("Total collection", rs(col)) + m("Total expenses", rs(exp)) + m("Balance", (net < 0 ? "- " : "") + rs(Math.abs(net)), ` net${net < 0 ? " neg" : ""}`);
+}
 const twMissing = () => { const s = num(tw.startKm), e = num(tw.endKm); return [!s && "start km", !e && "end km", s && e && e <= s && "end km more than start km"].filter(Boolean); };
 function twOpen(b, backTo) {
   if (!b) return;
@@ -6673,11 +6687,11 @@ function twRowHtml(label, key, val, opts = {}) {
 // A new diesel line: paid by card unless the driver picks Cash.
 const twNewRow = () => ({ litres: "", amount: "", pay: "Fuel card", place: "", file: null });
 function twPageHtml() {
-  const pp = twPP("diesel"), rd = tw.edit ? "" : " readonly", sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
+  const rd = tw.edit ? "" : " readonly", sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
   // One diesel fill on one line: litres, amount, how it was paid and where.
   const fill = (r, i) => `<div class="tpfc">` +
     `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" placeholder="0" aria-label="Litres, fill ${i + 1}"${rd}></span></label>` +
-    `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="${pp ? "Party" : "0"}" aria-label="Amount, fill ${i + 1}"${rd}></span></label>` +
+    `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="0" aria-label="Amount, fill ${i + 1}"${rd}></span></label>` +
     `<label><span>Paid</span><select class="tpsel" data-k="fl:${i}:pay" aria-label="Paid by, fill ${i + 1}"${tw.edit ? "" : " disabled"}>${[["Fuel card", "Card"], ["Cash", "Cash"]].map(([v, l]) => `<option value="${v}"${(r.pay || "Cash") === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>` +
     `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="60" data-k="fl:${i}:place" value="${esc(r.place || "")}" placeholder="Where" aria-label="Place, fill ${i + 1}"${rd}></span></label>` +
     (tw.edit ? `<button type="button" class="tpbin" data-rowdel="${i}" aria-label="Remove diesel line ${i + 1}">${TW_BIN}</button>` : "") + `</div>`;
@@ -6686,8 +6700,7 @@ function twPageHtml() {
     `<div class="tptip"><b>Just type the amount.</b> It saves by itself. Leave empty what you did not spend.</div>` +
     sec("Driver and cleaner", twCrewHtml()) +
     sec("On the way", twRowHtml("Toll gate", "toll", tw.toll) + twRowHtml("Permit", "permit", tw.permit)) +
-    sec("Diesel", (pp ? `<p class="bwnote" style="margin:6px 0">Diesel is paid by the party: litres are enough.</p>` : "") +
-      tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
+    sec("Diesel",       tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
       tw.rows.map(fill).join("") + (tw.edit ? `<button type="button" class="tpadd" data-tw="rowadd">${TW_PLUS} Add diesel</button>` : "")) +
     sec("Other", TW_OTHER.map(([k]) => twRowHtml(k, "o:" + k, tw.oth[k].amt) +
       (k === "Other" ? `<div class="tpnote"><input type="text" data-k="on:Other" maxlength="80" value="${esc(tw.oth.Other.note)}" placeholder="What was it for?" aria-label="What was the other expense for"${rd}></div>` : "")).join("")) +
@@ -6695,7 +6708,8 @@ function twPageHtml() {
       (tw.prevKm ? `<p class="bwnote" style="margin:-2px 0 4px">Last trip of this bus ended at <b style="color:var(--ink)">${nf(num(tw.prevKm))} km</b></p>` : "") +
       twRowHtml("End km", "endKm", tw.endKm, { km: true, ph: "When back" }) +
       `<span class="bwerr" id="twKmErr">${s && e && e <= s ? "End km must be more than start km." : ""}</span>` +
-      `<div class="bwnote tprun" id="tpRun">${twRunHtml()}</div>`);
+      `<div class="bwnote tprun" id="tpRun">${twRunHtml()}</div>`) +
+    (tw.admin ? sec("Trip money", `<div class="tpmoney" id="tpMoney">${twMoneyHtml()}</div>`) : "");
 }
 // Km run, and once diesel is in, the average km per litre. Above 4 the driver gets a word of thanks; above 4.5, badges too.
 // It is also compared with the same driver's last trip and with his best trip so far.
@@ -6730,10 +6744,11 @@ function twCheckHtml() {
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : st && !tw.edit ? `<p class="bwnote"><b>${st}.</b></p>` : "") + `<div class="bwcard">` +
     row("Driver and cleaner", m("Driver", esc(twDriverName() || "—")) + m("Cleaner", tw.noCleaner ? "No cleaner" : esc(tw.cleaner.trim() || "—"))) +
     row("Padi, permit and toll", TW_MONEY.map(([k, l]) => m(l, rs(num(tw[k])))).join("")) +
-    row(`Diesel · ${lines} fill${lines === 1 ? "" : "s"}`, m(`${nf(twLitres(), 2)} L`, twPP("diesel") ? "Party pays" : rs(twDiesel()))) +
+    row(`Diesel · ${lines} fill${lines === 1 ? "" : "s"}`, m(`${nf(twLitres(), 2)} L`, rs(twDiesel()))) +
     row("Other expenses", other.length ? other.map(x => m(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") : "<b>None</b>") +
     row("Km meter", m(`${s ? nf(s) : "—"} → ${e ? nf(e) : "—"}`, s && e > s ? `${nf(e - s)} km` : "—") + (twAvg() ? m("Average", `${nf(twAvg(), 2)} km per litre`) : "")) +
-    `<div class="bwrow"><div>${m("<b style='font-size:19px;color:var(--ink)'>Total spent</b>", `<span style="font-size:20px">${rs(twTotal())}</span>`)}</div></div></div>` +
+    `<div class="bwrow"><div>${m("<b style='font-size:19px;color:var(--ink)'>Total spent</b>", `<span style="font-size:20px">${rs(twTotal())}</span>`)}</div></div>` +
+    (tw.admin ? `<div class="bwrow"><div class="tpmoney"><small>Trip money</small>${twMoneyHtml()}</div></div>` : "") + `</div>` +
     (tw.edit && !tw.admin ? `<p class="bwnote">${twMissing().length ? `<b>Still needed to send:</b> ${twMissing().join(", ")}. Save for later and finish it after the trip.` : "Save to finish later, or send it to the office when the trip is over."}</p>` : "");
 }
 function twRender(top) {
@@ -6750,6 +6765,7 @@ function twRender(top) {
 function twSaveState(t) { const el = $("tpSt"); if (el) { el.textContent = t; el.className = "tpst" + (t.startsWith("✓") ? " ok" : t.startsWith("Not") ? " bad" : ""); } }
 function twRefresh() {
   if ($("tpTot")) $("tpTot").textContent = rs(twTotal());
+  if ($("tpMoney")) $("tpMoney").innerHTML = twMoneyHtml();
   const s = num(tw.startKm), e = num(tw.endKm);
   if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
   if ($("tpRun")) { const h = twRunHtml(); if ($("tpRun").innerHTML !== h) $("tpRun").innerHTML = h; }
@@ -6810,11 +6826,11 @@ async function twSaveBooking() {
     if (tw) twSaveState("✓ Saved");
   } catch { if (tw) { twSaveState("Not saved. Check the signal; it will try again."); twSoon("bk", twSaveBooking, 8000); } }
 }
-// A diesel line goes into the Fuel log against this booking once both litres and amount are filled in.
+// A diesel line goes into the Fuel log against this booking once the litres are filled in; its amount (when entered) is our expense.
 async function twSaveRow(i) {
   const b = twBk(), r = tw?.rows?.[i]; if (!b || !r || !tw.edit) return;
-  const litres = Math.round(num(r.litres) * 100) / 100, amount = Math.round(num(r.amount) * 100) / 100, pp = twPP("diesel");
-  if (!(litres > 0) || (!pp && !(amount > 0))) { twSaveState("✓ Saved"); return; }
+  const litres = Math.round(num(r.litres) * 100) / 100, amount = Math.round(num(r.amount) * 100) / 100;
+  if (!(litres > 0)) { twSaveState("✓ Saved"); return; }
   const prev = r.id ? ops.fuelLog.find(x => x.id === r.id) : null, t = todayISO();
   const rate = amount > 0 ? Math.round(amount / litres * 100) / 100 : 0, pay = r.pay || "Cash", bunk = String(r.place || "").trim().replace(/\s+/g, " ");  // the Fuel log keeps the rate per litre
   if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && num(prev.rate || 0) === rate && (prev.pay || "Cash") === pay && (prev.bunk || "") === bunk && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { twSaveState("✓ Saved"); return; }
@@ -7142,7 +7158,7 @@ function openBooking(id, preset, full) {
   Object.entries(BK_NUM).forEach(([el, k]) => $(el).value = b?.[k] ?? "");
   $("bkLitres").value = b?.litres ?? "";
   bkRentTouched = !!b && num(b.rent) !== Math.round(num(b.rate) * num(b.days));
-  const pp = b?.partyPays || ppDefaults(rt);
+  const pp = b?.partyPays || ppDefaults();
   $("bkPP").innerHTML = PARTY_ITEMS.map(([k, l]) => `<label class="chk"><input type="checkbox" data-pp="${k}"${pp[k] ? " checked" : ""}> ${l}</label>`).join("");
   $("bkDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, ops.bookings, "Bus", [b?.driverId]);
   $("bkDriver").value = b ? crewValue("driver", b) : "";
@@ -7211,7 +7227,8 @@ function openBooking(id, preset, full) {
 let bkTripEdit = false, bkPayOnly = false;
 const bkFilesEdit = () => bkMode === "edit" || bkMode === "request" || (bkMode === "trip" && bkTripEdit);
 // Empty rent: the party pays all five. Day rent: the party pays everything except diesel.
-const ppDefaults = rt => Object.fromEntries(PARTY_ITEMS.map(([k]) => [k, rt !== "day" || k !== "diesel"]));
+// Toll, parking and route expenses are paid by the party on both rent types.
+const ppDefaults = () => Object.fromEntries(PARTY_ITEMS.map(([k]) => [k, true]));
 /* ---------- booking checks ---------- */
 // Before a bus is promised: is the bus on the road, are its papers valid through the last day, and is the driver free and licensed?
 const BK_DOC_KEYS = ["fcDate", "insuranceExp", "taxExp", "permitExp", "pollutionExp"];
@@ -7797,18 +7814,17 @@ const flToDsl = f => ({ date: f.date, litres: f.litres, amount: f.amount, note: 
 const dslLegacyOf = b => b?.diesel ? b.diesel.filter(r => !r.fuelLogId) : (b && (num(b.litres) || num(b.fuelCost)) ? [{ litres: b.litres, amount: b.fuelCost, note: "Entered before the fuel log" }] : []);
 function renderDsl(b) { bkLegacyDsl = dslLegacyOf(b).map(r => ({ ...r })); drawDsl(); }
 function drawDsl() {
-  const ppDiesel = !!document.querySelector('#bkPP input[data-pp="diesel"]:checked');
   const rows = [...bkLegacyDsl.map((r, i) => ({ ...r, legacy: i })), ...dslLinked(bkEditId).map(flToDsl)].sort((a, c) => String(a.date || "").localeCompare(String(c.date || "")));
-  $("bkDsl").innerHTML = rows.length ? rows.map(r => `<div class="dslrow"><span class="num">${r.date ? fmtShort(r.date) : "—"}</span><span class="n">${nf(num(r.litres), 2)} L</span><span class="n">${ppDiesel ? '<span class="sub">Party pays</span>' : rs(num(r.amount))}</span><span class="sub" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.note || "")}</span>` +
+  $("bkDsl").innerHTML = rows.length ? rows.map(r => `<div class="dslrow"><span class="num">${r.date ? fmtShort(r.date) : "—"}</span><span class="n">${nf(num(r.litres), 2)} L</span><span class="n">${rs(num(r.amount))}</span><span class="sub" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.note || "")}</span>` +
       (r.fuelLogId ? `<button class="icon" type="button" data-dfl="${esc(r.fuelLogId)}">${bkTripEdit ? "Edit" : "View"}</button>` : bkTripEdit ? `<button class="icon" type="button" data-dlg="${r.legacy}">Remove</button>` : "<span></span>") + `</div>`).join("")
     : `<p class="sub" style="margin:2px 0">No diesel entered yet.${bkTripEdit ? " Use + Add diesel for each fill." : ""}</p>`;
   $("bkDslAdd").hidden = !bkTripEdit;
 }
 function dslRead() { return [...bkLegacyDsl.map(r => ({ ...r })), ...dslLinked(bkEditId).map(flToDsl)].filter(o => num(o.litres) > 0 || num(o.amount) > 0); }
-function dslSync(ppDiesel) {
+function dslSync() {
   const rows = dslRead(), lit = rows.reduce((a, r) => a + num(r.litres), 0), amt = rows.reduce((a, r) => a + num(r.amount), 0);
-  $("bkLitres").value = lit ? Math.round(lit * 100) / 100 : ""; $("bkFuel").value = amt && !ppDiesel ? Math.round(amt) : "";
-  $("bkDslSum").textContent = rows.length ? `${rows.length} fill${rows.length === 1 ? "" : "s"} · ${nf(lit, 2)} L${ppDiesel ? " · diesel paid by the party" : ` · ${rs(amt)}`}` : "";
+  $("bkLitres").value = lit ? Math.round(lit * 100) / 100 : ""; $("bkFuel").value = amt ? Math.round(amt) : "";
+  $("bkDslSum").textContent = rows.length ? `${rows.length} fill${rows.length === 1 ? "" : "s"} · ${nf(lit, 2)} L${` · ${rs(amt)}`}` : "";
 }
 $("bkDslAdd").onclick = () => {
   const b = ops.bookings.find(x => x.id === bkEditId);
@@ -7827,19 +7843,19 @@ async function syncBookingDiesel(bid) {
   const lit = Math.round(rows.reduce((a, r) => a + num(r.litres), 0) * 100) / 100, amt = Math.round(rows.reduce((a, r) => a + num(r.amount), 0));
   const next = { ...b, diesel: rows };
   if (lit) next.litres = lit; else delete next.litres;
-  if (amt && !b.partyPays?.diesel) next.fuelCost = amt; else delete next.fuelCost;
+  if (amt) next.fuelCost = amt; else delete next.fuelCost;
   if (JSON.stringify(next.diesel) === JSON.stringify(b.diesel || null) && next.litres === b.litres && next.fuelCost === b.fuelCost) return;
   const c = bkCalc(next); next.expense = c.exp; next.profit = c.profit; next.balance = c.balance; next.due = c.due;
   try { await opsSave("bookings", next); await addBHistory(bookingChanges(b, next, "Diesel fill in the fuel log")).catch(() => {}); } catch {}
 }
 function syncBk() {
   syncPhoneActs();
-  dslSync(!!document.querySelector('#bkPP input[data-pp="diesel"]:checked'));
+  dslSync();
   if (!$("bkDrawer").hidden) drawDsl();
   if (!bkDaysTouched) { const d = inclDays($("bkFrom").value, $("bkTo").value); if (d) $("bkDays").value = d; }
   if (!bkRentTouched) { const r = num($("bkRate").value) * num($("bkDays").value); $("bkRent").value = r ? Math.round(r) : ""; }
   const b = bkRead(), c = bkCalc(b);
-  $("bkRentHint").textContent = b.rentType === "day" ? "Diesel is included in the rent. Toll, parking and route expenses are paid by the party." : "Vehicle rent only. Diesel, toll, parking and route expenses are paid by the party.";
+  $("bkRentHint").textContent = b.rentType === "day" ? "Diesel is included in the rent. Toll, parking and route expenses are paid by the party." : "Vehicle rent only. Toll, parking and route expenses are paid by the party. Diesel entered on the trip sheet is our expense.";
   // Expenses the party pays are not ours, so their boxes are locked.
   $("bkExpGrid").querySelectorAll(".field[data-pp]").forEach(f => { const on = !!b.partyPays[f.dataset.pp], inp = f.querySelector("input");
     f.classList.toggle("pp", on); inp.disabled = on || !bkTripEdit; inp.placeholder = on ? "Paid by the party" : ""; if (on) inp.value = ""; });
@@ -7874,10 +7890,7 @@ function syncBk() {
   if (clash) $("bkClash").textContent = `${plateOf(bus)} is already booked by ${clash.party || "another party"} from ${fmtDate(clash.from)} to ${fmtDate(bkEnd(clash))} (booking ${clash.no || ""}).`;
 }
 $("bkForm").addEventListener("input", e => { if (e.target.id === "bkDays") bkDaysTouched = true; if (e.target.id === "bkRent") bkRentTouched = $("bkRent").value !== ""; syncBk(); });
-$("bkForm").addEventListener("change", e => {
-  if (e.target.name === "bkRentType") { const d = ppDefaults(e.target.value); $("bkPP").querySelectorAll("input[data-pp]").forEach(c => c.checked = d[c.dataset.pp]); }
-  syncBk();
-});
+$("bkForm").addEventListener("change", syncBk);
 $("bkAddPay").onclick = () => { setBkTab("pay"); $("bkPays").insertAdjacentHTML("beforeend", bkPayRow({ date: todayISO() })); $("bkPays").lastElementChild.dataset.new = "1";
   if (bkPayOnly && !(bkMode === "trip" && bkTripEdit)) { $("bkSave").hidden = false; $("bkSave").textContent = "Save payment"; $("bkNote").textContent = "New payments are added to the booking. Nothing else changes."; } $("bkPays").lastElementChild.querySelector("[data-pa]").focus(); };
 $("bkPays").addEventListener("click", e => { const x = e.target.closest("[data-prm]"); if (x) { x.closest(".payrow").remove(); syncBk(); } });
@@ -8061,7 +8074,7 @@ async function tsLayout(L, pdf, b) {
   const c = bkCalc(b), bus = vehicles.find(v => v.id === b.vehicleId), fd = iso => iso ? iso.split("-").reverse().join("-") : "";
   const n0 = v => num(v) ? nf(Math.round(num(v))) : "", days = num(b.days) || inclDays(b.from, bkEnd(b));
   const fills = dslLinked(b.id), legacy = dslLegacyOf(b), litres = Math.round((fills.reduce((a, f) => a + num(f.litres), 0) + legacy.reduce((a, r) => a + num(r.litres), 0)) * 100) / 100;
-  const km = c.km, pp = !!(b.partyPays || ppDefaults(b.rentType || "mt")).diesel;
+  const km = c.km;
   const drv = b.driverId ? (drivers.find(d => d.id === b.driverId)?.name || b.driverName) : b.driverName;
   let page;
   const text = (t, x, y, o = {}) => { const f = o.bold ? bold : reg, sz = o.size || 10, str = pdfSafe(t), w = f.widthOfTextAtSize(str, sz);
@@ -8097,7 +8110,7 @@ async function tsLayout(L, pdf, b) {
   hline(X0, X1, y); text("Expense", (cx + X1) / 2, y - 13, { size: 9, bold: true, align: "center" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y);
   const per = v => days && num(v) && Number.isInteger(num(v) / days) ? `${nf(num(v) / days)} x ${fmtDays(days)}` : "";
   const rows = [["Driver padi", per(b.padiPaid), n0(b.padiPaid)], ["Cleaner padi", per(b.cleanerPadi), n0(b.cleanerPadi)], ["Permit", "", n0(b.permit)], ["Toll gate", "", n0(b.toll)],
-    [`Diesel filled (${litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) : "   "} L)  bill`, "", pp ? "Party pays" : n0(b.fuelCost)], ["Other expenses", "", n0(b.otherExp)],
+    [`Diesel filled (${litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) : "   "} L)  bill`, "", n0(b.fuelCost)], ["Other expenses", "", n0(b.otherExp)],
     ...[0, 1, 2, 3].map(i => [`${i + 1})  ${other[i] ? [other[i].kind, other[i].note].filter(Boolean).join(" - ") : ""}`, "", other[i] ? n0(other[i].amt) : ""])];
   rows.forEach(([l, m, v]) => { text(fit(l, reg, 9.5, cx - X0 - 90), X0 + 6, y - 13, { size: 9.5 }); if (m) text(m, cx - 14, y - 13, { size: 9.5, align: "right" });
     text(v, X1 - 8, y - 13, { size: 10.5, align: "right" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y, { t: 0.5 }); });
