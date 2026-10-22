@@ -68,7 +68,9 @@ function closedRule(a, op, coll, prev, next, linkedClosed) {
   if (was && is) return sameExcept(prev, next, []) ? "" : shut;
   if (was === is) return "";
   if (!canCloseTrips(a)) return "Only an admin can close or reopen a trip.";
-  return prev && sameExcept(prev, next, CLOSE_KEYS) ? "" : "Closing or reopening a trip can't change anything else on the booking.";
+  // An admin may add a trip that is already closed (old trips loaded from Excel by Utility › Data upload).
+  if (!prev) return "";
+  return sameExcept(prev, next, CLOSE_KEYS) ? "" : "Closing or reopening a trip can't change anything else on the booking.";
 }
 
 // May this person make this change? prev is the stored record (null when new); next is the record after the change.
