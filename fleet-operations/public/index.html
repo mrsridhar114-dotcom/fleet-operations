@@ -832,18 +832,21 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .pdrule { display: flex; flex-direction: column; gap: 10px; }
 .pdband { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 700; font-size: 15px; } .pdband input { width: 130px; }
 .pdband .sp { flex: 1; }
-.pdroles { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
-.pdrole { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; background: var(--bg); }
-.pdrole h4 { margin: 0; font-size: 13px; display: flex; align-items: center; gap: 6px; } .pdrole h4 span { flex: 1; } .pdrole h4 select { font: inherit; font-size: 12px; padding: 2px 4px; }
-.pdstep { display: grid; grid-template-columns: minmax(0, 1fr) 76px 24px; gap: 6px; align-items: center; font-size: 13px; }
-.pdstep .lbl { display: flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; } .pdstep .lbl input { width: 100%; min-width: 70px; }
-.pdstep .pc { display: flex; align-items: center; gap: 3px; } .pdstep .pc input { text-align: right; }
+.pdgrid { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.pdrow { display: grid; grid-template-columns: minmax(200px, 1.4fr) repeat(var(--n), minmax(90px, 1fr)) 36px; gap: 8px; align-items: center; padding: 7px 10px; border-top: 1px solid var(--line); }
+.pdrow:first-child { border-top: 0; } .pdrow.hd { background: var(--bg); font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.pdrow .part { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap; min-width: 0; } .pdrow .part input { width: 110px; }
+.pdrow .pc { display: flex; align-items: center; gap: 4px; font-size: 13px; } .pdrow .pc input { width: 100%; text-align: right; }
+.pdrow .pc > span.r { display: none; }
 .pdrules input { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 7px; min-width: 0; box-sizing: border-box; }
 .pdrules input[readonly] { background: transparent; border-color: transparent; }
-.pdrules .rxdel { width: 24px; height: 28px; font-size: 15px; }
+.pdrules .rxdel { width: 30px; height: 30px; font-size: 15px; }
 .pdlink { border: 0; background: none; color: var(--accent); font: 600 13px var(--body); padding: 2px 0; cursor: pointer; text-align: left; }
 @media (max-width: 700px) { .rxlist { grid-template-columns: minmax(0, 1fr); } .pdcheck { grid-template-columns: minmax(0, 1fr); }
-  .pdroles { grid-template-columns: minmax(0, 1fr); } }
+  /* phone: each part of the collection as a small card, the percentages side by side under it */
+  .pdrow { grid-template-columns: repeat(var(--n), minmax(0, 1fr)) 30px; } .pdrow.hd { display: none; }
+  .pdrow .part { grid-column: 1 / -1; } .pdrow .pc { flex-direction: column; align-items: stretch; gap: 2px; } .pdrow .pc > span.r { display: block; font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pdrow .pc > span.pct { display: none; } }
 /* Desktop trip sheet: one card per part, two cards a row on wide screens. */
 .tsg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tsc { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); min-width: 0; }
@@ -1760,7 +1763,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <section class="panel pdcheck"><div class="hf"><label for="pdTry">Check a day's collection</label><input id="pdTry" type="number" inputmode="numeric" min="0" placeholder="Total collection, e.g. 21000"></div><div class="pdres" id="pdRes" aria-live="polite"></div></section>
       <section class="panel">
         <div class="sechead"><h2 class="sec">Rules</h2><p id="pdInfo"></p></div>
-        <p class="sub" style="margin:6px 0 12px">Each band covers a range of the day's collection. Inside a band, each person's padi is a percentage of the collection; add a step to pay a different percentage above an amount.</p>
+        <p class="sub" style="margin:6px 0 12px">A band is chosen by the day's total collection. Inside it, the collection is split into parts (first ₹15,000, ₹15,001 to ₹17,000, and so on) and each part is paid at its own percentage for each person; the padi is the sum of the parts.</p>
         <div class="pdrules" id="pdRules"></div>
         <span class="err" id="pdErr"></span>
         <div class="rxbtns" id="pdActs"><button class="btn" type="button" id="pdAddBand">+ Add band</button><span style="flex:1"></span><button class="btn" type="button" id="pdUndo">Undo changes</button><button class="btn primary" type="button" id="pdSave">Save rules</button></div>
@@ -5312,31 +5315,40 @@ $("rxList").addEventListener("change", async e => {
 $("rxList").addEventListener("focusout", () => setTimeout(() => { if (!document.activeElement?.closest?.("#rxList") && view === "trexp") renderRxp(); }, 0));
 
 // Padi calculation. Stored as one record (id "rules") in padiSlabs:
-//   bands: [{ upto, pay: { driver: steps, conductor: steps, checker: steps } }] sorted by upto; the last band has upto "" (any amount above).
-//   steps: [{ upto, pct }]: pct % of the collection up to "upto", then the next step's pct above it; the last step has upto "" (the rest).
-// A band applies when the day's collection is above the previous band's upto and up to its own. More people or more steps
-// need no code: add a role to PADI_ROLES, or steps and bands on the screen.
+//   bands: [{ upto, steps: [{ upto, pct: { driver, conductor, checker } }] }], sorted; the last band and the last step have upto "" (above).
+// A band applies when the day's collection is above the previous band's upto and up to its own. Inside it the collection is split
+// into parts at each step's upto, and each part is paid at that step's percentage, for every person. Any number of bands, parts
+// and people: add a person to PADI_ROLES and they get their own column.
 const PADI_ROLES = [["driver", "Driver"], ["conductor", "Conductor"], ["checker", "Checker"]];
+const pdPct = (d, c) => ({ driver: d, conductor: c, checker: c });
 // The company's rules, offered until the first save: up to ₹19,000 a flat 5% (driver) and 4.5% (conductor, checker);
 // above it 5% / 4.5% on the first ₹15,000 and 6% / 5.5% on the rest.
 const PADI_START = { bands: [
-  { upto: 19000, pay: { driver: [{ upto: "", pct: 5 }], conductor: [{ upto: "", pct: 4.5 }], checker: [{ upto: "", pct: 4.5 }] } },
-  { upto: "", pay: { driver: [{ upto: 15000, pct: 5 }, { upto: "", pct: 6 }], conductor: [{ upto: 15000, pct: 4.5 }, { upto: "", pct: 5.5 }], checker: [{ upto: 15000, pct: 4.5 }, { upto: "", pct: 5.5 }] } }] };
+  { upto: 19000, steps: [{ upto: "", pct: pdPct(5, 4.5) }] },
+  { upto: "", steps: [{ upto: 15000, pct: pdPct(5, 4.5) }, { upto: "", pct: pdPct(6, 5.5) }] }] };
 let pdBands = null;
-const pdDoc = () => ops.padiSlabs.find(x => x.id === "rules");
 const pdCopy = o => JSON.parse(JSON.stringify(o));
 const pdOpen = v => v === "" || v == null;
+// Rules saved by the first version of this screen kept separate steps for each person; they are merged into one list of parts.
+function pdNorm(b) {
+  if (b.steps) return b;
+  const cuts = [...new Set(PADI_ROLES.flatMap(([k]) => (b.pay?.[k] || []).filter(x => !pdOpen(x.upto)).map(x => num(x.upto))))].sort((x, y) => x - y);
+  const at = (k, v) => (b.pay?.[k] || []).find(x => pdOpen(x.upto) || v <= num(x.upto))?.pct ?? "";
+  return { upto: b.upto, steps: [...cuts, ""].map(u => ({ upto: u, pct: Object.fromEntries(PADI_ROLES.map(([k]) => [k, at(k, pdOpen(u) ? Infinity : u)])) })) };
+}
+const pdDoc = () => ops.padiSlabs.find(x => x.id === "rules");
+const pdSaved = () => (pdDoc()?.bands || []).map(pdNorm);
 // The band for a day's collection, and each person's padi with how it was worked out.
-function padiFor(collection, bands = pdDoc()?.bands || []) {
+function padiFor(collection, bands = pdSaved()) {
   const c = Math.max(0, num(collection)), band = bands.find(b => pdOpen(b.upto) || c <= num(b.upto)); if (!band) return null;
   const out = { band };
   PADI_ROLES.forEach(([k]) => {
     let from = 0, amt = 0; const parts = [];
-    for (const st of band.pay?.[k] || []) {
+    for (const st of band.steps || []) {
       const to = pdOpen(st.upto) ? c : Math.min(c, num(st.upto)), base = Math.max(0, to - from);
-      if (base > 0) { const a = base * num(st.pct) / 100; amt += a; parts.push({ base, pct: num(st.pct), amt: a }); }
-      if (!pdOpen(st.upto)) from = Math.max(from, num(st.upto));
+      if (base > 0) { const a = base * num(st.pct?.[k]) / 100; amt += a; parts.push({ base, pct: num(st.pct?.[k]), amt: a }); }
       if (to >= c) break;
+      from = num(st.upto);
     }
     out[k] = { amt: Math.round(amt), parts };
   });
@@ -5346,45 +5358,41 @@ function pdCheck(bands) {
   if (!bands.length) return "Add at least one band.";
   for (const [i, b] of bands.entries()) {
     const name = `Band ${i + 1}`;
-    if (pdOpen(b.upto) && i < bands.length - 1) return `Only the last band can be "any amount above".`;
+    if (pdOpen(b.upto) && i < bands.length - 1) return `Only the last band can be "above".`;
     if (!pdOpen(b.upto) && (num(b.upto) <= 0 || (i && num(b.upto) <= num(bands[i - 1].upto)))) return `${name}: "up to" must be more than the band before it.`;
-    for (const [k, l] of PADI_ROLES) {
-      const st = b.pay?.[k] || [];
-      if (!st.length) return `${name}: add the ${l.toLowerCase()}'s percentage.`;
-      for (const [j, x] of st.entries()) {
-        if (x.pct === "" || num(x.pct) < 0 || num(x.pct) > 100) return `${name}, ${l}: enter a percentage between 0 and 100.`;
-        if (pdOpen(x.upto) && j < st.length - 1) return `${name}, ${l}: only the last step can be "the rest".`;
-        if (!pdOpen(x.upto) && (num(x.upto) <= 0 || (j && num(x.upto) <= num(st[j - 1].upto)))) return `${name}, ${l}: each step's amount must be more than the one before.`;
-      }
-      if (!pdOpen(st.at(-1).upto)) return `${name}, ${l}: the last step must cover the rest of the collection.`;
+    if (!b.steps.length) return `${name}: add at least one part.`;
+    for (const [j, x] of b.steps.entries()) {
+      if (pdOpen(x.upto) && j < b.steps.length - 1) return `${name}: only the last part can be "above".`;
+      if (!pdOpen(x.upto) && (num(x.upto) <= 0 || (j && num(x.upto) <= num(b.steps[j - 1].upto)))) return `${name}, part ${j + 1}: the amount must be more than the part before it.`;
+      for (const [k, l] of PADI_ROLES) if (x.pct?.[k] === "" || x.pct?.[k] == null || num(x.pct[k]) < 0 || num(x.pct[k]) > 100) return `${name}, part ${j + 1}: enter the ${l.toLowerCase()}'s percentage (0 to 100).`;
     }
+    if (!pdOpen(b.steps.at(-1).upto)) return `${name}: the last part must cover the rest of the collection.`;
   }
-  if (!pdOpen(bands.at(-1).upto)) return `The last band must cover any amount above ₹${nf(num(bands.at(-1).upto))}.`;
+  if (!pdOpen(bands.at(-1).upto)) return `The last band must cover any collection above ₹${nf(num(bands.at(-1).upto))}.`;
   return "";
 }
 function renderPadi() {
   const can = canTrips, d = pdDoc();
-  if (!pdBands) pdBands = pdCopy(d?.bands || PADI_START.bands);
+  if (!pdBands) pdBands = pdCopy(d ? pdSaved() : PADI_START.bands);
   $("pdRoTag").hidden = can; $("pdActs").hidden = !can;
   $("pdInfo").textContent = d?.updatedOn ? `Last saved ${fmtDate(d.updatedOn)}${d.updatedByName ? ` by ${d.updatedByName}` : ""}` : "Not saved yet: these are the company's current rules; check them and save.";
   if (document.activeElement?.closest?.("#pdRules")) { pdTry(); return; }
-  const ro = can ? "" : " readonly", inp = (path, v, w, ph = "") => `<input type="number" inputmode="decimal" min="0" step="any" data-pd="${path}" value="${esc(String(v ?? ""))}" placeholder="${ph}"${w ? ` style="width:${w}"` : ""}${ro}>`;
+  const ro = can ? "" : " readonly", inp = (path, v, ph = "", lbl = "") => `<input type="number" inputmode="decimal" min="0" step="any" data-pd="${path}" value="${esc(String(v ?? ""))}" placeholder="${ph}" aria-label="${lbl}"${ro}>`;
+  const n = PADI_ROLES.length;
   $("pdRules").innerHTML = pdBands.map((b, i) => {
     const low = i ? num(pdBands[i - 1].upto) : 0, last = i === pdBands.length - 1;
-    const head = last && pdOpen(b.upto) ? `<span>Collection above ₹${nf(low)}${i ? "" : " (any amount)"}</span>` : `<span>Collection ${i ? `above ₹${nf(low)} and ` : ""}up to ₹</span>${inp(`${i}.upto`, b.upto, "130px")}`;
-    const roles = PADI_ROLES.map(([k, l]) => {
-      const st = b.pay?.[k] || [];
-      const rows = st.map((x, j) => {
-        const from = j ? num(st[j - 1].upto) : 0, rest = pdOpen(x.upto) && j === st.length - 1;
-        const what = rest ? (j ? `Above ₹${nf(from)}` : "Whole collection") : `${j ? `₹${nf(from)} to` : "First"} ₹`;
-        return `<div class="pdstep"><span class="lbl">${what}${rest ? "" : inp(`${i}.${k}.${j}.upto`, x.upto, "", "amount")}</span><span class="pc">${inp(`${i}.${k}.${j}.pct`, x.pct)}%</span>${can && st.length > 1 ? `<button class="rxdel" type="button" data-pda="rmstep" data-i="${i}" data-k="${k}" data-j="${j}" aria-label="Remove step">✕</button>` : "<span></span>"}</div>`;
-      }).join("");
-      const copy = can && PADI_ROLES.length > 1 ? `<select data-pda="copy" data-i="${i}" data-k="${k}" aria-label="Copy ${l}'s percentages from"><option value="">Same as…</option>${PADI_ROLES.filter(([o]) => o !== k).map(([o, ol]) => `<option value="${o}">${ol}</option>`).join("")}</select>` : "";
-      return `<div class="pdrole"><h4><span>${l}</span>${copy}</h4>${rows}${can ? `<button class="pdlink" type="button" data-pda="addstep" data-i="${i}" data-k="${k}">+ Different % above an amount</button>` : ""}</div>`;
+    const head = last && pdOpen(b.upto) ? `<span>${i ? `When the collection is above ₹${nf(low)}` : "Any collection"}</span>` : `<span>When the collection is ${i ? `₹${nf(low + 1)} to` : "up to"} ₹</span>${inp(`${i}.upto`, b.upto, "", `Band ${i + 1} up to`)}`;
+    const rows = b.steps.map((x, j) => {
+      const from = j ? num(b.steps[j - 1].upto) : 0, rest = pdOpen(x.upto) && j === b.steps.length - 1;
+      const part = rest ? (j ? `Above ₹${nf(from)}` : "The whole collection") : `${j ? `₹${nf(from + 1)} to` : "First"} ₹${inp(`${i}.s.${j}.upto`, x.upto, "amount", `Part ${j + 1} up to`)}`;
+      return `<div class="pdrow" style="--n:${n}"><span class="part">${part}</span>${PADI_ROLES.map(([k, l]) => `<span class="pc"><span class="r">${l} %</span>${inp(`${i}.s.${j}.${k}`, x.pct?.[k], "%", `${l} percentage, part ${j + 1}`)}<span class="pct">%</span></span>`).join("")}` +
+        `${can && b.steps.length > 1 ? `<button class="rxdel" type="button" data-pda="rmstep" data-i="${i}" data-j="${j}" aria-label="Remove this part">✕</button>` : "<span></span>"}</div>`;
     }).join("");
-    return `<section class="pdrule panel" style="padding:12px"><div class="pdband">${head}<span class="sp"></span>${can && pdBands.length > 1 ? `<button class="icon del" type="button" data-pda="rmband" data-i="${i}">Remove band</button>` : ""}</div><div class="pdroles">${roles}</div></section>`;
+    return `<section class="pdrule panel" style="padding:12px"><div class="pdband">${head}<span class="sp"></span>${can && pdBands.length > 1 ? `<button class="icon del" type="button" data-pda="rmband" data-i="${i}">Remove band</button>` : ""}</div>` +
+      `<div class="pdgrid"><div class="pdrow hd" style="--n:${n}"><span>Part of the collection</span>${PADI_ROLES.map(([, l]) => `<span>${l} %</span>`).join("")}<span></span></div>${rows}</div>` +
+      (can ? `<button class="pdlink" type="button" data-pda="addstep" data-i="${i}">+ Split: add another part with its own %</button>` : "") + `</section>`;
   }).join("");
-  $("pdUndo").disabled = JSON.stringify(pdBands) === JSON.stringify(d?.bands || PADI_START.bands) && !!d;
+  $("pdUndo").disabled = !!d && JSON.stringify(pdBands) === JSON.stringify(pdSaved());
   pdTry();
 }
 function pdTry() {
@@ -5397,28 +5405,27 @@ function pdTry() {
 $("pdTry").addEventListener("input", pdTry);
 $("pdRules").addEventListener("input", e => {
   const el = e.target, path = el.dataset.pd; if (!path) return;
-  const [i, k, j, f] = path.split("."), v = el.value === "" ? "" : num(el.value);
-  if (k === "upto") pdBands[+i].upto = v; else pdBands[+i].pay[k][+j][f] = v;
+  const [i, a, j, f] = path.split("."), v = el.value === "" ? "" : num(el.value);
+  if (a === "upto") pdBands[+i].upto = v; else if (f === "upto") pdBands[+i].steps[+j].upto = v; else pdBands[+i].steps[+j].pct[f] = v;
   $("pdErr").textContent = ""; $("pdUndo").disabled = false; pdTry();
 });
-// Redraw when a box is left, so the step labels ("₹15,000 to ₹…") follow the amounts typed.
+// Redraw when a box is left, so the labels ("₹15,001 to ₹…") follow the amounts typed.
 $("pdRules").addEventListener("focusout", () => setTimeout(() => { if (!document.activeElement?.closest?.("#pdRules") && view === "tpadi") renderPadi(); }, 0));
-$("pdRules").addEventListener("change", e => {
-  const el = e.target; if (el.dataset.pda !== "copy" || !el.value) return;
-  const b = pdBands[+el.dataset.i]; b.pay[el.dataset.k] = pdCopy(b.pay[el.value]); el.blur(); renderPadi();
-});
 $("pdRules").addEventListener("click", e => {
   const b = e.target.closest("button[data-pda]"); if (!b) return;
+  b.blur();  // the screen is only redrawn when nothing inside it has focus
   const a = b.dataset.pda, band = pdBands[+b.dataset.i];
-  if (a === "addstep") { const st = band.pay[b.dataset.k], last = st.at(-1), prev = st.length > 1 ? num(st.at(-2).upto) : 0;
-    st.splice(st.length - 1, 0, { upto: prev + 10000, pct: last.pct }); }
-  if (a === "rmstep") { const st = band.pay[b.dataset.k]; st.splice(+b.dataset.j, 1); st.at(-1).upto = ""; }
+  // A new part goes in just before "above": it starts where the part before ends and keeps the last part's percentages.
+  if (a === "addstep") { const st = band.steps, prev = st.length > 1 ? num(st.at(-2).upto) : 0;
+    st.splice(st.length - 1, 0, { upto: prev + 2000, pct: { ...st.at(-1).pct } });
+    renderPadi(); $("pdRules").querySelector(`[data-pd="${b.dataset.i}.s.${st.length - 2}.upto"]`)?.focus(); return; }
+  if (a === "rmstep") { band.steps.splice(+b.dataset.j, 1); band.steps.at(-1).upto = ""; }
   if (a === "rmband") { pdBands.splice(+b.dataset.i, 1); pdBands.at(-1).upto = ""; }
   $("pdErr").textContent = ""; renderPadi();
 });
 $("pdAddBand").onclick = () => {
   const last = pdBands.at(-1), prev = pdBands.length > 1 ? num(pdBands.at(-2).upto) : 0;
-  last.upto = prev + 10000; pdBands.push({ upto: "", pay: pdCopy(last.pay) }); renderPadi();
+  last.upto = prev + 10000; pdBands.push({ upto: "", steps: pdCopy(last.steps) }); renderPadi();
   $("pdRules").querySelector(`[data-pd="${pdBands.length - 2}.upto"]`)?.focus();
 };
 $("pdUndo").onclick = () => { pdBands = null; $("pdErr").textContent = ""; renderPadi(); };
