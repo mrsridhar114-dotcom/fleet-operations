@@ -814,10 +814,11 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .dsl { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
 /* Utility: data upload */
 .upform { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; align-items: end; } .upchk { grid-column: 1 / -1; font-size: 14px; }
+.uptpl { grid-column: 1 / -1; display: flex; gap: 12px; align-items: center; } .uptpl .btn { flex: none; white-space: nowrap; }
 .upsum { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; } .upsum b { font-size: 17px; }
 .uptable tr.bad td { background: var(--danger-soft); } .uptable tr.skip td { color: var(--muted); } .uptable td { vertical-align: top; }
 .upok { padding: 12px 14px; border-radius: 8px; background: var(--ok-soft); color: var(--ink); }
-@media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } .uptpl { flex-direction: column; align-items: stretch; } }
 /* Route expenses and padi calculation */
 .rxlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; align-items: start; }
 .rxcard { display: flex; flex-direction: column; gap: 8px; }
@@ -1801,7 +1802,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="hf" id="upBusRow"><label for="upBus">Bus</label><select id="upBus"></select></div>
         <div class="hf"><label for="upFile">Excel file (.xlsx) or CSV</label><input id="upFile" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></div>
         <label class="chk upchk"><input type="checkbox" id="upPaid" checked> These trips are fully paid (record the collection as received)</label>
-        <p class="sub" id="upNote" style="margin:0;grid-column:1/-1"></p>
+        <div class="uptpl"><p class="sub" id="upNote" style="margin:0"></p><button class="btn" type="button" id="upTpl">⬇ Download Excel template</button></div>
+        <p class="sub" id="upTplMsg" style="margin:0;grid-column:1/-1" hidden></p>
       </section>
       <section class="panel" style="margin-top:14px;display:flex;flex-direction:column;gap:12px" id="upOut" aria-live="polite"></section>
     </section>
@@ -5545,11 +5547,17 @@ function upDate(v) {
 const UP_KINDS = {
   spare: {
     label: "Spare bus trips (one row per booking)",
-    note: "Columns used: From Date, To Date, Days, Total Rent, Driver, Cleaner, Driver padi, Cleaner padi, Permit Exp., Toll Gate, Litres, Fuel Price, Other Exp., Start KMs, End Kms, Remarks, Other Remarks (places) and Status (Completed, Closed, Cancelled, Booked or On trip; blank is Completed). Totals worked out in the sheet (Total Expense, Collection, Balance, Kms Run, Mileage) are worked out again by the app.",
+    note: "Use the template, or your own sheet with these headings: From Date, To Date, Days, Total Rent, Driver, Cleaner, Driver padi, Cleaner padi, Permit Exp., Toll Gate, Litres, Diesel Amount (or Fuel Price), Other Exp., Start KMs, End KMs, Remarks, Places (or Other Remarks) and Status (Completed, Closed, Cancelled, Booked or On trip; blank is Completed). Totals worked out in the sheet (Total Expense, Collection, Balance, Kms Run, Mileage) are worked out again by the app.",
     needsBus: true,
     // Header names, matched loosely. A second "Driver" / "Cleaner" column is the padi paid to them.
     cols: { from: /^from\s*date/, to: /^to\s*date/, days: /^days?$/, rent: /rent/, driver: /^driver/, cleaner: /^cleaner/, permit: /permit/, toll: /toll/, litres: /litre/, fuel: /fuel|diesel/, other: /^other\s*exp/, startKm: /^start/, endKm: /^end/, remarks: /^remarks?$/, places: /other\s*remarks|places|route/, status: /^(trip\s*)?status$/ },
-    twice: { driver: "padiPaid", cleaner: "cleanerPadi" }
+    twice: { driver: "padiPaid", cleaner: "cleanerPadi" },
+    // The template: [heading, width, kind ("date", "int", "dec" or text), what to type]. Headings must match cols above.
+    template: [["From Date", 12, "date", "First day of the trip"], ["To Date", 12, "date", "Last day of the trip (same as From Date for a one-day trip)"], ["Days", 7, "dec", "Number of days (1, 2, 2.5…). Used to check the dates"],
+      ["Total Rent", 12, "int", "Total rent / collection for the trip"], ["Driver", 18, "", "Driver's name, as in the driver master"], ["Cleaner", 16, "", "Cleaner's name"],
+      ["Driver Padi", 11, "int", "Padi paid to the driver"], ["Cleaner Padi", 11, "int", "Padi paid to the cleaner"], ["Permit Exp.", 11, "int", "Permit expense"], ["Toll Gate", 10, "int", "Toll expense"],
+      ["Litres", 9, "dec", "Diesel litres"], ["Diesel Amount", 12, "int", "Diesel cost in rupees"], ["Other Exp.", 11, "int", "Any other expense"], ["Start KMs", 11, "int", "Odometer at the start"], ["End KMs", 11, "int", "Odometer at the end"],
+      ["Remarks", 22, "", "Notes, e.g. 20500 * 2 for the day rent"], ["Places", 32, "", "Where the trip went, e.g. Odugathur to Navagragam"], ["Status", 12, "", "Completed, Closed, Cancelled, Booked or On trip (blank is Completed)"]]
   }
 };
 function upColumns(kind, head) {
@@ -5578,7 +5586,7 @@ function upSpareRows(rows, vehicleId, paid, file) {
   const head = rows[0] || [], at = upColumns("spare", head), out = [], cell = (r, k) => at[k] == null ? undefined : r[at[k]];
   const missing = ["from", "to", "rent"].filter(k => at[k] == null);
   if (missing.length) return { error: `The first row must hold the column names. Not found: ${missing.map(k => ({ from: "From Date", to: "To Date", rent: "Total Rent" })[k]).join(", ")}.` };
-  const data = rows.slice(1).map((r, i) => ({ r: r || [], line: i + 2 })).filter(x => cell(x.r, "from") != null || cell(x.r, "to") != null);
+  const data = rows.slice(1).map((r, i) => ({ r: r || [], line: i + 2 })).filter(x => upText(cell(x.r, "from")) || upText(cell(x.r, "to")));
   // Excel often turns "05/04/2026" into 4 May. Read all Excel dates both ways and keep the way that agrees with the Days column more often.
   const fit = swap => data.reduce((a, x) => { const f = upDate(cell(x.r, "from")), t = upDate(cell(x.r, "to")), pick = d => d.serial && swap && d.b ? d.b : d.a;
     const days = upNum(cell(x.r, "days")); return a + (pick(f) && pick(t) && days && Math.abs(inclDays(pick(f), pick(t)) - days) < 1 ? 1 : 0); }, 0);
@@ -5620,6 +5628,33 @@ function upSpareRows(rows, vehicleId, paid, file) {
   });
   return { rows: out, swap, at };
 }
+
+// An empty sheet with the right headings, a drop-down for Status, and a second sheet explaining each column.
+function upTemplate(kind) {
+  const T = UP_KINDS[kind].template, S = XL.S, ws = XL.sheet("Trips"), help = XL.sheet("How to fill"), last = XL.col(T.length - 1), rows = 500;
+  T.forEach(([h, w, k], i) => { const c = XL.col(i); XL.put(ws, `${c}1`, h, S.head); ws.widths[c] = w;
+    if (k) for (let r = 2; r <= rows; r++) XL.put(ws, `${c}${r}`, "", k === "date" ? S.date : k === "dec" ? S.dec : S.int); });
+  ws.freeze = 1; ws.lists.push({ ref: `${last}2:${last}${rows}`, items: UP_STATUS.map(x => x[2]) });
+  XL.put(help, "A1", `${UP_KINDS[kind].label}: how to fill the template`, S.title);
+  ["Type one trip on each row of the Trips sheet, starting on row 2. Keep the headings in row 1 as they are.", "Type dates as day-month-year, e.g. 04-05-2026 for 4 May 2026.",
+   "Amounts are in rupees, without the ₹ sign. Leave a cell empty when there is nothing to enter.", "Save the file as .xlsx and upload it in Utility › Data upload. Every row is shown before anything is saved; trips already in the app are skipped."]
+    .forEach((t, i) => XL.put(help, `A${3 + i}`, `${i + 1}. ${t}`, S.plain));
+  XL.put(help, "A8", "Column", S.head); XL.put(help, "B8", "What to type", S.head);
+  T.forEach(([h, , , note], i) => { XL.put(help, `A${9 + i}`, h, S.label); XL.put(help, `B${9 + i}`, note, S.text); });
+  help.widths.A = 16; help.widths.B = 80;
+  return XL.build([ws, help]);
+}
+$("upTpl").addEventListener("click", async () => {
+  const msg = $("upTplMsg"), v = vehicles.find(x => x.id === $("upBus").value), digits = v ? (plateKey(v.plateNo).match(/\d{4}$/) || [""])[0] : "";
+  const filename = `${digits ? digits + "_" : ""}spare-bus-trips-template.xlsx`;
+  msg.hidden = false;
+  try {
+    const dl = await auDownloads();
+    if (!dl) { msg.textContent = "Saving files isn't available in this view. Reload the page and try again."; return; }
+    await dl.save({ filename, data: upTemplate(upState.kind) });
+    msg.textContent = `Saved ${filename}. Fill in the Trips sheet${digits ? "" : " (name the file with the bus number, e.g. 3366_2026.xlsx, and the bus is picked for you)"}, then choose it above.`;
+  } catch (er) { msg.textContent = er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."; }
+});
 
 // ---- screen
 let upState = { kind: "spare", file: null, rows: null, busy: false, done: null };
@@ -6040,7 +6075,7 @@ const XL = (() => {
     `<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>${B}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="${XFS.length}">${XFS.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const serial = iso => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(1899, 11, 30)) / 864e5;
-  function sheet(name) { return { name, rows: {}, merges: [], widths: {}, freeze: 0 }; }
+  function sheet(name) { return { name, rows: {}, merges: [], widths: {}, freeze: 0, lists: [] }; }
   // put(ws, "B6", value, style, formula): value is a number, text, or {d: "2026-04-04"} for a date.
   function put(ws, ref, v, s = S.text, f) {
     const m = /^([A-Z]+)(\d+)$/.exec(ref), r = +m[2], c = idx(m[1]);
@@ -6061,6 +6096,8 @@ const XL = (() => {
     const cols = Object.keys(ws.widths).length ? `<cols>${Object.entries(ws.widths).map(([L, w]) => { const i = idx(L) + 1; return `<col min="${i}" max="${i}" width="${w}" customWidth="1"/>`; }).join("")}</cols>` : "";
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>${view}<sheetFormatPr defaultRowHeight="15"/>${cols}<sheetData>${rows}</sheetData>` +
       (ws.merges.length ? `<mergeCells count="${ws.merges.length}">${ws.merges.map(m => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>` : "") +
+      // Drop-down lists: { ref: "R2:R500", items: ["A", "B"] }
+      (ws.lists.length ? `<dataValidations count="${ws.lists.length}">${ws.lists.map(l => `<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="${l.ref}"><formula1>"${x(l.items.join(","))}"</formula1></dataValidation>`).join("")}</dataValidations>` : "") +
       `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
   }
   function build(sheets) {
