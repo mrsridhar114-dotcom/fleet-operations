@@ -28,6 +28,7 @@ const MOD_OF = {
   drivers: "drivers", driverHistory: "drivers",
   conductors: "conductors", conductorHistory: "conductors",
   trips: "trips", tripMonths: "trips", tripYears: "trips", truckTrips: "trips", truckRounds: "trips",
+  routeExpenses: "trips", padiSlabs: "trips", // route bus masters: standard expenses by starting place, padi slabs
   fuelLog: "fuel"
 };
 const HISTORY = /History$/;
