@@ -1054,20 +1054,20 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   /* bookings list as cards */
   #bList thead { display: none; }
   #bList, #bList tbody { display: block; }
-  #bList tr { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 3px 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); align-items: center; }
-  #bList td { border: 0 !important; padding: 0 !important; white-space: normal !important; }
-  #bList td:nth-child(1) { grid-row: 1; grid-column: 1; font-weight: 700; }
-  #bList td:nth-child(2) { grid-row: 1; grid-column: 2; white-space: nowrap !important; font-size: 13px; }
-  #bList td:nth-child(11) { grid-row: 1; grid-column: 3; justify-self: end; }
-  #bList td:nth-child(5) { grid-row: 2; grid-column: 1 / 3; }
-  #bList td:nth-child(8) { grid-row: 2; grid-column: 3; text-align: right; }
-  #bList td:nth-child(4) { grid-row: 3; grid-column: 1 / 3; font-size: 13px; }
-  #bList td:nth-child(10) { grid-row: 3; grid-column: 3; text-align: right; }
-  #bList td:nth-child(6) { grid-row: 4; grid-column: 1 / -1; font-size: 13px; color: var(--muted); }
-  #bList td:nth-child(3), #bList td:nth-child(7), #bList td:nth-child(9) { display: none; }
-  #bList td:nth-child(8)::before { content: "Total "; font-family: var(--body, inherit); font-size: 11px; color: var(--muted); }
-  #bList td:nth-child(10)::before { content: "Due "; font-family: var(--body, inherit); font-size: 11px; color: var(--muted); }
-  #bList td.sub { grid-column: 1 / -1; }
+  #bList tr { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; padding: 12px; border-bottom: 1px solid var(--line); align-items: center; }
+  #bList td { display: none; border: 0 !important; padding: 0 !important; white-space: normal !important; }
+  #bList td.bkno { display: block; grid-column: 1; font-weight: 700; }
+  #bList td.nm { display: block; grid-column: 2; } #bList td.nm .sub { display: none; }
+  #bList td.bkst { display: block; grid-column: 3; justify-self: end; }
+  #bList td.bkfx { display: block; grid-column: 1 / -1; }
+  #bList td.sub { display: block; grid-column: 1 / -1; }
+  /* trip sheets list as cards, like the bookings list */
+  #tsGroups .tscroll { overflow: visible; } table.tslist, table.tslist tbody { display: block; } table.tslist thead { display: none; }
+  table.tslist tr { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; padding: 12px; border-bottom: 1px solid var(--line); align-items: center; }
+  table.tslist td { display: none; border: 0 !important; padding: 0 !important; white-space: normal !important; }
+  table.tslist td.bkno { display: block; grid-column: 1; font-weight: 700; } table.tslist td.nm { display: block; grid-column: 2; } table.tslist td.nm .sub { display: none; }
+  table.tslist td.bkst { display: block; grid-column: 3; justify-self: end; text-align: right; } table.tslist td.bkst .sub { max-width: 150px; }
+  table.tslist td.bkfx { display: block; grid-column: 1 / -1; } table.tslist td.tsbtn { display: block; grid-column: 1 / -1; order: 2; } table.tslist td.tsbtn .btn { width: 100%; padding: 9px 12px !important; }
 }
 @media (max-width: 560px) {
   #bkDrawer .bkhead h2 { font-size: 20px; }
@@ -1236,7 +1236,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bhcard b { color: var(--ink); }
 .bhfacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
 .bhf { display: flex; flex-direction: column; gap: 1px; min-width: 0; } .bhf span { font-size: 12px; font-weight: 600; color: var(--muted); } .bhf b { font-size: 15px; overflow-wrap: anywhere; }
-.bhf.w { grid-column: 1 / -1; } .bhf.neg b { color: var(--danger); } .bhf.pos b { color: var(--accent); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
+.bhf.w { grid-column: 1 / -1; } .bkfx .bhfacts { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 2px; } .bkfx .bhf.w2 { grid-column: span 2; } .bkfx .bhf b { font-size: 14px; }
+#bList td.pos { color: var(--accent); font-weight: 600; } #bList td.neg { color: var(--danger); }
+.bkfx .bkbus { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; font-size: 13px; color: var(--muted); } td.bkfx { display: none; } .bhf.neg b { color: var(--danger); } .bhf.pos b { color: var(--accent); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
 .bhbtns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
 .bhbtns > .bhlock, .bhbtns > .bhclose, .bhbtns > .bhappr { grid-column: 1 / -1; }
 .bhlock { border-radius: 16px; padding: 14px 16px; background: var(--chip-bg); color: var(--ink); display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
@@ -6797,9 +6799,13 @@ function renderSpare() {
     (canBookings ? ostat("Profit on completed trips", rs(profit), `${comp.length} trip${comp.length === 1 ? "" : "s"} completed`, profit < 0 ? "var(--danger)" : comp.length ? "var(--ok)" : "")
       : ostat("Awaiting approval", ops.bookings.filter(b => b.status === "pending").length, `Sent to the admin · ${ops.bookings.filter(b => b.status === "draft").length} draft${ops.bookings.filter(b => b.status === "draft").length === 1 ? "" : "s"}`));
   $("bListTitle").textContent = `Bookings in ${new Date(first + "T00:00:00").toLocaleDateString("en-IN", { month: "long" })}`;
-  $("bList").innerHTML = inMonth.length ? `<thead><tr><th>No.</th><th>Dates</th><th class="n">Days</th><th>Bus</th><th>Party</th><th>Places</th><th>Rent type</th><th class="n">Total</th><th class="n">Received</th><th class="n">Balance</th><th>Stage</th></tr></thead><tbody>` +
-    inMonth.map(b => { const c = bkCalc(b);
-      return `<tr data-bk="${b.id}" tabindex="0" style="cursor:pointer"><td class="num">${esc(b.no || "")}</td><td class="num" style="white-space:nowrap">${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` – ${fmtShort(bkEnd(b))}` : ""}</td><td class="n">${fmtDays(num(b.days))}</td><td class="num" style="white-space:nowrap">${busDot(b.vehicleId)}${esc(pl(b.vehicleId))}</td><td class="nm">${esc(b.party || "")}${b.phone ? `<div class="sub">${esc(b.phone)}</div>` : ""}</td><td>${esc(b.places || "")}</td><td>${b.rentType === "day" ? "Day rent" : "Empty rent"}</td><td class="n">${nf(c.due)}</td><td class="n">${nf(c.received)}</td><td class="n ${c.balance > 0 && b.status !== "cancelled" ? "neg" : ""}">${b.status === "cancelled" ? "—" : nf(c.balance)}</td><td>${stageTag(b)}</td></tr>`; }).join("") + "</tbody>"
+  $("bList").innerHTML = inMonth.length ? `<thead><tr><th>No.</th><th>Dates</th><th>Bus</th><th>Party and places</th><th>Driver</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th><th class="n">Km run</th><th class="n">To collect</th><th>Stage</th></tr></thead><tbody>` +
+    inMonth.map(b => { const c = bkCalc(b), cx = b.status === "cancelled", lit = bkLitres(b), net = c.due - c.exp, m = v => cx ? "—" : nf(v), dm = iso => iso.slice(8, 10) + "/" + iso.slice(5, 7);
+      return `<tr data-bk="${b.id}" tabindex="0" style="cursor:pointer"><td class="num bkno">${esc(b.no || "")}</td><td class="num" style="white-space:nowrap">${dm(b.from)}${bkEnd(b) !== b.from ? ` – ${dm(bkEnd(b))}` : ""}<div class="sub">${fmtDays(bkDaysOf(b))} ${bwDayWord(bkDaysOf(b))}</div></td><td class="num" style="white-space:nowrap">${busDot(b.vehicleId)}${esc(pl(b.vehicleId))}</td>` +
+        `<td class="nm">${esc(b.party || "")}${b.places ? `<div class="sub">${esc(b.places)}</div>` : ""}${b.phone ? `<div class="sub">${esc(b.phone)}</div>` : ""}</td><td>${esc(bkDrvName(b) || "—")}</td>` +
+        `<td class="n">${m(c.due)}</td><td class="n">${m(c.exp)}</td><td class="n ${cx ? "" : net < 0 ? "neg" : "pos"}">${cx ? "—" : (net < 0 ? "-" : "") + nf(Math.abs(net))}</td>` +
+        `<td class="n" style="white-space:nowrap">${c.km ? `${nf(c.km)} km` : "—"}${lit ? `<div class="sub">${bkLitTxt(lit)}</div><div class="sub">${bkMileTxt(c, lit)}</div>` : ""}</td>` +
+        `<td class="n ${c.balance > 0 && !cx ? "neg" : ""}">${cx ? "—" : nf(c.balance)}</td><td class="bkst">${stageTag(b)}</td><td class="bkfx">${bkListFacts(b, c)}</td></tr>`; }).join("") + "</tbody>"
     : `<tbody><tr><td class="sub" style="padding:14px">No bookings this month.${canBookReq ? " Pick days on the calendar to book a bus." : ""}</td></tr></tbody>`;
 }
 let bFitT; addEventListener("resize", () => { clearTimeout(bFitT); bFitT = setTimeout(() => { if (view === "tspare") renderSpare(); }, 150); });
@@ -7603,9 +7609,25 @@ function tsFill(b) {
   return { pct: Math.round(done / items.length * 100), done, all: items.length, left: items.filter(x => !x[1]).map(x => x[0]) };
 }
 // The booking at a glance: number, days, dates, driver, then (for the office) the money and (once known) km, diesel and mileage.
+// Facts shown on a booking's page and on its card in the booking planner list.
+const bkDrvName = b => b.driverId ? (drivers.find(d => d.id === b.driverId)?.name || b.driverName) : b.driverName;
+const bkLitres = b => Math.round([...dslLinked(b.id), ...dslLegacyOf(b)].reduce((a, r) => a + num(r.litres), 0) * 100) / 100;
+const bkDaysOf = b => num(b.days) || inclDays(b.from, bkEnd(b));
+const bkLitTxt = lit => lit ? `${nf(lit, Number.isInteger(lit) ? 0 : 2)} L` : "—";
+const bkMileTxt = (c, lit) => c.km && lit ? `${nf(c.km / lit, 2)} km/L` : "—";
+const bkNetTxt = n => `${n < 0 ? "- " : ""}${rs(Math.abs(n))}`;
+// money: false leaves out the collection, expenses and balance (for those who only fill in trip sheets).
+function bkListFacts(b, c, money = true) {
+  const lit = bkLitres(b), net = c.due - c.exp, cx = b.status === "cancelled" || !money, days = bkDaysOf(b);
+  const f = (k, v, cls = "") => `<div class="bhf${cls}"><span>${k}</span><b>${v}</b></div>`;
+  return `<div class="bhfacts">` + f("Dates", `${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtShort(bkEnd(b))}` : ""}`, " w2") + f("Days", `${bwHalfTxt(days)} ${bwDayWord(days)}`) +
+    f("Driver", esc(bkDrvName(b) || "Not chosen yet"), " w") +
+    (cx ? "" : f("Collection", rs(c.due)) + f("Expenses", rs(c.exp)) + f("Balance", bkNetTxt(net), net < 0 ? " neg" : " pos")) +
+    f("Total km", c.km ? `${nf(c.km)} km` : "—") + f("Diesel", bkLitTxt(lit)) + f("Mileage", bkMileTxt(c, lit)) + `</div>` +
+    `<div class="bkbus"><span class="num" style="white-space:nowrap">${busDot(b.vehicleId)}${esc(plateOf(vehicles.find(v => v.id === b.vehicleId)) || "")}</span>${b.places ? `<span>· ${esc(b.places)}</span>` : ""}${!cx && c.balance > 0 ? `<span>· ${rs(c.balance)} to collect</span>` : ""}</div>`;
+}
 function bwFactsHtml(b, c) {
-  const days = num(b.days) || inclDays(b.from, bkEnd(b)), drv = b.driverId ? (drivers.find(d => d.id === b.driverId)?.name || b.driverName) : b.driverName;
-  const lit = Math.round([...dslLinked(b.id), ...dslLegacyOf(b)].reduce((a, r) => a + num(r.litres), 0) * 100) / 100;
+  const days = bkDaysOf(b), drv = bkDrvName(b), lit = bkLitres(b);
   const f = (k, v, cls = "") => `<div class="bhf${cls}"><span>${k}</span><b>${v}</b></div>`;
   const net = c.due - c.exp;
   return `<div class="bhfacts">` +
@@ -7613,9 +7635,8 @@ function bwFactsHtml(b, c) {
     f("Booking no.", esc(b.no || "—")) + f("Days", `${bwHalfTxt(days)} ${bwDayWord(days)}`) +
     f("Dates", `${bwFmt(b.from)}${bkEnd(b) !== b.from ? ` to ${bwFmt(bkEnd(b))}` : ""}`, " w") +
     f("Driver", esc(drv || "Not chosen yet"), " w") +
-    (bw.driver ? "" : f("Total collection", rs(c.due)) + f("Total expenses", rs(c.exp)) + f("Balance", `${net < 0 ? "- " : ""}${rs(Math.abs(net))}`, net < 0 ? " neg" : " pos")) +
-    f("Total km", c.km ? `${nf(c.km)} km` : "—") + f("Total diesel", lit ? `${nf(lit, Number.isInteger(lit) ? 0 : 2)} L` : "—") +
-    f("Mileage", c.km && lit ? `${nf(c.km / lit, 2)} km/L` : "—") + `</div>`;
+    (bw.driver ? "" : f("Total collection", rs(c.due)) + f("Total expenses", rs(c.exp)) + f("Balance", bkNetTxt(net), net < 0 ? " neg" : " pos")) +
+    f("Total km", c.km ? `${nf(c.km)} km` : "—") + f("Total diesel", bkLitTxt(lit)) + f("Mileage", bkMileTxt(c, lit)) + `</div>`;
 }
 function bwHomeHtml(b) {
   const v = vehicles.find(x => x.id === b.vehicleId), c = bkCalc(b), n = (b.attachments || []).length;
@@ -8419,11 +8440,15 @@ function renderTsList() {
   const byDate = (a, c) => String(a.from).localeCompare(String(c.from));
   $("tsStats").innerHTML = ostat("To fill", L.fill.length, "Open, not yet sent", L.fill.length ? "var(--warn)" : "") + ostat("Sent back", L.back.length, "Need changes", L.back.length ? "var(--danger)" : "") +
     ostat("Waiting for approval", L.sent.length, "With the admin") + (tsWorkerOnly() ? "" : ostat("Approved", ops.bookings.filter(b => b.tsStatus === "approved" && String(b.tsApprovedOn || "").slice(0, 7) === todayISO().slice(0, 7)).length, "This month", "var(--ok)"));
-  const table = (list, kind) => list.length ? `<table class="ctable"><thead><tr><th>No.</th><th>Bus</th><th>Dates</th><th class="n">Days</th><th>Party</th><th>Places</th><th>Driver</th><th>Trip sheet</th><th></th></tr></thead><tbody>` +
-    list.map(b => { const open = tsIsOpen(b), drv = b.driverId ? drivers.find(d => d.id === b.driverId)?.name : b.driverName;
+  // On a phone each row is a card with the same facts as the top of the booking's own page.
+  const money = canBookings, mh = money ? `<th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th>` : "";
+  const table = (list, kind) => list.length ? `<table class="ctable tslist"><thead><tr><th>No.</th><th>Dates</th><th>Bus</th><th>Party and places</th><th>Driver</th>${mh}<th class="n">Km run</th><th>Trip sheet</th><th></th></tr></thead><tbody>` +
+    list.map(b => { const open = tsIsOpen(b), drv = b.driverId ? drivers.find(d => d.id === b.driverId)?.name : b.driverName, c = bkCalc(b), net = c.due - c.exp, lit = bkLitres(b), dm = iso => iso.slice(8, 10) + "/" + iso.slice(5, 7);
       const btn = !open ? `<span class="sub">Opens ${fmtShort(tsOpenDate(b))}</span>` : `<button class="btn ${kind === "fill" || kind === "back" ? "primary" : ""}" type="button" data-bk="${b.id}" style="padding:5px 12px;font-size:13px">${kind === "fill" ? (b.tsStatus === "draft" ? "Continue" : "Fill in") : kind === "back" ? "Correct" : kind === "sent" && canBookings ? "Review" : "View"}</button>`;
-      return `<tr${open ? ` data-bk="${b.id}" tabindex="0" style="cursor:pointer"` : ""}><td class="num">${esc(b.no || "")}</td><td class="num" style="white-space:nowrap">${busDot(b.vehicleId)}${esc(pl(b.vehicleId))}</td><td class="num" style="white-space:nowrap">${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` – ${fmtShort(bkEnd(b))}` : ""}</td><td class="n">${fmtDays(num(b.days))}</td>
-        <td class="nm">${esc(b.party || "")}</td><td>${esc(b.places || "")}</td><td>${esc(drv || "")}</td><td>${tsTag(b)}${kind === "back" && b.tsRejectReason ? `<div class="sub">${esc(b.tsRejectReason)}</div>` : kind === "sent" && b.tsSubmittedByName ? `<div class="sub">${esc(b.tsSubmittedByName)}${b.tsSubmittedOn ? ` · ${fmtShort(b.tsSubmittedOn)}` : ""}</div>` : ""}</td><td>${btn}</td></tr>`; }).join("") + "</tbody></table>" : "";
+      return `<tr${open ? ` data-bk="${b.id}" tabindex="0" style="cursor:pointer"` : ""}><td class="num bkno">${esc(b.no || "")}</td><td class="num" style="white-space:nowrap" title="${fmtDate(b.from)}${bkEnd(b) !== b.from ? ` to ${fmtDate(bkEnd(b))}` : ""}">${dm(b.from)}${bkEnd(b) !== b.from ? ` – ${dm(bkEnd(b))}` : ""}<div class="sub">${fmtDays(bkDaysOf(b))} ${bwDayWord(bkDaysOf(b))}</div></td><td class="num" style="white-space:nowrap">${busDot(b.vehicleId)}${esc(pl(b.vehicleId))}</td>
+        <td class="nm">${esc(b.party || "")}${b.places ? `<div class="sub">${esc(b.places)}</div>` : ""}</td><td>${esc(drv || "")}</td>` +
+        (money ? `<td class="n">${nf(c.due)}</td><td class="n">${nf(c.exp)}</td><td class="n ${net < 0 ? "neg" : "pos"}">${(net < 0 ? "-" : "") + nf(Math.abs(net))}</td>` : "") +
+        `<td class="n" style="white-space:nowrap">${c.km ? `${nf(c.km)} km` : "—"}${lit ? `<div class="sub">${bkLitTxt(lit)}</div><div class="sub">${bkMileTxt(c, lit)}</div>` : ""}</td><td class="bkst">${tsTag(b)}${kind === "back" && b.tsRejectReason ? `<div class="sub">${esc(b.tsRejectReason)}</div>` : kind === "sent" && b.tsSubmittedByName ? `<div class="sub">${esc(b.tsSubmittedByName)}${b.tsSubmittedOn ? ` · ${fmtShort(b.tsSubmittedOn)}` : ""}</div>` : ""}</td><td class="tsbtn">${btn}</td><td class="bkfx">${bkListFacts(b, c, money)}</td></tr>`; }).join("") + "</tbody></table>" : "";
   const sec = (title, sub, list, kind, empty) => (list.length || empty) ? `<section class="panel"><div class="sechead"><h2 class="sec">${title}${list.length ? ` (${list.length})` : ""}</h2><p>${sub}</p></div><div class="tscroll" style="margin-top:10px">${table(list, kind) || `<p class="sub" style="margin:4px 0">${empty}</p>`}</div></section>` : "";
   $("tsGroups").innerHTML = sec("Sent back to you", "The admin asked for changes. Correct them and submit again.", L.back.sort(byDate), "back", "") +
     sec("To fill", "Enter the expenses and km, then submit for approval.", L.fill.sort(byDate), "fill", "Nothing to fill right now.") +
