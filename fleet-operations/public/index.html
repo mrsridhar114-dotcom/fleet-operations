@@ -1015,10 +1015,10 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .blegend { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 .blrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
 .bll { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
-.bchip.vc[style] { --bl: 90%; background: hsl(var(--bh) var(--bs, 70%) var(--bl)); color: hsl(var(--bh) var(--bs, 70%) 24%); border: 1px solid hsl(var(--bh) var(--bs, 55%) 45%); font-style: normal; }
+.bchip.vc[style] { --bl: 82%; background: hsl(var(--bh) var(--bs, 70%) var(--bl)); color: hsl(var(--bh) var(--bs, 70%) 24%); border: 1px solid hsl(var(--bh) var(--bs, 55%) 45%); font-style: normal; }
 .bchip.vc[style].booked { border-left-width: 4px; }
-.bchip.vc[style].ontrip { --bl: 79%; border-left-width: 4px; font-weight: 700; }
-.bchip.vc[style].completed { --bl: 95%; }
+.bchip.vc[style].ontrip { --bl: 74%; border-left-width: 4px; font-weight: 700; }
+.bchip.vc[style].completed { --bl: 88%; }
 .bchip.vc[style].pending { border-style: dashed; }
 .bchip.vc[style].draft { background: var(--surface); border-style: dashed; font-style: italic; }
 .bchip.vc[style].enquiry { background: var(--surface); border-style: dotted; }
@@ -6743,6 +6743,7 @@ const bkRange = () => !bSelA ? ["", ""] : !bSelB ? [bSelA, bSelA] : bSelA < bSel
 
 // Each spare bus keeps its own colour on the calendar; the stage shows in the tag's style (dashed, solid, ticked).
 const BUS_HUES = [212, 145, 24, 282, 350, 178, 46, 100, 252, 318];
+let bkHues = new Map();
 function busHue(id) {
   const i = spareBuses().findIndex(v => v.id === id);
   if (i >= 0) return BUS_HUES[i % BUS_HUES.length];
@@ -6758,6 +6759,10 @@ function renderSpare() {
   $("bMonthLbl").textContent = new Date(first + "T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
   const live = ops.bookings.filter(b => b.status !== "cancelled" && b.status !== "rejected");
   const pl = id => plateOf(vehicles.find(v => v.id === id));
+  // Each booking in the month gets its own colour, in date order, so neighbouring bookings never share one.
+  // The same colour marks its card in the list below.
+  bkHues = new Map(live.filter(b => b.from <= mEnd && bkEnd(b) >= first).sort((a, c) => a.from.localeCompare(c.from) || String(a.no).localeCompare(String(c.no)))
+    .map((b, i) => [b.id, BUS_HUES[i % BUS_HUES.length]]));
   const [lo, hi] = bkRange();
   // Size the day boxes so the whole month fits in the window (phones scroll as usual).
   const rows = Math.ceil((lead + n) / 7), wide = innerWidth > 700, calTop = $("bCal").getBoundingClientRect().top + scrollY;
@@ -6775,11 +6780,12 @@ function renderSpare() {
     const chipStyle = slim >= 11 ? `;height:${slim}px;line-height:${slim - 2}px;font-size:${slim < 15 ? 9 : 10}px;padding:0 4px` : "";
     const busy = new Set(onAll.filter(blocks).map(b => b.vehicleId)), free = buses.filter(b => !busy.has(b.id)).length;
     h += `<div class="bday${lo && iso >= lo && iso <= hi ? " sel" : ""}${iso === today ? " today" : ""}${iso < today ? " past" : ""}" role="gridcell" tabindex="0" data-day="${iso}" aria-label="${fmtDate(iso)}: ${free} of ${buses.length} buses free"><span class="btop"><span class="bnum">${d}</span><span class="bfree">${free ? `${free} free` : ""}</span></span>` +
-      on.map(b => `<button type="button" class="bchip vc ${b.status}" style="--bh:${busHue(b.vehicleId)}${chipStyle}" data-bk="${b.id}" title="${esc(pl(b.vehicleId))} · ${esc(b.party || "")} · ${esc(b.places || "")} (${BK_STAGES[b.status]})">${b.status === "completed" ? "✓ " : ""}${b.vehicleId ? esc(pl(b.vehicleId).replace(/\s+/g, "").slice(-4)) : "No bus"}${b.from === iso || dow === 0 || d === 1 ? `<span class="bp"> · ${esc(b.party || "")}</span>` : ""}</button>`).join("") +
+      on.map(b => `<button type="button" class="bchip vc ${b.status}" style="--bh:${bkHues.get(b.id) ?? busHue(b.vehicleId)}${chipStyle}" data-bk="${b.id}" title="${esc(pl(b.vehicleId))} · ${esc(b.party || "")} · ${esc(b.places || "")} (${BK_STAGES[b.status]})">${b.status === "completed" ? "✓ " : ""}${b.vehicleId ? esc(pl(b.vehicleId).replace(/\s+/g, "").slice(-4)) : "No bus"}${b.from === iso || dow === 0 || d === 1 ? `<span class="bp"> · ${esc(b.party || "")}</span>` : ""}</button>`).join("") +
       (more ? `<span class="bmore">+${more} more</span>` : "") + `</div>`;
   }
   $("bCal").innerHTML = h;
-  $("bLegend").innerHTML = `<span class="blrow"><span class="bll">Buses</span>${buses.map(b => `<span class="bchip vc booked" style="--bh:${busHue(b.id)}">${esc(plateOf(b))}</span>`).join("")}</span>`;
+  $("bLegend").innerHTML = `<span class="blrow"><span class="bll">Each colour is one booking</span>${[...bkHues.values()].slice(0, 5).map(hu => `<span class="bchip vc booked" style="--bh:${hu}">&nbsp;</span>`).join("")}</span>` +
+    (buses.length > 1 ? `<span class="blrow"><span class="bll">The tag shows the bus number</span></span>` : "");
   // availability for the picked days
   // The free-bus panel only appears once days are picked; until then the calendar takes the full width.
   $("bAvail").hidden = !lo; $("bAvail").closest(".bplan").classList.toggle("noavail", !lo);
@@ -6806,7 +6812,7 @@ function renderSpare() {
   $("bListTitle").textContent = `Bookings in ${new Date(first + "T00:00:00").toLocaleDateString("en-IN", { month: "long" })}`;
   $("bList").innerHTML = inMonth.length ? `<thead><tr><th>No.</th><th>Dates</th><th>Bus</th><th>Party and places</th><th>Driver</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th><th class="n">Km run</th><th class="n">To collect</th><th>Stage</th></tr></thead><tbody>` +
     inMonth.map(b => { const c = bkCalc(b), cx = b.status === "cancelled", lit = bkLitres(b), net = c.due - c.exp, m = v => cx ? "—" : nf(v), dm = iso => iso.slice(8, 10) + "/" + iso.slice(5, 7);
-      return `<tr data-bk="${b.id}" tabindex="0" style="cursor:pointer;--bh:${busHue(b.vehicleId)}"><td class="num bkno">${esc(b.no || "")}</td><td class="num" style="white-space:nowrap">${dm(b.from)}${bkEnd(b) !== b.from ? ` – ${dm(bkEnd(b))}` : ""}<div class="sub">${fmtDays(bkDaysOf(b))} ${bwDayWord(bkDaysOf(b))}</div></td><td class="num" style="white-space:nowrap">${busDot(b.vehicleId)}${esc(pl(b.vehicleId))}</td>` +
+      return `<tr data-bk="${b.id}" tabindex="0" style="cursor:pointer;--bh:${bkHues.get(b.id) ?? busHue(b.vehicleId)}"><td class="num bkno">${esc(b.no || "")}</td><td class="num" style="white-space:nowrap">${dm(b.from)}${bkEnd(b) !== b.from ? ` – ${dm(bkEnd(b))}` : ""}<div class="sub">${fmtDays(bkDaysOf(b))} ${bwDayWord(bkDaysOf(b))}</div></td><td class="num" style="white-space:nowrap">${busDot(b.vehicleId)}${esc(pl(b.vehicleId))}</td>` +
         `<td class="nm">${esc(b.party || "")}${b.places ? `<div class="sub">${esc(b.places)}</div>` : ""}${b.phone ? `<div class="sub">${esc(b.phone)}</div>` : ""}</td><td>${esc(bkDrvName(b) || "—")}</td>` +
         `<td class="n">${m(c.due)}</td><td class="n">${m(c.exp)}</td><td class="n ${cx ? "" : net < 0 ? "neg" : "pos"}">${cx ? "—" : (net < 0 ? "-" : "") + nf(Math.abs(net))}</td>` +
         `<td class="n" style="white-space:nowrap">${c.km ? `${nf(c.km)} km` : "—"}${lit ? `<div class="sub">${bkLitTxt(lit)}</div><div class="sub">${bkMileTxt(c, lit)}</div>` : ""}</td>` +
