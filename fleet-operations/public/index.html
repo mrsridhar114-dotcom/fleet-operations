@@ -3092,6 +3092,8 @@ function showView() {
   if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tfuel", "fuel"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
   // A conductor (route trip sheet: fill & submit) only has his own day sheet.
   if (acc.trips === "update" && ["thub", "trips", "tday", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
+  // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
+  if (want === "tday" && matchMedia("(max-width: 700px)").matches) want = "trsheet";
   view = acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
   ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
   const navKey = want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
@@ -6455,7 +6457,14 @@ function rsOpen(bus, date, admin = false) {
 // Fills the state from the saved sheet, or from yesterday and the masters for a new one (once the days around are loaded).
 function rsLoad() {
   if (!rsh || rsh.ready || !dayReady()) return;
-  const d = rsDoc(rsh.bus, rsh.date), ends = rsEnds(rsh.bus, rsh.date);
+  let d = rsDoc(rsh.bus, rsh.date); const ends = rsEnds(rsh.bus, rsh.date);
+  // A day the office already entered opens with what was entered, so it can be checked or corrected here.
+  const t = !d && winTrips().find(x => x.vehicleId === rsh.bus && x.date === rsh.date);
+  if (t) { const prev = rsPrevKm(rsh.bus, rsh.date), pay = { driver: t.driverPay, conductor: t.conductorPay, checker: t.checkerPay };
+    d = { ...t, status: "approved", padi: pay, padiEd: Object.fromEntries(RS_ROLES.map(([k]) => [k, pay[k] != null])), dsl: { litres: t.litres, amount: t.fuelCost, pay: t.dieselPay || "Fuel card", place: t.dieselPlace || "" },
+      exp: t.expList || EXP_CATS.filter(([k]) => num(t["ex_" + k])).map(([k, l]) => ({ name: l, amt: num(t["ex_" + k]) })).concat(unItemised(t) ? [{ name: "Other", amt: unItemised(t) }] : []),
+      startKm: prev ?? "", endKm: t.odo ?? "" };
+    rsh.edit = platformWrite && canTrips; }
   if (d) {
     Object.assign(rsh, { notRun: !!d.notRun, idle: d.idleReason || "", start: d.start || "", s: [1, 2, 3, 4, 5].map(i => d["s" + i] != null ? String(d["s" + i]) : ""),
       crew: Object.fromEntries(RS_ROLES.map(([k]) => [k, crewValue(k, d)])), padi: Object.fromEntries(RS_ROLES.map(([k]) => [k, String(d.padi?.[k] ?? "")])),
@@ -6562,6 +6571,8 @@ function rsRender(top) {
     `<div class="bwb tws tpage" id="rsBody">${rsPageHtml()}</div>` +
     (rsh.admin && rsh.askWhy ? `<footer class="bwf"><label class="bwf1"><span>Why is it sent back? The conductor will see this.</span><textarea id="rsWhy" rows="2" maxlength="200"></textarea></label><span class="bwerr" id="rsWhyErr"></span><div class="bw2" style="margin-top:8px"><button type="button" class="bwalt" data-rs="rejectno">Cancel</button><button type="button" class="bwgo" data-rs="rejectgo">Send back</button></div></footer>` :
      rsh.admin ? (rsh.edit && d?.status === "submitted" ? `<footer class="bwf two"><button type="button" class="bwalt" data-rs="reject">Send back</button><button type="button" class="bwgo" data-rs="approve"${rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Approve"}</button></footer>` : "")
+      : rsh.edit && canTrips ? `<footer class="bwf"><div class="twspent"><span class="tpst ok" id="rsSt">${rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
+        `<button type="button" class="bwgo" data-rs="approve"${miss.length || rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Save to trip sheet"}</button>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>`
       : rsh.edit ? `<footer class="bwf"><div class="twspent"><span class="tpst ok" id="rsSt">${rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
         `<button type="button" class="bwgo" data-rs="send"${miss.length || rsh.saving ? " disabled" : ""}>${rsh.saving ? "Sending…" : "Send to office"} ${BW_ICON.next}</button>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>` : "") +
     navBar("rs", false);
@@ -6577,7 +6588,7 @@ function rsRefresh() {
   if ($("rsCrew") && rsh.crewKey !== ck && !document.activeElement?.closest?.("#rsCrew")) { rsh.crewKey = ck; $("rsCrew").innerHTML = rsCrewHtml(); }
   const bal = rsCol() - rsExpTot(), miss = rsMissing();
   if ($("rsBal")) $("rsBal").textContent = `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`;
-  const go = $("rsw").querySelector('[data-rs="send"]'); if (go) go.disabled = !!miss.length || rsh.saving;
+  const go = $("rsw").querySelector('[data-rs="send"]') || (!rsh.admin && $("rsw").querySelector('[data-rs="approve"]')); if (go) go.disabled = !!miss.length || rsh.saving;
   if ($("rsMiss")) { $("rsMiss").hidden = !miss.length; $("rsMiss").textContent = miss.length ? `Still needed: ${miss.join(", ")}` : ""; }
 }
 function rsInput(e) {
@@ -6655,7 +6666,7 @@ async function rsSave(status, why) {
 // Approve: the day goes into the route trip sheet in the same form as an office entry, then the sheet is marked approved.
 const RS_CAT = [[/toll|fastag/i, "toll"], [/stand/i, "stand"], [/commission/i, "commission"], [/clean|wash/i, "cleaning"], [/police|check/i, "police"], [/food|tea|water|meal/i, "food"], [/repair|mechanic|puncture/i, "repairs"]];
 async function rsApprove() {
-  if (!canTrips || rsh.saving) return;
+  if (!canTrips || rsh.saving || (!rsh.admin && rsMissing().length)) return;
   const s = rsBuild("approved"), base = { id: s.id, vehicleId: s.vehicleId, date: s.date, fromSheet: true };
   let t;
   if (s.notRun) t = { ...base, notRun: true, idleReason: s.idleReason };
@@ -6953,7 +6964,7 @@ function renderHub() {
     <article class="ocard main"><div class="oc-top">${ICONS.route}<div><h3>Route bus</h3><div class="oc-kind">Daily · 5 singles a day</div></div></div>
       <div class="oc-big">${ready ? rb.length - pend.length : "…"}<small>/ ${rb.length}</small></div><p class="oc-cap">entered for ${day}</p>
       <div>${!rb.length ? '<span class="pill off">No route buses</span>' : !ready ? "" : pend.length ? `<span class="pill d30">${pend.length} still to enter</span>` : '<span class="pill ok">All entered</span>'}</div>
-      <div class="oc-act"><a class="btn primary" href="#trips-day">Daily entry</a><a class="btn" href="#trips-route">Monthly sheet</a></div></article>
+      <div class="oc-act">${bwIsPhone() ? `<a class="btn primary" href="#route-sheet">Fill trip sheet</a>` : `<a class="btn primary" href="#trips-day">Daily entry</a>`}<a class="btn" href="#trips-route">Monthly sheet</a></div></article>
     <article class="ocard soon"><div class="oc-top">${ICONS.omni}<div><h3>Omni bus</h3><div class="oc-kind">Format to be added</div></div></div>
       <p class="oc-cap" style="margin-top:12px">Share your Omni bus sheet and it will get its own format here.</p></article>
     <article class="ocard"><div class="oc-top">${ICONS.truck}<div><h3>Trucks</h3><div class="oc-kind">Per load, grouped into round trips</div></div></div>
@@ -10216,7 +10227,7 @@ $("lgClose").onclick = $("lgCancel").onclick = closeLgDrawer;
 $("oDate").addEventListener("change", () => { const v = $("oDate").value; if (v && v <= todayISO()) { opDate = v; dbFilledKey = ""; renderHub(); } else $("oDate").value = opDate; });
 $("oTodo").addEventListener("click", e => {
   const b = e.target.closest("button[data-go]"); if (!b) return;
-  if (b.dataset.go === "day") { dbBus = b.dataset.id; dbFilledKey = ""; location.hash = "#trips-day"; }
+  if (b.dataset.go === "day") { dbBus = b.dataset.id; rsBus = b.dataset.id; dbFilledKey = ""; location.hash = "#trips-day"; }
   if (b.dataset.go === "booking") { const id = b.dataset.id, bk = ops.bookings.find(x => x.id === id); if (bk) bMonth = bk.from.slice(0, 7); location.hash = "#bookings"; setTimeout(() => openBooking(id), 50); }
   if (b.dataset.go === "truck") { kBusId = b.dataset.id; location.hash = "#trips-truck"; }
 });
