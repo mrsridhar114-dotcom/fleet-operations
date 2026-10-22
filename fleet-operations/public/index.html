@@ -1251,6 +1251,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rssel:disabled { background-image: none; padding-right: 0; opacity: 1; color: var(--ink); }
 .rslink { min-height: 36px; font-size: 16px; } .rsq { margin: 10px 0 6px; font: 700 15px var(--body); color: var(--ink); }
 .rsname { width: 100%; box-sizing: border-box; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 16px var(--body); padding: 0 10px; }
+.rstick { width: 32px; height: 32px; flex: none; border-radius: 8px; border: 2px solid var(--accent); background: var(--accent); color: var(--accent-ink); font: 700 18px/1 var(--body); display: grid; place-items: center; padding: 0; cursor: pointer; margin-right: 4px; }
+.rstick[aria-pressed="false"] { background: var(--surface); border-color: var(--line); }
+.rsex.off .tpl { color: var(--muted); text-decoration: line-through; } .rsoff { font: 600 14px var(--body); color: var(--muted); padding: 0 6px; white-space: nowrap; }
 .rsmiss { margin: 6px 0 0; font-size: 13px; color: var(--warn); text-align: center; }
 .bhappr.rswarn { background: var(--warn-soft); }
 .rshome { display: flex; flex-direction: column; gap: 12px; } .rsbus { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .rsbus .plate { font-size: 18px; }
@@ -6419,7 +6422,13 @@ function rsOpposite(place, ends) {
   if (e.length === 2 && e.some(x => x.toLowerCase() === p)) return e.find(x => x.toLowerCase() !== p);
   return RS_PAIR[p] || "";
 }
-const rsList = place => (ops.routeExpenses.find(x => placeName(x.place).toLowerCase() === placeName(place).toLowerCase())?.items || []).filter(i => i.name).map(i => ({ name: i.name, amt: String(num(i.amount) || "") }));
+// The starting place's list in the Route expenses master (same name, or one name containing the other, e.g. "Vellore Bus Stand").
+function rsMaster(place) {
+  const p = placeName(place).toLowerCase(); if (!p) return null;
+  const all = ops.routeExpenses.filter(x => x.place);
+  return all.find(x => placeName(x.place).toLowerCase() === p) || all.find(x => { const q = placeName(x.place).toLowerCase(); return q.startsWith(p) || p.startsWith(q); }) || all.find(x => { const q = placeName(x.place).toLowerCase(); return q.includes(p) || p.includes(q); }) || null;
+}
+const rsList = place => (rsMaster(place)?.items || []).filter(i => i.name).map(i => ({ name: i.name, amt: String(num(i.amount) || "") }));
 // Start km: the end of the bus's last day before this one (a sheet not yet approved counts too).
 function rsPrevKm(bus, date) {
   const s = ops.routeSheets.filter(x => x.vehicleId === bus && x.date < date && num(x.endKm) > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -6434,7 +6443,7 @@ const rsRules = () => pdSaved().length ? pdSaved() : PADI_START.bands;
 const rsSys = () => { const r = padiFor(rsCol(), rsRules()); return Object.fromEntries(RS_ROLES.map(([k]) => [k, k === "checker" && !rsh.crew.checker ? 0 : r?.[k]?.amt || 0])); };
 const rsPadi = k => rsh.padiEd[k] ? num(rsh.padi[k]) : rsSys()[k];
 const rsPadiTot = () => RS_ROLES.reduce((a, [k]) => a + rsPadi(k), 0);
-const rsOther = () => rsh.exp.reduce((a, x) => a + num(x.amt), 0);
+const rsOther = () => rsh.exp.reduce((a, x) => a + (x.off ? 0 : num(x.amt)), 0);
 const rsExpTot = () => num(rsh.dsl.amount) + rsPadiTot() + rsOther();
 const rsCrewName = k => { const v = rsh.crew[k] || ""; if (v.startsWith("id:")) return ((k === "driver" ? drivers : conductors).find(x => x.id === v.slice(3))?.name) || ""; return v.startsWith("name:") ? v.slice(5) : ""; };
 const rsPadiChanged = d => RS_ROLES.filter(([k]) => d.padiSys && num(d.padi?.[k]) !== num(d.padiSys[k]));
@@ -6469,7 +6478,7 @@ function rsLoad() {
     Object.assign(rsh, { notRun: !!d.notRun, idle: d.idleReason || "", start: d.start || "", s: [1, 2, 3, 4, 5].map(i => d["s" + i] != null ? String(d["s" + i]) : ""),
       crew: Object.fromEntries(RS_ROLES.map(([k]) => [k, crewValue(k, d)])), padi: Object.fromEntries(RS_ROLES.map(([k]) => [k, String(d.padi?.[k] ?? "")])),
       padiEd: Object.fromEntries(RS_ROLES.map(([k]) => [k, !!d.padiEd?.[k]])), dsl: { litres: String(d.dsl?.litres ?? ""), amount: String(d.dsl?.amount ?? ""), pay: d.dsl?.pay || "Fuel card", place: d.dsl?.place || "" },
-      exp: (d.exp || []).map(x => ({ name: x.name, amt: String(x.amt ?? ""), own: !!x.own })), startKm: String(d.startKm ?? ""), endKm: String(d.endKm ?? ""), remarks: d.remarks || "", status: d.status || "draft" });
+      exp: (d.exp || []).map(x => ({ name: x.name, amt: String(x.amt ?? ""), own: !!x.own, off: !!x.off })), startKm: String(d.startKm ?? ""), endKm: String(d.endKm ?? ""), remarks: d.remarks || "", status: d.status || "draft" });
   } else {
     const last = lastOf(rsh.bus), me = rsMe(), start = plannedFor(rsh.bus, rsh.date) || (last?.start ? rsOpposite(last.start, ends) : "") || ends[0] || "";
     const prev = rsPrevKm(rsh.bus, rsh.date);
@@ -6478,6 +6487,7 @@ function rsLoad() {
       padi: { driver: "", conductor: "", checker: "" }, padiEd: { driver: false, conductor: false, checker: false },
       dsl: { litres: "", amount: "", pay: "Fuel card", place: rsOpposite(start, ends) }, exp: rsList(start), startKm: prev != null ? String(prev) : "", endKm: "", remarks: "", status: "draft" });
   }
+  if (!rsh.exp.length && rsh.status === "draft" && rsh.start) rsh.exp = rsList(rsh.start);
   rsh.ends = ends; rsh.ready = true;
 }
 function rsSel(k) {
@@ -6540,6 +6550,7 @@ function rsPageHtml() {
     rsSec("1", "Did the bus run today?", `<div class="bwseg c2"><button type="button" data-rs="ran" aria-pressed="${!rsh.notRun}"${rsh.edit ? "" : " disabled"}>✅ Bus ran</button><button type="button" data-rs="idle" aria-pressed="${rsh.notRun}"${rsh.edit ? "" : " disabled"}>⛔ Did not run</button></div>` +
       (rsh.notRun ? `<p class="rsq">Why did it not run?</p><div class="bwchips">${IDLE_REASONS.map(r => `<button type="button" data-rs="why" data-v="${esc(r)}" aria-pressed="${rsh.idle === r}"${rsh.edit ? "" : " disabled"}>${esc(r)}</button>`).join("")}</div>`
         : ends.length ? `<p class="rsq">Started from</p><div class="bwseg c2">${ends.map(p => `<button type="button" data-rs="start" data-v="${esc(p)}" aria-pressed="${placeName(rsh.start).toLowerCase() === placeName(p).toLowerCase()}"${rsh.edit ? "" : " disabled"}>${esc(p)}</button>`).join("")}</div>`
+        : ops.routeExpenses.some(x => x.place) ? `<p class="rsq">Started from</p><div class="bwchips">${ops.routeExpenses.filter(x => x.place).map(x => placeName(x.place)).map(p => `<button type="button" data-rs="start" data-v="${esc(p)}" aria-pressed="${placeName(rsh.start).toLowerCase() === p.toLowerCase()}"${rsh.edit ? "" : " disabled"}>${esc(p)}</button>`).join("")}</div>`
         : `<label class="bwf1" style="margin-top:8px"><span>Started from</span><input type="text" data-k="start" value="${esc(rsh.start)}" maxlength="40"${ro}></label>`)) +
     (rsh.notRun ? "" :
       rsSec("2", "Collection", rsh.s.map((v, i) => `<div class="tprow"><span class="tpl">${RS_TRIPS[i]}</span>${rsMoneyIn("s:" + i, v, RS_TRIPS[i] + " collection")}</div>`).join("") +
@@ -6551,7 +6562,10 @@ function rsPageHtml() {
         `<label><span>Paid</span><select class="tpsel" data-k="dsl:pay" aria-label="Diesel paid by"${rsh.edit ? "" : " disabled"}>${[["Fuel card", "Card"], ["Cash", "Cash"]].map(([v, l]) => `<option value="${v}"${rsh.dsl.pay === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>` +
         `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="40" data-k="dsl:place" value="${esc(rsh.dsl.place)}" placeholder="Where" aria-label="Diesel place"${ro}></span></label><span></span></div>` +
         (rsh.start && rsh.dsl.place && rsOpposite(rsh.start, rsh.ends).toLowerCase() === placeName(rsh.dsl.place).toLowerCase() && rsh.edit ? `<p class="bwnote" style="margin:4px 0 6px">Place is ${esc(rsh.dsl.place)} because the bus starts from ${esc(placeName(rsh.start))}. Change it if needed.</p>` : "") +
-        rsh.exp.map((x, i) => `<div class="tprow">${x.own ? `<span class="tpl"><input class="rsname" type="text" maxlength="40" data-k="en:${i}" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}></span>` : `<span class="tpl">${esc(x.name)}</span>`}${rsMoneyIn("ex:" + i, x.amt, x.name || "Expense")}${rsh.edit && x.own ? `<button type="button" class="tpbin" data-rs="exdel" data-i="${i}" aria-label="Remove">${TW_BIN}</button>` : ""}</div>`).join("") +
+        (rsh.exp.length ? `<p class="bwnote" style="margin:6px 0 0">${rsh.edit ? "Untick an expense that was not spent today." : ""}</p>` : `<p class="bwnote" style="margin:6px 0 0">${rsh.start ? `No expense list for ${esc(placeName(rsh.start))} in the Route expenses master yet.` : "Choose where the bus started to bring its expense list."}</p>`) +
+        rsh.exp.map((x, i) => `<div class="tprow rsex${x.off ? " off" : ""}"><button type="button" class="rstick" data-rs="extog" data-i="${i}" aria-pressed="${!x.off}" aria-label="${x.off ? "Not spent today" : "Spent today"}: ${esc(x.name || "expense")}"${rsh.edit ? "" : " disabled"}>${x.off ? "" : "✓"}</button>` +
+          (x.own ? `<span class="tpl"><input class="rsname" type="text" maxlength="40" data-k="en:${i}" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}></span>` : `<span class="tpl">${esc(x.name)}</span>`) +
+          (x.off ? `<span class="rsoff">Not today</span>` : rsMoneyIn("ex:" + i, x.amt, x.name || "Expense")) + (rsh.edit && x.own ? `<button type="button" class="tpbin" data-rs="exdel" data-i="${i}" aria-label="Remove">${TW_BIN}</button>` : "") + `</div>`).join("") +
         (rsh.edit ? `<button type="button" class="tpadd" data-rs="exadd">${TW_PLUS} Add expense</button>` : ""), rsh.start ? `${esc(placeName(rsh.start))} list` : "") +
       rsSec("5", "Today's money", `<div id="rsMoney">${rsMoneyHtml()}</div>`) +
       rsSec("6", "Km meter", `<div class="tprow"><span class="tpl">Start km<br><small class="rshow">From the last day's end</small></span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="startKm" value="${esc(rsh.startKm)}" aria-label="Start km"${ro}><b>km</b></span></div>` +
@@ -6559,10 +6573,8 @@ function rsPageHtml() {
         `<div class="bwnote tprun" id="rsRun">${rsKmHtml()}</div>`)) +
     `<label class="bwf1" style="margin-top:4px"><span>Remarks <small>(if any)</small></span><input type="text" data-k="remarks" value="${esc(rsh.remarks)}" maxlength="200"${ro}></label>`;
 }
-function rsMissing() {
-  if (rsh.notRun) return rsh.idle ? [] : ["why the bus did not run"];
-  return [!rsCol() && "collection", !rsh.crew.driver && "driver", !rsh.crew.conductor && "conductor", !num(rsh.endKm) && "end km", num(rsh.endKm) && num(rsh.endKm) <= num(rsh.startKm) && "end km more than start km"].filter(Boolean);
-}
+// Nothing is required: the conductor sends whatever he knows and the office fills in the rest.
+function rsMissing() { return []; }
 function rsRender(top) {
   const el = $("rsw"), keep = !top && $("rsBody") ? $("rsBody").scrollTop : 0, v = vehicles.find(x => x.id === rsh.bus), d = rsDoc(rsh.bus, rsh.date);
   const day = new Date(rsh.date + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
@@ -6619,6 +6631,7 @@ function rsClick(e) {
   }
   if (a === "padireset") { RS_ROLES.forEach(([k]) => { rsh.padiEd[k] = false; rsh.padi[k] = ""; }); rsRender(); rsSoon(); return; }
   if (a === "exadd") { rsh.exp.push({ name: "", amt: "", own: true }); rsRender(); const ins = $("rsw").querySelectorAll(".rsname"); ins[ins.length - 1]?.focus(); return; }
+  if (a === "extog") { const x = rsh.exp[+b.dataset.i]; x.off = !x.off; rsRender(); rsSoon(); return; }
   if (a === "exdel") { rsh.exp.splice(+b.dataset.i, 1); rsRender(); rsSoon(); return; }
   if (a === "send") { rsSave("submitted"); return; }
   if (a === "approve") { rsApprove(); return; }
@@ -6637,7 +6650,7 @@ function rsBuild(status) {
     RS_ROLES.forEach(([k]) => { const v = rsh.crew[k]; if (v.startsWith("id:")) { out[k + "Id"] = v.slice(3); out[k + "Name"] = nm(k); } else if (v) out[k + "Name"] = nm(k); });
     const sys = rsSys(); out.padiSys = sys; out.padi = Object.fromEntries(RS_ROLES.map(([k]) => [k, rsPadi(k)])); out.padiEd = { ...rsh.padiEd };
     out.dsl = { litres: Math.round(num(rsh.dsl.litres) * 100) / 100, amount: Math.round(num(rsh.dsl.amount)), pay: rsh.dsl.pay, place: rsh.dsl.place.trim() };
-    out.exp = rsh.exp.filter(x => x.name.trim() || num(x.amt)).map(x => ({ name: x.name.trim() || "Other", amt: Math.round(num(x.amt)), ...(x.own ? { own: true } : {}) }));
+    out.exp = rsh.exp.filter(x => x.name.trim() || num(x.amt)).map(x => ({ name: x.name.trim() || "Other", amt: Math.round(num(x.amt)), ...(x.own ? { own: true } : {}), ...(x.off ? { off: true } : {}) }));
     if (num(rsh.startKm)) out.startKm = Math.round(num(rsh.startKm)); if (num(rsh.endKm)) out.endKm = Math.round(num(rsh.endKm));
     out.collection = rsCol(); out.expense = rsExpTot(); out.balance = out.collection - out.expense;
   }
@@ -6679,6 +6692,7 @@ async function rsApprove() {
     if (s.dsl.litres && s.dsl.amount) t.dieselRate = Math.round(s.dsl.amount / s.dsl.litres * 100) / 100;
     if (s.dsl.place) t.dieselPlace = s.dsl.place; t.dieselPay = s.dsl.pay;
     t.driverPay = s.padi.driver; t.conductorPay = s.padi.conductor; if (s.padi.checker) t.checkerPay = s.padi.checker;
+    s.exp = s.exp.filter(x => !x.off);
     s.exp.forEach(x => { const c = RS_CAT.find(([re]) => re.test(x.name))?.[1] || "misc"; t["ex_" + c] = num(t["ex_" + c]) + x.amt; });
     t.expList = s.exp; t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
     if (s.endKm) t.odo = s.endKm;
