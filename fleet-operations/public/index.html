@@ -930,6 +930,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .duepop li { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; border-top: 1px solid var(--line); padding-top: 8px; }
 .duepop li:first-child { border-top: 0; padding-top: 0; }
 .duepop .duesave { margin-top: 12px; width: 100%; display: flex; gap: 8px; justify-content: center; align-items: center; }
+.duepop .dacts { display: flex; gap: 8px; margin-top: 12px; } .duepop .dacts .duesave { margin-top: 0; flex: 1; min-width: 0; } .duepop .dshare { flex: none; display: flex; gap: 6px; align-items: center; justify-content: center; }
 .duepop .when { font-size: 12px; color: var(--danger); white-space: nowrap; }
 .cdocs, .cprint { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; }
 .cdocs:hover, .cprint:hover { background: var(--chip-bg); }
@@ -8154,10 +8155,24 @@ async function tsLayout(L, pdf, b) {
   text("Driver signature", X0, 30, { size: 9 }); hline(X0, X0 + 110, 42, { t: 0.5, color: grey });
   text("Office signature", X1, 30, { size: 9, align: "right" }); hline(X1 - 110, X1, 42, { t: 0.5, color: grey });
 }
-// Print: a tick list (like the vehicle master's) to choose the front, the back or both; each is saved as its own image.
+// Print: a tick list (like the vehicle master's) to choose the front and back images and, if wanted, the PDF of both; save or share them.
 function tsPrint(b, btn) {
-  const items = [{ k: 0, label: "Front", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back", sub: "Diesel fill-ups, driver advance and expenses" }];
-  openPickPop(btn, `Trip sheet ${b.no || ""} · print`, items, { ts: b.id }, (keys, go) => tsSave(b, keys, go), { noun: "page", note: "Tick the pages you want. Each is saved as an image.", on: () => true });
+  const items = [{ k: 0, label: "Front (image)", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back (image)", sub: "Diesel fill-ups, driver advance and expenses" },
+    { k: "pdf", label: "PDF", sub: "Front and back in one file" }];
+  openPickPop(btn, `Trip sheet ${b.no || ""} · print`, items, { ts: b.id }, (keys, go) => tsSave(b, keys, go),
+    { note: "Tick what you want. The images are ticked; tick PDF if you need it too.", on: d => d.k !== "pdf", saveText: n => n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Choose a file", share: keys => tsFiles(b, keys) });
+}
+async function tsFiles(b, keys) {
+  const base = `Trip sheet ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " "), out = [];
+  if (keys.some(k => k !== "pdf")) {
+    const { doc, L } = tsCanvasKit(); await tsLayout(L, doc, b);
+    for (const [i, cv] of doc.pages.entries()) {
+      if (!keys.includes(Math.min(i, 1))) continue;
+      out.push({ filename: `${base} ${i === 0 ? "front" : i === 1 ? "back" : "back " + i}.jpg`, data: await new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92)) });
+    }
+  }
+  if (keys.includes("pdf")) { const L = await loadPdfLib(), pdf = await L.PDFDocument.create(); await tsLayout(L, pdf, b); out.push({ filename: base + ".pdf", data: new Blob([await pdf.save()], { type: "application/pdf" }) }); }
+  return out;
 }
 async function tsSave(b, keys, btn) {
   let downloads = null;
@@ -8165,16 +8180,11 @@ async function tsSave(b, keys, btn) {
   if (!downloads) { toast("Saving files isn't available in this view."); return; }
   if (btn) btn.disabled = true; toast("Preparing the trip sheet…");
   try {
-    const { doc, L } = tsCanvasKit(); await tsLayout(L, doc, b);
-    const base = `Trip sheet ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ");
-    for (const [i, cv] of doc.pages.entries()) {
-      if (!keys.includes(Math.min(i, 1))) continue;
-      const blob = await new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92));
-      await downloads.save({ filename: `${base} ${i === 0 ? "front" : i === 1 ? "back" : "back " + i}.jpg`, data: blob });
-    }
-    toast(keys.length > 1 ? "Front and back saved as images. Open them to print." : `${keys[0] ? "Back" : "Front"} saved as an image. Open it to print.`);
+    const files = await tsFiles(b, keys);
+    for (const f of files) await downloads.save(f);
+    toast(`${files.length === 1 ? "Trip sheet" : files.length + " files"} saved. Open ${files.length === 1 ? "it" : "them"} to print.`);
   } catch (e) {
-    toast(e?.code === "declined" ? "Trip sheet not saved." : e?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't save the trip sheet. Try again.");
+    toast(e?.code === "declined" ? "Trip sheet not saved." : e?.code === "rate_limited" ? "A save is already waiting for your answer." : e?.message === "load failed" ? "Couldn't prepare the PDF. Check your internet connection and try again." : "Couldn't save the trip sheet. Try again.");
   } finally { if (btn) btn.disabled = false; }
 }
 // Vehicle renewal dates sheet: every vehicle in service with all its renewal dates, as a PDF to print or share.
@@ -8239,6 +8249,15 @@ function docsBtn(v) {
   return `<button type="button" class="cdocs" data-vdocs="${v.id}" aria-label="Download attached documents" title="Download attached documents"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>`;
 }
 const extOf = f => { const m = /\.([a-z0-9]{2,5})$/i.exec(f.name || ""); return m ? m[1].toLowerCase() : "file"; };
+// Attached documents as files to share: same names as when downloaded.
+async function docShareFiles(v, picks, prefix) {
+  const last4 = prefix || plateKey(v.plateNo).slice(-4) || "0000", out = [];
+  for (const d of picks) {
+    const r = await fetch(`/_blob/${encodeURIComponent(d.f.id)}`, { credentials: "same-origin" }); if (!r.ok) throw new Error("fetch failed");
+    out.push({ filename: `${last4}_${d.tag.replace(/\s+/g, "-")}.${extOf(d.f)}`, data: await r.blob() });
+  }
+  return out;
+}
 async function downloadVehicleDocs(btn, v, picks, prefix) {
   let downloads = null;
   try { downloads = await auDownloads(); } catch { downloads = null; }
@@ -8260,16 +8279,40 @@ async function downloadVehicleDocs(btn, v, picks, prefix) {
     else toast(ok ? `Only ${ok} of ${picks.length} files downloaded. Try again.` : "Couldn't download the files. Check your internet connection and try again.");
   } finally { if (btn.isConnected) { btn.disabled = false; btn.innerHTML = label; } }
 }
+// Share from a pop-up: the phone's own share screen (WhatsApp, email, print and so on). Shown only where the browser can share files.
+const CAN_SHARE = (() => { try { return !!navigator.canShare && navigator.canShare({ files: [new File(["x"], "x.jpg", { type: "image/jpeg" })] }); } catch { return false; } })();
+const ICON_SHARE = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>`;
+const popActsHtml = () => `<div class="dacts"><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button>${CAN_SHARE ? `<button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button>` : ""}</div>`;
+// make() returns the files as [{ filename, data }]. Phones allow sharing only for a few seconds after the tap, so if preparing
+// the files took longer the button turns into "Tap to share" and the next tap opens the share screen straight away.
+async function popShare(btn, make, title) {
+  const toFiles = list => list.map(x => new File([x.data], x.filename, { type: x.data.type || "application/octet-stream" }));
+  const go = async files => { try { await navigator.share({ files, title }); closeDuePop(); return true; } catch (e) { if (e?.name === "AbortError") return true; if (e?.name === "NotAllowedError") return false; throw e; } };
+  const label = `${ICON_SHARE}<span>Share</span>`;
+  if (btn._ready) { const f = btn._ready; btn._ready = null; btn.innerHTML = label; try { await go(f); } catch { toast("Couldn't share. Try again."); } return; }
+  btn.disabled = true; btn.lastChild.textContent = "Preparing…";
+  try {
+    try { await document.fonts?.ready; } catch {}
+    const files = toFiles(await make());
+    if (!navigator.canShare?.({ files })) { toast("This phone can't share these files. Save them instead."); return; }
+    if (!(await go(files))) { btn._ready = files; btn.innerHTML = `${ICON_SHARE}<span>Tap to share</span>`; }
+  } catch { toast("Couldn't share. Try again."); }
+  finally { if (btn.isConnected) { btn.disabled = false; if (!btn._ready) btn.innerHTML = label; } }
+}
 // Choose the dates to put on the image first, like the documents download list: everything ticked, untick what isn't wanted.
-// Tick list pop-up. Used for renewal dates (the default wording) and for the trip sheet's front and back pages (o.noun, o.note, o.on).
+// Tick list pop-up. Used for renewal dates (the default wording) and for the trip sheet's pages (o.note, o.on, o.saveText).
+// o.share(keys) gives the files for the Share button.
 function openPickPop(b, title, items, mark, go, o = {}) {
-  const noun = o.noun || "date", on = o.on || (d => d.date && d.n <= 90), pop = document.createElement("div");
+  const on = o.on || (d => d.date && d.n <= 90), pop = document.createElement("div");
+  const saveText = o.saveText || (n => n ? `Save ${n} date${n === 1 ? "" : "s"} as image` : "Choose a date");
   pop.className = "duepop"; Object.assign(pop.dataset, mark); pop.setAttribute("role", "dialog");
-  const sync = () => { const n = pop.querySelectorAll("input[data-i]:checked").length, btn = pop.querySelector(".duesave"); btn.disabled = !n; btn.lastChild.textContent = n ? `Save ${n} ${noun}${n === 1 ? "" : "s"} as image${n === 1 ? "" : "s"}` : `Choose a ${noun}`;
+  const sync = () => { const n = pop.querySelectorAll("input[data-i]:checked").length, btn = pop.querySelector(".duesave"); btn.disabled = !n; btn.lastChild.textContent = saveText(n); const sh = pop.querySelector(".dshare"); if (sh) sh.disabled = !n;
     const all = pop.querySelector("input[data-all]"), m = pop.querySelectorAll("input[data-i]:not(:disabled)").length; all.disabled = !m; all.checked = !!m && n === m; all.indeterminate = n > 0 && n < m; };
-  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all> Select all</label><p class="dnote">${o.note || "Dates due within 3 months are ticked. Tick any others you want, including ones with no date."}</p><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}"${on(d) ? " checked" : ""}><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul><button type="button" class="btn primary duesave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><span></span></button>`;
+  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all> Select all</label><p class="dnote">${o.note || "Dates due within 3 months are ticked. Tick any others you want, including ones with no date."}</p><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}"${on(d) ? " checked" : ""}><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul>${o.share ? popActsHtml() : `<button type="button" class="btn primary duesave">${ICON_DL}<span></span></button>`}`;
   pop.addEventListener("change", e => { if (e.target.dataset.all != null) pop.querySelectorAll("input[data-i]:not(:disabled)").forEach(x => x.checked = e.target.checked); sync(); });
-  pop.querySelector(".duesave").onclick = async ev => { ev.stopPropagation(); await go([...pop.querySelectorAll("input[data-i]:checked")].map(x => items[+x.dataset.i].k), ev.currentTarget); closeDuePop(); };
+  const keys = () => [...pop.querySelectorAll("input[data-i]:checked")].map(x => items[+x.dataset.i].k);
+  pop.querySelector(".duesave").onclick = async ev => { ev.stopPropagation(); await go(keys(), ev.currentTarget); closeDuePop(); };
+  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); const k = keys(); popShare(ev.currentTarget, () => o.share(k), title); };
   placePop(pop, b); sync();
 }
 const pickSub = d => d.date ? `<span class="pill ${listBand(d.n)} num exppill">${fmtDate(d.date)}</span> ${esc(whenText(d.n))}` : "Date not entered";
@@ -8332,6 +8375,7 @@ async function dueCardJpg(v, masked, keys) {
   g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`; g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Vehicle number masked" : ""}`, PADX, H - 50);
   return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
 }
+const vehicleJpgFile = async (v, make, tag) => [{ filename: jpgName(v, tag), data: await make(v, acc.users !== "edit") }];
 async function saveVehicleJpg(btn, v, make, tag) {
   let downloads = null;
   try { downloads = await auDownloads(); } catch { downloads = null; }
@@ -8339,8 +8383,8 @@ async function saveVehicleJpg(btn, v, make, tag) {
   btn.disabled = true;
   try {
     try { await document.fonts?.ready; } catch {}
-    const blob = await make(v, acc.users !== "edit");
-    await downloads.save({ filename: jpgName(v, tag), data: blob });
+    const [f] = await vehicleJpgFile(v, make, tag);
+    await downloads.save(f);
     toast("Saved as a JPG image. Open it to print or share.");
   } catch (er) {
     if (er?.code === "declined") toast("Image not saved.");
@@ -8408,10 +8452,12 @@ function openDocsPop(b, v) {
   if (acc.users !== "edit") return;
   const files = vDocFiles(v), pop = document.createElement("div");
   pop.className = "duepop"; pop.dataset.d = v.id; pop.setAttribute("role", "dialog");
-  const sync = () => { const n = pop.querySelectorAll("input:checked").length, go = pop.querySelector(".duesave"); go.disabled = !n; go.lastChild.textContent = n ? `Download ${n} file${n === 1 ? "" : "s"}` : "Choose a document"; };
-  pop.innerHTML = `<h4>${esc(v.plateNo || vName(v))} · Attached documents</h4><ul class="dlist">${files.map((d, i) => `<li><label><input type="checkbox" data-i="${i}" checked><span><b>${esc(d.label)}</b><span class="fn">${esc(d.f.name)}</span></span></label></li>`).join("")}</ul><button type="button" class="btn primary duesave"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><span></span></button>`;
+  const sync = () => { const n = pop.querySelectorAll("input:checked").length, go = pop.querySelector(".duesave"); go.disabled = !n; go.lastChild.textContent = n ? `Download ${n} file${n === 1 ? "" : "s"}` : "Choose a document"; const sh = pop.querySelector(".dshare"); if (sh) sh.disabled = !n; };
+  pop.innerHTML = `<h4>${esc(v.plateNo || vName(v))} · Attached documents</h4><ul class="dlist">${files.map((d, i) => `<li><label><input type="checkbox" data-i="${i}" checked><span><b>${esc(d.label)}</b><span class="fn">${esc(d.f.name)}</span></span></label></li>`).join("")}</ul>${popActsHtml()}`;
   pop.addEventListener("change", sync);
-  pop.querySelector(".duesave").onclick = ev => { ev.stopPropagation(); downloadVehicleDocs(ev.currentTarget, v, [...pop.querySelectorAll("input:checked")].map(x => files[+x.dataset.i])); };
+  const picks = () => [...pop.querySelectorAll("input:checked")].map(x => files[+x.dataset.i]);
+  pop.querySelector(".duesave").onclick = ev => { ev.stopPropagation(); downloadVehicleDocs(ev.currentTarget, v, picks()); };
+  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); const k = picks(); popShare(ev.currentTarget, () => docShareFiles(v, k), `${v.plateNo || vName(v)} documents`); };
   document.body.appendChild(pop); sync(); duePopY = window.scrollY;
   const r = b.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
   let left = Math.min(window.innerWidth - pw - 12, Math.max(12, r.right - pw)), top = r.bottom + 8;
@@ -8424,7 +8470,7 @@ $("rows").addEventListener("click", e => {
   const open = document.querySelector(".duepop"); closeDuePop(); if (open?.dataset.v === b.dataset.vdue) return;
   const v = vehicles.find(x => x.id === b.dataset.vdue); if (!v) return;
   openPickPop(b, `${v.plateNo || vName(v)} · due within a month`, dueSoonOf(v).map(d => ({ ...d, sub: pickSub(d) })), { v: v.id },
-    (keys, btn) => saveVehicleJpg(btn, v, (x, m) => dueCardJpg(x, m, keys), "DUE"));
+    (keys, btn) => saveVehicleJpg(btn, v, (x, m) => dueCardJpg(x, m, keys), "DUE"), { share: keys => vehicleJpgFile(v, (x, m) => dueCardJpg(x, m, keys), "DUE") });
 });
 $("rows").addEventListener("click", e => {
   const btn = e.target.closest(".cprint"); if (!btn) return;
@@ -8433,7 +8479,7 @@ $("rows").addEventListener("click", e => {
   const v = vehicles.find(x => x.id === btn.dataset.vprint); if (!v) return;
   const items = DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).map(([k, label]) => ({ k, label: label.replace(/ expiry$/i, "").replace(/^FC date$/, "FC (fitness)"), date: v[k], n: v[k] ? daysUntil(v[k]) : null }));
   openPickPop(btn, `${v.plateNo || vName(v)} · renewal dates`, items.map(d => ({ ...d, sub: pickSub(d) })), { pv: v.id },
-    (keys, b) => saveVehicleJpg(b, v, (x, m) => vehicleCardJpg(x, m, keys), ""));
+    (keys, b) => saveVehicleJpg(b, v, (x, m) => vehicleCardJpg(x, m, keys), ""), { share: keys => vehicleJpgFile(v, (x, m) => vehicleCardJpg(x, m, keys), "") });
 });
 $("vPrintBtn").onclick = async () => {
   const btn = $("vPrintBtn"), list = [...inService()].sort((a, b) => {
@@ -8509,18 +8555,20 @@ function pOpenDocsPop(b, cfg, p) {
   if (acc.users !== "edit") return;
   const files = pFiles(cfg, p), pop = document.createElement("div");
   pop.className = "duepop"; pop.dataset.d = p.id; pop.setAttribute("role", "dialog");
-  const sync = () => { const n = pop.querySelectorAll("input:checked").length, go = pop.querySelector(".duesave"); go.disabled = !n; go.lastChild.textContent = n ? `Download ${n} file${n === 1 ? "" : "s"}` : "Choose a document"; };
-  pop.innerHTML = `<h4>${esc(p.name)} · Attached documents</h4><ul class="dlist">${files.map((d, i) => `<li><label><input type="checkbox" data-i="${i}" checked><span><b>${esc(d.label)}</b><span class="fn">${esc(d.f.name)}</span></span></label></li>`).join("")}</ul><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button>`;
+  const sync = () => { const n = pop.querySelectorAll("input:checked").length, go = pop.querySelector(".duesave"); go.disabled = !n; go.lastChild.textContent = n ? `Download ${n} file${n === 1 ? "" : "s"}` : "Choose a document"; const sh = pop.querySelector(".dshare"); if (sh) sh.disabled = !n; };
+  pop.innerHTML = `<h4>${esc(p.name)} · Attached documents</h4><ul class="dlist">${files.map((d, i) => `<li><label><input type="checkbox" data-i="${i}" checked><span><b>${esc(d.label)}</b><span class="fn">${esc(d.f.name)}</span></span></label></li>`).join("")}</ul>${popActsHtml()}`;
   pop.addEventListener("change", sync);
-  pop.querySelector(".duesave").onclick = ev => { ev.stopPropagation(); downloadVehicleDocs(ev.currentTarget, null, [...pop.querySelectorAll("input:checked")].map(x => files[+x.dataset.i]), pFileBase(p)); };
+  const picks = () => [...pop.querySelectorAll("input:checked")].map(x => files[+x.dataset.i]);
+  pop.querySelector(".duesave").onclick = ev => { ev.stopPropagation(); downloadVehicleDocs(ev.currentTarget, null, picks(), pFileBase(p)); };
+  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); const k = picks(); popShare(ev.currentTarget, () => docShareFiles(null, k, pFileBase(p)), `${p.name} documents`); };
   placePop(pop, b); sync();
 }
 function pOpenDuePop(b, cfg, p) {
-  openPickPop(b, `${p.name} · due within a month`, pDueOf(cfg, p).map(d => ({ ...d, sub: pickSub(d) })), { p: p.id }, (keys, btn) => pSaveJpg(btn, cfg, p, true, keys));
+  openPickPop(b, `${p.name} · due within a month`, pDueOf(cfg, p).map(d => ({ ...d, sub: pickSub(d) })), { p: p.id }, (keys, btn) => pSaveJpg(btn, cfg, p, true, keys), { share: keys => pJpgFile(cfg, p, true, keys) });
 }
 function pOpenPrintPop(b, cfg, p) {
   const items = cfg.dates.map(([k, label]) => ({ k, label, date: p[k], n: p[k] ? daysUntil(p[k]) : null }));
-  openPickPop(b, `${p.name} · validity dates`, items.map(d => ({ ...d, sub: pickSub(d) })), { pp: p.id }, (keys, btn) => pSaveJpg(btn, cfg, p, false, keys));
+  openPickPop(b, `${p.name} · validity dates`, items.map(d => ({ ...d, sub: pickSub(d) })), { pp: p.id }, (keys, btn) => pSaveJpg(btn, cfg, p, false, keys), { share: keys => pJpgFile(cfg, p, false, keys) });
 }
 // One person's validity dates (or only those due within a month) as a JPG. Staff copies mask the licence number and carry a watermark.
 async function pCardJpg(cfg, p, masked, dueOnly, keys) {
@@ -8567,16 +8615,18 @@ async function pCardJpg(cfg, p, masked, dueOnly, keys) {
   g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`; g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Licence number masked" : ""}`, PADX, H - 50);
   return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
 }
+async function pJpgFile(cfg, p, dueOnly, keys) {
+  const d = new Date(), p2 = n => String(n).padStart(2, "0");
+  return [{ filename: `${pFileBase(p)}${dueOnly ? "_DUE" : ""}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}_${p2(d.getHours())}-${p2(d.getMinutes())}.jpg`, data: await pCardJpg(cfg, p, acc.users !== "edit", dueOnly, keys) }];
+}
 async function pSaveJpg(btn, cfg, p, dueOnly, keys) {
   let downloads = null;
   try { downloads = await auDownloads(); } catch { downloads = null; }
   if (!downloads) { toast("Saving files isn't available in this view."); return; }
-  const d = new Date(), p2 = n => String(n).padStart(2, "0");
-  const name = `${pFileBase(p)}${dueOnly ? "_DUE" : ""}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}_${p2(d.getHours())}-${p2(d.getMinutes())}.jpg`;
   btn.disabled = true;
   try {
     try { await document.fonts?.ready; } catch {}
-    await downloads.save({ filename: name, data: await pCardJpg(cfg, p, acc.users !== "edit", dueOnly, keys) });
+    await downloads.save((await pJpgFile(cfg, p, dueOnly, keys))[0]);
     toast("Saved as a JPG image. Open it to print or share.");
   } catch (er) {
     if (er?.code === "declined") toast("Image not saved.");
