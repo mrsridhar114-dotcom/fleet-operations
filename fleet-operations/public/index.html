@@ -6790,7 +6790,8 @@ function bwCheckHtml() {
     row("Money", `<span class="bwm"><span>Rent</span><b>${rs(rent)}</b></span><span class="bwm"><span>Advance (${esc(bw.mode)})</span><b>${rs(adv)}</b></span>${(bw.pays || []).map(p => `<span class="bwm"><span>${p.date ? fmtShort(p.date) : "Payment"} · ${esc(p.mode || "Cash")}${p.note ? ` · ${esc(p.note)}` : ""}</span><b>${rs(num(p.amount))}</b></span>`).join("")}${bwToll() ? `<span class="bwm"><span>Toll (collected from the party)</span><b>${rs(bwToll())}</b></span>` : ""}<span class="bwm bal"><span>Balance</span><b>${rs(rent + bwToll() - adv - more)}</b></span>` +
       (padi ? `<span class="bwm padi"><span>Driver padi (paid to driver, not office)</span><b>${rs(padi)}</b></span>` : "") + (bw.remarks.trim() ? `<span>Remarks: ${esc(bw.remarks.trim())}</span>` : ""), 3) +
     `</div>` +
-    (bw.editId && canBookings && !["cancelled", "completed", "pending"].includes(bw.status) ? (bw.askCancel
+    // A closed trip can't be cancelled, admin included: reopen it first.
+    (bw.editId && canBookings && !["cancelled", "completed", "pending"].includes(bw.status) && !tripClosed(bwBkNow()) ? (bw.askCancel
       ? `<div class="bwcancel"><p><b>Cancel booking ${esc(bw.no || "")}?</b> The bus becomes free on these days. Money already received stays on record.</p><div class="bwseg c2"><button type="button" data-bw="keep">No, keep it</button><button type="button" class="bwdanger" data-bw="cancelyes">Yes, cancel</button></div></div>`
       : `<button type="button" class="bwlink bwdangerlink" data-bw="cancel">Cancel this booking</button>`) : "") + (canBookings || bw.readOnly ? "" : (m => m.length ? `<p class="bwnote"><b>Still needed to send for approval:</b> ${m.join(", ")}. Save draft now and finish it later.</p>` : `<p class="bwnote">Save draft to finish later, or send it to the admin for approval.</p>`)(bwMissing()));
 }
@@ -6914,6 +6915,7 @@ function bwClick(e) {
 // Cancel: the booking's stage becomes Cancelled, saved through the full booking form like any other change.
 async function bwCancel() {
   if (bw.saving) return;
+  if (tripClosed(bwBkNow())) { bw.askCancel = false; bwRender(); toast("This trip is closed. Reopen it first, then cancel."); return; }
   bw.saving = true; bwBusy = true; bwRender();
   try {
     const id = bw.editId, no = bw.no;
