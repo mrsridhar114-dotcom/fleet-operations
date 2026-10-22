@@ -5545,10 +5545,10 @@ function upDate(v) {
 const UP_KINDS = {
   spare: {
     label: "Spare bus trips (one row per booking)",
-    note: "Columns used: From Date, To Date, Days, Total Rent, Driver, Cleaner, Driver padi, Cleaner padi, Permit Exp., Toll Gate, Litres, Fuel Price, Other Exp., Start KMs, End Kms, Remarks and Other Remarks (places). Totals worked out in the sheet (Total Expense, Collection, Balance, Kms Run, Mileage) are worked out again by the app.",
+    note: "Columns used: From Date, To Date, Days, Total Rent, Driver, Cleaner, Driver padi, Cleaner padi, Permit Exp., Toll Gate, Litres, Fuel Price, Other Exp., Start KMs, End Kms, Remarks, Other Remarks (places) and Status (Completed, Closed, Cancelled, Booked or On trip; blank is Completed). Totals worked out in the sheet (Total Expense, Collection, Balance, Kms Run, Mileage) are worked out again by the app.",
     needsBus: true,
     // Header names, matched loosely. A second "Driver" / "Cleaner" column is the padi paid to them.
-    cols: { from: /^from\s*date/, to: /^to\s*date/, days: /^days?$/, rent: /rent/, driver: /^driver/, cleaner: /^cleaner/, permit: /permit/, toll: /toll/, litres: /litre/, fuel: /fuel|diesel/, other: /^other\s*exp/, startKm: /^start/, endKm: /^end/, remarks: /^remarks?$/, places: /other\s*remarks|places|route/ },
+    cols: { from: /^from\s*date/, to: /^to\s*date/, days: /^days?$/, rent: /rent/, driver: /^driver/, cleaner: /^cleaner/, permit: /permit/, toll: /toll/, litres: /litre/, fuel: /fuel|diesel/, other: /^other\s*exp/, startKm: /^start/, endKm: /^end/, remarks: /^remarks?$/, places: /other\s*remarks|places|route/, status: /^(trip\s*)?status$/ },
     twice: { driver: "padiPaid", cleaner: "cleanerPadi" }
   }
 };
@@ -5564,6 +5564,9 @@ function upColumns(kind, head) {
   });
   return at;
 }
+// The Status column. A blank cell is Completed.
+const UP_STATUS = [["closed", /^clos/, "Closed"], ["completed", /^(complet|done|finish)/, "Completed"], ["cancelled", /^cancel/, "Cancelled"], ["booked", /^(book|confirm|upcoming)/, "Booked"], ["ontrip", /^on\s*-?\s*trip|^running/, "On trip"]];
+function upStatus(v) { const t = upText(v).toLowerCase(); if (!t) return UP_STATUS[1]; return UP_STATUS.find(([, re]) => re.test(t)) || null; }
 function upMatchDriver(name) {
   const n = upText(name).toUpperCase(); if (!n) return null;
   const words = s => String(s || "").toUpperCase().replace(/[^A-Z ]/g, " ").split(/\s+/).filter(w => w.length > 1);
@@ -5580,7 +5583,7 @@ function upSpareRows(rows, vehicleId, paid, file) {
   const fit = swap => data.reduce((a, x) => { const f = upDate(cell(x.r, "from")), t = upDate(cell(x.r, "to")), pick = d => d.serial && swap && d.b ? d.b : d.a;
     const days = upNum(cell(x.r, "days")); return a + (pick(f) && pick(t) && days && Math.abs(inclDays(pick(f), pick(t)) - days) < 1 ? 1 : 0); }, 0);
   const swap = fit(true) > fit(false);
-  const taken = ops.bookings.filter(b => b.vehicleId === vehicleId && b.status !== "cancelled");
+  const mine = ops.bookings.filter(b => b.vehicleId === vehicleId), taken = mine.filter(b => b.status !== "cancelled");
   data.forEach(x => {
     const r = x.r, f = upDate(cell(r, "from")), t = upDate(cell(r, "to")), pick = d => d.serial && swap && d.b ? d.b : d.a;
     const from = pick(f), to = pick(t) || from, days = upNum(cell(r, "days")) || (from && to ? inclDays(from, to) : 0);
@@ -5588,24 +5591,28 @@ function upSpareRows(rows, vehicleId, paid, file) {
     if (!from) row.problems.push("start date not readable");
     else if (to < from) row.problems.push("end date is before the start date");
     else if (days && Math.abs(inclDays(from, to) - days) >= 1) row.notes.push(`dates make ${inclDays(from, to)} days, the sheet says ${days}`);
-    const rent = Math.round(upNum(cell(r, "rent")) || 0); if (!rent) row.problems.push("no total rent");
+    const stRaw = upText(cell(r, "status")), st = upStatus(stRaw), sk = st?.[0] || "completed", done = sk === "completed" || sk === "closed";
+    if (!st) row.problems.push(`status "${stRaw}" not known (use Completed, Closed, Cancelled, Booked or On trip)`);
+    const rent = Math.round(upNum(cell(r, "rent")) || 0); if (!rent && sk !== "cancelled") row.problems.push("no total rent");
     const remarks = upText(cell(r, "remarks")), rateM = /(\d{3,6})\s*[*x×]\s*\d/i.exec(remarks);
     const drvName = upText(cell(r, "driver")), drv = upMatchDriver(drvName), cln = upText(cell(r, "cleaner"));
     const n = k => { const v = upNum(cell(r, k)); return v ? Math.round(v * 100) / 100 : 0; };
     const sKm = Math.round(n("startKm")), eKm = Math.round(n("endKm"));
     if (sKm && eKm && eKm <= sKm) row.problems.push("end km is not more than start km");
-    const b = { id: genId("bk"), vehicleId, from, to, days, status: "completed", party: "", places: upText(cell(r, "places")), rent, rate: rateM ? +rateM[1] : days ? Math.round(rent / days) : rent,
+    const b = { id: genId("bk"), vehicleId, from, to, days, status: sk === "closed" ? "completed" : sk, party: "", places: upText(cell(r, "places")), rent, rate: rateM ? +rateM[1] : days ? Math.round(rent / days) : rent,
       ...(remarks ? { remarks } : {}), ...(drv ? { driverId: drv.id, driverName: drv.name } : drvName ? { driverName: drvName.toUpperCase() } : {}), ...(cln ? { cleanerName: cln.toUpperCase() } : {}),
-      bookedOn: from, createdByName: whoAmI(), importedFrom: file, importedOn: todayISO(), tsStatus: "approved", tsApprovedOn: todayISO(), tsApprovedByName: whoAmI() };
+      bookedOn: from, createdByName: whoAmI(), importedFrom: file, importedOn: todayISO(),
+      ...(done ? { tsStatus: "approved", tsApprovedOn: todayISO(), tsApprovedByName: whoAmI() } : {}), ...(sk === "closed" ? { closedOn: todayISO(), closedByName: whoAmI() } : {}) };
     [["padiPaid", "padiPaid"], ["cleanerPadi", "cleanerPadi"], ["permit", "permit"], ["toll", "toll"], ["litres", "litres"], ["fuelCost", "fuel"], ["otherExp", "other"]].forEach(([f2, k]) => { const v = k === "litres" ? n(k) : Math.round(n(k)); if (v) b[f2] = v; });
     if (sKm) b.startKm = sKm; if (eKm) b.endKm = eKm;
     let c = bkCalc(b);
-    if (paid && c.due > 0) b.payments = [{ date: to || from, amount: c.due, mode: "Cash", note: "Imported from Excel: paid before the app", byName: whoAmI(), addedOn: todayISO() }];
+    if (paid && done && c.due > 0) b.payments = [{ date: to || from, amount: c.due, mode: "Cash", note: "Imported from Excel: paid before the app", byName: whoAmI(), addedOn: todayISO() }];
     c = bkCalc(b); Object.assign(b, { due: c.due, received: c.received, balance: c.balance, expense: c.exp, profit: c.profit });
     row.driverNote = drv ? `${drv.name} (driver master)` : drvName ? `${drvName} (not in driver master)` : "—";
-    row.b = b; row.c = c;
+    row.b = b; row.c = c; row.st = st?.[2] || "";
     if (from && !row.problems.length) {
-      const same = taken.find(o => o.from === from), clash = !same && taken.find(o => o.from <= to && from <= bkEnd(o));
+      // A cancelled row is matched only with cancelled bookings, and never blocks the dates.
+      const same = mine.find(o => o.from === from && (o.status === "cancelled") === (sk === "cancelled")), clash = !same && sk !== "cancelled" && taken.find(o => o.from <= to && from <= bkEnd(o));
       if (same) row.skip = `already in the app (booking ${same.no || ""})`;
       else if (clash) row.skip = `overlaps booking ${clash.no || ""} (${fmtShort(clash.from)} – ${fmtShort(bkEnd(clash))})`;
     }
@@ -5630,15 +5637,15 @@ function renderUpload() {
   if (!res) { $("upOut").innerHTML = ""; return; }
   if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
   const ready = list.filter(x => !x.problems.length && !x.skip), skip = list.filter(x => x.skip), bad = list.filter(x => x.problems.length);
-  const tot = k => ready.reduce((a, x) => a + num(x.c[k]), 0);
+  const tot = k => ready.filter(x => x.st !== "Cancelled").reduce((a, x) => a + num(x.c[k]), 0);
   $("upOut").innerHTML = `<div class="upsum"><span><b>${ready.length}</b> ready to import</span><span><b>${skip.length}</b> already in the app</span><span><b>${bad.length}</b> with a problem</span>` +
     `<span>Collection <b>${rs(tot("due"))}</b></span><span>Expenses <b>${rs(tot("exp"))}</b></span></div>` +
     (res.swap ? `<p class="sub" style="margin:0">Excel had read some dates as month/day (for example 8 May as 5 August). They have been put back to day/month using the Days column: please check the dates below.</p>` : "") +
-    `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Row</th><th>Dates</th><th class="n">Days</th><th>Places</th><th>Driver</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th><th class="n">Km</th><th>Status</th></tr></thead><tbody>` +
+    `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Row</th><th>Dates</th><th class="n">Days</th><th>Places</th><th>Driver</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th><th class="n">Km</th><th>Trip status</th><th>Upload</th></tr></thead><tbody>` +
     list.map(x => `<tr class="${x.problems.length ? "bad" : x.skip ? "skip" : ""}"><td class="num">${x.line}</td><td class="num" style="white-space:nowrap">${x.from ? fmtShort(x.from) : "?"}${x.to && x.to !== x.from ? ` – ${fmtShort(x.to)}` : ""}</td><td class="n">${fmtDays(num(x.days))}</td>` +
-      `<td>${esc(x.b.places || "—")}</td><td>${esc(x.driverNote)}</td><td class="n">${nf(x.c.due)}</td><td class="n">${nf(x.c.exp)}</td><td class="n">${nf(x.c.due - x.c.exp)}</td><td class="n">${x.c.km ? nf(x.c.km) : "—"}</td>` +
+      `<td>${esc(x.b.places || "—")}</td><td>${esc(x.driverNote)}</td><td class="n">${nf(x.c.due)}</td><td class="n">${nf(x.c.exp)}</td><td class="n">${nf(x.c.due - x.c.exp)}</td><td class="n">${x.c.km ? nf(x.c.km) : "—"}</td><td>${x.st ? `${x.st === "Closed" ? "🔒 " : ""}${esc(x.st)}` : "—"}</td>` +
       `<td>${x.problems.length ? `<span class="pill expired">Problem</span> ${esc(x.problems.join("; "))}` : x.skip ? `<span class="pill off">Skipped</span> ${esc(x.skip)}` : `<span class="pill ok">Ready</span>${x.notes.length ? ` <span class="sub">${esc(x.notes.join("; "))}</span>` : ""}`}</td></tr>`).join("") + `</tbody></table></div>` +
-    `<div class="rxbtns"><span class="sub" style="flex:1">Imported trips are saved as Completed with the trip sheet approved; they can be changed like any other booking.</span><button class="btn primary" type="button" id="upGo"${!ready.length || S.busy ? " disabled" : ""}>${S.busy ? "Importing…" : `Import ${ready.length} trip${ready.length === 1 ? "" : "s"}`}</button></div>`;
+    `<div class="rxbtns"><span class="sub" style="flex:1">Completed and Closed trips are saved with the trip sheet approved; Closed trips are locked (an admin must reopen them to change anything). Booked and On trip leave the trip sheet open. "Fully paid" applies only to Completed and Closed trips.</span><button class="btn primary" type="button" id="upGo"${!ready.length || S.busy ? " disabled" : ""}>${S.busy ? "Importing…" : `Import ${ready.length} trip${ready.length === 1 ? "" : "s"}`}</button></div>`;
 }
 async function upLoad() {
   const f = $("upFile").files?.[0]; upState.done = null;
