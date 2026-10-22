@@ -1226,7 +1226,10 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpst { font: 600 15px var(--body); color: var(--muted); } .tpst.ok { color: var(--ok); } .tpst.bad { color: var(--danger); }
 .twspent { display: flex; justify-content: space-between; align-items: baseline; font: 600 16px var(--body); color: var(--muted); margin-bottom: 8px; } .twspent b { color: var(--ink); font-size: 19px; }
 .bhcard { background: var(--surface); border: 3px solid var(--accent); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; color: var(--muted); }
-.bhcard b { color: var(--ink); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
+.bhcard b { color: var(--ink); }
+.bhfacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.bhf { display: flex; flex-direction: column; gap: 1px; min-width: 0; } .bhf span { font-size: 12px; font-weight: 600; color: var(--muted); } .bhf b { font-size: 15px; overflow-wrap: anywhere; }
+.bhf.w { grid-column: 1 / -1; } .bhf.neg b { color: var(--danger); } .bhf.pos b { color: var(--accent); } .bhtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 2px; } .bhplace { font-size: 21px; line-height: 1.2; }
 .bhbtns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
 .bhbtns > .bhlock, .bhbtns > .bhclose, .bhbtns > .bhappr { grid-column: 1 / -1; }
 .bhlock { border-radius: 16px; padding: 14px 16px; background: var(--chip-bg); color: var(--ink); display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
@@ -7319,6 +7322,21 @@ function tsFill(b) {
   const done = items.filter(x => x[1]).length;
   return { pct: Math.round(done / items.length * 100), done, all: items.length, left: items.filter(x => !x[1]).map(x => x[0]) };
 }
+// The booking at a glance: number, days, dates, driver, then (for the office) the money and (once known) km, diesel and mileage.
+function bwFactsHtml(b, c) {
+  const days = num(b.days) || inclDays(b.from, bkEnd(b)), drv = b.driverId ? (drivers.find(d => d.id === b.driverId)?.name || b.driverName) : b.driverName;
+  const lit = Math.round([...dslLinked(b.id), ...dslLegacyOf(b)].reduce((a, r) => a + num(r.litres), 0) * 100) / 100;
+  const f = (k, v, cls = "") => `<div class="bhf${cls}"><span>${k}</span><b>${v}</b></div>`;
+  const net = c.due - c.exp;
+  return `<div class="bhfacts">` +
+    // The vehicle number and the status are the plate and the badge at the top of the card.
+    f("Booking no.", esc(b.no || "—")) + f("Days", `${bwHalfTxt(days)} ${bwDayWord(days)}`) +
+    f("Dates", `${bwFmt(b.from)}${bkEnd(b) !== b.from ? ` to ${bwFmt(bkEnd(b))}` : ""}`, " w") +
+    f("Driver", esc(drv || "Not chosen yet"), " w") +
+    (bw.driver ? "" : f("Total collection", rs(c.due)) + f("Total expenses", rs(c.exp)) + f("Balance", `${net < 0 ? "- " : ""}${rs(Math.abs(net))}`, net < 0 ? " neg" : " pos")) +
+    f("Total km", c.km ? `${nf(c.km)} km` : "—") + f("Total diesel", lit ? `${nf(lit, Number.isInteger(lit) ? 0 : 2)} L` : "—") +
+    f("Mileage", c.km && lit ? `${nf(c.km / lit, 2)} km/L` : "—") + `</div>`;
+}
 function bwHomeHtml(b) {
   const v = vehicles.find(x => x.id === b.vehicleId), c = bkCalc(b), n = (b.attachments || []).length;
   const confirmed = ["booked", "ontrip", "completed"].includes(b.status);
@@ -7330,8 +7348,7 @@ function bwHomeHtml(b) {
   return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(stageName(b))}</span></div></header>` +
     `<div class="bwb tws" id="bwBody"><div class="bhcard">` +
       `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}${tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span>`}</div>` +
-      `<b class="bhplace">${esc(b.places || "—")}</b>` +
-      `<span>${bwFmt(b.from)}${bkEnd(b) !== b.from ? ` to ${bwFmt(bkEnd(b))}` : ""} · ${bwHalfTxt(num(b.days) || inclDays(b.from, bkEnd(b)))} ${bwDayWord(num(b.days))}</span>` +
+      `<b class="bhplace">${esc(b.places || "—")}</b>` + bwFactsHtml(b, c) +
     `</div><div class="bhbtns">` + (canBookings ? bwApprCard(b) : "") +
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
