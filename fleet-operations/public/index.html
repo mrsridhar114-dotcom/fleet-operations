@@ -1242,6 +1242,23 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpfc input::-webkit-inner-spin-button, .tpfc input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } .tpfc input[type=number] { -moz-appearance: textfield; }
 .tpfc .tpin.pl input { font: 600 15px var(--body); } .tpfc .tpbin { width: 26px; height: 48px; } .tpfc .tpbin svg { width: 20px; height: 20px; }
 .tprun { margin: 4px 0 6px; } .tprun .avg { font-weight: 700; color: var(--ink); }
+/* route bus trip sheet on the phone */
+.rsn { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; font-size: 12px; margin-right: 2px; }
+.rssub { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.rshow { font: 500 13px var(--body); color: var(--muted); display: block; } .rswarnt { font: 600 13px var(--body); color: var(--warn); display: block; }
+.rscrew .tpl { display: flex; flex-direction: column; gap: 1px; } .rsrole { font: 700 18px/1.15 var(--body); }
+.rssel { appearance: none; -webkit-appearance: none; border: 0; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b7d1e' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 2px center / 16px; padding: 2px 22px 2px 0; font: 500 16px var(--body); color: var(--ink); max-width: 100%; text-overflow: ellipsis; cursor: pointer; }
+.rssel:disabled { background-image: none; padding-right: 0; opacity: 1; color: var(--ink); }
+.rslink { min-height: 36px; font-size: 16px; } .rsq { margin: 10px 0 6px; font: 700 15px var(--body); color: var(--ink); }
+.rsname { width: 100%; box-sizing: border-box; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 16px var(--body); padding: 0 10px; }
+.rsmiss { margin: 6px 0 0; font-size: 13px; color: var(--warn); text-align: center; }
+.bhappr.rswarn { background: var(--warn-soft); }
+.rshome { display: flex; flex-direction: column; gap: 12px; } .rsbus { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .rsbus .plate { font-size: 18px; }
+.rsbus select { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); padding: 0 8px; }
+.rstoday { max-width: 520px; } .rstst { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.rsdays { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.rsday { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 58px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.rsday > span:first-child { display: flex; flex-direction: column; gap: 2px; } .rsday b { font-size: 16px; } .rsday small { color: var(--muted); font-size: 13px; }
 .tpcheer { margin: 8px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ink); font: 600 15px var(--body); }
 .tpcheer.top { background: color-mix(in srgb, #f2b705 18%, transparent); } .tpcheer p { margin: 0; } .tpcheer p + p { margin-top: 6px; }
 .tpbadges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; } .tpbadges span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: #f2b705; color: #3a2a00; font: 700 13px var(--body); }
@@ -1354,6 +1371,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li data-mod="trips"><a class="nav" href="#trips" data-view="trips">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"/></svg>
             Trip sheet</a></li>
+          <li id="navRs" hidden><a class="nav" href="#route-sheet" data-view="rsheet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+            Route trip sheet</a></li>
           <li data-mod="fuel"><a class="nav" href="#fuel" data-view="fuel">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h4"/></svg>
             Fuel log</a></li>
@@ -1619,6 +1639,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </section>
     </section>
 
+    <!-- ================= Route bus trip sheet on the phone (conductors) ================= -->
+    <section class="wrap twrap" id="view-trsheet" hidden>
+      <header class="top"><div>
+        <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><span>Route trip sheet</span></nav>
+        <h1>Route trip sheet</h1>
+        <p class="sync">Fill in the day's sheet at night and send it to the office. It saves by itself as you type.</p></div></header>
+      <div id="rsHome"></div>
+    </section>
     <!-- ================= Route bus daily entry ================= -->
     <section class="wrap twrap" id="view-tday" hidden>
       <header class="top">
@@ -1786,6 +1814,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tscroll" style="margin-top:10px"><table class="ctable" id="apList"></table></div></section>
       <section class="panel"><div class="sechead"><h2 class="sec" id="apTsTitle">Trip sheets waiting for approval</h2><p>Expenses sent by trip update, oldest first</p></div>
         <div class="tscroll" style="margin-top:10px"><table class="ctable" id="apTs"></table></div></section>
+      <section class="panel"><div class="sechead"><h2 class="sec" id="apRsTitle">Route bus trip sheets waiting</h2><p>Sent by conductors, oldest first</p></div><div id="apRs"></div></section>
       <section class="panel"><div class="sechead"><h2 class="sec">Recently decided</h2><p>The last 15 approvals and rejections</p></div>
         <div class="tscroll" style="margin-top:10px"><table class="ctable" id="apDone"></table></div></section>
     </section>
@@ -2781,7 +2810,7 @@ const MODULES = [
   { id: "vehicles", name: "Vehicle", abbr: "VM" },
   { id: "drivers", name: "Driver", abbr: "DM" },
   { id: "conductors", name: "Conductor", abbr: "CM" },
-  { id: "trips", name: "Trip sheet", abbr: "TS" },
+  { id: "trips", name: "Trip sheet", abbr: "TS", levels: ["none", "view", "update", "edit"] },
   { id: "bookings", name: "Booking planner", abbr: "BP", levels: ["none", "view", "request", "edit"] },
   { id: "tripsheets", name: "Spare bus trip sheet", abbr: "ST", levels: ["none", "view", "update", "edit"] },
   { id: "fuel", name: "Fuel log", abbr: "FL" },
@@ -2800,6 +2829,8 @@ const ROLES = {
   // Trip update fills in the spare bus trip sheet once the trip is over and sends it to an admin for approval.
   "Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "update", fuel: "none", maintenance: "none", users: "none" },
   // Both jobs: adds bookings for approval, and fills in the trip sheet from the day before the trip starts.
+  // Conductor: fills in the route bus trip sheet of his bus each day and sends it to an admin for approval. Nothing else.
+  "Conductor": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "update", bookings: "none", tripsheets: "none", fuel: "none", maintenance: "none", users: "none" },
   "Booking planner + Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "update", fuel: "none", maintenance: "none", users: "none" },
 };
 const fullAccess = () => ({ ...ROLES.Admin });
@@ -3051,17 +3082,19 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", tutil: "users", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck" };
+const TRIP_PAGES = { "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck", "route-sheet": "trsheet" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
   // Someone without the dashboard (the booking office, say) lands on the first application they can use.
   if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tfuel", "fuel"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
+  // A conductor (route trip sheet: fill & submit) only has his own day sheet.
+  if (acc.trips === "update" && ["thub", "trips", "tday", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
   view = acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets" || VIEW_MOD[view] === "fuel") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
@@ -3105,6 +3138,7 @@ function applyAccess() {
   const roCond = acc.conductors === "view" || (acc.conductors === "edit" && !platformWrite);
   $("cRoBanner").hidden = !roCond; $("cRoTag").hidden = !roCond;
   canTrips = platformWrite && acc.trips === "edit";
+  canRsUpd = platformWrite && (acc.trips === "update" || acc.trips === "edit");
   canBookings = platformWrite && acc.bookings === "edit";
   canBookReq = platformWrite && (acc.bookings === "edit" || acc.bookings === "request");
   $("navAppr").hidden = acc.bookings !== "edit";
@@ -3118,7 +3152,8 @@ function applyAccess() {
   if (typeof updApprBadge === "function" && $("apprBadge")) updApprBadge();
   const roTrips = acc.trips === "view" || (acc.trips === "edit" && !platformWrite);
   $("tRoBanner").hidden = !roTrips; $("tRoTag").hidden = !roTrips;
-  document.querySelectorAll(".paths li[data-mod]").forEach(li => li.hidden = acc[li.dataset.mod] === "none");
+  document.querySelectorAll(".paths li[data-mod]").forEach(li => li.hidden = acc[li.dataset.mod] === "none" || (li.dataset.mod === "trips" && acc.trips === "update"));
+  $("navRs").hidden = acc.trips !== "update" && acc.trips !== "edit";
   document.querySelectorAll(".paths .group").forEach(g => g.hidden = ![...g.querySelectorAll("li")].some(li => !li.hidden));
   const nm = rec?.name || me?.name || "";
   $("who").textContent = nm ? `${nm} · ${label}` : label;
@@ -3614,9 +3649,10 @@ function viewClosed() { try { if (window.history.state?.foView === 1 && !VIEW_DR
 // On the phone screens of a booking and its trip sheet, the phone's Back button does the same as the ← button.
 let ovSkipPop = false;
 function ovOpened() { try { if (window.history.state?.foOv !== 1) window.history.pushState({ ...(window.history.state || {}), foOv: 1 }, ""); } catch {} }
-function ovClosed() { setTimeout(() => { try { if (!bw && !tw && window.history.state?.foOv === 1) { ovSkipPop = true; window.history.back(); } } catch {} }, 0); }
+function ovClosed() { setTimeout(() => { try { if (!bw && !tw && !rsh && window.history.state?.foOv === 1) { ovSkipPop = true; window.history.back(); } } catch {} }, 0); }
 window.addEventListener("popstate", () => {
   if (ovSkipPop) { ovSkipPop = false; return; }
+  if (rsh) { rsClose(); return; }
   if (bw || tw) { if (tw) twBack(); else bwBack(); if (bw || tw) ovOpened(); return; }
   if (!$("vDrawer").hidden) closeVDrawer(); if (!$("dvDrawer").hidden) closeDvDrawer(); if (!$("cvDrawer").hidden) closeCvDrawer(); });
 function closeVDrawer() { closeDuePop(); $("vDrawer").hidden = true; vViewId = null; viewClosed(); if (!anyDrawerOpen()) $("scrim").hidden = true; }
@@ -4716,7 +4752,7 @@ async function saveRoute(a, b) {
   try { localStorage.setItem(TYLS, JSON.stringify(tripYearsLocal)); } catch {}
   loadLocalTrips(); renderTrips();
 }
-let trips = [], tripMonths = [], tripsLocal = [], tripMonthsLocal = [], canTrips = true, canBookings = true, canBookReq = true, canTsUpd = true, canFuel = true, canCloseTrips = true;
+let trips = [], tripMonths = [], tripsLocal = [], tripMonthsLocal = [], canTrips = true, canBookings = true, canBookReq = true, canTsUpd = true, canRsUpd = true, canFuel = true, canCloseTrips = true;
 let tBusId = "", tFyStart = 0, tMonthIdx = 0, tEditDate = "", tFuelTouched = false, tSubKey = "";
 const TLS = "fleet-trips.v1", TMLS = "fleet-tripmonths.v1";
 const MONTHS = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
@@ -5254,8 +5290,8 @@ let tt; function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidde
 /* ================= Trip sheet home · route bus daily entry · spare bus bookings · truck trips ================= */
 // Spare bus bookings live in "bookings", truck trips in "truckTrips" (grouped into round trips by roundId),
 // and the open / closed state of each round trip in "truckRounds".
-const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1" };
-const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [] };
+const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1", routeSheets: "fleet-routesheets.v1" };
+const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [], routeSheets: [] };
 let opsUnsubs = [], allTripMonths = [], allTripYears = [], dayTrips = [], dayUnsub = null, dayKey = "", dayLoaded = "";
 let opDate = todayISO();
 const genId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -5789,7 +5825,7 @@ function autoOnTrip() {
 }
 setInterval(() => { try { autoOnTrip(); } catch {} }, 10 * 60 * 1000);
 function updRemBadge() { try { const n = remDue().filter(x => !x.sent).length; $("remBadge").hidden = !n || !canBookings; $("remBadge").textContent = n; } catch {} }
-function updApprBadge() { updRemBadge(); updTsBadge(); const n = ops.bookings.filter(b => b.status === "pending" || b.tsStatus === "submitted").length; $("apprBadge").hidden = !n || !canBookings; $("apprBadge").textContent = n; }
+function updApprBadge() { updRemBadge(); updTsBadge(); const n = ops.bookings.filter(b => b.status === "pending" || b.tsStatus === "submitted").length + (canTrips ? ops.routeSheets.filter(x => x.status === "submitted").length : 0); $("apprBadge").hidden = !n || !canBookings; $("apprBadge").textContent = n; }
 function renderApprovals() {
   const pl = id => plateOf(vehicles.find(v => v.id === id));
   const pend = ops.bookings.filter(b => b.status === "pending").sort((a, c) => String(a.submittedOn || "").localeCompare(String(c.submittedOn || "")) || a.from.localeCompare(c.from));
@@ -5801,6 +5837,7 @@ function renderApprovals() {
         <td>${b.rentType === "day" ? "Day rent" : "Empty rent"}</td><td class="n">${nf(num(b.rent))}</td><td class="n">${nf(c.received)}</td><td>${checkPill(bkChecks(b, b.id))}</td><td><button class="btn primary" type="button" data-bk="${b.id}" style="padding:5px 12px;font-size:13px">Review</button></td></tr>`; }).join("") + "</tbody>"
     : `<tbody><tr><td class="sub" style="padding:14px">Nothing waiting. New bookings from the booking planner appear here.</td></tr></tbody>`;
   const tsp = ops.bookings.filter(b => b.tsStatus === "submitted").sort((a, c) => String(a.tsSubmittedOn || "").localeCompare(String(c.tsSubmittedOn || "")) || a.from.localeCompare(c.from));
+  { const w = rsWaiting(); $("apRsTitle").textContent = `Route bus trip sheets waiting${w.length ? ` (${w.length})` : ""}`; $("apRs").innerHTML = rsWaitHtml(); }
   $("apTsTitle").textContent = `Trip sheets waiting for approval${tsp.length ? ` (${tsp.length})` : ""}`;
   $("apTs").innerHTML = tsp.length ? `<thead><tr><th>No.</th><th>Sent on</th><th>Sent by</th><th>Bus</th><th>Dates</th><th>Party</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Km</th><th></th></tr></thead><tbody>` +
     tsp.map(b => { const c = bkCalc(b);
@@ -5819,7 +5856,7 @@ function renderApprovals() {
 // deleted anywhere in the app is logged once in "auditLog" with who, when, which module and what. Change-history
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
-const AU_PAGE = { renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Day entry", tspare: "Booking planner",
+const AU_PAGE = { trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Day entry", tspare: "Booking planner",
   ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", tfuel: "Fuel log", trexp: "Route expenses", tpadi: "Padi calculation", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
@@ -6345,6 +6382,342 @@ $("view-storage").addEventListener("click", async e => {
   finally { all.forEach(b => b.disabled = false); }
 });
 
+/* ---------- route bus trip sheet on the phone ----------
+   The conductor fills in one sheet a day for his bus and sends it to the office. Sections, in the owner's order:
+   did the bus run, collection, crew with their padi, other expenses (diesel first), today's money, km meter.
+   Sheets live in routeSheets (id bus_date) until an admin approves one; approval writes the day into the route
+   trip sheet (trips), so the monthly sheet and reports only ever show approved days. */
+let rsh = null, rsBus = "", rsDate = todayISO();
+const RS_ROLES = [["driver", "Driver"], ["conductor", "Conductor"], ["checker", "Checker"]];
+const RS_TRIPS = ["1st trip", "2nd trip", "3rd trip", "4th trip", "5th trip"];
+const RS_ST = { draft: "Not sent yet", submitted: "Sent to the office", approved: "Approved", rejected: "Sent back" };
+const rsId = (bus, date) => `${bus}_${date}`;
+const rsDoc = (bus, date) => ops.routeSheets.find(x => x.id === rsId(bus, date));
+// The conductor in the master that this login belongs to: same name, or same phone number.
+function rsMe() {
+  const rec = myRecord(); if (!rec) return null;
+  const nm = String(rec.name || "").trim().toUpperCase(), ph = String(rec.phone || "").replace(/\D/g, "").slice(-10);
+  return conductors.find(c => String(c.name || "").trim().toUpperCase() === nm && nm) || (ph.length === 10 ? conductors.find(c => String(c.phone || c.mobile || "").replace(/\D/g, "").slice(-10) === ph) : null) || null;
+}
+// His bus: the one on his latest sheet, else the latest route day he worked on, else the first route bus.
+function rsMyBus() {
+  const rb = routeBuses(); if (!rb.length) return "";
+  if (rb.some(b => b.id === rsBus)) return rsBus;
+  const me = myUserId || "", c = rsMe();
+  const mine = ops.routeSheets.filter(x => x.by === me || (c && x.conductorId === c.id)).sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (mine && rb.some(b => b.id === mine.vehicleId)) return mine.vehicleId;
+  const t = c && winTrips().filter(x => x.conductorId === c.id).sort((a, b) => b.date.localeCompare(a.date))[0];
+  return t && rb.some(b => b.id === t.vehicleId) ? t.vehicleId : rb[0].id;
+}
+// The two ends of the bus's route, and the end opposite a starting place (where the diesel is filled).
+function rsEnds(bus, date) { const r = routeCalc(fyOf(date), busWin(bus), yearsAll().filter(y => y.vehicleId === bus)); return [r?.a || "", r?.b || ""].filter(Boolean); }
+const RS_PAIR = { vellore: "Thiruthani", thiruthani: "Vellore", thiruthanni: "Vellore", tiruttani: "Vellore" };
+function rsOpposite(place, ends) {
+  const p = placeName(place).toLowerCase(), e = ends.map(placeName);
+  if (e.length === 2 && e.some(x => x.toLowerCase() === p)) return e.find(x => x.toLowerCase() !== p);
+  return RS_PAIR[p] || "";
+}
+const rsList = place => (ops.routeExpenses.find(x => placeName(x.place).toLowerCase() === placeName(place).toLowerCase())?.items || []).filter(i => i.name).map(i => ({ name: i.name, amt: String(num(i.amount) || "") }));
+// Start km: the end of the bus's last day before this one (a sheet not yet approved counts too).
+function rsPrevKm(bus, date) {
+  const s = ops.routeSheets.filter(x => x.vehicleId === bus && x.date < date && num(x.endKm) > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const t = prevOdoFor(bus, date);
+  if (s && (t == null || s.date > (busWin(bus).filter(x => x.date < date && x.odo).sort((a, b) => b.date.localeCompare(a.date))[0]?.date || ""))) return num(s.endKm);
+  return t;
+}
+const rsCol = () => rsh.s.reduce((a, v) => a + num(v), 0);
+const rsTrips = () => rsh.s.filter(v => num(v) > 0).length;
+// Padi rules: the saved ones, or the company's starting rules until they are saved.
+const rsRules = () => pdSaved().length ? pdSaved() : PADI_START.bands;
+const rsSys = () => { const r = padiFor(rsCol(), rsRules()); return Object.fromEntries(RS_ROLES.map(([k]) => [k, k === "checker" && !rsh.crew.checker ? 0 : r?.[k]?.amt || 0])); };
+const rsPadi = k => rsh.padiEd[k] ? num(rsh.padi[k]) : rsSys()[k];
+const rsPadiTot = () => RS_ROLES.reduce((a, [k]) => a + rsPadi(k), 0);
+const rsOther = () => rsh.exp.reduce((a, x) => a + num(x.amt), 0);
+const rsExpTot = () => num(rsh.dsl.amount) + rsPadiTot() + rsOther();
+const rsCrewName = k => { const v = rsh.crew[k] || ""; if (v.startsWith("id:")) return ((k === "driver" ? drivers : conductors).find(x => x.id === v.slice(3))?.name) || ""; return v.startsWith("name:") ? v.slice(5) : ""; };
+const rsPadiChanged = d => RS_ROLES.filter(([k]) => d.padiSys && num(d.padi?.[k]) !== num(d.padiSys[k]));
+
+// Opens the sheet of a bus for a day. Office users open it from Approvals with admin set.
+function rsOpen(bus, date, admin = false) {
+  rsBus = bus; rsDate = date; opDate = date; subscribeDay();
+  const d = rsDoc(bus, date);
+  const edit = platformWrite && (admin ? canTrips && d?.status !== "approved" : canRsUpd && (!d || d.status === "draft" || d.status === "rejected"));
+  rsh = { bus, date, admin, edit, ready: false, timer: null, q: Promise.resolve(), saved: !!d };
+  if (!$("rsw")) {
+    document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="rsw" role="dialog" aria-modal="true" aria-labelledby="rsTitle" hidden></div>');
+    $("rsw").addEventListener("click", rsClick); $("rsw").addEventListener("input", rsInput);
+    // Selects report a pick with change; a text box's change (when it loses focus) is already handled by input.
+    $("rsw").addEventListener("change", e => { if (e.target.tagName === "SELECT") rsInput(e); });
+  }
+  $("rsw").hidden = false; document.documentElement.classList.add("bw-on"); ovOpened();
+  rsLoad(); rsRender(true);
+}
+// Fills the state from the saved sheet, or from yesterday and the masters for a new one (once the days around are loaded).
+function rsLoad() {
+  if (!rsh || rsh.ready || !dayReady()) return;
+  const d = rsDoc(rsh.bus, rsh.date), ends = rsEnds(rsh.bus, rsh.date);
+  if (d) {
+    Object.assign(rsh, { notRun: !!d.notRun, idle: d.idleReason || "", start: d.start || "", s: [1, 2, 3, 4, 5].map(i => d["s" + i] != null ? String(d["s" + i]) : ""),
+      crew: Object.fromEntries(RS_ROLES.map(([k]) => [k, crewValue(k, d)])), padi: Object.fromEntries(RS_ROLES.map(([k]) => [k, String(d.padi?.[k] ?? "")])),
+      padiEd: Object.fromEntries(RS_ROLES.map(([k]) => [k, !!d.padiEd?.[k]])), dsl: { litres: String(d.dsl?.litres ?? ""), amount: String(d.dsl?.amount ?? ""), pay: d.dsl?.pay || "Fuel card", place: d.dsl?.place || "" },
+      exp: (d.exp || []).map(x => ({ name: x.name, amt: String(x.amt ?? ""), own: !!x.own })), startKm: String(d.startKm ?? ""), endKm: String(d.endKm ?? ""), remarks: d.remarks || "", status: d.status || "draft" });
+  } else {
+    const last = lastOf(rsh.bus), me = rsMe(), start = plannedFor(rsh.bus, rsh.date) || (last?.start ? rsOpposite(last.start, ends) : "") || ends[0] || "";
+    const prev = rsPrevKm(rsh.bus, rsh.date);
+    Object.assign(rsh, { notRun: false, idle: "", start, s: ["", "", "", "", ""],
+      crew: { driver: crewValue("driver", last), conductor: me ? "id:" + me.id : crewValue("conductor", last), checker: crewValue("checker", last) },
+      padi: { driver: "", conductor: "", checker: "" }, padiEd: { driver: false, conductor: false, checker: false },
+      dsl: { litres: "", amount: "", pay: "Fuel card", place: rsOpposite(start, ends) }, exp: rsList(start), startKm: prev != null ? String(prev) : "", endKm: "", remarks: "", status: "draft" });
+  }
+  rsh.ends = ends; rsh.ready = true;
+}
+function rsSel(k) {
+  const list = k === "driver" ? drivers.filter(x => x.status !== "Inactive") : conductors.filter(x => x.status !== "Inactive"), v = rsh.crew[k];
+  const opts = list.map(p => [`id:${p.id}`, p.name]); if (v && !opts.some(o => o[0] === v)) opts.unshift([v, rsCrewName(k) || "—"]);
+  return `<select class="rssel" data-k="crew:${k}" aria-label="${k}"${rsh.edit ? "" : " disabled"}>${k === "checker" ? `<option value="">No checker</option>` : v ? "" : `<option value="">Choose</option>`}${opts.map(([val, n]) => `<option value="${esc(val)}"${val === v ? " selected" : ""}>${esc(n)}${k === "conductor" && val === "id:" + (rsMe()?.id || "-") ? " (you)" : ""}</option>`).join("")}</select>`;
+}
+const rsMoneyIn = (key, val, label, extra = "") => `<span class="bwin tpin"${extra}><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="0" aria-label="${label}"${rsh.edit ? "" : " readonly"}></span>`;
+const rsSec = (n, t, inner, sub = "") => `<section class="tpsec"><h3>${n ? `<span class="rsn">${n}</span> ` : ""}${t}${sub ? ` <span class="rssub">· ${sub}</span>` : ""}</h3>${inner}</section>`;
+function rsCrewHtml() {
+  const sys = rsSys(), col = rsCol();
+  return RS_ROLES.map(([k, l]) => {
+    const has = k !== "checker" || rsh.crew.checker, ch = rsh.padiEd[k] && num(rsh.padi[k]) !== sys[k], val = rsh.padiEd[k] ? rsh.padi[k] : sys[k] ? String(sys[k]) : "";
+    const how = !has ? "" : ch ? `<small class="rswarnt">Changed · system gave ${rs(sys[k])}</small>` : col ? `<small class="rshow">${rsHow(k)}</small>` : `<small class="rshow">Worked out from the collection</small>`;
+    return `<div class="tprow rscrew"><span class="tpl"><span class="rsrole">${l}</span>${rsSel(k)}${how}</span>${has ? rsMoneyIn("padi:" + k, val, `${l} padi`, ch ? ' style="border-color:var(--warn)"' : "") : ""}</div>`;
+  }).join("") + (rsh.edit && RS_ROLES.some(([k]) => rsh.padiEd[k]) ? `<button type="button" class="bwlink rslink" data-rs="padireset">↺ Use system padi</button>` : "") +
+    `<p class="bwnote" style="margin:4px 0 0">${rsh.edit && !rsh.admin ? "Same crew as yesterday. Change only if someone else came. " : ""}Padi is worked out by the system from the collection.</p>`;
+}
+function rsHow(k) { const r = padiFor(rsCol(), rsRules()); return r?.[k]?.parts?.map(p => `${nf(p.pct, Number.isInteger(p.pct) ? 0 : 1)}% of ${rs(p.base)}`).join(" + ") || ""; }
+function rsKmHtml() {
+  const s = num(rsh.startKm), e = num(rsh.endKm), lit = num(rsh.dsl.litres);
+  if (!(s && e > s)) return e && s && e <= s ? `<span class="bwerr">End km must be more than start km.</span>` : "";
+  const a = lit ? (e - s) / lit : 0, run = `${nf(e - s)} km run` + (a ? ` · <span class="avg">Average ${nf(a, 2)} km per litre</span>` : "");
+  if (!a) return run;
+  const past = rsPast(), last = past.at(-1), best = past.length ? Math.max(...past.map(x => x.avg)) : 0, r2 = n => Math.round(n * 100) / 100, top = past.length && r2(a) > r2(best);
+  const cmp = !last ? "" : r2(a) > r2(last.avg) ? `<p>📈 You have improved from the last day: ${nf(last.avg, 2)} → ${nf(a, 2)} km per litre. Great going!</p>`
+    : r2(a) === r2(last.avg) ? `<p>👍 Same as the last day (${nf(last.avg, 2)} km per litre). Nice and steady.</p>`
+    : `<p>The last day was ${nf(last.avg, 2)} km per litre. A little lower today, and that happens with traffic and load. Smooth driving and steady speed will bring it back up. You can do it! 💪</p>`;
+  const badges = [top && "🥇 Best ever", a > 4.5 && "🏆 Top mileage", a > 4.5 && "⛽ Fuel saver", a > 4.5 && "⭐ Star driver"].filter(Boolean);
+  const head = top ? `<p><b>This is the highest mileage of all the days!</b> ${nf(a, 2)} km per litre beats the best of ${nf(best, 2)}.</p>` : "";
+  const praise = a > 4.5 ? `<p>Excellent driving! ${nf(a, 2)} km per litre is top mileage. Thank you for saving fuel.</p>` : a > 4 ? `<p>Well done! ${nf(a, 2)} km per litre is good mileage. Keep it up.</p>` : "";
+  if (!head && !praise && !cmp) return run;
+  return run + `<div class="tpcheer${a > 4.5 || top ? " top" : ""}">${head}${praise}${cmp}${badges.length ? `<div class="tpbadges">${badges.map(x => `<span>${x}</span>`).join("")}</div>` : ""}</div>`;
+}
+// The same driver's earlier days on this bus, oldest first: approved days (km between odometer readings) and sheets not yet approved.
+function rsPast() {
+  const drv = rsh.crew.driver; if (!drv) return [];
+  const days = busWin(rsh.bus).filter(t => t.date < rsh.date && !t.notRun).sort((a, b) => a.date.localeCompare(b.date)), out = [];
+  days.forEach((t, i) => { const p = days[i - 1]; if (p && num(p.odo) && num(t.odo) > num(p.odo) && num(t.litres) > 0 && crewValue("driver", t) === drv) out.push({ date: t.date, avg: (num(t.odo) - num(p.odo)) / num(t.litres) }); });
+  ops.routeSheets.filter(x => x.vehicleId === rsh.bus && x.date < rsh.date && x.status !== "approved" && crewValue("driver", x) === drv && num(x.endKm) > num(x.startKm) && num(x.startKm) && num(x.dsl?.litres) > 0)
+    .forEach(x => out.push({ date: x.date, avg: (num(x.endKm) - num(x.startKm)) / num(x.dsl.litres) }));
+  return out.filter(x => x.avg > 0 && x.avg < 15).sort((a, b) => a.date.localeCompare(b.date));
+}
+function rsMoneyHtml() {
+  const c = rsCol(), e = rsExpTot(), b = c - e;
+  return `<div class="tpmoney"><span class="bwm"><span>Total collection</span><b>${rs(c)}</b></span>` +
+    `<span class="bwm"><span>Total expenses<br><small class="rshow">Diesel ${rs(num(rsh.dsl.amount))} · Padi ${rs(rsPadiTot())} · Other ${rs(rsOther())}</small></span><b>${rs(e)}</b></span>` +
+    `<span class="bwm net${b < 0 ? " neg" : ""}"><span><b style="font-size:19px">Balance</b></span><b>${b < 0 ? "− " : ""}${rs(Math.abs(b))}</b></span></div>`;
+}
+function rsPageHtml() {
+  if (!rsh.ready) return `<p class="bwnote" style="padding:20px 0">Loading the last days of this bus…</p>`;
+  const d = rsDoc(rsh.bus, rsh.date), ro = rsh.edit ? "" : " readonly", ch = rsh.admin && d ? rsPadiChanged(d) : [];
+  const office = rsh.admin && d && trips.concat(winTrips()).some(t => t.id === rsId(rsh.bus, rsh.date) && !t.fromSheet);
+  const ends = rsh.ends.length === 2 ? rsh.ends : [];
+  return (rsh.status === "rejected" && d?.rejectReason ? `<div class="bhappr"><b>Sent back by the office</b><span>${esc(d.rejectReason)}</span><span class="rshow">Correct it and send again.</span></div>` : "") +
+    (!rsh.edit && !rsh.admin && rsh.status !== "draft" ? `<div class="bhlock"><b>${rsh.status === "approved" ? "✓ Approved by the office" : "Sent to the office"}</b><span>${rsh.status === "approved" ? "This day is in the trip sheet." : "Waiting for approval. Ask the office if something needs changing."}</span></div>` : "") +
+    (ch.length ? `<div class="bhappr rswarn"><b>⚠ Padi changed by the conductor</b>${ch.map(([k, l]) => `<span>${l}: ${rs(num(d.padi[k]))} entered · system gave ${rs(num(d.padiSys[k]))} (${num(d.padi[k]) > num(d.padiSys[k]) ? "+" : "−"}${rs(Math.abs(num(d.padi[k]) - num(d.padiSys[k])))})</span>`).join("")}</div>` : "") +
+    (office ? `<div class="bhappr"><b>The office already entered this day</b><span>Approving puts this sheet in its place.</span></div>` : "") +
+    (rsh.edit && !rsh.admin ? `<div class="tptip"><b>Type each amount.</b> It saves by itself. You can finish it later.</div>` : "") +
+    rsSec("1", "Did the bus run today?", `<div class="bwseg c2"><button type="button" data-rs="ran" aria-pressed="${!rsh.notRun}"${rsh.edit ? "" : " disabled"}>✅ Bus ran</button><button type="button" data-rs="idle" aria-pressed="${rsh.notRun}"${rsh.edit ? "" : " disabled"}>⛔ Did not run</button></div>` +
+      (rsh.notRun ? `<p class="rsq">Why did it not run?</p><div class="bwchips">${IDLE_REASONS.map(r => `<button type="button" data-rs="why" data-v="${esc(r)}" aria-pressed="${rsh.idle === r}"${rsh.edit ? "" : " disabled"}>${esc(r)}</button>`).join("")}</div>`
+        : ends.length ? `<p class="rsq">Started from</p><div class="bwseg c2">${ends.map(p => `<button type="button" data-rs="start" data-v="${esc(p)}" aria-pressed="${placeName(rsh.start).toLowerCase() === placeName(p).toLowerCase()}"${rsh.edit ? "" : " disabled"}>${esc(p)}</button>`).join("")}</div>`
+        : `<label class="bwf1" style="margin-top:8px"><span>Started from</span><input type="text" data-k="start" value="${esc(rsh.start)}" maxlength="40"${ro}></label>`)) +
+    (rsh.notRun ? "" :
+      rsSec("2", "Collection", rsh.s.map((v, i) => `<div class="tprow"><span class="tpl">${RS_TRIPS[i]}</span>${rsMoneyIn("s:" + i, v, RS_TRIPS[i] + " collection")}</div>`).join("") +
+        `<div class="tpmoney"><span class="bwm net"><span><b style="font-size:18px">Total collection</b><br><small class="rshow" id="rsTrips">${rsTrips()} of 5 trips</small></span><b id="rsCol">${rs(rsCol())}</b></span></div>`) +
+      rsSec("3", "Crew and padi", `<div id="rsCrew">${rsCrewHtml()}</div>`) +
+      rsSec("4", "Other expenses", `<p class="rsq" style="margin-top:0">Diesel</p><div class="tpfc">` +
+        `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="dsl:litres" value="${esc(rsh.dsl.litres)}" placeholder="0" aria-label="Diesel litres"${ro}></span></label>` +
+        `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="dsl:amount" value="${esc(rsh.dsl.amount)}" placeholder="0" aria-label="Diesel amount"${ro}></span></label>` +
+        `<label><span>Paid</span><select class="tpsel" data-k="dsl:pay" aria-label="Diesel paid by"${rsh.edit ? "" : " disabled"}>${[["Fuel card", "Card"], ["Cash", "Cash"]].map(([v, l]) => `<option value="${v}"${rsh.dsl.pay === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>` +
+        `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="40" data-k="dsl:place" value="${esc(rsh.dsl.place)}" placeholder="Where" aria-label="Diesel place"${ro}></span></label><span></span></div>` +
+        (rsh.start && rsh.dsl.place && rsOpposite(rsh.start, rsh.ends).toLowerCase() === placeName(rsh.dsl.place).toLowerCase() && rsh.edit ? `<p class="bwnote" style="margin:4px 0 6px">Place is ${esc(rsh.dsl.place)} because the bus starts from ${esc(placeName(rsh.start))}. Change it if needed.</p>` : "") +
+        rsh.exp.map((x, i) => `<div class="tprow">${x.own ? `<span class="tpl"><input class="rsname" type="text" maxlength="40" data-k="en:${i}" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}></span>` : `<span class="tpl">${esc(x.name)}</span>`}${rsMoneyIn("ex:" + i, x.amt, x.name || "Expense")}${rsh.edit && x.own ? `<button type="button" class="tpbin" data-rs="exdel" data-i="${i}" aria-label="Remove">${TW_BIN}</button>` : ""}</div>`).join("") +
+        (rsh.edit ? `<button type="button" class="tpadd" data-rs="exadd">${TW_PLUS} Add expense</button>` : ""), rsh.start ? `${esc(placeName(rsh.start))} list` : "") +
+      rsSec("5", "Today's money", `<div id="rsMoney">${rsMoneyHtml()}</div>`) +
+      rsSec("6", "Km meter", `<div class="tprow"><span class="tpl">Start km<br><small class="rshow">From the last day's end</small></span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="startKm" value="${esc(rsh.startKm)}" aria-label="Start km"${ro}><b>km</b></span></div>` +
+        `<div class="tprow"><span class="tpl">End km</span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="endKm" value="${esc(rsh.endKm)}" placeholder="At night" aria-label="End km"${ro}><b>km</b></span></div>` +
+        `<div class="bwnote tprun" id="rsRun">${rsKmHtml()}</div>`)) +
+    `<label class="bwf1" style="margin-top:4px"><span>Remarks <small>(if any)</small></span><input type="text" data-k="remarks" value="${esc(rsh.remarks)}" maxlength="200"${ro}></label>`;
+}
+function rsMissing() {
+  if (rsh.notRun) return rsh.idle ? [] : ["why the bus did not run"];
+  return [!rsCol() && "collection", !rsh.crew.driver && "driver", !rsh.crew.conductor && "conductor", !num(rsh.endKm) && "end km", num(rsh.endKm) && num(rsh.endKm) <= num(rsh.startKm) && "end km more than start km"].filter(Boolean);
+}
+function rsRender(top) {
+  const el = $("rsw"), keep = !top && $("rsBody") ? $("rsBody").scrollTop : 0, v = vehicles.find(x => x.id === rsh.bus), d = rsDoc(rsh.bus, rsh.date);
+  const day = new Date(rsh.date + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
+  const bal = rsCol() - rsExpTot(), miss = rsh.ready ? rsMissing() : ["…"];
+  el.innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="rsTitle">${rsh.admin ? "Office view" : "Trip sheet"} · ${esc(plateOf(v))}</b><span>${day}${rsh.start && !rsh.notRun ? ` · Starts from ${esc(placeName(rsh.start))}` : ""}${rsh.admin && d?.byName ? ` · sent by ${esc(d.byName)}` : ""}</span></div></header>` +
+    `<div class="bwb tws tpage" id="rsBody">${rsPageHtml()}</div>` +
+    (rsh.admin && rsh.askWhy ? `<footer class="bwf"><label class="bwf1"><span>Why is it sent back? The conductor will see this.</span><textarea id="rsWhy" rows="2" maxlength="200"></textarea></label><span class="bwerr" id="rsWhyErr"></span><div class="bw2" style="margin-top:8px"><button type="button" class="bwalt" data-rs="rejectno">Cancel</button><button type="button" class="bwgo" data-rs="rejectgo">Send back</button></div></footer>` :
+     rsh.admin ? (rsh.edit && d?.status === "submitted" ? `<footer class="bwf two"><button type="button" class="bwalt" data-rs="reject">Send back</button><button type="button" class="bwgo" data-rs="approve"${rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Approve"}</button></footer>` : "")
+      : rsh.edit ? `<footer class="bwf"><div class="twspent"><span class="tpst ok" id="rsSt">${rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
+        `<button type="button" class="bwgo" data-rs="send"${miss.length || rsh.saving ? " disabled" : ""}>${rsh.saving ? "Sending…" : "Send to office"} ${BW_ICON.next}</button>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>` : "") +
+    navBar("rs", false);
+  if (top) $("rsBody").scrollTop = 0; else if (keep) $("rsBody").scrollTop = keep;
+}
+// Light refresh while typing, so the box being typed in keeps its focus.
+function rsRefresh() {
+  if ($("rsCol")) { $("rsCol").textContent = rs(rsCol()); $("rsTrips").textContent = `${rsTrips()} of 5 trips`; }
+  if ($("rsMoney")) $("rsMoney").innerHTML = rsMoneyHtml();
+  if ($("rsRun")) { const h = rsKmHtml(); if ($("rsRun").innerHTML !== h) $("rsRun").innerHTML = h; }
+  // The crew rows show the system padi as the collection changes; redraw them unless a padi box is being typed in.
+  const ck = JSON.stringify([rsSys(), rsh.crew]);
+  if ($("rsCrew") && rsh.crewKey !== ck && !document.activeElement?.closest?.("#rsCrew")) { rsh.crewKey = ck; $("rsCrew").innerHTML = rsCrewHtml(); }
+  const bal = rsCol() - rsExpTot(), miss = rsMissing();
+  if ($("rsBal")) $("rsBal").textContent = `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`;
+  const go = $("rsw").querySelector('[data-rs="send"]'); if (go) go.disabled = !!miss.length || rsh.saving;
+  if ($("rsMiss")) { $("rsMiss").hidden = !miss.length; $("rsMiss").textContent = miss.length ? `Still needed: ${miss.join(", ")}` : ""; }
+}
+function rsInput(e) {
+  const k = e.target.dataset.k; if (!k || !rsh?.edit) return;
+  const v = e.target.value;
+  if (k.startsWith("s:")) rsh.s[+k.slice(2)] = v;
+  else if (k.startsWith("padi:")) { const r = k.slice(5); rsh.padi[r] = v; rsh.padiEd[r] = true; }
+  else if (k.startsWith("crew:")) { rsh.crew[k.slice(5)] = v; rsRefresh(); if ($("rsCrew")) $("rsCrew").innerHTML = rsCrewHtml(); }
+  else if (k.startsWith("dsl:")) rsh.dsl[k.slice(4)] = v;
+  else if (k.startsWith("ex:")) rsh.exp[+k.slice(3)].amt = v;
+  else if (k.startsWith("en:")) rsh.exp[+k.slice(3)].name = v;
+  else rsh[k] = v;
+  rsRefresh(); rsSoon();
+}
+function rsClick(e) {
+  const b = e.target.closest("button"); if (!b || b.disabled || !rsh) return;
+  const a = b.dataset.rs;
+  if (a === "back" || a === "close") { rsClose(); return; }
+  if (!rsh.edit) return;
+  if (a === "ran" || a === "idle") { rsh.notRun = a === "idle"; rsRender(); rsSoon(); return; }
+  if (a === "why") { rsh.idle = b.dataset.v; rsRender(); rsSoon(); return; }
+  if (a === "start") {
+    // A new starting place brings its own expense list and diesel place, unless they were already changed.
+    const was = rsh.start, def = rsList(was); rsh.start = b.dataset.v;
+    if (JSON.stringify(rsh.exp.map(x => [x.name, x.amt])) === JSON.stringify(def.map(x => [x.name, x.amt]))) rsh.exp = rsList(rsh.start);
+    if (!rsh.dsl.place || rsh.dsl.place === rsOpposite(was, rsh.ends)) rsh.dsl.place = rsOpposite(rsh.start, rsh.ends);
+    rsRender(); rsSoon(); return;
+  }
+  if (a === "padireset") { RS_ROLES.forEach(([k]) => { rsh.padiEd[k] = false; rsh.padi[k] = ""; }); rsRender(); rsSoon(); return; }
+  if (a === "exadd") { rsh.exp.push({ name: "", amt: "", own: true }); rsRender(); const ins = $("rsw").querySelectorAll(".rsname"); ins[ins.length - 1]?.focus(); return; }
+  if (a === "exdel") { rsh.exp.splice(+b.dataset.i, 1); rsRender(); rsSoon(); return; }
+  if (a === "send") { rsSave("submitted"); return; }
+  if (a === "approve") { rsApprove(); return; }
+  if (a === "reject") { rsh.askWhy = true; rsRender(); $("rsWhy")?.focus(); return; }
+  if (a === "rejectno") { rsh.askWhy = false; rsRender(); return; }
+  if (a === "rejectgo") { const why = $("rsWhy").value.trim(); if (!why) { $("rsWhyErr").textContent = "Type why it is sent back."; $("rsWhy").focus(); return; } rsSave("rejected", why); }
+}
+function rsSoon() { clearTimeout(rsh.timer); if ($("rsSt")) { $("rsSt").textContent = "Saving…"; $("rsSt").className = "tpst"; } rsh.timer = setTimeout(() => rsQueue(() => rsSave()), 900); }
+function rsQueue(job) { rsh.q = rsh.q.then(job).catch(() => {}); return rsh.q; }
+// What is stored: the sheet as typed, the system padi at the time (so the office can see a change), and the totals.
+function rsBuild(status) {
+  const d = rsDoc(rsh.bus, rsh.date) || {}, nm = k => rsCrewName(k), out = { id: rsId(rsh.bus, rsh.date), vehicleId: rsh.bus, date: rsh.date, status, start: placeName(rsh.start) };
+  if (rsh.notRun) Object.assign(out, { notRun: true, idleReason: rsh.idle });
+  else {
+    rsh.s.forEach((v, i) => { if (v !== "") out["s" + (i + 1)] = Math.round(num(v)); });
+    RS_ROLES.forEach(([k]) => { const v = rsh.crew[k]; if (v.startsWith("id:")) { out[k + "Id"] = v.slice(3); out[k + "Name"] = nm(k); } else if (v) out[k + "Name"] = nm(k); });
+    const sys = rsSys(); out.padiSys = sys; out.padi = Object.fromEntries(RS_ROLES.map(([k]) => [k, rsPadi(k)])); out.padiEd = { ...rsh.padiEd };
+    out.dsl = { litres: Math.round(num(rsh.dsl.litres) * 100) / 100, amount: Math.round(num(rsh.dsl.amount)), pay: rsh.dsl.pay, place: rsh.dsl.place.trim() };
+    out.exp = rsh.exp.filter(x => x.name.trim() || num(x.amt)).map(x => ({ name: x.name.trim() || "Other", amt: Math.round(num(x.amt)), ...(x.own ? { own: true } : {}) }));
+    if (num(rsh.startKm)) out.startKm = Math.round(num(rsh.startKm)); if (num(rsh.endKm)) out.endKm = Math.round(num(rsh.endKm));
+    out.collection = rsCol(); out.expense = rsExpTot(); out.balance = out.collection - out.expense;
+  }
+  if (rsh.remarks.trim()) out.remarks = rsh.remarks.trim();
+  ["by", "byName", "createdOn", "submittedOn", "submitCount", "rejectReason", "rejectedByName", "rejectedOn"].forEach(k => { if (d[k] != null) out[k] = d[k]; });
+  if (!out.by && !rsh.admin) { out.by = myUserId || ""; out.byName = whoAmI(); out.createdOn = todayISO(); }
+  out.updatedOn = new Date().toISOString();
+  return out;
+}
+async function rsSave(status, why) {
+  if (!rsh?.edit || !rsh.ready) return;
+  const cur = rsDoc(rsh.bus, rsh.date), st = status || (cur?.status === "rejected" ? "rejected" : "draft");
+  if (st === "submitted" && rsMissing().length) return;
+  const doc = rsBuild(st);
+  if (st === "submitted") { doc.submittedOn = new Date().toISOString(); doc.submitCount = (cur?.submitCount || 0) + 1; doc.by = doc.by || myUserId || ""; doc.byName = doc.byName || whoAmI(); delete doc.rejectReason; }
+  if (status === "rejected") Object.assign(doc, { rejectReason: why, rejectedByName: whoAmI(), rejectedOn: todayISO() });
+  if (status) { clearTimeout(rsh.timer); rsh.saving = true; rsRender(); }
+  try {
+    await opsSave("routeSheets", doc); rsh.saved = true;
+    if ($("rsSt")) { $("rsSt").textContent = "✓ Saved"; $("rsSt").className = "tpst ok"; }
+    if (status === "submitted") { toast("Sent to the office"); rsClose(); }
+    else if (status === "rejected") { toast("Sent back to the conductor"); rsClose(); }
+  } catch { if ($("rsSt")) { $("rsSt").textContent = "Not saved"; $("rsSt").className = "tpst bad"; } if (status) toast("Couldn't save. Check your connection and try again."); }
+  finally { if (rsh) { rsh.saving = false; if (status) rsRender(); } }
+}
+// Approve: the day goes into the route trip sheet in the same form as an office entry, then the sheet is marked approved.
+const RS_CAT = [[/toll|fastag/i, "toll"], [/stand/i, "stand"], [/commission/i, "commission"], [/clean|wash/i, "cleaning"], [/police|check/i, "police"], [/food|tea|water|meal/i, "food"], [/repair|mechanic|puncture/i, "repairs"]];
+async function rsApprove() {
+  if (!canTrips || rsh.saving) return;
+  const s = rsBuild("approved"), base = { id: s.id, vehicleId: s.vehicleId, date: s.date, fromSheet: true };
+  let t;
+  if (s.notRun) t = { ...base, notRun: true, idleReason: s.idleReason };
+  else {
+    t = { ...base, start: s.start };
+    const planned = plannedFor(s.vehicleId, s.date); if (t.start && planned && t.start.toLowerCase() !== planned.toLowerCase()) t.startFixed = true;
+    RS_ROLES.forEach(([k]) => { if (s[k + "Id"]) t[k + "Id"] = s[k + "Id"]; if (s[k + "Name"]) t[k + "Name"] = s[k + "Name"]; });
+    [1, 2, 3, 4, 5].forEach(i => { if (s["s" + i] != null) t["s" + i] = s["s" + i]; });
+    if (s.dsl.litres) t.litres = Math.round(s.dsl.litres * 10) / 10; if (s.dsl.amount) t.fuelCost = s.dsl.amount;
+    if (s.dsl.litres && s.dsl.amount) t.dieselRate = Math.round(s.dsl.amount / s.dsl.litres * 100) / 100;
+    if (s.dsl.place) t.dieselPlace = s.dsl.place; t.dieselPay = s.dsl.pay;
+    t.driverPay = s.padi.driver; t.conductorPay = s.padi.conductor; if (s.padi.checker) t.checkerPay = s.padi.checker;
+    s.exp.forEach(x => { const c = RS_CAT.find(([re]) => re.test(x.name))?.[1] || "misc"; t["ex_" + c] = num(t["ex_" + c]) + x.amt; });
+    t.expList = s.exp; t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
+    if (s.endKm) t.odo = s.endKm;
+    t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
+  }
+  if (s.remarks) t.remarks = s.remarks;
+  rsh.saving = true; rsRender();
+  try {
+    await dayTripSave(t);
+    await opsSave("routeSheets", { ...s, approvedOn: new Date().toISOString(), approvedByName: whoAmI() });
+    toast(`${plateOf(vehicles.find(v => v.id === s.vehicleId))} · ${fmtShort(s.date)} approved and added to the trip sheet`); rsClose();
+  } catch { toast("Couldn't save. Check your connection and try again."); if (rsh) { rsh.saving = false; rsRender(); } }
+}
+function rsClose() {
+  if (rsh?.timer) { clearTimeout(rsh.timer); if (rsh.edit && rsh.ready) rsQueue(() => rsSave()); }
+  if ($("rsw")) $("rsw").hidden = true; document.documentElement.classList.remove("bw-on"); rsh = null; renderOps(); ovClosed();
+}
+
+// The conductor's page: today's sheet for his bus, and his last days.
+function renderRsList() {
+  const rb = routeBuses(), bus = rsMyBus(); rsBus = bus;
+  if (rsh && !rsh.ready) { rsLoad(); if (rsh.ready) rsRender(); }
+  if (!rb.length) { $("rsHome").innerHTML = `<div class="empty panel"><strong>No route buses yet</strong>Ask the office to add the route buses.</div>`; return; }
+  const v = vehicles.find(x => x.id === bus), today = todayISO(), d = rsDoc(bus, today), mine = canTrips ? ops.routeSheets : ops.routeSheets.filter(x => x.vehicleId === bus || x.by === myUserId);
+  const st = x => x ? `<span class="bstage ${{ draft: "draft", submitted: "pending", approved: "completed", rejected: "rejected" }[x.status] || ""}">${RS_ST[x.status] || ""}</span>` : `<span class="bstage draft">Not started</span>`;
+  const days = [...Array(7)].map((_, i) => shiftDay(today, -i));
+  $("rsHome").innerHTML = `<section class="panel rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
+    `<button type="button" class="bwgo rstoday" data-rsopen="${today}">${d?.status === "submitted" || d?.status === "approved" ? "Open today's trip sheet" : d ? "Continue today's trip sheet" : "Fill today's trip sheet"} ${BW_ICON.next}</button>` +
+    `<div class="rstst">${st(d)}${d?.status === "rejected" && d.rejectReason ? `<span class="rshow">${esc(d.rejectReason)}</span>` : ""}</div></section>` +
+    `<section class="panel"><h2 class="sec">Last 7 days · ${esc(plateOf(v))}</h2><div class="rsdays">` +
+    days.map(day => { const x = rsDoc(bus, day), t = winTrips().find(y => y.vehicleId === bus && y.date === day);
+      return `<button type="button" class="rsday" data-rsopen="${day}"><span><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${x && !x.notRun ? `<small>Collection ${rs(num(x.collection))} · Balance ${rs(num(x.balance))}</small>` : x?.notRun ? `<small>Did not run</small>` : t ? `<small>Entered by the office</small>` : ""}</span>${x ? st(x) : t ? `<span class="bstage completed">In trip sheet</span>` : st(null)}</button>`; }).join("") +
+    `</div></section>` +
+    (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
+}
+const rsWaiting = () => ops.routeSheets.filter(x => x.status === "submitted").sort((a, b) => String(a.submittedOn || "").localeCompare(String(b.submittedOn || "")));
+function rsWaitHtml() {
+  const w = rsWaiting();
+  return w.length ? `<div class="tscroll" style="margin-top:10px"><table class="ctable"><thead><tr><th>Day</th><th>Bus</th><th>Sent by</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th><th>Padi</th><th></th></tr></thead><tbody>` +
+    w.map(x => `<tr data-rsappr="${x.id}" tabindex="0" style="cursor:pointer"><td class="num">${fmtShort(x.date)}</td><td class="num" style="white-space:nowrap">${esc(plateOf(vehicles.find(v => v.id === x.vehicleId)))}</td><td>${esc(x.byName || "")}</td>` +
+      `<td class="n">${x.notRun ? "Did not run" : nf(num(x.collection))}</td><td class="n">${x.notRun ? "" : nf(num(x.expense))}</td><td class="n">${x.notRun ? "" : nf(num(x.balance))}</td>` +
+      `<td>${rsPadiChanged(x).length ? '<span class="pill d30">⚠ Changed</span>' : x.notRun ? "" : '<span class="pill ok">As system</span>'}</td><td><button class="btn primary" type="button" data-rsappr="${x.id}" style="padding:5px 12px;font-size:13px">Review</button></td></tr>`).join("") + "</tbody></table></div>"
+    : `<p class="sub" style="margin:8px 0 0">Nothing waiting. Sheets sent by conductors appear here.</p>`;
+}
+document.addEventListener("click", e => {
+  const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) { rsOpen(rsBus, o.dataset.rsopen); return; }
+  const a = e.target.closest("[data-rsappr]"); if (a) { const x = ops.routeSheets.find(y => y.id === a.dataset.rsappr); if (x) rsOpen(x.vehicleId, x.date, true); }
+});
+document.addEventListener("change", e => { if (e.target.id === "rsBusSel") { rsBus = e.target.value; renderRsList(); } });
+
 /* ---------- booking reports ---------- */
 // Confirmed bookings (booked, on trip, completed) counted in the month they start. Financial year April to March.
 let rFy = null, rMon = "";
@@ -6543,6 +6916,8 @@ function renderOps() {
   if (!$("oCards")) return;
   try { autoOnTrip(); } catch {}
   updApprBadge();
+  if (rsh && !rsh.ready) { rsLoad(); if (rsh.ready) rsRender(); }
+  if (view === "trsheet") { renderRsList(); return; }
   if (view === "tappr") { renderApprovals(); return; }
   if (view === "trep") { renderBkReports(); return; }
   if (view === "ttsheet") { renderTsList(); return; }
