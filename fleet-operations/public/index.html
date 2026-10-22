@@ -776,6 +776,25 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 @media (max-width: 760px) { .bksend { grid-template-columns: 1fr; } .bksend textarea { min-height: 150px; } .bkfile { grid-template-columns: minmax(0, 1fr) auto; } .bkfile .fk { grid-column: 1 / -1; } }
 .rfilt { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .rfilt select { padding: 7px 10px; font-size: 14px; }
+/* report charts: one money axis each; colours validated for the light and dark surfaces */
+.rcharts { --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #6250d6; --trk: #e3ebe1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 14px 0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rcharts { --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #9085e9; --trk: #22372b; } }
+:root[data-theme="dark"] .rcharts { --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #9085e9; --trk: #22372b; }
+@media (max-width: 900px) { .rcharts { grid-template-columns: minmax(0, 1fr); } }
+.rcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.rch { display: flex; flex-direction: column; gap: 2px; } .rch b { font-size: 15px; } .rch span { font-size: 12px; color: var(--muted); }
+.rcard svg { width: 100%; height: auto; display: block; overflow: visible; }
+.rcard .rg { stroke: var(--line); stroke-width: 1; } .rcard .rg.z { stroke: var(--muted); }
+.rcard .ra { font-size: 11px; fill: var(--muted); font-family: var(--body, inherit); }
+.rcard path.s1 { fill: var(--s1); } .rcard path.s2 { fill: var(--s2); } .rcard path.s3 { fill: var(--s3); } .rcard rect.trk { fill: var(--trk); }
+.rcard path.rl.rl { fill: none; } .rcard .rl { stroke-width: 2; stroke-linejoin: round; } .rcard .rl.s1 { stroke: var(--s1); } .rcard .rl.s2 { stroke: var(--s2); } .rcard .rl.s3 { stroke: var(--s3); } .rcard .rl.s4 { stroke: var(--s4); }
+.rcard .rd { stroke: var(--surface); stroke-width: 2; } .rcard .rd.s1 { fill: var(--s1); } .rcard .rd.s2 { fill: var(--s2); } .rcard .rd.s3 { fill: var(--s3); } .rcard .rd.s4 { fill: var(--s4); }
+.rcard .rhi { fill: var(--accent-soft); } .rcard .rhit { fill: transparent; cursor: crosshair; } .rcard .rhit:hover { fill: color-mix(in srgb, var(--ink) 6%, transparent); }
+.rleg { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink); } .rleg span { display: inline-flex; align-items: center; gap: 6px; }
+.rleg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; } .rleg i.ln { height: 3px; width: 16px; border-radius: 2px; }
+.rleg i.s1 { background: var(--s1); } .rleg i.s2 { background: var(--s2); } .rleg i.s3 { background: var(--s3); } .rleg i.s4 { background: var(--s4); } .rleg i.trk { background: var(--trk); border: 1px solid var(--line); }
+.rtip { position: fixed; z-index: 80; pointer-events: none; white-space: pre-line; background: var(--ink); color: var(--surface); font-size: 12px; line-height: 1.45; padding: 8px 10px; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.2); max-width: 260px; }
+.rbar { display: inline-block; vertical-align: middle; width: 120px; height: 8px; border-radius: 4px; background: var(--chip-bg); overflow: hidden; } .rbar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
 .ageing { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
 .ageing > div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
 .ageing .k { font-size: 11px; color: var(--muted); font-weight: 600; }
@@ -1729,6 +1748,19 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tcontrols rfilt"><label class="sub" for="rFy">Year</label><select id="rFy"></select><label class="sub" for="rMon">Month</label><select id="rMon"></select></div>
       </header>
       <section class="summary tsum" id="rStats" aria-label="Report summary"></section>
+      <section class="rcharts" id="rCharts" aria-label="Charts"></section>
+      <section class="panel"><div class="sechead"><h2 class="sec">Profit per trip</h2><button class="btn csvbtn" type="button" data-csv="rTrips" data-name="profit-per-trip">Download CSV</button></div>
+        <p class="sub" style="margin:4px 0 0">Completed trips in the period. Padi is driver and cleaner padi together. Click a trip to open it.</p>
+        <div class="tscroll" style="margin-top:10px"><table class="ctable" id="rTrips"></table></div></section>
+      <section class="panel"><div class="sechead"><h2 class="sec">Where the money goes</h2><button class="btn csvbtn" type="button" data-csv="rExp" data-name="expenses">Download CSV</button></div>
+        <p class="sub" style="margin:4px 0 0">Each kind of expense on the completed trips in the period.</p>
+        <div class="tscroll" style="margin-top:10px"><table class="ctable" id="rExp"></table></div></section>
+      <section class="panel"><div class="sechead"><h2 class="sec">Driver performance</h2><button class="btn csvbtn" type="button" data-csv="rDrv" data-name="drivers">Download CSV</button></div>
+        <p class="sub" style="margin:4px 0 0">Completed trips in the period, best average mileage first. *Litres on trips that have km entered.</p>
+        <div class="tscroll" style="margin-top:10px"><table class="ctable" id="rDrv"></table></div></section>
+      <section class="panel"><div class="sechead"><h2 class="sec">Bus use</h2><button class="btn csvbtn" type="button" data-csv="rUse" data-name="bus-use">Download CSV</button></div>
+        <p class="sub" style="margin:4px 0 0">Days each spare bus was booked in each month (all confirmed bookings, counted on the days they run), and its longest run of days with no booking up to today.</p>
+        <div class="tscroll" style="margin-top:10px"><table class="ctable" id="rUse"></table></div></section>
       <section class="panel"><div class="sechead"><h2 class="sec">By bus</h2><button class="btn csvbtn" type="button" data-csv="rBus" data-name="by-bus">Download CSV</button></div>
         <div class="tscroll" style="margin-top:10px"><table class="ctable" id="rBus"></table></div></section>
       <section class="panel"><div class="sechead"><h2 class="sec">By month</h2><button class="btn csvbtn" type="button" data-csv="rMonth" data-name="by-month">Download CSV</button></div>
@@ -6360,8 +6392,134 @@ function renderBkReports() {
   $("rParty").innerHTML = parties.length ? `<thead><tr><th>Party</th><th>Phone</th><th class="n">Bookings</th><th class="n">Bus days</th><th class="n">Collection</th><th class="n">Received</th><th class="n">Balance</th><th>Last trip</th></tr></thead><tbody>` +
     parties.map(p => `<tr><td class="nm">${esc(p.name)}</td><td class="num">${esc(p.phone)}</td><td class="n">${p.a.n}</td><td class="n">${fmtDays(p.a.days)}</td><td class="n">${nf(p.a.due)}</td><td class="n">${nf(p.a.rec)}</td><td class="n ${p.a.bal > 0 ? "neg" : ""}">${nf(p.a.bal)}</td><td class="num">${fmtShort(p.last)}</td></tr>`).join("") + "</tbody>"
     : `<tbody><tr><td class="sub" style="padding:14px">No confirmed bookings in this period.</td></tr></tbody>`;
+  renderRepExtra({ conf, list, lo, hi, buses, pl });
   $("rNote").textContent = `Confirmed bookings only (booked, on trip, completed), counted in the month they start. FY ${fyLabel(rFy)}${rMon ? ` · ${new Date(rMon + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long" })}` : ""}. *Expenses and profit are for completed trips.`;
 }
+/* ---------- report charts and the trip, expense, driver and bus-use reports ----------
+   Charts are plain SVG drawn here. One money axis per chart; hover (or tap) a month for its numbers. */
+const rMoney = v => { const a = Math.abs(v), s = v < 0 ? "-" : ""; return a >= 1e5 ? `${s}₹${nf(a / 1e5, a >= 1e6 || a % 1e5 === 0 ? 0 : 1)}L` : a >= 1e3 ? `${s}₹${nf(a / 1e3, 0)}k` : `${s}₹${nf(a)}`; };
+// A round step for the grid (1, 2, 2.5 or 5 × a power of ten), so the lines land on easy numbers.
+function rNice(v) { if (v <= 0) return 1; const p = 10 ** Math.floor(Math.log10(v)), f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+// labels: x labels. series: [{ name, cls, values, type: "bar" | "line" | "track" }]. fmt: axis and tip format. tips: one tip per x.
+function rChart({ labels, series, fmt = rMoney, tips, hiIndex = -1, height = 230 }) {
+  // Narrower drawing on a phone, so the text stays readable when the chart is scaled to the screen.
+  const W = innerWidth < 700 ? 380 : 600, H = innerWidth < 700 ? Math.round(height * .8) : height, L = innerWidth < 700 ? 42 : 50, R = 10, T = 12, B = 26, pw = W - L - R, ph = H - T - B, n = labels.length;
+  const all = series.flatMap(s => s.values).filter(v => v != null && isFinite(v));
+  // Bars start at zero. A chart of lines only (mileage) zooms to its own range so small changes show.
+  const onlyLines = series.every(s => s.type === "line") && all.length > 0, mx = Math.max(...all, 0), mn = Math.min(...all, onlyLines ? mx : 0);
+  const step = rNice(((onlyLines ? mx - mn : mx - Math.min(mn, 0)) || mx || 1) / 4), bot = onlyLines ? Math.max(0, Math.floor(mn / step) * step - (mx - mn < step ? step : 0)) : Math.floor(Math.min(mn, 0) / step) * step;
+  const top = Math.max(bot + step * 4, Math.ceil(mx / step) * step);
+  const y = v => T + ph - (v - bot) / (top - bot) * ph, band = pw / n, x = i => L + band * i + band / 2;
+  const ticks = []; for (let t = bot, k = 0; t <= top + step / 2 && k < 12; t += step, k++) ticks.push(t);
+  let g = ticks.map(t => `<line class="rg${Math.abs(t) < 1e-9 ? " z" : ""}" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text class="ra" x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${fmt(t)}</text>`).join("");
+  if (hiIndex >= 0) g += `<rect class="rhi" x="${L + band * hiIndex}" y="${T}" width="${band}" height="${ph}"/>`;
+  const bars = series.filter(s => s.type === "bar"), bw = Math.min(22, band * .72 / Math.max(1, bars.length) - 2), gap = 2;
+  // Bars: 4px round on the end away from the baseline.
+  const bar = (cx, v, cls) => { if (!v) return ""; const y0 = y(0), y1 = y(v), h = Math.abs(y1 - y0), r = Math.min(4, h, bw / 2), x0 = cx - bw / 2, up = v > 0;
+    return `<path class="${cls}" d="M${x0},${y0} V${up ? y1 + r : y1 - r} Q${x0},${y1} ${x0 + r},${y1} H${x0 + bw - r} Q${x0 + bw},${y1} ${x0 + bw},${up ? y1 + r : y1 - r} V${y0} Z"/>`; };
+  series.filter(s => s.type === "track").forEach(s => { g += s.values.map((v, i) => v ? `<rect class="${s.cls}" x="${x(i) - bw / 2 - 3}" y="${y(v)}" width="${bw + 6}" height="${y(0) - y(v)}" rx="4"/>` : "").join(""); });
+  bars.forEach((s, k) => { const off = (k - (bars.length - 1) / 2) * (bw + gap); g += s.values.map((v, i) => bar(x(i) + off, v, s.cls)).join(""); });
+  series.filter(s => s.type === "line").forEach(s => {
+    let d = "", pen = false; s.values.forEach((v, i) => { if (v == null || !isFinite(v)) { pen = false; return; } d += `${pen ? "L" : "M"}${x(i)},${y(v)} `; pen = true; });
+    g += `<path class="${s.cls} rl" d="${d}"/>` + s.values.map((v, i) => v == null || !isFinite(v) ? "" : `<circle class="${s.cls} rd" cx="${x(i)}" cy="${y(v)}" r="4"/>`).join("");
+  });
+  g += labels.map((l, i) => `<text class="ra" x="${x(i)}" y="${H - 8}" text-anchor="middle">${esc(l)}</text>`).join("");
+  // One hover strip per month, wider than the marks.
+  g += labels.map((l, i) => `<rect class="rhit" x="${L + band * i}" y="${T}" width="${band}" height="${ph}" data-tip="${esc(tips[i])}"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">${g}</svg>`;
+}
+const rLegend = items => `<div class="rleg">${items.map(([cls, name, kind]) => `<span><i class="${cls} ${kind || ""}"></i>${esc(name)}</span>`).join("")}</div>`;
+const rCard = (title, sub, legend, svg) => `<div class="rcard"><div class="rch"><b>${title}</b><span>${sub}</span></div>${legend}${svg}</div>`;
+
+// Booked days of a booking that fall inside [lo, hi].
+const rNext = iso => { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); };
+const rDaysIn = (b, lo, hi) => { const a = b.from > lo ? b.from : lo, z = bkEnd(b) < hi ? bkEnd(b) : hi; return a > z ? 0 : dayDiff(a, z) + 1; };
+const rMileage = arr => { const km = arr.reduce((a, b) => a + bkCalc(b).km, 0), lit = arr.reduce((a, b) => a + (bkCalc(b).km ? bkLitres(b) : 0), 0); return km && lit ? km / lit : null; };
+
+function renderRepExtra({ conf, list, lo, hi, buses, pl }) {
+  const fyMonths = MON_FY.map(m => `${m >= 4 ? rFy : rFy + 1}-${pad2(m)}`), mLbl = ym => new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "short" });
+  const fyList = conf.filter(b => fyOf(b.from) === rFy), hiIdx = rMon ? fyMonths.indexOf(rMon) : -1, done = b => b.status === "completed";
+  // A: collection and expenses (bars), profit on completed trips (line).
+  const mA = fyMonths.map(ym => { const arr = fyList.filter(b => b.from.slice(0, 7) === ym), c = arr.reduce((a, b) => a + bkCalc(b).due, 0), comp = arr.filter(done);
+    return { c, e: comp.reduce((a, b) => a + bkCalc(b).exp, 0), p: comp.reduce((a, b) => a + bkCalc(b).profit, 0), n: arr.length, d: comp.length }; });
+  const A = rChart({ labels: fyMonths.map(mLbl), hiIndex: hiIdx, series: [{ type: "bar", cls: "s1", values: mA.map(x => x.c) }, { type: "bar", cls: "s2", values: mA.map(x => x.e) }, { type: "line", cls: "s3", values: mA.map(x => x.d ? x.p : null) }],
+    tips: mA.map((x, i) => `${new Date(fyMonths[i] + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })}\nCollection ${rs(x.c)} (${x.n} booking${x.n === 1 ? "" : "s"})\nExpenses ${rs(x.e)}\nProfit ${x.d ? rs(x.p) : "—"} (${x.d} completed)`) });
+  // B: bus days booked per month against the days the spare buses were available.
+  const confBk = conf.filter(blocks);
+  const mB = fyMonths.map(ym => { const a = ym + "-01", z = `${ym}-${pad2(daysIn(ym))}`; return { used: confBk.reduce((s, b) => s + rDaysIn(b, a, z), 0), cap: buses.length * daysIn(ym) }; });
+  const Bc = rChart({ labels: fyMonths.map(mLbl), hiIndex: hiIdx, fmt: v => nf(v), series: [{ type: "track", cls: "trk", values: mB.map(x => x.cap) }, { type: "bar", cls: "s1", values: mB.map(x => x.used) }],
+    tips: mB.map((x, i) => `${new Date(fyMonths[i] + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })}\n${x.used} of ${x.cap} bus days booked (${x.cap ? Math.round(x.used / x.cap * 100) : 0}%)`) });
+  // D: km per litre each month, one line per bus (first three buses get their own colour; more buses fold into one line).
+  const busIds = buses.map(v => v.id), shown = busIds.slice(0, 3);
+  const lines = shown.map((id, k) => ({ type: "line", cls: "s" + (k + 1), name: pl(id), values: fyMonths.map(ym => rMileage(fyList.filter(b => done(b) && b.vehicleId === id && b.from.slice(0, 7) === ym))) }));
+  if (busIds.length > 3) lines.push({ type: "line", cls: "s4", name: "Other buses", values: fyMonths.map(ym => rMileage(fyList.filter(b => done(b) && !shown.includes(b.vehicleId) && b.from.slice(0, 7) === ym))) });
+  const D = rChart({ labels: fyMonths.map(mLbl), hiIndex: hiIdx, fmt: v => nf(v, 2), series: lines,
+    tips: fyMonths.map((ym, i) => `${new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })}\n` + lines.map(s => `${s.name}: ${s.values[i] ? nf(s.values[i], 2) + " km/L" : "no trips with km and diesel"}`).join("\n")) });
+  // F: what parties owe, by how long ago the trip ended (all years).
+  const today = todayISO(), dues = conf.map(b => ({ b, c: bkCalc(b) })).filter(x => x.c.balance > 0 && bkEnd(x.b) <= today).map(x => ({ ...x, age: dayDiff(bkEnd(x.b), today) }));
+  const FB = [["0–30 days", 0, 30], ["31–60 days", 31, 60], ["61–90 days", 61, 90], ["Over 90 days", 91, 1e9]].map(([l, a, z]) => { const g = dues.filter(x => x.age >= a && x.age <= z); return { l, t: g.reduce((s, x) => s + x.c.balance, 0), n: g.length }; });
+  const F = rChart({ labels: FB.map(x => x.l), height: 200, series: [{ type: "bar", cls: "s2", values: FB.map(x => x.t) }], tips: FB.map(x => `Trip ended ${x.l} ago\n${rs(x.t)} due from ${x.n} booking${x.n === 1 ? "" : "s"}`) });
+  const noData = !fyList.length ? `<p class="sub" style="margin:0">No confirmed bookings in FY ${fyLabel(rFy)} yet.</p>` : "";
+  $("rCharts").innerHTML = rCard("Collection, expenses and profit", `FY ${fyLabel(rFy)} · by the month the trip starts`, rLegend([["s1", "Collection"], ["s2", "Expenses (completed)"], ["s3", "Profit (completed)", "ln"]]), noData || A) +
+    rCard("Bus days booked", `FY ${fyLabel(rFy)} · out of the days the spare buses were available`, rLegend([["s1", "Booked"], ["trk", "Available"]]), Bc) +
+    rCard("Mileage (km per litre)", `FY ${fyLabel(rFy)} · completed trips with km and diesel`, lines.length > 1 ? rLegend(lines.map(s => [s.cls, s.name, "ln"])) : "", lines.some(s => s.values.some(v => v)) ? D : `<p class="sub" style="margin:0">No completed trips with km and diesel in FY ${fyLabel(rFy)} yet.</p>`) +
+    rCard("Money due by age", "All years · how long ago the trip ended", "", dues.length ? F : `<p class="sub" style="margin:0">Nothing due. Every finished trip is fully paid.</p>`);
+
+  // 1. Profit per trip: completed trips in the period.
+  const comp = list.filter(done).sort((a, c) => a.from.localeCompare(c.from)), E = b => ({ dsl: num(b.fuelCost), padi: num(b.padiPaid) + num(b.cleanerPadi), toll: num(b.toll), permit: num(b.permit), other: num(b.otherExp) });
+  const tot = { due: 0, dsl: 0, padi: 0, toll: 0, permit: 0, other: 0, exp: 0, profit: 0, days: 0, km: 0 };
+  $("rTrips").innerHTML = comp.length ? `<thead><tr><th>No.</th><th>Dates</th><th>Bus</th><th>Party and places</th><th class="n">Days</th><th class="n">Collection</th><th class="n">Diesel</th><th class="n">Padi</th><th class="n">Toll</th><th class="n">Permit</th><th class="n">Other</th><th class="n">Expenses</th><th class="n">Profit</th><th class="n">Profit / day</th><th class="n">Km</th><th class="n">Km / L</th></tr></thead><tbody>` +
+    comp.map(b => { const c = bkCalc(b), e = E(b), d = bkDaysOf(b), lit = bkLitres(b);
+      Object.assign(tot, { due: tot.due + c.due, dsl: tot.dsl + e.dsl, padi: tot.padi + e.padi, toll: tot.toll + e.toll, permit: tot.permit + e.permit, other: tot.other + e.other, exp: tot.exp + c.exp, profit: tot.profit + c.profit, days: tot.days + d, km: tot.km + c.km });
+      return `<tr data-bk="${b.id}" tabindex="0" style="cursor:pointer"><td class="num">${esc(b.no || "")}</td><td class="num" style="white-space:nowrap">${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` – ${fmtShort(bkEnd(b))}` : ""}</td><td class="num" style="white-space:nowrap">${esc(pl(b.vehicleId))}</td>` +
+        `<td class="nm">${esc(b.party || "")}${b.places ? `<div class="sub">${esc(b.places)}</div>` : ""}</td><td class="n">${fmtDays(d)}</td><td class="n">${nf(c.due)}</td><td class="n">${nf(e.dsl)}</td><td class="n">${nf(e.padi)}</td><td class="n">${nf(e.toll)}</td><td class="n">${nf(e.permit)}</td><td class="n">${nf(e.other)}</td>` +
+        `<td class="n">${nf(c.exp)}</td><td class="n ${c.profit < 0 ? "neg" : ""}">${nf(c.profit)}</td><td class="n ${c.profit < 0 ? "neg" : ""}">${d ? nf(c.profit / d) : "—"}</td><td class="n">${c.km ? nf(c.km) : "—"}</td><td class="n">${c.km && lit ? nf(c.km / lit, 2) : "—"}</td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><td colspan="4">Total · ${comp.length} trip${comp.length === 1 ? "" : "s"}</td><td class="n">${fmtDays(tot.days)}</td><td class="n">${nf(tot.due)}</td><td class="n">${nf(tot.dsl)}</td><td class="n">${nf(tot.padi)}</td><td class="n">${nf(tot.toll)}</td><td class="n">${nf(tot.permit)}</td><td class="n">${nf(tot.other)}</td><td class="n">${nf(tot.exp)}</td><td class="n">${nf(tot.profit)}</td><td class="n">${tot.days ? nf(tot.profit / tot.days) : "—"}</td><td class="n">${tot.km ? nf(tot.km) : "—"}</td><td class="n">${(m => m ? nf(m, 2) : "—")(rMileage(comp))}</td></tr></tfoot>`
+    : `<tbody><tr><td class="sub" style="padding:14px">No completed trips in this period.</td></tr></tbody>`;
+
+  // 2. Where the money goes: each kind of expense on the completed trips.
+  const kinds = [["Diesel", tot.dsl], ["Driver padi", comp.reduce((a, b) => a + num(b.padiPaid), 0)], ["Cleaner padi", comp.reduce((a, b) => a + num(b.cleanerPadi), 0)], ["Toll", tot.toll], ["Permit", tot.permit], ["Other", tot.other]];
+  const expAll = kinds.reduce((a, k) => a + k[1], 0);
+  $("rExp").innerHTML = comp.length ? `<thead><tr><th>Expense</th><th class="n">Amount</th><th>Share of expenses</th><th class="n">% of collection</th><th class="n">Per trip</th><th class="n">Per day</th><th class="n">Per km</th></tr></thead><tbody>` +
+    kinds.map(([k, v]) => `<tr><td class="nm">${k}</td><td class="n">${nf(v)}</td><td><span class="rbar"><i style="width:${expAll ? v / expAll * 100 : 0}%"></i></span> ${expAll ? Math.round(v / expAll * 100) : 0}%</td><td class="n">${tot.due ? nf(v / tot.due * 100, 1) + "%" : "—"}</td><td class="n">${nf(v / comp.length)}</td><td class="n">${tot.days ? nf(v / tot.days) : "—"}</td><td class="n">${tot.km ? nf(v / tot.km, 2) : "—"}</td></tr>`).join("") +
+    `</tbody><tfoot><tr><td>Total</td><td class="n">${nf(expAll)}</td><td>100%</td><td class="n">${tot.due ? nf(expAll / tot.due * 100, 1) + "%" : "—"}</td><td class="n">${nf(expAll / comp.length)}</td><td class="n">${tot.days ? nf(expAll / tot.days) : "—"}</td><td class="n">${tot.km ? nf(expAll / tot.km, 2) : "—"}</td></tr></tfoot>`
+    : `<tbody><tr><td class="sub" style="padding:14px">No completed trips in this period.</td></tr></tbody>`;
+
+  // 3. Drivers: completed trips in the period, best mileage first.
+  const dm = new Map();
+  comp.forEach(b => { const nm = String(bkDrvName(b) || "").trim(), k = b.driverId || "n:" + nm.toUpperCase(); if (!nm && !b.driverId) return; if (!dm.has(k)) dm.set(k, { name: nm || "—", arr: [] }); dm.get(k).arr.push(b); });
+  const drv = [...dm.values()].map(d => { const mil = d.arr.map(b => { const c = bkCalc(b), l = bkLitres(b); return c.km && l ? c.km / l : null; }).filter(v => v);
+    return { ...d, trips: d.arr.length, days: d.arr.reduce((a, b) => a + bkDaysOf(b), 0), km: d.arr.reduce((a, b) => a + bkCalc(b).km, 0), lit: d.arr.reduce((a, b) => a + (bkCalc(b).km ? bkLitres(b) : 0), 0),
+      avg: rMileage(d.arr), best: mil.length ? Math.max(...mil) : null, worst: mil.length ? Math.min(...mil) : null, padi: d.arr.reduce((a, b) => a + num(b.padiPaid), 0), due: d.arr.reduce((a, b) => a + bkCalc(b).due, 0) }; })
+    .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1) || b.km - a.km);
+  $("rDrv").innerHTML = drv.length ? `<thead><tr><th class="n">#</th><th>Driver</th><th class="n">Trips</th><th class="n">Days</th><th class="n">Km</th><th class="n">Litres*</th><th class="n">Average km / L</th><th class="n">Best</th><th class="n">Lowest</th><th class="n">Padi paid</th><th class="n">Collection</th></tr></thead><tbody>` +
+    drv.map((d, i) => `<tr><td class="n">${d.avg ? i + 1 : "—"}</td><td class="nm">${esc(d.name)}</td><td class="n">${d.trips}</td><td class="n">${fmtDays(d.days)}</td><td class="n">${d.km ? nf(d.km) : "—"}</td><td class="n">${d.lit ? nf(d.lit, Number.isInteger(d.lit) ? 0 : 1) : "—"}</td>` +
+      `<td class="n"><b>${d.avg ? nf(d.avg, 2) : "—"}</b></td><td class="n">${d.best ? nf(d.best, 2) : "—"}</td><td class="n">${d.worst ? nf(d.worst, 2) : "—"}</td><td class="n">${nf(d.padi)}</td><td class="n">${nf(d.due)}</td></tr>`).join("") + "</tbody>"
+    : `<tbody><tr><td class="sub" style="padding:14px">No completed trips with a driver in this period.</td></tr></tbody>`;
+
+  // 4. Bus use: booked days in each month of the period, and the longest stretch with no booking.
+  const months = rMon ? [rMon] : fyMonths, end = hi < today ? hi : today;
+  $("rUse").innerHTML = `<thead><tr><th>Month</th>${buses.map(v => `<th class="n" style="white-space:nowrap">${busDot(v.id)}${esc(plateOf(v))}</th>`).join("")}${buses.length > 1 ? '<th class="n">All buses</th>' : ""}</tr></thead><tbody>` +
+    months.map(ym => { const a = ym + "-01", z = `${ym}-${pad2(daysIn(ym))}`, nd = daysIn(ym), per = buses.map(v => confBk.filter(b => b.vehicleId === v.id).reduce((s, b) => s + rDaysIn(b, a, z), 0)), sum = per.reduce((s, x) => s + x, 0);
+      const cell = (u, cap) => `<td class="n">${u} / ${cap} <span class="sub">(${Math.round(u / cap * 100)}%)</span></td>`;
+      return `<tr${a > today ? ' class="sub"' : ""}><td>${new Date(a + "T00:00:00").toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</td>${per.map(u => cell(u, nd)).join("")}${buses.length > 1 ? cell(sum, nd * buses.length) : ""}</tr>`; }).join("") + "</tbody>" +
+    `<tfoot><tr><td>Longest idle stretch</td>${buses.map(v => { if (lo > end) return '<td class="n">—</td>';
+      // Walk the period day by day up to today and keep the longest run of days with no booking for this bus.
+      const own = confBk.filter(b => b.vehicleId === v.id); let best = { n: 0 }, run = null;
+      for (let d = lo; d <= end; d = rNext(d)) { if (own.some(b => b.from <= d && bkEnd(b) >= d)) run = null; else { run = run ? { a: run.a, z: d, n: run.n + 1 } : { a: d, z: d, n: 1 }; if (run.n > best.n) best = run; } }
+      return `<td class="n">${best.n ? `${best.n} day${best.n === 1 ? "" : "s"}<div class="sub">${fmtShort(best.a)}${best.z !== best.a ? ` – ${fmtShort(best.z)}` : ""}</div>` : "None"}</td>`; }).join("")}${buses.length > 1 ? "<td></td>" : ""}</tr></tfoot>`;
+}
+// Hover or tap a chart month to read its numbers.
+(() => {
+  const tip = document.createElement("div"); tip.className = "rtip"; tip.hidden = true; document.body.appendChild(tip);
+  const show = e => { const t = e.target.closest?.("#rCharts [data-tip]"); if (!t) { tip.hidden = true; return; }
+    tip.textContent = t.dataset.tip; tip.hidden = false; const r = tip.getBoundingClientRect();
+    tip.style.left = Math.max(8, Math.min(innerWidth - r.width - 8, e.clientX + 12)) + "px"; tip.style.top = Math.max(8, e.clientY - r.height - 12) + "px"; };
+  document.addEventListener("pointermove", show); document.addEventListener("pointerdown", show);
+  addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
+})();
+$("rTrips").addEventListener("click", e => { const r = e.target.closest("tr[data-bk]"); if (r) openBooking(r.dataset.bk); });
+$("rTrips").addEventListener("keydown", e => { const r = e.target.closest("tr[data-bk]"); if (r && e.key === "Enter") openBooking(r.dataset.bk); });
 $("rFy").onchange = () => { rFy = +$("rFy").value; rMon = ""; renderBkReports(); };
 $("rMon").onchange = () => { rMon = $("rMon").value; renderBkReports(); };
 $("rDues").addEventListener("click", e => { const r = e.target.closest("tr[data-bk]"); if (r) openBooking(r.dataset.bk); });
