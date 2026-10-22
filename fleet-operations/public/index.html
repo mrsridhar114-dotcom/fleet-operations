@@ -1872,6 +1872,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="hf"><label for="upKind">What is in the file</label><select id="upKind"></select></div>
         <div class="hf" id="upBusRow"><label for="upBus">Bus</label><select id="upBus"></select></div>
         <div class="hf" id="upMonRow" hidden><label for="upMonth">Month of the sheet</label><input type="month" id="upMonth"></div>
+        <div class="hf" id="upFyRow" hidden><label for="upFy">Financial year</label><select id="upFy"></select></div>
         <div class="hf"><label for="upFile">Excel file (.xlsx) or CSV</label><input id="upFile" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></div>
         <label class="chk upchk" id="upPaidRow"><input type="checkbox" id="upPaid" checked> These trips are fully paid (record the collection as received)</label>
         <div class="uptpl"><p class="sub" id="upNote" style="margin:0"></p><button class="btn" type="button" id="upTpl">⬇ Download Excel template</button></div>
@@ -5581,15 +5582,20 @@ async function upUnzip(buf) {
 const upXml = s => new DOMParser().parseFromString(s, "application/xml");
 const upColNo = ref => { let c = 0; for (const ch of ref.replace(/\d+$/, "")) c = c * 26 + ch.charCodeAt(0) - 64; return c - 1; };
 // The first sheet as rows of cell values: numbers stay numbers (dates come as Excel day numbers), text stays text.
-async function upReadXlsx(buf) {
+// all: every sheet of the workbook as [{ name, rows }] (hidden sheets left out); otherwise the first sheet's rows.
+async function upReadXlsx(buf, all = false) {
   const z = await upUnzip(buf), td = new TextDecoder(), txt = async name => z[name] ? td.decode(await z[name]()) : "";
   const strs = [...upXml(await txt("xl/sharedStrings.xml")).getElementsByTagName("si")].map(si => [...si.getElementsByTagName("t")].map(t => t.textContent).join(""));
-  const wb = upXml(await txt("xl/workbook.xml")), first = wb.getElementsByTagName("sheet")[0];
-  const rid = first?.getAttribute("r:id") || first?.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
-  const rel = [...upXml(await txt("xl/_rels/workbook.xml.rels")).getElementsByTagName("Relationship")].find(r => r.getAttribute("Id") === rid);
-  let path = rel ? rel.getAttribute("Target").replace(/^\//, "") : "worksheets/sheet1.xml"; if (!path.startsWith("xl/")) path = "xl/" + path;
+  const wb = upXml(await txt("xl/workbook.xml")), rels = [...upXml(await txt("xl/_rels/workbook.xml.rels")).getElementsByTagName("Relationship")];
+  const pathOf = sh => { const rid = sh?.getAttribute("r:id") || sh?.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"), rel = rels.find(r => r.getAttribute("Id") === rid);
+    let p = rel ? rel.getAttribute("Target").replace(/^\//, "") : "worksheets/sheet1.xml"; return p.startsWith("xl/") ? p : "xl/" + p; };
+  const sheets = [...wb.getElementsByTagName("sheet")];
+  if (all) { const out = []; for (const sh of sheets) if ((sh.getAttribute("state") || "visible") === "visible") out.push({ name: sh.getAttribute("name") || "", rows: await upReadSheet(await txt(pathOf(sh)), strs) }); return out; }
+  return upReadSheet(await txt(pathOf(sheets[0])), strs);
+}
+async function upReadSheet(xml, strs) {
   const rows = [];
-  for (const r of upXml(await txt(path)).getElementsByTagName("row")) {
+  for (const r of upXml(xml).getElementsByTagName("row")) {
     const row = [];
     for (const c of r.getElementsByTagName("c")) {
       const t = c.getAttribute("t"), v = c.getElementsByTagName("v")[0]?.textContent, is = c.getElementsByTagName("is")[0];
@@ -5727,14 +5733,15 @@ function upTemplate(kind) {
 }
 $("upTpl").addEventListener("click", async () => {
   const msg = $("upTplMsg"), v = vehicles.find(x => x.id === $("upBus").value), digits = v ? (plateKey(v.plateNo).match(/\d{4}$/) || [""])[0] : "";
-  const K = UP_KINDS[upState.kind], ym = $("upMonth").value;
-  if (K.route && !ym) { msg.hidden = false; msg.textContent = "Choose the month first: the template lists its days."; return; }
-  const filename = K.route ? `${digits ? digits + "_" : ""}route-bus-${ym}.xlsx` : `${digits ? digits + "_" : ""}spare-bus-trips-template.xlsx`;
+  const K = UP_KINDS[upState.kind], ym = $("upMonth").value, fy = $("upFy").value;
+  if (K.year && !fy) { msg.hidden = false; msg.textContent = "Choose the financial year first: the template has a sheet for each of its months."; return; }
+  if (K.route && !K.year && !ym) { msg.hidden = false; msg.textContent = "Choose the month first: the template lists its days."; return; }
+  const filename = K.year ? `${digits ? digits + "_" : ""}route-bus-FY${fyLabel(+fy)}.xlsx` : K.route ? `${digits ? digits + "_" : ""}route-bus-${ym}.xlsx` : `${digits ? digits + "_" : ""}spare-bus-trips-template.xlsx`;
   msg.hidden = false;
   try {
     const dl = await auDownloads();
     if (!dl) { msg.textContent = "Saving files isn't available in this view. Reload the page and try again."; return; }
-    await dl.save({ filename, data: K.route ? upRouteTemplate($("upBus").value, ym) : upTemplate(upState.kind) });
+    await dl.save({ filename, data: K.year ? upRouteYearTemplate($("upBus").value, +fy) : K.route ? upRouteTemplate($("upBus").value, ym) : upTemplate(upState.kind) });
     msg.textContent = `Saved ${filename}. Fill in the Trips sheet${digits ? "" : " (name the file with the bus number, e.g. 3366_2026.xlsx, and the bus is picked for you)"}, then choose it above.`;
   } catch (er) { msg.textContent = er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."; }
 });
@@ -5747,7 +5754,7 @@ const UP_ROUTE = {
   note: "Columns used: Date (1 to 31), Starting, Day, Driver, Conductor, Checker, Diesel Rate, No. Litre, Fuel Price, Driver, Conductor and Checker pay (the second Driver, Conductor and Checker columns), S1–S5, Expense and KMS (odometer). Choose the bus and the month: the Date column only gives the day. Collection and balance are worked out again by the app; any expense beyond diesel and pay goes in as Other.",
   needsBus: true, needsMonth: true, route: true,
   cols: { day: /^date$/, start: /^start/, wday: /^day$/, driver: /^driver/, conductor: /^conductor/, checker: /^checker/, rate: /rate/, litres: /litre/, fuel: /fuel|diesel/,
-    s1: /^s\s*1$/, s2: /^s\s*2$/, s3: /^s\s*3$/, s4: /^s\s*4$/, s5: /^s\s*5$/, collection: /^collection/, expense: /^expense/, odo: /^kms?$|odo|km\s*reading|meter/ },
+    remarks: /^remarks?$/, s1: /^s\s*1$/, s2: /^s\s*2$/, s3: /^s\s*3$/, s4: /^s\s*4$/, s5: /^s\s*5$/, collection: /^collection/, expense: /^expense/, odo: /^kms?$|odo|km\s*reading|meter/ },
   twice: { driver: "payD", conductor: "payC", checker: "payK" }
 };
 UP_KINDS.route = UP_ROUTE;
@@ -5764,11 +5771,12 @@ function upMatchConductor(name) {
   const hit = conductors.filter(d => { const w = words(d.name); return String(d.name || "").toUpperCase() === n || words(n).every(x => w.includes(x)); });
   return hit.length === 1 ? hit[0] : null;
 }
-function upRouteRows(rows, bus, ym, file) {
+// ctx (whole-year import): the days already in the app for the year, and the km reading the month starts from.
+function upRouteRows(rows, bus, ym, file, ctx = {}) {
   const head = rows[0] || [], at = upColumns("route", head), out = [], cell = (r, k) => at[k] == null ? undefined : r[at[k]];
   if (at.day == null) return { error: "The first row must hold the column names, with Date in the first column (1 to 31)." };
   const n = daysIn(ym), wd = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  let prevOdo = prevOdoFor(bus, `${ym}-01`), wrongDay = 0, dated = 0;
+  let prevOdo = "prevOdo" in ctx ? ctx.prevOdo : prevOdoFor(bus, `${ym}-01`), wrongDay = 0, dated = 0;
   rows.slice(1).forEach((r, i) => {
     r = r || []; const raw = cell(r, "day"); if (raw == null || raw === "") return;
     const line = i + 2, num0 = upNum(raw), dd = num0 && num0 >= 1 && num0 <= 31 ? Math.round(num0) : (upDate(raw).a || "").slice(0, 7) === ym ? +upDate(raw).a.slice(8) : 0;
@@ -5777,7 +5785,7 @@ function upRouteRows(rows, bus, ym, file) {
     const date = row.date = `${ym}-${pad2(dd)}`, sheetDay = upText(cell(r, "wday")).toLowerCase();
     if (sheetDay) { dated++; const real = wd[new Date(date + "T00:00:00").getDay()]; if (!real.startsWith(sheetDay.slice(0, 3))) { wrongDay++; row.notes.push(`the sheet says ${upText(cell(r, "wday"))}, but ${fmtShort(date)} is a ${real[0].toUpperCase() + real.slice(1)}`); } }
     const v = k => { const x = upNum(cell(r, k)); return x && x > 0 ? x : 0; };
-    const has = ["s1", "s2", "s3", "s4", "s5", "litres", "fuel", "payD", "payC", "payK", "expense", "odo", "collection"].some(k => v(k)) || upText(cell(r, "driver"));
+    const has = ["s1", "s2", "s3", "s4", "s5", "litres", "fuel", "payD", "payC", "payK", "expense", "odo", "collection"].some(k => v(k)) || upText(cell(r, "driver")) || upText(cell(r, "conductor"));
     if (!has) { row.empty = true; out.push(row); return; }
     const t = { id: `${bus}_${date}`, vehicleId: bus, date, importedFrom: file, importedOn: todayISO() };
     const start = upText(cell(r, "start")); if (start) t.start = placeName(start);
@@ -5797,20 +5805,22 @@ function upRouteRows(rows, bus, ym, file) {
     if (v("collection") && Math.round(v("collection")) !== t.collection) row.notes.push(`the sheet's collection ${rs(Math.round(v("collection")))} is not S1–S5 added up (${rs(t.collection)})`);
     const odo = Math.round(v("odo"));
     if (odo) { if (prevOdo != null && odo <= prevOdo) row.notes.push(`km reading ${nf(odo)} is not more than the day before (${nf(prevOdo)}); left out`); else { if (prevOdo != null && odo - prevOdo > 1500) row.notes.push(`${nf(odo - prevOdo)} km in a day: please check`); t.odo = odo; prevOdo = odo; } }
+    const rem = upText(cell(r, "remarks")); if (rem && !/^#/.test(rem)) t.remarks = rem.slice(0, 200);
     row.t = t;
-    const have = winTrips().find(x => x.id === t.id || (x.vehicleId === bus && x.date === date));
+    const have = (ctx.have || winTrips()).find(x => x.id === t.id || (x.vehicleId === bus && x.date === date));
     if (have) row.skip = `already in the app${have.importedFrom ? " (imported)" : ""}`;
     out.push(row);
   });
-  return { rows: out, ym, wrongMonth: dated >= 3 && wrongDay > dated / 2 };
+  return { rows: out, ym, endOdo: prevOdo, wrongMonth: dated >= 3 && wrongDay > dated / 2 };
 }
 function upRouteTable(res) {
   const list = res.rows, ready = list.filter(x => x.t && !x.problems.length && !x.skip), skip = list.filter(x => x.skip), empty = list.filter(x => x.empty), bad = list.filter(x => x.problems.length);
   const tot = k => ready.reduce((a, x) => a + num(x.t[k]), 0);
-  const mon = new Date(res.ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+  const mon = res.year ? res.label : new Date(res.ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
   return `<div class="upsum"><span><b>${ready.length}</b> day${ready.length === 1 ? "" : "s"} ready to import</span><span><b>${skip.length}</b> already in the app</span><span><b>${empty.length}</b> empty (left out)</span><span><b>${bad.length}</b> with a problem</span>` +
     `<span>Collection <b>${rs(tot("collection"))}</b></span><span>Expenses <b>${rs(tot("expense"))}</b></span><span>Balance <b>${rs(tot("collection") - tot("expense"))}</b></span></div>` +
-    (res.wrongMonth ? `<p class="err" style="margin:0">The day names in the sheet don't match ${mon}. Check that the right month is chosen.</p>` : `<p class="sub" style="margin:0">Month: <b>${mon}</b>. Days with nothing entered are left out.</p>`) +
+    (res.year ? (res.months.some(m => m.wrong) ? `<p class="err" style="margin:0">The day names don't match ${mon} in: ${res.months.filter(m => m.wrong).map(m => esc(m.name)).join(", ")}. Check that the right financial year is chosen.</p>` : `<p class="sub" style="margin:0">Financial year: <b>${mon}</b>. Days with nothing entered are left out.</p>`) + upRouteYearSummary(res)
+      : res.wrongMonth ? `<p class="err" style="margin:0">The day names in the sheet don't match ${mon}. Check that the right month is chosen.</p>` : `<p class="sub" style="margin:0">Month: <b>${mon}</b>. Days with nothing entered are left out.</p>`) +
     `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Row</th><th>Day</th><th>Starting</th><th>Crew</th><th class="n">Collection</th><th class="n">Diesel</th><th class="n">Pay</th><th class="n">Other</th><th class="n">Balance</th><th class="n">Km reading</th><th>Upload</th></tr></thead><tbody>` +
     list.map(x => { const t = x.t;
       return `<tr class="${x.problems.length ? "bad" : x.skip || x.empty ? "skip" : ""}"><td class="num">${x.line}</td><td class="num" style="white-space:nowrap">${x.date ? `${DAYS[new Date(x.date + "T00:00:00").getDay()].slice(0, 3)} ${fmtShort(x.date)}` : "?"}</td>` +
@@ -5820,7 +5830,7 @@ function upRouteTable(res) {
     `<div class="rxbtns"><span class="sub" style="flex:1">Each day goes into the route trip sheet of the bus, the same as an entry in Daily entry. Days already in the app are not changed.</span><button class="btn primary" type="button" id="upGo"${!ready.length || upState.busy ? " disabled" : ""}>${upState.busy ? "Importing…" : `Import ${ready.length} day${ready.length === 1 ? "" : "s"}`}</button></div>`;
 }
 // The office sheet as a template: the chosen month's days, the starting place of each day and the weekday filled in.
-function upRouteTemplate(bus, ym) {
+function upRouteTemplate(bus, ym, sheetOnly = false) {
   const S = XL.S, ws = XL.sheet(new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }));
   const H = [["Date", 6], ["Starting", 12], ["Day", 11], ["Driver", 16], ["Conductor", 16], ["Checker", 14], ["Diesel Rate", 10], ["No. Litre", 9], ["Fuel Price", 10], ["Driver", 9], ["Conductor", 10], ["Checker", 9],
     ["S1", 8], ["S2", 8], ["S3", 8], ["S4", 8], ["S5", 8], ["Collection", 11], ["Expense", 10], ["Balance", 10], ["KMS", 10]];
@@ -5832,7 +5842,60 @@ function upRouteTemplate(bus, ym) {
     XL.put(ws, `R${r}`, 0, S.int, `IF(SUM(M${r}:Q${r})=0,"",SUM(M${r}:Q${r}))`); XL.put(ws, `T${r}`, 0, S.int, `IF(R${r}="","",R${r}-S${r})`);
   }
   ws.freeze = 1;
+  if (sheetOnly) { ws.name = new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long" }); return ws; }
   return XL.build([ws]);
+}
+// The whole financial year: one sheet per month, April to March.
+const upRouteYearTemplate = (bus, fy) => XL.build(MON_FY.map(m => upRouteTemplate(bus, `${m >= 4 ? fy : fy + 1}-${pad2(m)}`, true)));
+
+// ---- route bus: a whole financial year in one workbook, one sheet per month (sheets named April, May, … March)
+const UP_ROUTE_YEAR = {
+  label: "Route bus day sheets (one bus, a whole year: one sheet per month)",
+  note: "One workbook for one bus and one financial year, with a sheet for each month named April, May, … March. Each sheet has the same columns as the monthly day sheet: Date (1 to 31), Starting, Day, Driver, Conductor, Checker, Diesel Rate, No. Litre, Fuel Price, the pay columns, S1–S5, Expense, KMS and Remarks. Choose the bus and the financial year; the year is guessed from the day names.",
+  needsBus: true, needsFy: true, route: true, year: true, cols: UP_ROUTE.cols, twice: UP_ROUTE.twice
+};
+UP_KINDS.routeYear = UP_ROUTE_YEAR;
+// April–December fall in the first year of the financial year, January–March in the next.
+const upSheetYm = (name, fy) => { const i = UP_MONTHS.findIndex(m => String(name).trim().toLowerCase().startsWith(m)); return i < 0 ? "" : `${i >= 3 ? fy : fy + 1}-${pad2(i + 1)}`; };
+// The financial year whose weekdays agree best with the Day column of the sheets.
+function upGuessFy(sheets) {
+  const wd = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"], now = fyOf(todayISO());
+  let best = now, top = -1;
+  for (let fy = now; fy >= now - 6; fy--) {
+    let hit = 0;
+    sheets.forEach(s => { const ym = upSheetYm(s.name, fy), at = upColumns("routeYear", s.rows[0] || []); if (!ym || at.day == null || at.wday == null) return;
+      s.rows.slice(1).forEach(r => { const d = upNum(r?.[at.day]), w = upText(r?.[at.wday]).toLowerCase().slice(0, 3); if (d >= 1 && d <= daysIn(ym) && w) hit += wd[new Date(`${ym}-${pad2(d)}T00:00:00`).getDay()] === w ? 1 : 0; }); });
+    if (hit > top) { top = hit; best = fy; }
+  }
+  return best;
+}
+// The days of the bus already in the app for the year (and two months before, for the first km reading).
+async function upHaveTrips(bus, from, to) {
+  if (!tripDb) return tripsLocal.filter(t => t.vehicleId === bus && t.date >= from && t.date <= to);
+  const s = await tripDb.collection("trips").where("date", ">=", from).where("date", "<=", to).get();
+  return s.docs.map(d => ({ id: d.id, ...d.data() })).filter(t => t.vehicleId === bus);
+}
+async function upRouteYearRows(sheets, bus, fy, file) {
+  const from = `${fy}-04-01`, to = `${fy + 1}-03-31`, have = await upHaveTrips(bus, shiftDay(from, -62), to);
+  let prevOdo = have.filter(t => t.date < from && t.odo).sort((a, b) => b.date.localeCompare(a.date))[0]?.odo ?? vehicles.find(v => v.id === bus)?.odoStart ?? null;
+  const months = [], rows = [], other = [];
+  sheets.forEach(s => {
+    const ym = upSheetYm(s.name, fy); if (!ym) { other.push(s.name); return; }
+    const res = upRouteRows(s.rows, bus, ym, `${file} · ${s.name}`, { have, prevOdo });
+    if (res.error) { months.push({ name: s.name, ym, error: res.error }); return; }
+    prevOdo = res.endOdo;
+    res.rows.forEach(x => { x.sheet = s.name; rows.push(x); });
+    months.push({ name: s.name, ym, wrong: res.wrongMonth, rows: res.rows });
+  });
+  months.sort((a, b) => a.ym.localeCompare(b.ym));
+  return { rows, months, other, fy, label: `FY ${fyLabel(fy)}`, year: true };
+}
+function upRouteYearSummary(res) {
+  const line = m => { if (m.error) return `<tr class="bad"><td>${esc(m.name)}</td><td colspan="7">${esc(m.error)}</td></tr>`;
+    const r = m.rows, ready = r.filter(x => x.t && !x.problems.length && !x.skip), t = k => ready.reduce((a, x) => a + num(x.t[k]), 0);
+    return `<tr${!ready.length ? ' class="skip"' : ""}><td>${esc(m.name)}${m.wrong ? ` <span class="pill expired">Day names don't match</span>` : ""}</td><td class="n">${ready.length}</td><td class="n">${r.filter(x => x.skip).length}</td><td class="n">${r.filter(x => x.empty).length}</td><td class="n">${r.filter(x => x.problems.length).length}</td><td class="n">${nf(t("collection"))}</td><td class="n">${nf(t("expense"))}</td><td class="n">${nf(t("collection") - t("expense"))}</td></tr>`; };
+  return `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Sheet</th><th class="n">Ready</th><th class="n">In the app</th><th class="n">Empty</th><th class="n">Problem</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th></tr></thead><tbody>${res.months.map(line).join("")}</tbody></table></div>` +
+    (res.other.length ? `<p class="sub" style="margin:0">Not a month, left out: ${res.other.map(esc).join(", ")}.</p>` : "");
 }
 
 // ---- screen
@@ -5845,7 +5908,8 @@ function renderUpload() {
   const buses = K.route ? routeBuses() : spareBuses(), cur = $("upBus").value;
   $("upBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))}</option>`).join("");
   $("upBus").value = buses.some(v => v.id === cur) ? cur : "";
-  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route;
+  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route; $("upFyRow").hidden = !K.needsFy;
+  if (!$("upFy").options.length) { const y = fyOf(todayISO()); $("upFy").innerHTML = `<option value="">Choose</option>` + [0, 1, 2, 3, 4, 5].map(i => `<option value="${y - i}">FY ${fyLabel(y - i)}</option>`).join(""); }
   $("upMonth").max = todayISO().slice(0, 7);
   const res = S.rows, list = res?.rows || [];
   if (S.done && K.route) { $("upOut").innerHTML = `<div class="upok"><b>${S.done.n} day${S.done.n === 1 ? "" : "s"} imported</b> into ${esc(S.done.bus)} for ${esc(S.done.mon)}${S.done.failed ? `, ${S.done.failed} could not be saved${S.done.why ? ` (${esc(S.done.why)})` : ""}. Upload the same file again: days already in the app are skipped` : ""}. They are in the route trip sheet (Daily entry and Monthly sheet).</div>`; return; }
@@ -5871,6 +5935,17 @@ async function upLoad() {
   const K = UP_KINDS[upState.kind];
   if (K.needsBus && !$("upBus").value) { upState.rows = { error: K.route ? "Choose the route bus of this sheet first." : "Choose the bus these trips belong to first." }; renderUpload(); return; }
   if (K.needsMonth && !$("upMonth").value) { upState.rows = { error: "Choose the month of this sheet first." }; renderUpload(); return; }
+  if (K.year) {
+    try {
+      const buf = await f.arrayBuffer();
+      if (!/\.xlsx$/i.test(f.name)) { upState.rows = { error: "Choose the Excel workbook (.xlsx) with one sheet per month." }; renderUpload(); return; }
+      const sheets = await upReadXlsx(buf, true);
+      if (!$("upFy").value) $("upFy").value = String(upGuessFy(sheets));
+      upState.file = f.name; upState.rows = { loading: true }; renderUpload();
+      upState.rows = await upRouteYearRows(sheets, $("upBus").value, +$("upFy").value, f.name);
+    } catch { upState.rows = { error: "This file could not be read. Open it in Excel, save it as .xlsx and try again." }; }
+    renderUpload(); return;
+  }
   if (K.route) {
     // The days already in the app for that month are needed to skip them: load them first.
     const ym = $("upMonth").value, end = `${ym}-${pad2(daysIn(ym))}`;
@@ -5892,15 +5967,15 @@ $("upFile").addEventListener("change", () => {
   if (f && K.needsMonth && !$("upMonth").value) $("upMonth").value = upMonthFromName(f.name);
   upLoad();
 });
-["upBus", "upPaid", "upMonth"].forEach(id => $(id).addEventListener("change", upLoad));
+["upBus", "upPaid", "upMonth", "upFy"].forEach(id => $(id).addEventListener("change", upLoad));
 $("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; $("upBus").value = ""; renderUpload(); upLoad(); });
 $("upOut").addEventListener("click", async e => {
   if (e.target.id !== "upGo" || upState.busy || acc.users !== "edit") return;
   if (UP_KINDS[upState.kind].route) {
-    const ready = upState.rows.rows.filter(x => x.t && !x.problems.length && !x.skip), ym = upState.rows.ym; upState.busy = true; renderUpload();
+    const res0 = upState.rows, ready = res0.rows.filter(x => x.t && !x.problems.length && !x.skip), ym = res0.ym; upState.busy = true; renderUpload();
     let n = 0, failed = 0, why = "";
     for (const x of ready) { try { await dayTripSave(x.t); n++; } catch (e) { failed++; why ||= e?.message || ""; } }
-    upState.busy = false; upState.done = { n, failed, why, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)), mon: new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
+    upState.busy = false; upState.done = { n, failed, why, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)), mon: res0.year ? res0.label : new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
     $("upFile").value = ""; upState.rows = null; renderUpload(); toast(`${n} day${n === 1 ? "" : "s"} imported`); return;
   }
   const ready = upState.rows.rows.filter(x => !x.problems.length && !x.skip); upState.busy = true; renderUpload();
