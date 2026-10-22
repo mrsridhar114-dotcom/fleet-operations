@@ -5633,7 +5633,7 @@ function renderUpload() {
   $("upBus").value = buses.some(v => v.id === cur) ? cur : "";
   $("upBusRow").hidden = !K.needsBus;
   const res = S.rows, list = res?.rows || [];
-  if (S.done) { $("upOut").innerHTML = `<div class="upok"><b>${S.done.n} trip${S.done.n === 1 ? "" : "s"} imported</b> into ${esc(S.done.bus)}${S.done.failed ? `, ${S.done.failed} could not be saved (check the connection and upload the same file again: rows already in the app are skipped)` : ""}. They are in the Booking planner and in Reports.</div>`; return; }
+  if (S.done) { $("upOut").innerHTML = `<div class="upok"><b>${S.done.n} trip${S.done.n === 1 ? "" : "s"} imported</b> into ${esc(S.done.bus)}${S.done.failed ? `, ${S.done.failed} could not be saved${S.done.why ? ` (${esc(S.done.why)})` : ""}. Check the connection and upload the same file again: rows already in the app are skipped` : ""}. They are in the Booking planner and in Reports.</div>`; return; }
   if (!res) { $("upOut").innerHTML = ""; return; }
   if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
   const ready = list.filter(x => !x.problems.length && !x.skip), skip = list.filter(x => x.skip), bad = list.filter(x => x.problems.length);
@@ -5669,14 +5669,14 @@ $("upKind").addEventListener("change", () => { upState.kind = $("upKind").value;
 $("upOut").addEventListener("click", async e => {
   if (e.target.id !== "upGo" || upState.busy || acc.users !== "edit") return;
   const ready = upState.rows.rows.filter(x => !x.problems.length && !x.skip); upState.busy = true; renderUpload();
-  let n = 0, failed = 0;
+  let n = 0, failed = 0, why = "";
   for (const x of ready) {
     const b = { ...x.b, no: nextBkNo() };
     try { await opsSave("bookings", b); if (!ops.bookings.some(o => o.id === b.id)) ops.bookings.push(b); n++;
       await addBHistory(bookingChanges(null, b, `Imported from Excel (${upState.file}, row ${x.line})`)).catch(() => {}); }
-    catch { failed++; }
+    catch (e) { failed++; why ||= e?.message || ""; }
   }
-  upState.busy = false; upState.done = { n, failed, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)) };
+  upState.busy = false; upState.done = { n, failed, why, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)) };
   $("upFile").value = ""; upState.rows = null; renderUpload(); toast(`${n} trip${n === 1 ? "" : "s"} imported`);
 });
 
