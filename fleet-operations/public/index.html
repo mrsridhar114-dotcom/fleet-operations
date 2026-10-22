@@ -812,6 +812,12 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 #e-bkPays { color: var(--danger); font-size: 13px; font-weight: 600; }
 #e-bkPays:empty { display: none; }
 .dsl { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+/* Utility: data upload */
+.upform { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; align-items: end; } .upchk { grid-column: 1 / -1; font-size: 14px; }
+.upsum { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; } .upsum b { font-size: 17px; }
+.uptable tr.bad td { background: var(--danger-soft); } .uptable tr.skip td { color: var(--muted); } .uptable td { vertical-align: top; }
+.upok { padding: 12px 14px; border-radius: 8px; background: var(--ok-soft); color: var(--ink); }
+@media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } }
 /* Route expenses and padi calculation */
 .rxlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; align-items: start; }
 .rxcard { display: flex; flex-direction: column; gap: 8px; }
@@ -1360,6 +1366,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
             Storage &amp; backup</a></li>
         </ul>
       </div>
+      <div class="group">
+        <h3>Utility</h3>
+        <ul>
+          <li id="navUtil"><a class="nav" href="#data-upload" data-view="tutil">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            Data upload</a></li>
+        </ul>
+      </div>
     </nav>
     <div class="foot"><div class="who" id="who"></div><div id="sync">Connecting to saved records…</div>
       <div class="preview" id="previewWrap" hidden>
@@ -1771,6 +1785,25 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <span class="err" id="pdErr"></span>
         <div class="rxbtns" id="pdActs"><button class="btn" type="button" id="pdAddBand">+ Add band</button><span style="flex:1"></span><button class="btn" type="button" id="pdUndo">Undo changes</button><button class="btn primary" type="button" id="pdSave">Save rules</button></div>
       </section>
+    </section>
+
+    <!-- ================= Utility: data upload (admin only) ================= -->
+    <section class="wrap twrap" id="view-tutil" hidden>
+      <header class="top">
+        <div>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Utility</span><span class="slash">/</span><span>Data upload</span></nav>
+          <h1>Data upload</h1>
+          <p class="sync">Bring records kept in Excel into the app. Every row is shown first, as it will be saved; nothing is saved until you press Import. Rows already in the app are skipped, so the same file can be uploaded again safely.</p>
+        </div>
+      </header>
+      <section class="panel upform">
+        <div class="hf"><label for="upKind">What is in the file</label><select id="upKind"></select></div>
+        <div class="hf" id="upBusRow"><label for="upBus">Bus</label><select id="upBus"></select></div>
+        <div class="hf"><label for="upFile">Excel file (.xlsx) or CSV</label><input id="upFile" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></div>
+        <label class="chk upchk"><input type="checkbox" id="upPaid" checked> These trips are fully paid (record the collection as received)</label>
+        <p class="sub" id="upNote" style="margin:0;grid-column:1/-1"></p>
+      </section>
+      <section class="panel" style="margin-top:14px;display:flex;flex-direction:column;gap:12px" id="upOut" aria-live="polite"></section>
     </section>
 
     <section class="wrap twrap" id="view-tfuel" hidden>
@@ -2977,21 +3010,22 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", tutil: "users", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck" };
+const TRIP_PAGES = { "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
   // Someone without the dashboard (the booking office, say) lands on the first application they can use.
   if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tfuel", "fuel"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
-  view = acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit") && acc.users !== "edit") ? "denied" : want;
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  view = acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets" || VIEW_MOD[view] === "fuel") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
+  if (view === "tutil") renderUpload();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
 }
@@ -3035,7 +3069,7 @@ function applyAccess() {
   $("navAppr").hidden = acc.bookings !== "edit";
   $("navRep").hidden = acc.bookings === "none" || acc.bookings === "request";
   $("navStorage").hidden = acc.users !== "edit";
-  $("navAudit").hidden = acc.users !== "edit";
+  $("navAudit").hidden = acc.users !== "edit"; $("navUtil").hidden = acc.users !== "edit";  // Utility: admin only
   $("navTs").hidden = !acc.tripsheets || acc.tripsheets === "none";
   canTsUpd = platformWrite && (acc.tripsheets === "update" || acc.tripsheets === "edit");
   canFuel = platformWrite && acc.fuel === "edit";
@@ -3259,7 +3293,7 @@ function renderMaster() {
   }).join("");
 }
 
-function render() { renderDash(); renderMaster(); renderUsers(); refreshVDrawer(); renderDrivers(); renderConductors(); renderTrips(); }
+function render() { renderDash(); renderMaster(); renderUsers(); refreshVDrawer(); renderDrivers(); renderConductors(); renderTrips(); if (view === "tutil") renderUpload(); }
 
 /* ---------- read-only vehicle view ---------- */
 function openVDrawer(v) {
@@ -5440,6 +5474,205 @@ $("pdSave").onclick = async () => {
   finally { $("pdSave").disabled = false; }
 };
 
+/* ================= Utility · data upload (admin only) =================
+   Reads an Excel (.xlsx) or CSV file in the browser, shows every row as it will be saved, and imports the rows that are ready.
+   No outside library: an .xlsx file is a zip of XML files, unzipped here with the browser's own DecompressionStream.
+   New kinds of upload go into UP_KINDS: a name, how to find the columns, how to read a row and how to save it. */
+
+// ---- reading files
+async function upInflate(bytes) { return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer()); }
+async function upUnzip(buf) {
+  const u8 = new Uint8Array(buf), dv = new DataView(buf), td = new TextDecoder(), files = {};
+  let eocd = -1; for (let i = u8.length - 22; i >= Math.max(0, u8.length - 66000); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error("not a zip");
+  let p = dv.getUint32(eocd + 16, true); const n = dv.getUint16(eocd + 10, true);
+  for (let k = 0; k < n; k++) {
+    const method = dv.getUint16(p + 10, true), size = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    const name = td.decode(u8.subarray(p + 46, p + 46 + nl));
+    const lnl = dv.getUint16(off + 26, true), lxl = dv.getUint16(off + 28, true), data = u8.subarray(off + 30 + lnl + lxl, off + 30 + lnl + lxl + size);
+    files[name] = () => method === 0 ? Promise.resolve(data) : method === 8 ? upInflate(data) : Promise.reject(new Error("unsupported"));
+    p += 46 + nl + xl + cl;
+  }
+  return files;
+}
+const upXml = s => new DOMParser().parseFromString(s, "application/xml");
+const upColNo = ref => { let c = 0; for (const ch of ref.replace(/\d+$/, "")) c = c * 26 + ch.charCodeAt(0) - 64; return c - 1; };
+// The first sheet as rows of cell values: numbers stay numbers (dates come as Excel day numbers), text stays text.
+async function upReadXlsx(buf) {
+  const z = await upUnzip(buf), td = new TextDecoder(), txt = async name => z[name] ? td.decode(await z[name]()) : "";
+  const strs = [...upXml(await txt("xl/sharedStrings.xml")).getElementsByTagName("si")].map(si => [...si.getElementsByTagName("t")].map(t => t.textContent).join(""));
+  const wb = upXml(await txt("xl/workbook.xml")), first = wb.getElementsByTagName("sheet")[0];
+  const rid = first?.getAttribute("r:id") || first?.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
+  const rel = [...upXml(await txt("xl/_rels/workbook.xml.rels")).getElementsByTagName("Relationship")].find(r => r.getAttribute("Id") === rid);
+  let path = rel ? rel.getAttribute("Target").replace(/^\//, "") : "worksheets/sheet1.xml"; if (!path.startsWith("xl/")) path = "xl/" + path;
+  const rows = [];
+  for (const r of upXml(await txt(path)).getElementsByTagName("row")) {
+    const row = [];
+    for (const c of r.getElementsByTagName("c")) {
+      const t = c.getAttribute("t"), v = c.getElementsByTagName("v")[0]?.textContent, is = c.getElementsByTagName("is")[0];
+      row[upColNo(c.getAttribute("r"))] = t === "s" ? strs[+v] : t === "inlineStr" ? is?.textContent : t === "str" || t === "e" ? v : t === "b" ? v === "1" : v == null || v === "" ? undefined : Number(v);
+    }
+    rows[+r.getAttribute("r") - 1] = row;
+  }
+  return rows;
+}
+function upReadCsv(text) {
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (ch === '"') q = false; else cell += ch; continue; }
+    if (ch === '"') q = true; else if (ch === ",") { row.push(cell); cell = ""; } else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; } else cell += ch;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(v => { const t = String(v).trim(); return t !== "" && /^-?\d+(\.\d+)?$/.test(t) ? Number(t) : t || undefined; }));
+}
+
+// ---- values
+const upText = v => v == null ? "" : String(v).trim().replace(/\s+/g, " ");
+const upNum = v => { if (typeof v === "number") return v; const t = upText(v).replace(/[₹,\s]/g, ""); return t && !isNaN(+t) ? +t : null; };
+const upIso = (y, m, d) => { const x = new Date(Date.UTC(y, m - 1, d)); return x.getUTCFullYear() === y && x.getUTCMonth() === m - 1 && x.getUTCDate() === d && y > 1990 && y < 2100 ? x.toISOString().slice(0, 10) : ""; };
+// A date cell: an Excel day number (which Excel may have read as month/day from a day/month typing) or text "25/4/2026", "25-04-2026", "2026-04-25".
+function upDate(v) {
+  if (typeof v === "number" && v > 20000 && v < 80000) { const x = new Date(Math.round((v - 25569) * 864e5)); const y = x.getUTCFullYear(), m = x.getUTCMonth() + 1, d = x.getUTCDate();
+    return { a: upIso(y, m, d), b: d <= 12 && d !== m ? upIso(y, d, m) : "", serial: true }; }
+  const t = upText(v); let m;
+  if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(t))) return { a: upIso(+m[1], +m[2], +m[3]) };
+  if ((m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/.exec(t))) { const y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; return { a: upIso(y, +m[2], +m[1]) }; }
+  return { a: "" };
+}
+
+// ---- kinds of upload
+const UP_KINDS = {
+  spare: {
+    label: "Spare bus trips (one row per booking)",
+    note: "Columns used: From Date, To Date, Days, Total Rent, Driver, Cleaner, Driver padi, Cleaner padi, Permit Exp., Toll Gate, Litres, Fuel Price, Other Exp., Start KMs, End Kms, Remarks and Other Remarks (places). Totals worked out in the sheet (Total Expense, Collection, Balance, Kms Run, Mileage) are worked out again by the app.",
+    needsBus: true,
+    // Header names, matched loosely. A second "Driver" / "Cleaner" column is the padi paid to them.
+    cols: { from: /^from\s*date/, to: /^to\s*date/, days: /^days?$/, rent: /rent/, driver: /^driver/, cleaner: /^cleaner/, permit: /permit/, toll: /toll/, litres: /litre/, fuel: /fuel|diesel/, other: /^other\s*exp/, startKm: /^start/, endKm: /^end/, remarks: /^remarks?$/, places: /other\s*remarks|places|route/ },
+    twice: { driver: "padiPaid", cleaner: "cleanerPadi" }
+  }
+};
+function upColumns(kind, head) {
+  const K = UP_KINDS[kind], at = {};
+  head.forEach((h, i) => {
+    const t = upText(h).toLowerCase(); if (!t) return;
+    for (const [k, re] of Object.entries(K.cols)) {
+      if (!re.test(t)) continue;
+      if (at[k] == null) { at[k] = i; break; }
+      if (K.twice[k] && at[K.twice[k]] == null) { at[K.twice[k]] = i; break; }
+    }
+  });
+  return at;
+}
+function upMatchDriver(name) {
+  const n = upText(name).toUpperCase(); if (!n) return null;
+  const words = s => String(s || "").toUpperCase().replace(/[^A-Z ]/g, " ").split(/\s+/).filter(w => w.length > 1);
+  const hit = drivers.filter(d => { const w = words(d.name); return String(d.name || "").toUpperCase() === n || words(n).every(x => w.includes(x)); });
+  return hit.length === 1 ? hit[0] : null;
+}
+// Reads every row of a spare bus sheet into bookings, and says which rows are ready, already in the app, or have a problem.
+function upSpareRows(rows, vehicleId, paid, file) {
+  const head = rows[0] || [], at = upColumns("spare", head), out = [], cell = (r, k) => at[k] == null ? undefined : r[at[k]];
+  const missing = ["from", "to", "rent"].filter(k => at[k] == null);
+  if (missing.length) return { error: `The first row must hold the column names. Not found: ${missing.map(k => ({ from: "From Date", to: "To Date", rent: "Total Rent" })[k]).join(", ")}.` };
+  const data = rows.slice(1).map((r, i) => ({ r: r || [], line: i + 2 })).filter(x => cell(x.r, "from") != null || cell(x.r, "to") != null);
+  // Excel often turns "05/04/2026" into 4 May. Read all Excel dates both ways and keep the way that agrees with the Days column more often.
+  const fit = swap => data.reduce((a, x) => { const f = upDate(cell(x.r, "from")), t = upDate(cell(x.r, "to")), pick = d => d.serial && swap && d.b ? d.b : d.a;
+    const days = upNum(cell(x.r, "days")); return a + (pick(f) && pick(t) && days && Math.abs(inclDays(pick(f), pick(t)) - days) < 1 ? 1 : 0); }, 0);
+  const swap = fit(true) > fit(false);
+  const taken = ops.bookings.filter(b => b.vehicleId === vehicleId && b.status !== "cancelled");
+  data.forEach(x => {
+    const r = x.r, f = upDate(cell(r, "from")), t = upDate(cell(r, "to")), pick = d => d.serial && swap && d.b ? d.b : d.a;
+    const from = pick(f), to = pick(t) || from, days = upNum(cell(r, "days")) || (from && to ? inclDays(from, to) : 0);
+    const row = { line: x.line, from, to, days, problems: [], notes: [] };
+    if (!from) row.problems.push("start date not readable");
+    else if (to < from) row.problems.push("end date is before the start date");
+    else if (days && Math.abs(inclDays(from, to) - days) >= 1) row.notes.push(`dates make ${inclDays(from, to)} days, the sheet says ${days}`);
+    const rent = Math.round(upNum(cell(r, "rent")) || 0); if (!rent) row.problems.push("no total rent");
+    const remarks = upText(cell(r, "remarks")), rateM = /(\d{3,6})\s*[*x×]\s*\d/i.exec(remarks);
+    const drvName = upText(cell(r, "driver")), drv = upMatchDriver(drvName), cln = upText(cell(r, "cleaner"));
+    const n = k => { const v = upNum(cell(r, k)); return v ? Math.round(v * 100) / 100 : 0; };
+    const sKm = Math.round(n("startKm")), eKm = Math.round(n("endKm"));
+    if (sKm && eKm && eKm <= sKm) row.problems.push("end km is not more than start km");
+    const b = { id: genId("bk"), vehicleId, from, to, days, status: "completed", party: "", places: upText(cell(r, "places")), rent, rate: rateM ? +rateM[1] : days ? Math.round(rent / days) : rent,
+      ...(remarks ? { remarks } : {}), ...(drv ? { driverId: drv.id, driverName: drv.name } : drvName ? { driverName: drvName.toUpperCase() } : {}), ...(cln ? { cleanerName: cln.toUpperCase() } : {}),
+      bookedOn: from, createdByName: whoAmI(), importedFrom: file, importedOn: todayISO(), tsStatus: "approved", tsApprovedOn: todayISO(), tsApprovedByName: whoAmI() };
+    [["padiPaid", "padiPaid"], ["cleanerPadi", "cleanerPadi"], ["permit", "permit"], ["toll", "toll"], ["litres", "litres"], ["fuelCost", "fuel"], ["otherExp", "other"]].forEach(([f2, k]) => { const v = k === "litres" ? n(k) : Math.round(n(k)); if (v) b[f2] = v; });
+    if (sKm) b.startKm = sKm; if (eKm) b.endKm = eKm;
+    let c = bkCalc(b);
+    if (paid && c.due > 0) b.payments = [{ date: to || from, amount: c.due, mode: "Cash", note: "Imported from Excel: paid before the app", byName: whoAmI(), addedOn: todayISO() }];
+    c = bkCalc(b); Object.assign(b, { due: c.due, received: c.received, balance: c.balance, expense: c.exp, profit: c.profit });
+    row.driverNote = drv ? `${drv.name} (driver master)` : drvName ? `${drvName} (not in driver master)` : "—";
+    row.b = b; row.c = c;
+    if (from && !row.problems.length) {
+      const same = taken.find(o => o.from === from), clash = !same && taken.find(o => o.from <= to && from <= bkEnd(o));
+      if (same) row.skip = `already in the app (booking ${same.no || ""})`;
+      else if (clash) row.skip = `overlaps booking ${clash.no || ""} (${fmtShort(clash.from)} – ${fmtShort(bkEnd(clash))})`;
+    }
+    out.push(row);
+  });
+  return { rows: out, swap, at };
+}
+
+// ---- screen
+let upState = { kind: "spare", file: null, rows: null, busy: false, done: null };
+function renderUpload() {
+  if (acc.users !== "edit") return;
+  const S = upState, K = UP_KINDS[S.kind];
+  $("upKind").innerHTML = Object.entries(UP_KINDS).map(([k, x]) => `<option value="${k}"${k === S.kind ? " selected" : ""}>${esc(x.label)}</option>`).join("");
+  $("upNote").textContent = K.note;
+  const buses = spareBuses(), cur = $("upBus").value;
+  $("upBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))}</option>`).join("");
+  $("upBus").value = buses.some(v => v.id === cur) ? cur : "";
+  $("upBusRow").hidden = !K.needsBus;
+  const res = S.rows, list = res?.rows || [];
+  if (S.done) { $("upOut").innerHTML = `<div class="upok"><b>${S.done.n} trip${S.done.n === 1 ? "" : "s"} imported</b> into ${esc(S.done.bus)}${S.done.failed ? `, ${S.done.failed} could not be saved (check the connection and upload the same file again: rows already in the app are skipped)` : ""}. They are in the Booking planner and in Reports.</div>`; return; }
+  if (!res) { $("upOut").innerHTML = ""; return; }
+  if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
+  const ready = list.filter(x => !x.problems.length && !x.skip), skip = list.filter(x => x.skip), bad = list.filter(x => x.problems.length);
+  const tot = k => ready.reduce((a, x) => a + num(x.c[k]), 0);
+  $("upOut").innerHTML = `<div class="upsum"><span><b>${ready.length}</b> ready to import</span><span><b>${skip.length}</b> already in the app</span><span><b>${bad.length}</b> with a problem</span>` +
+    `<span>Collection <b>${rs(tot("due"))}</b></span><span>Expenses <b>${rs(tot("exp"))}</b></span></div>` +
+    (res.swap ? `<p class="sub" style="margin:0">Excel had read some dates as month/day (for example 8 May as 5 August). They have been put back to day/month using the Days column: please check the dates below.</p>` : "") +
+    `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Row</th><th>Dates</th><th class="n">Days</th><th>Places</th><th>Driver</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th><th class="n">Km</th><th>Status</th></tr></thead><tbody>` +
+    list.map(x => `<tr class="${x.problems.length ? "bad" : x.skip ? "skip" : ""}"><td class="num">${x.line}</td><td class="num" style="white-space:nowrap">${x.from ? fmtShort(x.from) : "?"}${x.to && x.to !== x.from ? ` – ${fmtShort(x.to)}` : ""}</td><td class="n">${fmtDays(num(x.days))}</td>` +
+      `<td>${esc(x.b.places || "—")}</td><td>${esc(x.driverNote)}</td><td class="n">${nf(x.c.due)}</td><td class="n">${nf(x.c.exp)}</td><td class="n">${nf(x.c.due - x.c.exp)}</td><td class="n">${x.c.km ? nf(x.c.km) : "—"}</td>` +
+      `<td>${x.problems.length ? `<span class="pill expired">Problem</span> ${esc(x.problems.join("; "))}` : x.skip ? `<span class="pill off">Skipped</span> ${esc(x.skip)}` : `<span class="pill ok">Ready</span>${x.notes.length ? ` <span class="sub">${esc(x.notes.join("; "))}</span>` : ""}`}</td></tr>`).join("") + `</tbody></table></div>` +
+    `<div class="rxbtns"><span class="sub" style="flex:1">Imported trips are saved as Completed with the trip sheet approved; they can be changed like any other booking.</span><button class="btn primary" type="button" id="upGo"${!ready.length || S.busy ? " disabled" : ""}>${S.busy ? "Importing…" : `Import ${ready.length} trip${ready.length === 1 ? "" : "s"}`}</button></div>`;
+}
+async function upLoad() {
+  const f = $("upFile").files?.[0]; upState.done = null;
+  if (!f) { upState.rows = null; renderUpload(); return; }
+  if (UP_KINDS[upState.kind].needsBus && !$("upBus").value) { upState.rows = { error: "Choose the bus these trips belong to first." }; renderUpload(); return; }
+  try {
+    const buf = await f.arrayBuffer();
+    const rows = /\.csv$/i.test(f.name) ? upReadCsv(new TextDecoder().decode(buf)) : /\.xlsx$/i.test(f.name) ? await upReadXlsx(buf) : null;
+    if (!rows) { upState.rows = { error: "Choose an Excel file saved as .xlsx (or a .csv file). Older .xls files: open in Excel and save as .xlsx." }; renderUpload(); return; }
+    upState.file = f.name; upState.rows = upSpareRows(rows, $("upBus").value, $("upPaid").checked, f.name);
+  } catch { upState.rows = { error: "This file could not be read. Open it in Excel, save it as .xlsx and try again." }; }
+  renderUpload();
+}
+// Guess the bus from the file name (e.g. "3366_2026.xlsx" is the bus whose number ends in 3366).
+$("upFile").addEventListener("change", () => {
+  const f = $("upFile").files?.[0]; if (f && !$("upBus").value) { const d = (f.name.match(/\d{4}/g) || []).find(x => spareBuses().some(v => plateKey(v.plateNo).endsWith(x))); if (d) $("upBus").value = spareBuses().find(v => plateKey(v.plateNo).endsWith(d)).id; }
+  upLoad();
+});
+["upBus", "upPaid"].forEach(id => $(id).addEventListener("change", upLoad));
+$("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; upLoad(); });
+$("upOut").addEventListener("click", async e => {
+  if (e.target.id !== "upGo" || upState.busy || acc.users !== "edit") return;
+  const ready = upState.rows.rows.filter(x => !x.problems.length && !x.skip); upState.busy = true; renderUpload();
+  let n = 0, failed = 0;
+  for (const x of ready) {
+    const b = { ...x.b, no: nextBkNo() };
+    try { await opsSave("bookings", b); if (!ops.bookings.some(o => o.id === b.id)) ops.bookings.push(b); n++;
+      await addBHistory(bookingChanges(null, b, `Imported from Excel (${upState.file}, row ${x.line})`)).catch(() => {}); }
+    catch { failed++; }
+  }
+  upState.busy = false; upState.done = { n, failed, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)) };
+  $("upFile").value = ""; upState.rows = null; renderUpload(); toast(`${n} trip${n === 1 ? "" : "s"} imported`);
+});
+
 async function dayTripSave(t) {
   if (tripDb) { const { id, ...b } = t; return tripDb.collection("trips").doc(id).set(b); }
   const i = tripsLocal.findIndex(x => x.id === t.id); i >= 0 ? tripsLocal[i] = t : tripsLocal.push(t);
@@ -5506,7 +5739,7 @@ function renderApprovals() {
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
 const AU_PAGE = { renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Day entry", tspare: "Booking planner",
-  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", tfuel: "Fuel log", trexp: "Route expenses", tpadi: "Padi calculation", users: "User master", storage: "Storage & backup", audit: "Admin console" };
+  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", tfuel: "Fuel log", trexp: "Route expenses", tpadi: "Padi calculation", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
   if (!auditDb || !auditSess) return;
@@ -6107,6 +6340,7 @@ function renderOps() {
   if (view === "tfuel") { renderFuel(); return; }
   if (view === "trexp") { renderRxp(); return; }
   if (view === "tpadi") { renderPadi(); return; }
+  if (view === "tutil") { renderUpload(); return; }
   const ro = !canTrips;
   ["dbRoTag", "kRoTag"].forEach(id => $(id).hidden = !ro); $("sRoTag").hidden = canBookings;
   if (view === "thub") renderHub();
