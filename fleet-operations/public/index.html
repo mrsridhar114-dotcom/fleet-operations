@@ -374,6 +374,15 @@ table.ttable td.pos { color: var(--ok); } table.ttable td.neg { color: var(--dan
 table.ttable td.rm { max-width: 220px; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
 table.ttable tfoot td, table.ctable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); }
 table.ctable td.nm { font-weight: 600; }
+/* Bookings in the month: the columns share the width (text wraps) so the table never scrolls sideways. */
+@media (min-width: 701px) {
+  #bList th { white-space: normal; padding: 8px 6px; } #bList td { padding: 7px 6px; }
+  #bList td.nm, #bList td:nth-child(5) { white-space: normal; overflow-wrap: anywhere; }
+  #bList td.nm { min-width: 140px; } #bList td.nm .sub { font-weight: 500; }
+}
+/* Narrower windows: the less used columns step out (they are in the booking itself). */
+@media (min-width: 701px) and (max-width: 1250px) { #bList :is(th, td):is(:nth-child(7), :nth-child(8), :nth-child(9)) { display: none; } }
+@media (min-width: 701px) and (max-width: 1050px) { #bList :is(th, td):nth-child(5) { display: none; } #bList td:nth-child(3) { white-space: normal !important; } }
 .four { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 @media (max-width: 520px) { .four { grid-template-columns: 1fr 1fr; } }
 .tpanels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -1321,6 +1330,17 @@ html.bw-on, html.bw-on body { overflow: hidden; }
   .tsdslc > h4 { display: none; } .tsdsl .dslhead { font-size: 13px; } .tsdsl .dslhead b { color: var(--accent); text-transform: uppercase; letter-spacing: .06em; font-size: 12px; }
   .tsdsl .dslrow { padding: 1px 0; } .tsdsl .dslrow :is([data-dfl], [data-dlg], .btn) { padding-top: 3px; padding-bottom: 3px; }
   #tsAppr { flex-wrap: nowrap; }
+  /* Special permit: heading and box on one line. Narrow headings in the tables stay on one line. */
+  .tscolx .bkexhead, .tscolx .bkexrow { grid-template-columns: minmax(0, 1.25fr) 84px minmax(0, 1fr) 26px; }
+  .tscolx [data-exrm] { padding: 4px; color: var(--danger); }
+  .tsspl { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 14px; } .tsspl .bkspl { min-height: 34px; }
+  .tsc .bkexhead > *, .tsdsl .dslcols > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-height: 760px) {
+    #tsApprText { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #bkDrawer .bkhead { padding-top: 6px; padding-bottom: 6px; } #bkDrawer > footer { padding-top: 8px; padding-bottom: 8px; }
+    #bkDrawer > form { padding-top: 8px; padding-bottom: 8px; }
+    #bkTripSet .tsg, #bkTripSet .tscol { gap: 8px; } #bkTripSet .tsc { padding: 8px 12px 9px; gap: 5px; }
+  }
   @media (min-height: 860px) {
     #bkTripSet .tsc { padding: 14px 16px 16px; gap: 10px; } #bkTripSet .tsg, #bkTripSet .tscol { gap: 14px; }
     #bkTripSet .tsc :is(input, select) { padding-top: 9px !important; padding-bottom: 9px !important; font-size: 15px; }
@@ -2689,19 +2709,26 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="bkcolr"><span>Toll gate <span class="sub">(from On the way)</span></span><b id="bkT_toll"></b></div>
           <div class="bkcolr tot"><span>Total collection</span><b id="bkT_coltot"></b></div>
         </div>
+          <div class="tsc tsspl"><h4>Special Permit No.</h4>
+          <label class="bkspl" for="bkSpl"><span id="bkSplPre">TN-SPL-</span><input id="bkSpl" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Running no." aria-label="Special permit running number"></label>
+          <span class="hint">Type only the running number from the government site; TN, the year and SPL are filled in.</span>
+        </div>
           <div class="tsc tscrew"><h4>Driver and cleaner</h4><div class="tsf">
           <div class="field"><label for="bkDriver">Driver</label><select id="bkDriver"></select><span class="hint" id="bkDrvHint"></span><span class="err" id="e-bkDriver"></span></div>
           <div class="field"><label for="bkPadiPaid">Padi</label><input id="bkPadiPaid" type="number" inputmode="numeric" min="0" aria-label="Driver padi"></div>
           <div class="field"><label for="bkCleaner">Cleaner</label><input id="bkCleaner" list="bkCleaners" autocomplete="off" maxlength="60"><datalist id="bkCleaners"></datalist><span class="err" id="e-bkCleaner"></span></div>
           <div class="field"><label for="bkCleanerPadi">Padi</label><input id="bkCleanerPadi" type="number" inputmode="numeric" min="0" aria-label="Cleaner padi"></div>
         </div></div>
-          <div class="tsc tsw"><div class="field"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div></div>
         </div>
         <div class="tscol tsdsl">
           <div class="tsc tsotw"><h4>On the way and other expenses</h4><div class="tsf">
           <div class="field"><label for="bkToll">Toll gate</label><input id="bkToll" type="number" inputmode="numeric" min="0"></div>
           <div class="field"><label for="bkPermit">Permit expense</label><input id="bkPermit" type="number" inputmode="numeric" min="0"></div>
-          <div class="field"><label for="bkOther">Other exp.</label><input id="bkOther" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkOthPooja">Pooja</label><input id="bkOthPooja" type="number" inputmode="numeric" min="0" data-oth="Pooja"></div>
+          <div class="field"><label for="bkOthMech">Mechanic</label><input id="bkOthMech" type="number" inputmode="numeric" min="0" data-oth="Mechanic"></div>
+          <div class="field"><label for="bkOthOther">Other</label><input id="bkOthOther" type="number" inputmode="numeric" min="0" data-oth="Other"></div>
+          <div class="field"><label for="bkOthNote">Other is for</label><input id="bkOthNote" maxlength="80" autocomplete="off" placeholder="e.g. water, parking" data-oth="note"></div>
+          <input type="hidden" id="bkOther">
         </div></div>
           <div class="tsc tsw tsdslc"><h4>Diesel</h4>
           <div class="dsl" id="bkDslBox">
@@ -2732,10 +2759,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="field"><span class="lbl">Balance</span><output class="calcbox" id="bkT_bal"></output></div>
           <div class="field"><span class="lbl">Avg col / day</span><output class="calcbox" id="bkT_avg"></output></div>
         </div></div>
-          <div class="tsc"><h4>Special Permit No.</h4>
-          <label class="bkspl" for="bkSpl"><span id="bkSplPre">TN-SPL-</span><input id="bkSpl" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Running no." aria-label="Special permit running number"></label>
-          <span class="hint">Type only the running number from the government site; TN, the year and SPL are filled in.</span>
-        </div>
+          <div class="tsc tsw"><div class="field"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div></div>
         </div>
       </div>
     </section>
@@ -8504,7 +8528,7 @@ async function twSave(send) {
     const put = (id, v) => { const x = $(id); if (x && !x.disabled) x.value = num(v) > 0 ? Math.round(num(v)) : ""; };
     TW_MONEY.forEach(([k]) => put({ padiPaid: "bkPadiPaid", cleanerPadi: "bkCleanerPadi", permit: "bkPermit", toll: "bkToll" }[k], tw[k]));
     put("bkOther", twOtherSum()); put("bkStartKm", tw.startKm); put("bkEndKm", tw.endKm);
-    bkOtherList = twOtherList(); bkFiles = tw.files.map(f => ({ ...f }));
+    bkOtherList = twOtherList(); bkOthFill(); bkFiles = tw.files.map(f => ({ ...f }));
     bkSaveAs = send ? "submit" : "draft"; syncBk();
     const msg = send ? "Sent to the office" : tw.admin ? "Trip sheet saved" : "Saved. Send it to the office after the trip.";
     $("bkForm").requestSubmit();
@@ -8760,7 +8784,7 @@ async function bwFileRemove(i) {
 
 /* ---------- booking window (computer): extra from party, driver advance, print trip sheet ---------- */
 const bkExRowHtml = (x = {}) => `<div class="bkexrow"><select data-exk aria-label="Extra is for">${EXTRA_KINDS.map(k => `<option${(EXTRA_KINDS.includes(x.kind) ? x.kind : "Other") === k ? " selected" : ""}>${esc(k)}</option>`).join("")}</select>` +
-  `<input type="number" inputmode="numeric" min="0" data-exa value="${x.amt ?? ""}" placeholder="₹" aria-label="Amount"><input data-exn maxlength="80" value="${esc(x.note || "")}" placeholder="e.g. 150 km over" aria-label="Note"><button class="icon" type="button" data-exrm>Remove</button></div>`;
+  `<input type="number" inputmode="numeric" min="0" data-exa value="${x.amt ?? ""}" placeholder="₹" aria-label="Amount"><input data-exn maxlength="80" value="${esc(x.note || "")}" placeholder="e.g. 150 km over" aria-label="Note"><button class="icon" type="button" data-exrm aria-label="Remove this extra" title="Remove">✕</button></div>`;
 $("bkExAdd").onclick = () => { $("bkExtras").insertAdjacentHTML("beforeend", bkExRowHtml({ kind: EXTRA_KINDS[0] })); $("bkExtras").lastElementChild.querySelector("[data-exa]").focus(); syncBk(); };
 $("bkExtras").addEventListener("click", e => { const x = e.target.closest("[data-exrm]"); if (x) { x.closest(".bkexrow").remove(); syncBk(); } });
 $("bkTsPrint").onclick = () => { const b = ops.bookings.find(x => x.id === bkEditId); if (b) tsPrint(b, $("bkTsPrint")); };
@@ -8913,7 +8937,7 @@ function openBooking(id, preset, full) {
   $("bkBookedBy").innerHTML = `<option value="">Choose the driver</option>` + drivers.filter(d => (d.status !== "Inactive" && vCatsOf(d).includes("Spare bus")) || d.id === b?.bookedById).map(d => `<option value="id:${d.id}">${esc(d.name)}</option>`).join("") +
     (b?.bookedByName && !b.bookedById ? `<option value="name:${esc(b.bookedByName)}">${esc(b.bookedByName)}</option>` : "");
   $("bkBookedBy").value = b?.bookedById ? "id:" + b.bookedById : b?.bookedByName ? "name:" + b.bookedByName : "";
-  bkFiles = (b?.attachments || []).map(f => ({ ...f })); bkOtherList = (b?.otherList || []).map(x => ({ ...x })); bkMsgEdited = { party: false, drv: false };
+  bkFiles = (b?.attachments || []).map(f => ({ ...f })); bkOtherList = (b?.otherList || []).map(x => ({ ...x })); bkOthFill(); bkMsgEdited = { party: false, drv: false };
   $("bkExtras").innerHTML = bkExtras(b || {}).map(bkExRowHtml).join(""); $("bkSpl").value = splNum(b?.splPermit); bkDa = null; clearTimeout(bkDaTimer);
   $("bkMsgParty").value = $("bkMsgDrv").value = "";
   // A cleaner can be a driver too: drivers who have driven a spare bus come first, then other active drivers, conductors and past cleaners.
@@ -9028,6 +9052,26 @@ function checkPill(list) {
 
 /* ---------- booking files ---------- */
 let bkFiles = [], bkOtherList = [];
+// Other expenses on the computer trip sheet, as on the phone: Pooja, Mechanic and Other (with what it was for).
+// They are kept in the booking's otherList; their total is the trip sheet's other expense.
+const BK_OTH = { Pooja: "bkOthPooja", Mechanic: "bkOthMech", Other: "bkOthOther" };
+const bkOthKind = x => BK_OTH[x.kind] ? x.kind : "Other";
+function bkOthFill() {
+  const list = bkOtherList.length ? bkOtherList : num($("bkOther").value) ? [{ kind: "Other", amt: num($("bkOther").value) }] : [];
+  const sum = { Pooja: 0, Mechanic: 0, Other: 0 }, notes = [];
+  list.forEach(x => { const k = bkOthKind(x); sum[k] += num(x.amt); if (k === "Other" && x.note) notes.push(x.note); });
+  Object.entries(BK_OTH).forEach(([k, el]) => $(el).value = sum[k] ? Math.round(sum[k]) : "");
+  $("bkOthNote").value = notes.join(", ");
+}
+function bkOthRead() {
+  const prev = k => bkOtherList.find(x => bkOthKind(x) === k);
+  bkOtherList = Object.entries(BK_OTH).filter(([, el]) => num($(el).value) > 0).map(([k, el]) => {
+    const p = prev(k), note = k === "Other" ? $("bkOthNote").value.trim().replace(/\s+/g, " ") : p?.note || "";
+    return { kind: k, amt: Math.round(num($(el).value)), ...(note ? { note } : {}), ...(p?.fileId ? { fileId: p.fileId } : {}) };
+  });
+  const t = bkOtherList.reduce((a, x) => a + x.amt, 0); $("bkOther").value = t || "";
+}
+$("bkExpGrid").addEventListener("input", e => { if (e.target.dataset.oth) bkOthRead(); });
 function renderBkFiles() {
   const canE = bkFilesEdit();
   $("bkFiles").innerHTML = bkFiles.length ? bkFiles.map((f, i) => `<div class="bkfile"><span class="fk">${esc(f.kind)}</span><a href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener">${FILE_SVG}${esc(f.name)}</a><span class="fm">${f.at ? fmtShort(f.at.slice(0, 10)) : ""}${f.byName ? ` · ${esc(f.byName)}` : ""}</span>${canE ? `<button class="icon" type="button" data-frm="${i}">Remove</button>` : "<span></span>"}</div>`).join("")
@@ -9415,7 +9459,7 @@ function syncTsAppr(b) {
   $("tsAppr").className = "bkappr" + (st === "rejected" ? " rej" : st === "approved" ? " ok" : "");
   $("tsApprText").innerHTML = st === "submitted" ? `<b>Trip sheet sent for approval${num(b.tsSubmitCount) > 1 ? ` · resubmitted (${ordinal(b.tsSubmitCount)} time)` : ""}.</b> By ${esc(b.tsSubmittedByName || "trip update")}${b.tsSubmittedOn ? ` on ${fmtDate(b.tsSubmittedOn)}` : ""}.${canBookings ? " Check the expenses and km, correct anything if needed, then approve or send it back." : ""}${lastRej ? ` Last sent back: <i>${esc(lastRej.reason)}</i>` : ""}`
     : st === "approved" ? `<b>Trip sheet approved</b>${b.tsApprovedByName ? ` by ${esc(b.tsApprovedByName)}` : ""}${b.tsApprovedOn ? ` on ${fmtDate(b.tsApprovedOn)}` : ""}.`
-    : `<b>Trip sheet sent back</b>${b.tsRejectedByName ? ` by ${esc(b.tsRejectedByName)}` : ""}${b.tsRejectedOn ? ` on ${fmtDate(b.tsRejectedOn)}` : ""}${b.tsRejectReason ? `: ${esc(b.tsRejectReason).replace(/[.\s]*$/, "")}.` : "."}`;
+    : `<b>Trip sheet sent back</b>${b.tsRejectedByName ? ` by ${esc(b.tsRejectedByName)}` : ""}${b.tsRejectedOn ? ` on ${fmtDate(b.tsRejectedOn)}` : ""}${b.tsRejectReason ? `: ${esc(b.tsRejectReason).replace(/[.\s]*$/, "")}.` : "."}`; $("tsApprText").title = $("tsApprText").textContent;
 }
 $("tsApprove").onclick = async () => {
   if (!canBookings) return;
