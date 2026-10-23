@@ -763,10 +763,10 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .ckpill.bad { background: var(--danger-soft); color: var(--danger); }
 .ckpill.ok { background: var(--ok-soft); color: var(--ok); }
 .bkfiles { display: flex; flex-direction: column; gap: 6px; }
-.bkfile { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
-.bkfile .fk { font-weight: 600; font-size: 12px; color: var(--muted); }
-.bkfile .fm { font-size: 11px; color: var(--muted); white-space: nowrap; }
-.bkfile a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bkftbl .fk { display: inline-block; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 600; }
+.bkftbl td.fn { max-width: 340px; overflow: hidden; text-overflow: ellipsis; } .bkftbl th.c, .bkftbl td.c { text-align: center; width: 1%; }
+.bkftbl .fview { display: inline-flex; padding: 4px 6px; border-radius: 6px; color: var(--accent); } .bkftbl .fview:hover { background: var(--accent-soft); }
+.bkftbl .fdel { color: var(--danger); padding: 4px 6px; }
 .bkupl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .bkupl select { padding: 6px 9px; font-size: 14px; }
 .bksend { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -778,7 +778,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .bksend .acts .btn, .bksend .acts a.btn { padding: 6px 12px; font-size: 13px; text-decoration: none; }
 .bksend .acts a.btn.wa { background: #1f9d55; border-color: #1f9d55; color: #fff; }
 .bksend .acts [aria-disabled="true"] { opacity: .45; pointer-events: none; }
-@media (max-width: 760px) { .bksend { grid-template-columns: 1fr; } .bksend textarea { min-height: 150px; } .bkfile { grid-template-columns: minmax(0, 1fr) auto; } .bkfile .fk { grid-column: 1 / -1; } }
+@media (max-width: 760px) { .bksend { grid-template-columns: 1fr; } .bksend textarea { min-height: 150px; } .bkftbl :is(th, td):nth-child(3), .bkftbl :is(th, td):nth-child(4) { display: none; } }
 .rfilt { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .rfilt select { padding: 7px 10px; font-size: 14px; }
 /* report charts: one money axis each; colours validated for the light and dark surfaces */
@@ -3175,6 +3175,7 @@ const changeKind = (h, info = FIELD_INFO) => {
   if (info[h.field]?.doc) return !h.from ? "recorded" : !h.to ? "cleared" : h.to > h.from ? "renewed" : "corrected";
   return !h.from ? "added" : !h.to ? "removed" : "changed";
 };
+const EYE_SVG = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const FILE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>`;
 const HIST_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>`;
 let hVid = null, hKind = "vehicle", VEH_HIST_OPTS = "";
@@ -6625,7 +6626,7 @@ function xlBookings(recs) {
       put(ws, `T${r}`, R.T, S.int, `IF(S${r}>0,S${r}-R${r},"")`); put(ws, `U${r}`, R.U, S.int, `IF(AND(C${r}>0,N(T${r})>0),T${r}/C${r},"")`); put(ws, `V${r}`, R.V, S.dec, `IF(AND(K${r}>0,N(T${r})>0),T${r}/K${r},"")`);
       const rateNote = b.rate && b.days ? `${b.rate} * ${b.days} = ${b.rent || Math.round(b.rate * b.days)}` : "";
       put(ws, `W${r}`, [rateNote, b.remarks, b.tripNote].filter(Boolean).join(" · ")); put(ws, `X${r}`, b.places || "");
-      put(ws, `Y${r}`, b.no || ""); put(ws, `Z${r}`, b.party || ""); put(ws, `AA${r}`, b.phone || ""); put(ws, `AB${r}`, BK_STAGES[b.status] || b.status);
+      put(ws, `Y${r}`, b.no || ""); put(ws, `Z${r}`, b.party || ""); put(ws, `AA${r}`, b.phone || ""); put(ws, `AB${r}`, stageText(b));
       put(ws, `AC${r}`, c.received, S.int); put(ws, `AD${r}`, c.balance, S.int);
       return R;
     });
@@ -6645,7 +6646,7 @@ function xlBookings(recs) {
   const RH = ["Booking No.", "Booked On", "Bus", "Party", "Phone", "Address", "Places", "From Date", "To Date", "Days", "Rent Type", "Rent / Day", "Total Rent", "Driver Padi", "Paid by Party", "Booked By", "Driver", "Cleaner", "Stage", "Collection", "Received", "Balance", "Our Expense", "Profit", "Remarks", "Files", "Created By", "Submitted By", "Approved By", "Rejected (times)"];
   xlHeads(reg, 4, RH); reg.freeze = 4;
   all.forEach((b, i) => { const r = 5 + i, c = bkCalc(b), vals = [b.no || "", b.bookedOn ? { d: b.bookedOn } : "", C.plate(b.vehicleId), b.party || "", b.phone || "", b.address || "", b.places || "", b.from ? { d: b.from } : "", b.to || b.from ? { d: b.to || b.from } : "",
-    C.n(b.days), b.rentType === "day" ? "Day rent" : "Empty rent", C.n(b.rate), C.n(b.rent), C.n(b.padi), ppNames(b).join(", "), C.driver(b.bookedById, b.bookedByName), C.driver(b.driverId, b.driverName), b.cleanerName || "", BK_STAGES[b.status] || b.status || "",
+    C.n(b.days), b.rentType === "day" ? "Day rent" : "Empty rent", C.n(b.rate), C.n(b.rent), C.n(b.padi), ppNames(b).join(", "), C.driver(b.bookedById, b.bookedByName), C.driver(b.driverId, b.driverName), b.cleanerName || "", stageText(b),
     c.due, c.received, c.balance, c.exp, c.profit, [b.remarks, b.tripNote].filter(Boolean).join(" · "), (b.attachments || []).length || "", b.createdByName || "", b.submittedByName || "", b.approvedByName || "", (b.rejections || []).length || ""];
     vals.forEach((v, k) => put(reg, XL.col(k) + r, v, v && typeof v === "object" ? S.date : typeof v === "number" ? (Number.isInteger(v) ? S.int : S.dec) : S.text)); });
   if (all.length) { const r = 5 + all.length, L = r - 1; put(reg, `A${r}`, "Total", S.ttext);
@@ -7688,6 +7689,8 @@ function drvCalc(b, st) {
 // One party = one phone number (or the name when there is no number), in the party list of the booking screens.
 const partyKey = b => { const name = String(b?.party || "").trim(), ph = String(b?.phone || "").replace(/\D/g, "").slice(-10); return ph.length === 10 ? ph : name ? "n:" + name.toUpperCase() : ""; };
 const stageName = b => tripClosed(b) ? "Closed" : BK_STAGES[b?.status] || "";
+// The stage as people see it: a closed trip reads Closed whatever its booking stage.
+const stageText = b => tripClosed(b) ? "Closed" : bkSettled(b) ? "Settled" : BK_STAGES[b.status] || b.status || "";
 const stageTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : bkSettled(b) ? '<span class="bstage completed">✓ Settled</span>' : `<span class="bstage ${b.status}">${BK_STAGES[b.status] || ""}</span>`;
 const clashOf = (b, ignoreId) => ops.bookings.find(x => x.id !== ignoreId && x.vehicleId === b.vehicleId && blocks(x) && x.from <= bkEnd(b) && bkEnd(x) >= b.from);
 const ymAdd = (ym, n) => { const d = new Date(+ym.slice(0, 4), +ym.slice(5, 7) - 1 + n, 1); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; };
@@ -7733,7 +7736,7 @@ function renderSpare() {
     const chipStyle = slim >= 11 ? `;height:${slim}px;line-height:${slim - 2}px;font-size:${slim < 15 ? 9 : 10}px;padding:0 4px` : "";
     const busy = new Set(onAll.filter(blocks).map(b => b.vehicleId)), free = buses.filter(b => !busy.has(b.id)).length;
     h += `<div class="bday${lo && iso >= lo && iso <= hi ? " sel" : ""}${iso === today ? " today" : ""}${iso < today ? " past" : ""}" role="gridcell" tabindex="0" data-day="${iso}" aria-label="${fmtDate(iso)}: ${free} of ${buses.length} buses free"><span class="btop"><span class="bnum">${d}</span><span class="bfree">${free ? `${free} free` : ""}</span></span>` +
-      on.map(b => `<button type="button" class="bchip vc ${b.status}" style="--bh:${bkHues.get(b.id) ?? busHue(b.vehicleId)}${chipStyle}" data-bk="${b.id}" title="${esc(pl(b.vehicleId))} · ${esc(b.party || "")} · ${esc(b.places || "")} (${BK_STAGES[b.status]})">${b.status === "completed" ? "✓ " : ""}${b.vehicleId ? esc(pl(b.vehicleId).replace(/\s+/g, "").slice(-4)) : "No bus"}${b.from === iso || dow === 0 || d === 1 ? `<span class="bp"> · ${esc(b.party || "")}</span>` : ""}</button>`).join("") +
+      on.map(b => `<button type="button" class="bchip vc ${b.status}" style="--bh:${bkHues.get(b.id) ?? busHue(b.vehicleId)}${chipStyle}" data-bk="${b.id}" title="${esc(pl(b.vehicleId))} · ${esc(b.party || "")} · ${esc(b.places || "")} (${esc(stageText(b))})">${tripClosed(b) ? "🔒 " : b.status === "completed" ? "✓ " : ""}${b.vehicleId ? esc(pl(b.vehicleId).replace(/\s+/g, "").slice(-4)) : "No bus"}${b.from === iso || dow === 0 || d === 1 ? `<span class="bp"> · ${esc(b.party || "")}</span>` : ""}</button>`).join("") +
       (more ? `<span class="bmore">+${more} more</span>` : "") + `</div>`;
   }
   $("bCal").innerHTML = h;
@@ -8904,7 +8907,7 @@ function bkTabBadges(b, c) {
   const cur = bkEditId ? ops.bookings.find(x => x.id === bkEditId) : null;
   if (cur) { const d = drvCalc(cur, bkDa); tb("bkTb-adv", cur.drvSettle ? "Settled" : !d.total && !d.ext && !d.spent ? "" : d.net < 0 ? `Pay ${rs(-d.net)}` : d.net > 0 ? `Gets ${rs(d.net)}` : "Nil", cur.drvSettle ? "ok" : d.net ? "warn" : ""); }
   if (cur?.tsStatus || bkMode === "trip") { const op = cur && tsIsOpen(cur);
-    tb("bkTb-trip", bkMode === "trip" && !op ? `Opens ${fmtShort(tsOpenDate(cur))}` : TS_STAGES[cur?.tsStatus] || "To fill", cur?.tsStatus === "approved" ? "ok" : cur?.tsStatus === "rejected" ? "warn" : bkMode === "trip" && !op ? "" : "warn"); return; }
+    tb("bkTb-trip", tripClosed(cur) ? "Closed" : bkMode === "trip" && !op ? `Opens ${fmtShort(tsOpenDate(cur))}` : TS_STAGES[cur?.tsStatus] || "To fill", tripClosed(cur) || cur?.tsStatus === "approved" ? "ok" : cur?.tsStatus === "rejected" ? "warn" : bkMode === "trip" && !op ? "" : "warn"); return; }
   tb("bkTb-trip", b.status === "draft" || b.status === "pending" || b.status === "rejected" || b.status === "enquiry" || b.status === "booked" || b.status === "cancelled" ? "" : b.endKm ? "Filled" : "To fill", b.endKm ? "ok" : "warn");
 }
 let bkMode = "view", bkApproving = false, bkSaveAs = "draft", bkHalfDay = "";
@@ -9094,7 +9097,10 @@ function bkOthRead() {
 $("bkExpGrid").addEventListener("input", e => { if (e.target.dataset.oth) bkOthRead(); });
 function renderBkFiles() {
   const canE = bkFilesEdit();
-  $("bkFiles").innerHTML = bkFiles.length ? bkFiles.map((f, i) => `<div class="bkfile"><span class="fk">${esc(f.kind)}</span><a href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener">${FILE_SVG}${esc(f.name)}</a><span class="fm">${f.at ? fmtShort(f.at.slice(0, 10)) : ""}${f.byName ? ` · ${esc(f.byName)}` : ""}</span>${canE ? `<button class="icon" type="button" data-frm="${i}">Remove</button>` : "<span></span>"}</div>`).join("")
+  // One row per file; the eye opens the file as before.
+  $("bkFiles").innerHTML = bkFiles.length ? `<div class="tscroll"><table class="ctable bkftbl"><thead><tr><th>Kind</th><th>File</th><th>Added on</th><th>Added by</th><th class="c">View</th>${canE ? "<th></th>" : ""}</tr></thead><tbody>` +
+      bkFiles.map((f, i) => { const u = `/_blob/${encodeURIComponent(f.id)}`; return `<tr><td><span class="fk">${esc(f.kind || "Others")}</span></td><td class="fn"><a href="${u}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(f.name)}</a></td><td>${f.at ? fmtDate(f.at.slice(0, 10)) : "—"}</td><td>${esc(f.byName || "—")}</td>` +
+        `<td class="c"><a class="fview" href="${u}" target="_blank" rel="noopener" aria-label="View ${esc(f.name)}" title="View">${EYE_SVG}</a></td>${canE ? `<td class="c"><button class="icon fdel" type="button" data-frm="${i}" aria-label="Remove ${esc(f.name)}" title="Remove">✕</button></td>` : ""}</tr>`; }).join("") + "</tbody></table></div>"
     : `<p class="sub" style="margin:0">No files attached. Keep permits, the trip sheet, diesel bills and other papers here.</p>`;
   $("bkTb-files").textContent = bkFiles.length || "";
 }
@@ -9437,7 +9443,7 @@ function tsOpenDate(b) {
   return bkEnd(b);
 }
 const tsIsOpen = b => canBookings || b.status === "completed" || (!!b.from && tsOpenDate(b) <= todayISO());
-const tsTag = b => `<span class="bstage ts-${b.tsStatus || "none"}">${TS_STAGES[b.tsStatus] || "Not started"}</span>`;
+const tsTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ts-${b.tsStatus || "none"}">${TS_STAGES[b.tsStatus] || "Not started"}</span>`;
 // The trip sheet as it is on screen, laid over the saved booking; nothing else on the booking changes.
 function tripFromForm(cur) {
   const f = bkRead(), next = { ...cur };
@@ -9561,12 +9567,14 @@ const tsWorkerOnly = () => acc.tripsheets === "update" && !canBookings;
 function tsLists() {
   const worker = tsWorkerOnly(), me = myUserId || "", mineOk = b => canBookings || !b.tsBy || b.tsBy === me;
   const conf = ops.bookings.filter(b => b.status === "booked" || b.status === "ontrip" || (b.status === "completed" && (!worker || b.tsStatus === "draft" || b.tsStatus === "rejected" || b.tsStatus === "submitted")));
+  // A closed trip is finished: it is listed with the approved ones (for admins), not as something to fill, send or wait for.
+  const open = conf.filter(b => !tripClosed(b)), endOn = b => b.tsApprovedOn || b.closedOn || "";
   return {
-    back: conf.filter(b => b.tsStatus === "rejected" && mineOk(b)),
-    fill: conf.filter(b => tsIsOpen(b) && (!b.tsStatus || b.tsStatus === "draft") && mineOk(b)),
-    sent: conf.filter(b => b.tsStatus === "submitted" && (!worker || b.tsSubmittedBy === me || b.tsBy === me)),
-    soon: conf.filter(b => !tsIsOpen(b) && !b.tsStatus),
-    done: worker ? [] : conf.filter(b => b.tsStatus === "approved").sort((a, c) => String(c.tsApprovedOn || "").localeCompare(String(a.tsApprovedOn || ""))).slice(0, 20)
+    back: open.filter(b => b.tsStatus === "rejected" && mineOk(b)),
+    fill: open.filter(b => tsIsOpen(b) && (!b.tsStatus || b.tsStatus === "draft") && mineOk(b)),
+    sent: open.filter(b => b.tsStatus === "submitted" && (!worker || b.tsSubmittedBy === me || b.tsBy === me)),
+    soon: open.filter(b => !tsIsOpen(b) && !b.tsStatus),
+    done: worker ? [] : ops.bookings.filter(b => b.tsStatus === "approved" || tripClosed(b)).sort((a, c) => String(endOn(c)).localeCompare(String(endOn(a)))).slice(0, 20)
   };
 }
 function updTsBadge() { try { const L = tsLists(), n = L.back.length + L.fill.length; $("tsBadge").hidden = !n || !canTsUpd || canBookings; $("tsBadge").textContent = n; } catch {} }
@@ -9589,7 +9597,7 @@ function renderTsList() {
     sec("To fill", "Enter the expenses and km, then submit for approval.", L.fill.sort(byDate), "fill", "Nothing to fill right now.") +
     sec("Waiting for approval", "Sent to the admin", L.sent.sort(byDate), "sent", "") +
     sec("Coming up", "Confirmed trips. The trip sheet opens on the date shown.", L.soon.sort(byDate).slice(0, 20), "soon", "") +
-    sec("Approved", "The last 20 approved trip sheets", L.done, "done", "");
+    sec("Approved or closed", "The last 20 approved or closed trip sheets", L.done, "done", "");
   $("tsNote").textContent = canBookings ? "Every spare bus trip sheet and where it stands. Approve them from Approvals or by opening one."
     : acc.bookings === "request" ? "The trip sheet opens the day before the trip starts. Fill in the expenses and km, then submit it for approval."
     : "The trip sheet opens on the trip's last day. Fill in the expenses and km, then submit it for approval.";
@@ -9703,7 +9711,7 @@ function syncBk() {
   $("bkTripHint").textContent = { enquiry: "Fill this in once the bus returns.", booked: "Fill this in once the bus returns. The start km can go in when it leaves.", ontrip: "The bus is out. Enter the end km and expenses when it returns, then submit the trip sheet for approval. Approving it marks the booking Completed.", completed: "", cancelled: "Booking cancelled." }[b.status] || "";
   $("bkStageHint").textContent = b.status === "completed" ? (c.balance <= 0 ? "Settled · the party has paid in full." : `${rs(c.balance)} still to collect from the party.`) : b.status === "cancelled" ? `Cancelled. ${c.received ? `${rs(c.received)} advance received is kept on record.` : ""}` : "";
   const bus = vehicles.find(v => v.id === b.vehicleId);
-  $("bkSub").textContent = BK_STAGES[b.status] || "";
+  { const cur = ops.bookings.find(x => x.id === bkEditId); $("bkSub").textContent = cur && tripClosed(cur) ? "Closed" : BK_STAGES[b.status] || ""; }
   // The header on every section: bus, dates, days and places, as on the booking now.
   $("bkI_bus").innerHTML = bus ? `<span class="plate ${bus.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(bus))}</span>` : "—";
   $("bkI_dates").textContent = b.from ? `${bwFmt(b.from)}${b.to && b.to !== b.from ? ` – ${bwFmt(b.to)}` : ""}` : "—";
