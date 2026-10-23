@@ -739,8 +739,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 #bkDrawer { width: min(1180px, 100%); }
 #bkDrawer .bkhead { gap: 12px 16px; flex-wrap: wrap; padding: 12px 20px; }
 #bkDrawer .bkhead h2 { font-size: 24px; }
-#bkDrawer .bkhead .seg { margin-left: auto; }
-#bkDrawer .bkstages span { padding: 5px 10px; }
 #bkDrawer form { gap: 10px; padding: 0 20px 12px; }
 #bkDrawer .bktabs { top: 0; margin: 0 -20px; padding: 8px 20px 0; }
 #bkDrawer .bkpanel { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
@@ -904,8 +902,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   #bkDrawer .bkhead { padding: 10px 14px; gap: 8px 10px; }
   #bkDrawer .bkhead h2 { font-size: 19px; line-height: 1.2; }
   #bkDrawer .bkhead .vsub { font-size: 12px; }
-  #bkDrawer .bkstages { display: flex; width: 100%; } #bkDrawer .bkstages label { flex: 1; }
-  #bkDrawer .bkstages span { padding: 5px 2px; font-size: 12px; text-align: center; display: block; }
   #bkHistBtn { padding: 5px 9px; font-size: 0; } #bkHistBtn .hico, #bkHistBtn svg { font-size: 14px; } #bkHistBtn .hcount { font-size: 11px; }
   #bkClose { font-size: 0; padding: 6px; } #bkClose::after { content: "✕"; font-size: 18px; }
   #bkDrawer form { padding: 0 14px 12px; }
@@ -957,11 +953,13 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .bkclash { font-size: 12px; font-weight: 600; color: var(--danger); }
 /* Items in a scrolling drawer keep their size; without this a short window squashed the tab bar. */
 .drawer form > *, .drawer form > div > *, #bkDrawer .bkpanel > * { flex-shrink: 0; }
-#bkDrawer .bkhead { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; }
-#bkDrawer .bkhead .seg { margin-left: 0; }
+/* Header: booking no. and party, then the booking at a glance (bus, dates, days, places, checks, history), then Close. */
+#bkDrawer .bkhead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px 28px; padding: 10px 20px; }
+#bkDrawer .bkhead h2 { font-size: 21px; } #bkDrawer .bkhead .bkinfo { gap: 8px 24px; }
+@media (min-width: 1001px) { #bkDrawer .bkhead .bkinfo { flex-wrap: nowrap; } }
 @media (max-width: 1000px) {
   #bkDrawer .bkhead { grid-template-columns: minmax(0, 1fr) auto; }
-  #bkDrawer .bkhead .seg { grid-column: 1 / -1; grid-row: 2; }
+  #bkDrawer .bkhead .bkinfo { grid-column: 1 / -1; grid-row: 2; }
   #bkDrawer .bkhead .bkheadbtns { grid-column: 2; grid-row: 1; }
   .payhead { display: none; }
 }
@@ -972,7 +970,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .calcbox.neg { color: var(--danger); } .calcbox.pos { color: var(--ok); }
 .bkpp { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .field.pp input { background: var(--chip-bg); }
-.bkstages span { padding: 6px 11px; }
 .payrow.bk { grid-template-columns: 1.1fr .9fr 1fr 1.4fr auto; }
 .payrow input, .payrow select { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px; width: 100%; min-width: 0; }
 @media (max-width: 700px) {
@@ -1087,7 +1084,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 @media (max-width: 560px) {
   #bkDrawer .bkhead h2 { font-size: 20px; }
   #bkDrawer .bkhead .vsub { font-size: 12px; }
-  #bkDrawer .bkstages span { padding: 4px 8px; font-size: 12px; }
   #bkDrawer footer { padding: 10px 14px; gap: 8px; }
   #bkDrawer footer .btn { padding: 8px 12px; font-size: 14px; }
   #bkDrawer .bknote { display: none; }
@@ -1107,7 +1103,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .bkappr-act { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; align-items: center; }
 .bkappr-act input { font: inherit; font-size: 13px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 15em; }
 .bkappr-act .btn { padding: 6px 14px; font-size: 13px; }
-.bkappr[hidden], .bkappr-act[hidden], #bkDrawer .bkstages[hidden], .bktabs button[hidden] { display: none !important; }
+.bkappr[hidden], .bkappr-act[hidden], .bktabs button[hidden] { display: none !important; }
 .bchip.pending { background: var(--warn-soft); color: var(--warn); border: 1px dashed var(--warn); }
 .bstage.pending { background: var(--warn-soft); color: var(--warn); border: 1px dashed var(--warn); }
 .bstage.rejected { background: var(--danger-soft); color: var(--danger); }
@@ -1235,10 +1231,12 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpex .tpbin { width: 26px; height: 48px; } .tpex .tpbin svg { width: 20px; height: 20px; } .tpex .tpnote { grid-column: 1 / -1; margin-top: 2px; }
 .tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; text-transform: uppercase; }
 /* Booking window: the booking at a glance (header) and the Booking slip in four groups. */
-.bkinfo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 32px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.bkinfo > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .bkinfo-pl { flex: 1; min-width: 180px; }
+.bkinfo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; min-width: 0; }
+.bkhead h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bkinfo > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .bkinfo-pl { flex: 1 1 0; min-width: 110px; }
 .bkinfo > div > span { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.bkinfo > div > b { font-size: 17px; } .bkinfo .plate { font-size: 14px; }
+.bkinfo > div > b { font-size: 16px; white-space: nowrap; } .bkinfo > div > span { white-space: nowrap; }
+.bkinfo-pl > b { overflow: hidden; text-overflow: ellipsis; } .bkinfo .plate { font-size: 14px; }
 .bkinfo #bkHistBtn { margin-left: auto; font-size: 14px; padding: 7px 12px; } #bkHistBtn .hl { font-weight: 600; }
 .bkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
 @media (max-width: 760px) { .bkgrid { grid-template-columns: minmax(0, 1fr); } }
@@ -2560,11 +2558,15 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 <aside class="drawer" id="bkDrawer" role="dialog" aria-modal="true" aria-labelledby="bkTitle" hidden>
   <header class="bkhead">
     <div style="min-width:0"><h2 id="bkTitle">New booking</h2><div class="vsub" id="bkSub"></div></div>
-    <div class="seg bkstages" role="radiogroup" aria-label="Booking stage">
-      <label><input type="radio" name="bkStatus" value="booked"><span>Booked</span></label>
-      <label><input type="radio" name="bkStatus" value="ontrip"><span>On trip</span></label>
-      <label><input type="radio" name="bkStatus" value="completed"><span>Completed</span></label>
-      <label><input type="radio" name="bkStatus" value="cancelled"><span>Cancelled</span></label>
+    <input type="hidden" id="bkStatus">
+    <!-- The booking at a glance, on every section: bus, dates, days, places, the checks and the change history. -->
+    <div class="bkinfo" id="bkInfo">
+      <div><span>Bus number</span><b id="bkI_bus">—</b></div>
+      <div><span>Dates</span><b id="bkI_dates">—</b></div>
+      <div><span>No. of days</span><b id="bkI_days">—</b></div>
+      <div class="bkinfo-pl"><span>Places of visit</span><b id="bkI_places">—</b></div>
+      <div class="bkwarn" id="bkWarn" role="status" hidden></div>
+      <button class="btn" type="button" id="bkHistBtn" aria-label="Change history" title="Change history" hidden><span class="hico" aria-hidden="true"></span><span class="hcount" id="bkHistCount" hidden></span></button>
     </div>
     <span class="bkheadbtns"><button class="icon" type="button" id="bkClose" aria-label="Close">Close ✕</button></span>
   </header>
@@ -2577,15 +2579,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <button type="button" role="tab" data-tab="send" id="bkTab-send" aria-controls="bkSendSet"><span class="tl">WhatsApp / SMS</span><span class="ts">Send</span></button>
     </nav>
   <form id="bkForm" novalidate>
-    <!-- The booking at a glance, on every section: bus, dates, days, places, and the change history in the corner. -->
-    <div class="bkinfo" id="bkInfo">
-      <div><span>Bus number</span><b id="bkI_bus">—</b></div>
-      <div><span>Dates</span><b id="bkI_dates">—</b></div>
-      <div><span>No. of days</span><b id="bkI_days">—</b></div>
-      <div class="bkinfo-pl"><span>Places of visit</span><b id="bkI_places">—</b></div>
-      <div class="bkwarn" id="bkWarn" role="status" hidden></div>
-      <button class="btn" type="button" id="bkHistBtn" aria-label="Change history" title="Change history" hidden><span class="hico" aria-hidden="true"></span><span class="hcount" id="bkHistCount" hidden></span></button>
-    </div>
     <div class="bkappr" id="bkAppr" hidden>
       <span id="bkApprText"></span>
       <span class="bkappr-act" id="bkApprAct">
@@ -2732,6 +2725,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <button class="btn" type="button" id="bkPrint">Print slip</button>
     <button class="btn" type="button" id="bkTsPrint">Print trip sheet</button>
     <span class="bklockf" id="bkLockAct"><input id="bkLockWhy" maxlength="200" aria-label="Reason"><button class="btn" type="button" id="bkLockBtn" title="Close the trip to make it view only for everyone">Close trip</button></span>
+    <button class="btn" type="button" id="bkCancelBk" hidden>Cancel booking</button>
     <button class="btn" type="button" id="bkCancel">Close</button>
     <button class="btn" type="button" id="bkDraft" hidden>Save draft</button>
     <button class="btn primary" type="submit" form="bkForm" id="bkSave">Save booking</button>
@@ -6565,7 +6559,7 @@ function xlBookings(recs) {
   const RH = ["Booking No.", "Booked On", "Bus", "Party", "Phone", "Address", "Places", "From Date", "To Date", "Days", "Rent Type", "Rent / Day", "Total Rent", "Driver Padi", "Paid by Party", "Booked By", "Driver", "Cleaner", "Stage", "Collection", "Received", "Balance", "Our Expense", "Profit", "Remarks", "Files", "Created By", "Submitted By", "Approved By", "Rejected (times)"];
   xlHeads(reg, 4, RH); reg.freeze = 4;
   all.forEach((b, i) => { const r = 5 + i, c = bkCalc(b), vals = [b.no || "", b.bookedOn ? { d: b.bookedOn } : "", C.plate(b.vehicleId), b.party || "", b.phone || "", b.address || "", b.places || "", b.from ? { d: b.from } : "", b.to || b.from ? { d: b.to || b.from } : "",
-    C.n(b.days), b.rentType === "day" ? "Day rent" : "Empty rent", C.n(b.rate), C.n(b.rent), C.n(b.padi), PARTY_ITEMS.filter(([k]) => b.partyPays?.[k]).map(z => z[1]).join(", "), C.driver(b.bookedById, b.bookedByName), C.driver(b.driverId, b.driverName), b.cleanerName || "", BK_STAGES[b.status] || b.status || "",
+    C.n(b.days), b.rentType === "day" ? "Day rent" : "Empty rent", C.n(b.rate), C.n(b.rent), C.n(b.padi), ppNames(b).join(", "), C.driver(b.bookedById, b.bookedByName), C.driver(b.driverId, b.driverName), b.cleanerName || "", BK_STAGES[b.status] || b.status || "",
     c.due, c.received, c.balance, c.exp, c.profit, [b.remarks, b.tripNote].filter(Boolean).join(" · "), (b.attachments || []).length || "", b.createdByName || "", b.submittedByName || "", b.approvedByName || "", (b.rejections || []).length || ""];
     vals.forEach((v, k) => put(reg, XL.col(k) + r, v, v && typeof v === "object" ? S.date : typeof v === "number" ? (Number.isInteger(v) ? S.int : S.dec) : S.text)); });
   if (all.length) { const r = 5 + all.length, L = r - 1; put(reg, `A${r}`, "Total", S.ttext);
@@ -7515,7 +7509,7 @@ const bHistFor = (id, k) => bHistory.filter(h => h.bookingId === id && (!k || h.
 // Values as they are stored in history: lists are written out so a change reads plainly.
 function bHistVal(k, b) {
   if (!b) return "";
-  if (k === "partyPays") return PARTY_ITEMS.filter(([p]) => b.partyPays?.[p]).map(x => x[1]).join(", ");
+  if (k === "partyPays") return ppNames(b).join(", ");
   if (k === "payments") return (b.payments || []).map(p => `${p.date ? fmtShort(p.date) : "No date"} ${rs(p.amount)} ${p.mode || ""}${p.note ? ` (${p.note})` : ""}`).join("; ");
   if (k === "attachments") return (b.attachments || []).map(f => `${f.kind}: ${f.name}`).join("; ");
   if (k === "_sent") return "";
@@ -7552,6 +7546,8 @@ function syncBkHistBtn() {
 const BK_STAGES = { draft: "Draft", pending: "Awaiting approval", rejected: "Rejected", enquiry: "Enquiry", booked: "Booked", ontrip: "On trip", completed: "Completed", cancelled: "Cancelled" };
 // Diesel is not a "paid by the party" item: whatever diesel amount is entered on the trip sheet is our expense.
 const PARTY_ITEMS = [["toll", "Toll / FASTag"], ["parking", "Parking"], ["route", "Route expenses"]];
+// On Empty rent the slip can also say the party pays the diesel. It is only printed on the slip and messages: it changes no amounts.
+const ppNames = b => [...(b.rentType !== "day" && b.partyPays?.diesel ? ["Diesel"] : []), ...PARTY_ITEMS.filter(([k]) => b.partyPays?.[k]).map(x => x[1])];
 // Expenses on the trip sheet, in the order of the spare bus sheet. Parking and route expenses go under Other when we pay them.
 const BK_EXP = { bkPadiPaid: "padiPaid", bkCleanerPadi: "cleanerPadi", bkPermit: "permit", bkToll: "toll", bkFuel: "fuelCost", bkOther: "otherExp" };
 // Toll is entered on the trip sheet: it is an expense and is collected back from the party, so it is part of the collection
@@ -8105,7 +8101,7 @@ async function bwCancel() {
   try {
     const id = bw.editId, no = bw.no;
     openBooking(id, null, true);
-    const r = document.querySelector('input[name="bkStatus"][value="cancelled"]'); if (r) r.checked = true;
+    $("bkStatus").value = "cancelled";
     syncBk(); $("bkForm").requestSubmit();
     for (let i = 0; i < 100 && !$("bkDrawer").hidden && !$("bkForm").querySelector(".err:not(:empty)"); i++) await new Promise(res => setTimeout(res, 150));
     if (!$("bkDrawer").hidden) { bwClose(); toast("Please check the highlighted field."); return; }
@@ -8857,7 +8853,7 @@ function openBooking(id, preset, full) {
   $("bkBus").value = b?.vehicleId || preset?.vehicleId || (buses.length === 1 ? buses[0].id : "");
   $("bkTitle").textContent = b ? `Booking ${b.no || ""} · ${b.party || ""}` : "New booking";
   $("bkNo").value = b?.no || nextBkNo(); $("bkBookedOn").value = b?.bookedOn || todayISO();
-  document.querySelectorAll('input[name="bkStatus"]').forEach(r => r.checked = r.value === (b?.status || "booked"));
+  $("bkStatus").value = b?.status || "booked";
   ["party", "phone", "address", "places", "remarks", "cleanerName", "tripNote"].forEach(k => { const el = { party: "bkParty", phone: "bkPhone", address: "bkAddress", places: "bkPlaces", remarks: "bkRemarks", cleanerName: "bkCleaner", tripNote: "bkTripNote" }[k]; $(el).value = b?.[k] || ""; });
   const from = b?.from || preset?.from || todayISO(), to = b ? bkEnd(b) : preset?.to || from;
   $("bkFrom").value = from; $("bkTo").value = to; $("bkDays").value = b?.days ?? inclDays(from, to);
@@ -8868,7 +8864,8 @@ function openBooking(id, preset, full) {
   $("bkLitres").value = b?.litres ?? "";
   bkRentTouched = !!b && num(b.rent) !== Math.round(num(b.rate) * num(b.days));
   const pp = b?.partyPays || ppDefaults();
-  $("bkPP").innerHTML = PARTY_ITEMS.map(([k, l]) => `<label class="chk"><input type="checkbox" data-pp="${k}"${pp[k] ? " checked" : ""}> ${l}</label>`).join("");
+  $("bkPP").innerHTML = `<label class="chk" id="bkPPDsl"${rt === "day" ? " hidden" : ""}><input type="checkbox" data-pp="diesel"${pp.diesel ?? true ? " checked" : ""}> Diesel</label>` +
+    PARTY_ITEMS.map(([k, l]) => `<label class="chk"><input type="checkbox" data-pp="${k}"${pp[k] ? " checked" : ""}> ${l}</label>`).join("");
   $("bkDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, ops.bookings, "Bus", [b?.driverId]);
   $("bkDriver").value = b ? crewValue("driver", b) : "";
   $("bkBookedBy").innerHTML = `<option value="">Choose the driver</option>` + drivers.filter(d => (d.status !== "Inactive" && vCatsOf(d).includes("Spare bus")) || d.id === b?.bookedById).map(d => `<option value="id:${d.id}">${esc(d.name)}</option>`).join("") +
@@ -8894,9 +8891,9 @@ function openBooking(id, preset, full) {
   renderBkFiles();
   $("bkRejectWhy").disabled = false;
   const pending = b?.status === "pending";
-  // The stage buttons and the trip sheet belong to the admin; a pending booking is decided with Approve or Reject.
-  // The stage buttons are for admins only; everyone else sees the stage in the title line.
-  document.querySelector("#bkDrawer .bkstages").hidden = !canBookings || pending || closed;
+  // The stage moves by itself (on trip from the start date, completed when the trip sheet is approved); the admin can cancel or restore.
+  $("bkCancelBk").hidden = !canBookings || !b || closed || !["booked", "ontrip", "cancelled"].includes(b.status);
+  $("bkCancelBk").textContent = b?.status === "cancelled" ? "Restore booking" : "Cancel booking";
   // Admins can fill the trip sheet of any saved booking, whatever its stage; others follow the trip sheet rules.
   $("bkTab-trip").hidden = canBookings ? !b : bkMode === "request" || pending || (!canTsUpd && acc.tripsheets !== "view");
   $("bkTab-slip").hidden = $("bkTab-pay").hidden = tsOnly;
@@ -9018,7 +9015,7 @@ function bkMsgTexts() {
   const c = bkCalc(b), bus = vehicles.find(v => v.id === b.vehicleId), drv = b.driverId ? drivers.find(d => d.id === b.driverId) : null;
   const dates = `${fmtDate(b.from)}${b.to && b.to !== b.from ? ` to ${fmtDate(b.to)}` : ""} (${fmtDays(num(b.days))} day${num(b.days) === 1 ? "" : "s"})`;
   const conf = b.status === "booked" || b.status === "ontrip" || b.status === "completed";
-  const pp = PARTY_ITEMS.filter(([k]) => b.partyPays[k]).map(x => x[1]);
+  const pp = ppNames(b);
   const party = [
     `${b.status === "completed" ? "Trip completed" : conf ? "Booking confirmed" : "Booking details"} · No. ${b.no}`,
     `Name: ${b.party}`, `Bus: ${bus ? plateOf(bus) : ""}`, `Dates: ${dates}`, b.places ? `Places: ${b.places}` : "",
@@ -9435,6 +9432,11 @@ function syncBkLock(b) {
   $("bkLockBtn").textContent = closed ? "Reopen trip" : "Close trip";
   $("bkLockBtn").className = "btn " + (closed ? "" : "primary");
 }
+$("bkCancelBk").onclick = () => {
+  const restore = $("bkStatus").value === "cancelled";
+  if (!confirm(restore ? "Restore this booking? It becomes active again." : "Cancel this booking? Any advance received stays on record.")) return;
+  $("bkStatus").value = restore ? "booked" : "cancelled"; syncBk(); $("bkForm").requestSubmit();
+};
 $("bkLockBtn").onclick = async () => {
   const cur = ops.bookings.find(x => x.id === bkEditId); if (!cur) return;
   const how = tripClosed(cur) ? "reopen" : "close";
@@ -9515,12 +9517,13 @@ function syncPhoneActs() {
 function closeBkDrawer() { $("bkDrawer").hidden = true; bkEditId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function bkRead() {
   const cur = bkEditId ? ops.bookings.find(x => x.id === bkEditId) : null;
-  const b = { status: bkMode === "request" ? (bkSaveAs === "submit" ? "pending" : cur?.status === "rejected" ? "rejected" : "draft") : cur && (cur.status === "draft" || cur.status === "pending" || cur.status === "rejected" || cur.status === "enquiry") && !document.querySelector('input[name="bkStatus"]:checked') ? cur.status : document.querySelector('input[name="bkStatus"]:checked')?.value || "booked", rentType: document.querySelector('input[name="bkRentType"]:checked')?.value || "mt" };
+  const b = { status: bkMode === "request" ? (bkSaveAs === "submit" ? "pending" : cur?.status === "rejected" ? "rejected" : "draft") : $("bkStatus").value || "booked", rentType: document.querySelector('input[name="bkRentType"]:checked')?.value || "mt" };
   Object.entries(BK_NUM).forEach(([el, k]) => { const v = $(el).value; if (v !== "" && +v >= 0) b[k] = Math.round(+v); });
   if ($("bkLitres").value !== "" && +$("bkLitres").value >= 0) b.litres = Math.round(+$("bkLitres").value * 100) / 100;
   b.days = num($("bkDays").value); b.from = $("bkFrom").value; b.to = $("bkTo").value || b.from; b.vehicleId = $("bkBus").value;
   { const wd = inclDays(b.from, b.to); if ((bkHalfDay === "first" || bkHalfDay === "last") && wd && b.days === wd - .5) b.halfDay = bkHalfDay; }
   b.partyPays = Object.fromEntries([...$("bkPP").querySelectorAll("input[data-pp]")].map(c => [c.dataset.pp, c.checked]));
+  if (b.rentType === "day") delete b.partyPays.diesel;
   const dv = $("bkDriver").value;
   if (dv.startsWith("id:")) { b.driverId = dv.slice(3); b.driverName = drivers.find(d => d.id === b.driverId)?.name || ""; } else if (dv) b.driverName = dv.slice(5);
   const dsl = dslRead(); if (dsl.length) b.diesel = dsl;
@@ -9594,12 +9597,12 @@ function syncBk() {
   $("bkTripHint").textContent = { enquiry: "Fill this in once the bus returns.", booked: "Fill this in once the bus returns. The start km can go in when it leaves.", ontrip: "The bus is out. Enter the end km and expenses when it returns, then submit the trip sheet for approval. Approving it marks the booking Completed.", completed: "", cancelled: "Booking cancelled." }[b.status] || "";
   $("bkStageHint").textContent = b.status === "completed" ? (c.balance <= 0 ? "Settled · the party has paid in full." : `${rs(c.balance)} still to collect from the party.`) : b.status === "cancelled" ? `Cancelled. ${c.received ? `${rs(c.received)} advance received is kept on record.` : ""}` : "";
   const bus = vehicles.find(v => v.id === b.vehicleId);
-  $("bkSub").textContent = [bus ? plateOf(bus) : "", BK_STAGES[b.status], b.from ? `${fmtShort(b.from)}${b.to !== b.from ? ` – ${fmtShort(b.to)}` : ""}` : ""].filter(Boolean).join(" · ");
+  $("bkSub").textContent = BK_STAGES[b.status] || "";
   // The header on every section: bus, dates, days and places, as on the booking now.
   $("bkI_bus").innerHTML = bus ? `<span class="plate ${bus.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(bus))}</span>` : "—";
   $("bkI_dates").textContent = b.from ? `${bwFmt(b.from)}${b.to && b.to !== b.from ? ` – ${bwFmt(b.to)}` : ""}` : "—";
   $("bkI_days").textContent = num(b.days) ? `${fmtDays(num(b.days))} ${num(b.days) <= 1 ? "day" : "days"}` : "—";
-  $("bkI_places").textContent = $("bkPlaces").value.trim() || "—";
+  $("bkI_places").textContent = $("bkI_places").title = $("bkPlaces").value.trim() || "—";
   const fdT = iso => iso ? fmtDate(iso) : "—", setT = (id, v, cls = "") => { $(id).textContent = v; $(id).className = "calcbox" + (cls ? " " + cls : ""); };
   $("bkT_rent").textContent = rs(num(b.rent)); $("bkT_toll").textContent = rs(num(b.toll)); $("bkT_coltot").textContent = rs(c.due); $("bkSplPre").textContent = splPrefix(b);
   { const base = Math.round(num(b.rate) * num(b.days)), low = base > 0 && num(b.rent) < base;
@@ -9632,7 +9635,11 @@ function syncBk() {
   if (clash) $("bkClash").textContent = `${plateOf(bus)} is already booked by ${clash.party || "another party"} from ${fmtDate(clash.from)} to ${fmtDate(bkEnd(clash))} (booking ${clash.no || ""}).`;
 }
 $("bkForm").addEventListener("input", e => { if (e.target.id === "bkDays") bkDaysTouched = true; if (e.target.id === "bkRent") bkRentTouched = $("bkRent").value !== ""; syncBk(); });
-$("bkForm").addEventListener("change", syncBk);
+$("bkForm").addEventListener("change", e => {
+  // Diesel (paid by the party) is offered on Empty rent only, ticked by default.
+  if (e.target.name === "bkRentType") { const dsl = $("bkPPDsl"); dsl.hidden = e.target.value === "day"; if (e.target.value !== "day") dsl.querySelector("input").checked = true; }
+  syncBk();
+});
 $("bkAddPay").onclick = () => { setBkTab("pay"); $("bkPays").insertAdjacentHTML("beforeend", bkPayRow({ date: todayISO() })); $("bkPays").lastElementChild.dataset.new = "1";
   if (bkPayOnly && !(bkMode === "trip" && bkTripEdit)) { $("bkSave").hidden = false; $("bkSave").textContent = "Save payment"; $("bkNote").textContent = "New payments are added to the booking. Nothing else changes."; } $("bkPays").lastElementChild.querySelector("[data-pa]").focus(); };
 $("bkPays").addEventListener("click", e => { const x = e.target.closest("[data-prm]"); if (x) { x.closest(".payrow").remove(); syncBk(); } });
@@ -9740,8 +9747,8 @@ function loadPdfLib() {
 function slipData() {
   const b = { ...bkRead(), no: $("bkNo").value.trim(), bookedOn: $("bkBookedOn").value, party: $("bkParty").value.trim(), phone: $("bkPhone").value.trim(), address: $("bkAddress").value.trim(), places: $("bkPlaces").value.trim() };
   const c = bkCalc(b), bus = vehicles.find(v => v.id === b.vehicleId), fd = iso => iso ? iso.split("-").reverse().join("/") : "";
-  const pp = PARTY_ITEMS.filter(([k]) => b.partyPays[k]);
-  const terms = pp.length ? `${pp.map(x => x[1]).join(", ")} are paid by the party.` : "All expenses are borne by us.";
+  const pp = ppNames(b);
+  const terms = pp.length ? `${pp.join(", ")} ${pp.length === 1 ? "is" : "are"} paid by the party.` : "All expenses are borne by us.";
   return { b, c, bus, fd, terms };
 }
 // The standard PDF fonts only cover Latin characters, so arrows and other symbols are swapped for plain ones.
