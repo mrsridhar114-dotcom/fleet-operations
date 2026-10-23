@@ -58,8 +58,9 @@ const sameExcept = (x, y, keys) => {
 // Closing and reopening a trip: admin only, until it gets a role of its own.
 export const canCloseTrips = a => isAdmin(a);
 // A closed trip is final. Nobody, admin included, may change or delete it, or the diesel fills linked to it, until an
-// admin reopens it. Closing and reopening change only the closing details and the totals worked out from them.
-const CLOSE_KEYS = ["closedOn", "closedByName", "reopens", "due", "received", "balance", "expense", "profit"];
+// admin reopens it. Closing and reopening change only the closing details, the pending amount closed with it (balAdj)
+// and the totals worked out from them.
+const CLOSE_KEYS = ["closedOn", "closedByName", "reopens", "balAdj", "due", "received", "balance", "expense", "profit"];
 function closedRule(a, op, coll, prev, next, linkedClosed) {
   const shut = "This trip is closed. An admin must reopen it first.";
   if (coll === "fuelLog") return linkedClosed ? shut : "";
