@@ -1249,7 +1249,10 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bkinfo .bkwarn { position: relative; margin: 0 0 0 auto; padding: 0; background: none; }
 .bkinfo .bkwarn .wh { height: 34px; padding: 0 12px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); font-size: 14px; }
 .bkinfo .bkwarn .wlist { position: absolute; right: 0; top: calc(100% + 6px); z-index: 6; width: min(460px, 80vw); padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); box-shadow: 0 10px 30px rgba(0,0,0,.18); display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
-.bkinfo .bkwarn:not(.open) .wlist { display: none; } .bkinfo .bkwarn .wt { font-size: 13px; margin-bottom: 2px; }
+.bkinfo .bkwarn:not(.open) .wlist { display: none; } .bkinfo .bkwarn .wt { font-size: 13px; }
+.bkinfo .bkwarn .wtop { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
+.bkinfo .bkwarn .wx { border: 0; background: none; color: var(--muted); font-size: 15px; line-height: 1; padding: 4px 6px; border-radius: 6px; cursor: pointer; }
+.bkinfo .bkwarn .wx:hover { background: var(--line); color: inherit; }
 .bkinfo .bkwarn + #bkHistBtn { margin-left: 0; }
 /* Close trip / Reopen trip in the bottom bar (with the reason box when reopening). */
 .bklockf { display: inline-flex; gap: 8px; align-items: center; } .bklockf[hidden] { display: none; } .bklockf input { width: 220px; }
@@ -9501,7 +9504,10 @@ function buildCleaners() {
 $("bkDriver").addEventListener("change", buildCleaners);
 // Phone helpers: more menu, collapsible checks, call / WhatsApp the party, camera uploads.
 $("bkMore").onclick = () => { const f = $("bkMore").closest("footer"), open = !f.classList.contains("more-open"); f.classList.toggle("more-open", open); $("bkMore").setAttribute("aria-expanded", String(open)); };
-$("bkWarn").addEventListener("click", e => { if (!e.target.closest("#bkWarnT")) return; const open = !$("bkWarn").classList.contains("open"); $("bkWarn").classList.toggle("open", open); $("bkWarnT").setAttribute("aria-expanded", String(open)); });
+const bkWarnOpen = open => { $("bkWarn").classList.toggle("open", open); $("bkWarnT")?.setAttribute("aria-expanded", String(open)); };
+$("bkWarn").addEventListener("click", e => { if (e.target.closest("#bkWarnT")) bkWarnOpen(!$("bkWarn").classList.contains("open")); else if (e.target.closest(".wx")) bkWarnOpen(false); });
+document.addEventListener("click", e => { if ($("bkWarn").classList.contains("open") && !e.target.closest("#bkWarn")) bkWarnOpen(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("bkWarn").classList.contains("open")) { e.stopPropagation(); bkWarnOpen(false); $("bkWarnT")?.focus(); } }, true);
 function syncPhoneActs() {
   const n = waNum($("bkPhone").value);
   $("bkPhoneAct").innerHTML = n ? `<a href="tel:+${n}">📞 Call</a><a href="https://wa.me/${n}" target="_blank" rel="noopener">WhatsApp</a>` : "";
@@ -9617,7 +9623,7 @@ function syncBk() {
   $("bkWarn").hidden = !ck.length || b.status === "cancelled" || b.status === "completed";
   const nBad = ck.filter(x => x.lvl === "bad").length;
   $("bkWarn").innerHTML = `<button type="button" class="wh" id="bkWarnT" title="Checks before ${canBookings && b.status === "pending" ? "approving" : "confirming"}" aria-expanded="${$("bkWarn").classList.contains("open")}"><span aria-hidden="true">⚠</span> <span class="wn${nBad ? " bad" : ""}">${ck.length}</span> check${ck.length === 1 ? "" : "s"}<span class="wchev" aria-hidden="true">▾</span></button>` +
-    `<span class="wlist"><b class="wt">Checks before ${canBookings && b.status === "pending" ? "approving" : "confirming"}</b>` + ck.map(x => `<span class="wl ${x.lvl}">${esc(x.msg)}</span>`).join("") + `</span>`;
+    `<span class="wlist"><span class="wtop"><b class="wt">Checks before ${canBookings && b.status === "pending" ? "approving" : "confirming"}</b><button type="button" class="wx" aria-label="Close the checks">✕</button></span>` + ck.map(x => `<span class="wl ${x.lvl}">${esc(x.msg)}</span>`).join("") + `</span>`;
   $("bkTb-files").textContent = bkFiles.length || ""; $("bkTb-files").className = "tb";
   $("bkTab-send").hidden = !bkEditId || bkMode === "trip";
   if (bkTab === "send") fillMsgs(false);
