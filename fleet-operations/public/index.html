@@ -874,9 +874,11 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .tsc { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); min-width: 0; }
 .tsc.tsw { grid-column: 1 / -1; }
 .tscol { display: contents; }
+/* While a window is open the page behind it does not scroll, so only the window has a scroll bar. */
+html:has(.drawer:not([hidden])) { overflow: hidden; }
 .tsc h4 { margin: 0; font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
 .tsf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 10px; }
-.tsf .tsx { grid-column: span 2; }
+.tsf .tsx { grid-column: span 2; } .tsstats { display: contents; }
 .tsc .dsl { border: 0; padding: 0; }
 @media (max-width: 900px) { .tsg { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 560px) { .tsf { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -1235,7 +1237,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bkhead h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bkinfo > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .bkinfo-pl { flex: 1 1 0; min-width: 110px; }
 .bkinfo > div > span { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.bkinfo > div > b { font-size: 16px; white-space: nowrap; } .bkinfo > div > span { white-space: nowrap; }
+.bkinfo > div > b { font-size: 16px; white-space: nowrap; } .bkinfo > div > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bkinfo-pl > b { overflow: hidden; text-overflow: ellipsis; } .bkinfo .plate { font-size: 14px; }
 .bkinfo #bkHistBtn { margin-left: auto; font-size: 14px; padding: 7px 12px; } #bkHistBtn .hl { font-weight: 600; }
 .bkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
@@ -1285,10 +1287,32 @@ html.bw-on, html.bw-on body { overflow: hidden; }
   .bkgrp .field, .tsc .tsf .field { grid-template-columns: 112px minmax(0, 1fr); }
   .bkgrp .field :is(input, select), .tsc :is(input, select), .tsc .calcbox { padding-top: 6px; padding-bottom: 6px; min-height: 0; }
   .bkgrp .field .hint:not(#bkRentMin), #bkTripHint { display: none; }
-  .tsg { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  .tsg { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
   .tsc :is(input, select) { padding-top: 5px !important; padding-bottom: 5px !important; } .tsc .tsf { gap: 6px; } .tsc { gap: 6px; }
   #bkDslBox + .tsf { display: none; }  /* the diesel totals are in the line above the fills */
-  .tscol { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .tscol { display: flex; flex-direction: column; gap: 12px; min-width: 0; } .tscol.tsdsl { grid-column: span 2; }
+  /* Driver and cleaner: name and padi on one line each. */
+  .tscrew .tsf { display: grid !important; grid-template-columns: minmax(0, 1fr) 128px; gap: 6px 10px; }
+  .tscrew .tsf { grid-template-columns: minmax(0, 1fr) 118px; } .tscrew .tsf .field:nth-child(odd) { grid-template-columns: 58px minmax(0, 1fr); }
+  .tscrew .tsf .field:nth-child(even) { grid-template-columns: 32px minmax(0, 1fr); }
+  /* Km run, average and mileage on one line; trip money two by two. */
+  .tsstats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; }
+  .tsstats.tsm { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; display: grid !important; }
+  .tsc .tsstats .field { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  .tsc .tsstats .field > .lbl { font-size: 11px; } .tsc .tsstats .calcbox { white-space: nowrap; }
+  .tsc .tsstats.tsm { gap: 4px 18px; } .tsc .tsstats.tsm .field { flex-direction: row; justify-content: space-between; align-items: baseline; gap: 8px; } .tsc .tsstats.tsm .field > * { white-space: nowrap; } .tsc .tsstats.tsm .field > .lbl { font-size: 12px; } .tsc .tsstats.tsm .calcbox { padding: 0; }
+  /* On the way: three amounts side by side; start and end km side by side. */
+  .tsc:is(.tsotw, .tskm) .tsf { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; }
+  .tsc.tskm .tsf { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tsc.tskm .tsstats { grid-column: 1 / -1; }
+  .tsc:is(.tsotw, .tskm) .tsf > .field { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
+  .tsc:is(.tsotw, .tskm) .tsf > .field > label { font-size: 12px; }
+  /* Collection: "+ Add extra from party" sits in the heading line. */
+  .tscolx { position: relative; } .tscolx > div:has(> #bkExAdd) { position: absolute; top: 6px; right: 12px; }
+  .tscolx #bkExAdd { padding: 3px 10px !important; font-size: 12px !important; }
+  /* Diesel: the fills line is the heading; rows are tighter. */
+  .tsdsl h4 { display: none; } .tsdsl .dslhead { font-size: 13px; } .tsdsl .dslhead b { color: var(--accent); text-transform: uppercase; letter-spacing: .06em; font-size: 12px; }
+  .tsdsl .dslrow { padding: 1px 0; } .tsdsl .dslrow :is([data-dfl], [data-dlg], .btn) { padding-top: 3px; padding-bottom: 3px; }
+  #tsAppr { flex-wrap: nowrap; } #tsAppr > #tsApprText { flex: 1 1 0; min-width: 0; } #tsAppr .bkappr-act { flex-wrap: nowrap; flex-shrink: 0; } #tsAppr .bkappr-act input { width: 12em; }
   .tsc .calcbox { border: 0; background: none; padding: 2px 0; font-weight: 700; }
   .tsc.tsw { grid-column: auto; } .tsc .tsf .field .hint, .tsc .bkspl + .hint { display: none; }
   .tsc.tsw > .field { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; column-gap: 12px; }
@@ -2641,7 +2665,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <!-- Trip sheet grouped the way it is filled in (same order as the phone trip sheet). -->
       <div class="tsg" id="bkExpGrid">
         <div class="tscol">
-          <div class="tsc"><h4>Collection</h4>
+          <div class="tsc tscolx"><h4>Collection</h4>
           <div class="bkcolr"><span>Rent (booked)</span><b id="bkT_rent"></b></div>
           <div class="bkexhead"><span>Extra from party</span><span>Amount</span><span>Note</span><span></span></div>
           <div id="bkExtras"></div>
@@ -2649,6 +2673,36 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="bkcolr"><span>Toll gate <span class="sub">(from On the way)</span></span><b id="bkT_toll"></b></div>
           <div class="bkcolr tot"><span>Total collection</span><b id="bkT_coltot"></b></div>
         </div>
+        </div>
+        <div class="tscol">
+          <div class="tsc tscrew"><h4>Driver and cleaner</h4><div class="tsf">
+          <div class="field"><label for="bkDriver">Driver</label><select id="bkDriver"></select><span class="hint" id="bkDrvHint"></span><span class="err" id="e-bkDriver"></span></div>
+          <div class="field"><label for="bkPadiPaid">Padi</label><input id="bkPadiPaid" type="number" inputmode="numeric" min="0" aria-label="Driver padi"></div>
+          <div class="field"><label for="bkCleaner">Cleaner</label><input id="bkCleaner" list="bkCleaners" autocomplete="off" maxlength="60"><datalist id="bkCleaners"></datalist><span class="err" id="e-bkCleaner"></span></div>
+          <div class="field"><label for="bkCleanerPadi">Padi</label><input id="bkCleanerPadi" type="number" inputmode="numeric" min="0" aria-label="Cleaner padi"></div>
+        </div></div>
+          <div class="tsc tsotw"><h4>On the way and other expenses</h4><div class="tsf">
+          <div class="field"><label for="bkToll">Toll gate</label><input id="bkToll" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkPermit">Permit expense</label><input id="bkPermit" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkOther">Other exp.</label><input id="bkOther" type="number" inputmode="numeric" min="0"></div>
+        </div></div>
+        </div>
+        <div class="tscol">
+          <div class="tsc tskm"><h4>Km meter</h4><div class="tsf">
+          <div class="field"><label for="bkStartKm">Start km</label><input id="bkStartKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkStartKm"></span></div>
+          <div class="field"><label for="bkEndKm">End km</label><input id="bkEndKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkEndKm"></span></div>
+          <div class="tsstats">
+          <div class="field"><span class="lbl">Km run</span><output class="calcbox" id="bkT_km"></output></div>
+          <div class="field"><span class="lbl">Avg km / day</span><output class="calcbox" id="bkT_kmday"></output></div>
+          <div class="field"><span class="lbl">Mileage</span><output class="calcbox" id="bkT_mil"></output></div>
+          </div>
+        </div></div>
+          <div class="tsc"><h4>Special Permit No.</h4>
+          <label class="bkspl" for="bkSpl"><span id="bkSplPre">TN-SPL-</span><input id="bkSpl" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Running no." aria-label="Special permit running number"></label>
+          <span class="hint">Type only the running number from the government site; TN, the year and SPL are filled in.</span>
+        </div>
+        </div>
+        <div class="tscol tsdsl">
           <div class="tsc tsw"><h4>Diesel</h4>
           <div class="dsl" id="bkDslBox">
             <div class="dslhead"><b>Diesel fills</b><span class="sub" id="bkDslSum"></span></div>
@@ -2663,37 +2717,13 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
         </div>
         <div class="tscol">
-          <div class="tsc"><h4>Driver and cleaner</h4><div class="tsf">
-          <div class="field tsx"><label for="bkDriver">Driver</label><select id="bkDriver"></select><span class="hint" id="bkDrvHint"></span><span class="err" id="e-bkDriver"></span></div>
-          <div class="field tsx"><label for="bkCleaner">Cleaner</label><input id="bkCleaner" list="bkCleaners" autocomplete="off" maxlength="60"><datalist id="bkCleaners"></datalist><span class="err" id="e-bkCleaner"></span></div>
-          <div class="field"><label for="bkPadiPaid">Driver padi</label><input id="bkPadiPaid" type="number" inputmode="numeric" min="0"></div>
-          <div class="field"><label for="bkCleanerPadi">Cleaner padi</label><input id="bkCleanerPadi" type="number" inputmode="numeric" min="0"></div>
-        </div></div>
-          <div class="tsc"><h4>On the way and other expenses</h4><div class="tsf">
-          <div class="field"><label for="bkToll">Toll gate</label><input id="bkToll" type="number" inputmode="numeric" min="0"></div>
-          <div class="field"><label for="bkPermit">Permit expense</label><input id="bkPermit" type="number" inputmode="numeric" min="0"></div>
-          <div class="field"><label for="bkOther">Other exp.</label><input id="bkOther" type="number" inputmode="numeric" min="0"></div>
-        </div></div>
-          <div class="tsc tsw"><div class="field"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div></div>
-        </div>
-        <div class="tscol">
-          <div class="tsc"><h4>Km meter</h4><div class="tsf">
-          <div class="field"><label for="bkStartKm">Start km</label><input id="bkStartKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkStartKm"></span></div>
-          <div class="field"><label for="bkEndKm">End km</label><input id="bkEndKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkEndKm"></span></div>
-          <div class="field"><span class="lbl">Km run</span><output class="calcbox" id="bkT_km"></output></div>
-          <div class="field"><span class="lbl">Avg km / day</span><output class="calcbox" id="bkT_kmday"></output></div>
-          <div class="field"><span class="lbl">Mileage</span><output class="calcbox" id="bkT_mil"></output></div>
-        </div></div>
-          <div class="tsc"><h4>Trip money</h4><div class="tsf">
+          <div class="tsc"><h4>Trip money</h4><div class="tsf tsstats tsm">
           <div class="field"><span class="lbl">Collection</span><output class="calcbox" id="bkT_col"></output></div>
           <div class="field"><span class="lbl">Total expense</span><output class="calcbox" id="bkT_exp"></output></div>
           <div class="field"><span class="lbl">Balance</span><output class="calcbox" id="bkT_bal"></output></div>
           <div class="field"><span class="lbl">Avg col / day</span><output class="calcbox" id="bkT_avg"></output></div>
         </div></div>
-          <div class="tsc"><h4>Special Permit No.</h4>
-          <label class="bkspl" for="bkSpl"><span id="bkSplPre">TN-SPL-</span><input id="bkSpl" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Running no." aria-label="Special permit running number"></label>
-          <span class="hint">Type only the running number from the government site; TN, the year and SPL are filled in.</span>
-        </div>
+          <div class="tsc tsw"><div class="field"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div></div>
         </div>
       </div>
     </section>
