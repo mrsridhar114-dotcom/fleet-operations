@@ -9622,8 +9622,10 @@ async function tsLayout(L, pdf, b) {
   const fit = (t, f, sz, w) => { let str = pdfSafe(t); while (str && f.widthOfTextAtSize(str, sz) > w) str = str.slice(0, -1); return str; };
   const hline = (x0, x1, y, o = {}) => page.drawLine({ start: { x: x0, y }, end: { x: x1, y }, thickness: o.t || 0.8, color: o.color || ink, ...(o.dash ? { dashArray: [1.2, 1.8] } : {}) });
   const vline = (x, y0, y1) => page.drawLine({ start: { x, y: y0 }, end: { x, y: y1 }, thickness: 0.8, color: ink });
+  // A long value (e.g. the special permit no.) is set a little smaller to fit before anything is cut off.
   const field = (label, value, x, w, y) => { const lw = text(label, x, y, { size: 8.5, color: grey }) + 6;
-    text(fit(value || "", reg, 11, w - lw - 2), x + lw, y + 1, { size: 11 }); hline(x + lw - 2, x + w, y - 3, { dash: true, color: grey, t: 0.5 }); };
+    let sz = 11; while (sz > 8 && reg.widthOfTextAtSize(pdfSafe(value || ""), sz) > w - lw - 2) sz -= 0.5;
+    text(fit(value || "", reg, sz, w - lw - 2), x + lw, y + 1, { size: sz }); hline(x + lw - 2, x + w, y - 3, { dash: true, color: grey, t: 0.5 }); };
   const head = sub => {
     page = pdf.addPage([W, H]);
     page.drawRectangle({ x: 14, y: 14, width: W - 28, height: H - 28, borderColor: ink, borderWidth: 1.4 });
@@ -9638,13 +9640,12 @@ async function tsLayout(L, pdf, b) {
   // ---- front
   head("TRIP SHEET");
   let y = H - 98; const half = (X1 - X0) / 2;
-  [["Vehicle no.", plateOf(bus), "Permit no.", bus?.permitNo || ""], ["Driver", drv || "", "Cleaner", b.noCleaner ? "No cleaner" : b.cleanerName || ""],
+  [["Vehicle no.", plateOf(bus), "Special Permit No.", b.splPermit || ""], ["Driver", drv || "", "Cleaner", b.noCleaner ? "No cleaner" : b.cleanerName || ""],
    ["Trip start date", fd(b.from), "Trip end date", fd(bkEnd(b))], ["Start km", n0(b.startKm), "End km", n0(b.endKm)]].forEach(([l1, v1, l2, v2]) => {
     field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 22; });
   // trip / rent box
   const boxTop = y + 6; y -= 8;
   text("Trip / rent details :", X0 + 6, y, { size: 8.5, color: grey });
-  if (b.splPermit) { const w = text(b.splPermit, X1 - 8, y, { size: 10.5, bold: true, align: "right" }); text("Special Permit No.", X1 - 14 - w, y, { size: 8.5, color: grey, align: "right" }); }
   y -= 16;
   text(fit(b.places || "", reg, 11, X1 - X0 - 14), X0 + 10, y, { size: 11 }); y -= 18;
   const parts = [["Rent", num(b.rent)], ["Extra", c.ext], ["Toll", num(b.toll)]].filter(x => x[1]);
