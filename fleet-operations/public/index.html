@@ -875,6 +875,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .tsg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tsc { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); min-width: 0; }
 .tsc.tsw { grid-column: 1 / -1; }
+.tscol { display: contents; }
 .tsc h4 { margin: 0; font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
 .tsf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 10px; }
 .tsf .tsx { grid-column: span 2; }
@@ -950,18 +951,14 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .bkpp { display: flex; flex-wrap: wrap; gap: 4px 14px; padding-top: 4px; }
 .bkpp .chk { font-size: 12px; }
 .payhead { display: grid; grid-template-columns: 1.1fr .9fr 1fr 1.4fr auto; gap: 8px; font-size: 11px; font-weight: 600; color: var(--muted); padding-right: 70px; }
+.bksum:not(:has(.bkstagehint:not(:empty), .bkclash:not([hidden]))) { display: none; }
 .bksum { border-top: 1px solid var(--line); padding: 8px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; background: var(--bg); }
-.bksum .tcalc { display: flex; flex-wrap: wrap; gap: 4px 18px; border: 0; border-radius: 0; overflow: visible; }
-.bksum .tcalc div { border: 0; padding: 0; display: flex; align-items: baseline; gap: 6px; }
-.bksum .tcalc .k { font-size: 10px; }
-.bksum .tcalc .v { font-size: 17px; }
 .bkstagehint { font-size: 12px; font-weight: 600; color: var(--muted); }
 .bkclash { font-size: 12px; font-weight: 600; color: var(--danger); }
 /* Items in a scrolling drawer keep their size; without this a short window squashed the tab bar. */
 .drawer form > *, .drawer form > div > *, #bkDrawer .bkpanel > * { flex-shrink: 0; }
 #bkDrawer .bkhead { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; }
 #bkDrawer .bkhead .seg { margin-left: 0; }
-.bksum .tcalc { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; }
 @media (max-width: 1000px) {
   #bkDrawer .bkhead { grid-template-columns: minmax(0, 1fr) auto; }
   #bkDrawer .bkhead .seg { grid-column: 1 / -1; grid-row: 2; }
@@ -1094,7 +1091,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   #bkDrawer footer { padding: 10px 14px; gap: 8px; }
   #bkDrawer footer .btn { padding: 8px 12px; font-size: 14px; }
   #bkDrawer .bknote { display: none; }
-  .bksum .tcalc .v { font-size: 15px; } .bksum .tcalc { gap: 4px 12px; }
   #bkHistBtn { padding: 4px 8px; }
 }
 /* booking approvals */
@@ -1249,6 +1245,14 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bkgrp { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); min-width: 0; }
 .bkgrp h4 { margin: 0; font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
 #bkDrawer > .bktabs { position: static; margin: 0; padding: 8px 20px 0; }
+/* Checks before confirming: a small button in the booking header; the list opens under it. */
+.bkinfo .bkwarn { position: relative; margin: 0 0 0 auto; padding: 0; background: none; }
+.bkinfo .bkwarn .wh { height: 34px; padding: 0 12px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); font-size: 14px; }
+.bkinfo .bkwarn .wlist { position: absolute; right: 0; top: calc(100% + 6px); z-index: 6; width: min(460px, 80vw); padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); box-shadow: 0 10px 30px rgba(0,0,0,.18); display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
+.bkinfo .bkwarn:not(.open) .wlist { display: none; } .bkinfo .bkwarn .wt { font-size: 13px; margin-bottom: 2px; }
+.bkinfo .bkwarn + #bkHistBtn { margin-left: 0; }
+/* Close trip / Reopen trip in the bottom bar (with the reason box when reopening). */
+.bklockf { display: inline-flex; gap: 8px; align-items: center; } .bklockf[hidden] { display: none; } .bklockf input { width: 220px; }
 /* Computer: the booking opens as a full screen. The sections are a menu on the left; on the right, the booking header
    and the chosen section, its fields in rows with the label on the left, as in any desktop application. */
 @media (min-width: 1000px) {
@@ -1268,6 +1272,25 @@ html.bw-on, html.bw-on body { overflow: hidden; }
   .bkgrp .field > *, .tsc .tsf .field > * { grid-column: 2; min-width: 0; }
   .bkgrp .field > label, .bkgrp .field > .lbl, .tsc .tsf .field > label, .tsc .tsf .field > .lbl { grid-column: 1; grid-row: 1; margin: 0; }
   .tsc .tsf { display: flex; flex-direction: column; gap: 8px; }
+  /* Compact, so each section fits on the screen without scrolling. */
+  #bkDrawer > form { padding: 10px 20px; gap: 8px; }
+  #bkDrawer > form .bkappr { padding: 7px 14px; }
+  #bkDrawer .dslcols, #bkDrawer .dslrow { grid-template-columns: 82px 74px 86px minmax(0, 1fr) 44px; gap: 6px; }
+  .bkinfo { padding: 8px 14px; } .bkinfo > div > b { font-size: 16px; }
+  .bkgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .bkgrid > .bkgrp:nth-child(1) { grid-column: 1; grid-row: 1; } .bkgrid > .bkgrp:nth-child(3) { grid-column: 1; grid-row: 2; }
+  .bkgrid > .bkgrp:nth-child(2) { grid-column: 2; grid-row: 1 / span 2; } .bkgrid > .bkgrp:nth-child(4) { grid-column: 3; grid-row: 1 / span 2; }
+  .bkgrp, .tsc { gap: 7px; padding: 10px 12px 12px; }
+  .bkgrp .field, .tsc .tsf .field { grid-template-columns: 112px minmax(0, 1fr); }
+  .bkgrp .field :is(input, select), .tsc :is(input, select), .tsc .calcbox { padding-top: 6px; padding-bottom: 6px; min-height: 0; }
+  .bkgrp .field .hint:not(#bkRentMin), #bkTripHint { display: none; }
+  .tsg { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  .tsc :is(input, select) { padding-top: 5px !important; padding-bottom: 5px !important; } .tsc .tsf { gap: 6px; } .tsc { gap: 6px; }
+  #bkDslBox + .tsf { display: none; }  /* the diesel totals are in the line above the fills */
+  .tscol { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .tsc .calcbox { border: 0; background: none; padding: 2px 0; font-weight: 700; }
+  .tsc.tsw { grid-column: auto; } .tsc .tsf .field .hint, .tsc .bkspl + .hint { display: none; }
+  .tsc.tsw > .field { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; column-gap: 12px; }
   #bkPaySet:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); column-gap: 20px; row-gap: 8px; align-items: start; }
   #bkPaySet > * { grid-column: 1; } #bkPaySet > .bkacct { grid-column: 2; grid-row: 1 / span 6; margin: 0; max-width: none; }
 }
@@ -2557,6 +2580,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div><span>Dates</span><b id="bkI_dates">—</b></div>
       <div><span>No. of days</span><b id="bkI_days">—</b></div>
       <div class="bkinfo-pl"><span>Places of visit</span><b id="bkI_places">—</b></div>
+      <div class="bkwarn" id="bkWarn" role="status" hidden></div>
       <button class="btn" type="button" id="bkHistBtn" aria-label="Change history" title="Change history" hidden><span class="hico" aria-hidden="true"></span><span class="hcount" id="bkHistCount" hidden></span></button>
     </div>
     <div class="bkappr" id="bkAppr" hidden>
@@ -2569,12 +2593,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </div>
     <div class="bkappr" id="bkLock" hidden>
       <span id="bkLockText"></span>
-      <span class="bkappr-act" id="bkLockAct">
-        <input id="bkLockWhy" maxlength="200" aria-label="Reason">
-        <button class="btn" type="button" id="bkLockBtn">Close trip</button>
-      </span>
     </div>
-    <div class="bkwarn" id="bkWarn" role="status" hidden></div>
     <section class="bkpanel" id="bkSlipSet" role="tabpanel" aria-labelledby="bkTab-slip">
       <div class="bkgrid">
         <section class="bkgrp"><h4>Booking</h4>
@@ -2625,7 +2644,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <p class="hint" id="bkTripHint" style="margin:0"></p>
       <!-- Trip sheet grouped the way it is filled in (same order as the phone trip sheet). -->
       <div class="tsg" id="bkExpGrid">
-        <div class="tsc"><h4>Collection</h4>
+        <div class="tscol">
+          <div class="tsc"><h4>Collection</h4>
           <div class="bkcolr"><span>Rent (booked)</span><b id="bkT_rent"></b></div>
           <div class="bkexhead"><span>Extra from party</span><span>Amount</span><span>Note</span><span></span></div>
           <div id="bkExtras"></div>
@@ -2633,22 +2653,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="bkcolr"><span>Toll gate <span class="sub">(from On the way)</span></span><b id="bkT_toll"></b></div>
           <div class="bkcolr tot"><span>Total collection</span><b id="bkT_coltot"></b></div>
         </div>
-        <div class="tsc"><h4>Special Permit No.</h4>
-          <label class="bkspl" for="bkSpl"><span id="bkSplPre">TN-SPL-</span><input id="bkSpl" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Running no." aria-label="Special permit running number"></label>
-          <span class="hint">Type only the running number from the government site; TN, the year and SPL are filled in.</span>
-        </div>
-        <div class="tsc"><h4>Driver and cleaner</h4><div class="tsf">
-          <div class="field tsx"><label for="bkDriver">Driver</label><select id="bkDriver"></select><span class="hint" id="bkDrvHint"></span><span class="err" id="e-bkDriver"></span></div>
-          <div class="field tsx"><label for="bkCleaner">Cleaner</label><input id="bkCleaner" list="bkCleaners" autocomplete="off" maxlength="60"><datalist id="bkCleaners"></datalist><span class="err" id="e-bkCleaner"></span></div>
-          <div class="field"><label for="bkPadiPaid">Driver padi</label><input id="bkPadiPaid" type="number" inputmode="numeric" min="0"></div>
-          <div class="field"><label for="bkCleanerPadi">Cleaner padi</label><input id="bkCleanerPadi" type="number" inputmode="numeric" min="0"></div>
-        </div></div>
-        <div class="tsc"><h4>On the way and other expenses</h4><div class="tsf">
-          <div class="field"><label for="bkToll">Toll gate</label><input id="bkToll" type="number" inputmode="numeric" min="0"></div>
-          <div class="field"><label for="bkPermit">Permit expense</label><input id="bkPermit" type="number" inputmode="numeric" min="0"></div>
-          <div class="field"><label for="bkOther">Other exp.</label><input id="bkOther" type="number" inputmode="numeric" min="0"></div>
-        </div></div>
-        <div class="tsc tsw"><h4>Diesel</h4>
+          <div class="tsc tsw"><h4>Diesel</h4>
           <div class="dsl" id="bkDslBox">
             <div class="dslhead"><b>Diesel fills</b><span class="sub" id="bkDslSum"></span></div>
             <div class="dslcols"><span>Date</span><span>Litres</span><span>Amount</span><span>Fuel station · bill</span><span></span></div>
@@ -2660,20 +2665,40 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
             <div class="field"><label for="bkFuel">Diesel amount <span class="sub" style="font-weight:400">(total)</span></label><input id="bkFuel" type="number" readonly tabindex="-1" class="dsum" title="Sum of the diesel fills above"></div>
           </div>
         </div>
-        <div class="tsc"><h4>Km meter</h4><div class="tsf">
+        </div>
+        <div class="tscol">
+          <div class="tsc"><h4>Driver and cleaner</h4><div class="tsf">
+          <div class="field tsx"><label for="bkDriver">Driver</label><select id="bkDriver"></select><span class="hint" id="bkDrvHint"></span><span class="err" id="e-bkDriver"></span></div>
+          <div class="field tsx"><label for="bkCleaner">Cleaner</label><input id="bkCleaner" list="bkCleaners" autocomplete="off" maxlength="60"><datalist id="bkCleaners"></datalist><span class="err" id="e-bkCleaner"></span></div>
+          <div class="field"><label for="bkPadiPaid">Driver padi</label><input id="bkPadiPaid" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkCleanerPadi">Cleaner padi</label><input id="bkCleanerPadi" type="number" inputmode="numeric" min="0"></div>
+        </div></div>
+          <div class="tsc"><h4>On the way and other expenses</h4><div class="tsf">
+          <div class="field"><label for="bkToll">Toll gate</label><input id="bkToll" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkPermit">Permit expense</label><input id="bkPermit" type="number" inputmode="numeric" min="0"></div>
+          <div class="field"><label for="bkOther">Other exp.</label><input id="bkOther" type="number" inputmode="numeric" min="0"></div>
+        </div></div>
+          <div class="tsc tsw"><div class="field"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div></div>
+        </div>
+        <div class="tscol">
+          <div class="tsc"><h4>Km meter</h4><div class="tsf">
           <div class="field"><label for="bkStartKm">Start km</label><input id="bkStartKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkStartKm"></span></div>
           <div class="field"><label for="bkEndKm">End km</label><input id="bkEndKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-bkEndKm"></span></div>
           <div class="field"><span class="lbl">Km run</span><output class="calcbox" id="bkT_km"></output></div>
           <div class="field"><span class="lbl">Avg km / day</span><output class="calcbox" id="bkT_kmday"></output></div>
           <div class="field"><span class="lbl">Mileage</span><output class="calcbox" id="bkT_mil"></output></div>
         </div></div>
-        <div class="tsc"><h4>Trip money</h4><div class="tsf">
+          <div class="tsc"><h4>Trip money</h4><div class="tsf">
           <div class="field"><span class="lbl">Collection</span><output class="calcbox" id="bkT_col"></output></div>
           <div class="field"><span class="lbl">Total expense</span><output class="calcbox" id="bkT_exp"></output></div>
           <div class="field"><span class="lbl">Balance</span><output class="calcbox" id="bkT_bal"></output></div>
           <div class="field"><span class="lbl">Avg col / day</span><output class="calcbox" id="bkT_avg"></output></div>
         </div></div>
-        <div class="tsc tsw"><div class="field"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div></div>
+          <div class="tsc"><h4>Special Permit No.</h4>
+          <label class="bkspl" for="bkSpl"><span id="bkSplPre">TN-SPL-</span><input id="bkSpl" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Running no." aria-label="Special permit running number"></label>
+          <span class="hint">Type only the running number from the government site; TN, the year and SPL are filled in.</span>
+        </div>
+        </div>
       </div>
     </section>
     <section class="bkpanel" id="bkAdvSet" role="tabpanel" aria-labelledby="bkTab-adv"><div id="bkAdv"></div></section>
@@ -2696,13 +2721,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </div>
     </section>
   </form>
-  <div class="bksum"><div class="tcalc" id="bkCalc" aria-live="polite"></div><span class="bkstagehint" id="bkStageHint"></span><span class="bkclash" id="bkClashCard" hidden><span id="bkClash"></span></span></div>
+  <div class="bksum"><span class="bkstagehint" id="bkStageHint"></span><span class="bkclash" id="bkClashCard" hidden><span id="bkClash"></span></span></div>
   <footer>
     <button class="btn danger" type="button" id="bkDelete" hidden>Delete</button>
     <span class="bknote" id="bkNote"></span>
     <button class="btn bkmore" type="button" id="bkMore" aria-expanded="false" aria-label="More actions">⋯</button>
     <button class="btn" type="button" id="bkPrint">Print slip</button>
     <button class="btn" type="button" id="bkTsPrint">Print trip sheet</button>
+    <span class="bklockf" id="bkLockAct"><input id="bkLockWhy" maxlength="200" aria-label="Reason"><button class="btn" type="button" id="bkLockBtn" title="Close the trip to make it view only for everyone">Close trip</button></span>
     <button class="btn" type="button" id="bkCancel">Close</button>
     <button class="btn" type="button" id="bkDraft" hidden>Save draft</button>
     <button class="btn primary" type="submit" form="bkForm" id="bkSave">Save booking</button>
@@ -9395,11 +9421,11 @@ async function tripLock(id, how, note, adj) {
 // Desktop booking window: the Close trip / Reopen trip strip.
 function syncBkLock(b) {
   const closed = tripClosed(b), show = !!b && (closed || (canCloseTrips && ["booked", "ontrip", "completed"].includes(b.status)));
-  $("bkLock").hidden = !show; if (!show) return;
+  // The strip says the trip is closed; Close trip / Reopen trip is a button in the bottom bar.
+  $("bkLock").hidden = !closed; $("bkLockAct").hidden = !show || !canCloseTrips; if (!show) return;
   $("bkLock").className = "bkappr" + (closed ? " draft" : " ok");
   $("bkLockText").innerHTML = closed ? `<b>🔒 Trip closed</b> on ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything is view only.`
     : "Close the trip to make it view only for everyone.";
-  $("bkLockAct").hidden = !canCloseTrips;
   $("bkLockWhy").disabled = false; $("bkLockWhy").value = "";
   $("bkLockWhy").hidden = !closed;
   $("bkLockWhy").placeholder = "Why reopen? e.g. toll bill missed";
@@ -9576,10 +9602,6 @@ function syncBk() {
   setT("bkT_exp", rs(c.exp)); setT("bkT_col", rs(c.due)); setT("bkT_bal", rs(c.profit), c.profit < 0 ? "neg" : "pos");
   setT("bkT_avg", b.days ? rs(c.profit / b.days) : "—"); setT("bkT_km", c.km ? nf(c.km) : "—");
   setT("bkT_kmday", c.km && b.days ? nf(c.km / b.days) : "—"); setT("bkT_mil", c.km && b.litres ? `${nf(c.km / b.litres, 2)} km/L` : "—");
-  const cell = (k, v, col = "") => `<div><div class="k">${k}</div><div class="v"${col ? ` style="color:${col}"` : ""}>${v}</div></div>`;
-  // Expenses and profit are for the admin; the booking planner sees only what the party owes.
-  $("bkCalc").innerHTML = cell("Collection", rs(c.due)) + cell("Received", rs(c.received)) + cell("To collect", rs(c.balance), c.balance > 0 ? "var(--warn)" : "var(--ok)") +
-    (canBookings ? cell("Expenses", rs(c.exp)) + cell("Balance", bkNetTxt(c.profit), c.profit < 0 ? "var(--danger)" : "var(--ok)") + cell("Km run", c.km ? nf(c.km) : "—") + cell("Km / L", c.km && b.litres ? nf(c.km / b.litres, 2) : "—") : "");
   // Payments tab: the party's account, rent + extra + toll = collection, less what is received.
   { const r = (l, v, cls = "") => `<div class="bkacr${cls}"><span>${l}</span><b>${v}</b></div>`;
     $("bkPayAcct").innerHTML = `<h4>Party account</h4>` + r("Rent", rs(num(b.rent))) + (c.ext ? r("Extra from party", rs(c.ext)) : "") + (num(b.toll) ? r("Toll gate", rs(num(b.toll))) : "") +
@@ -9594,7 +9616,8 @@ function syncBk() {
   if (!canBookings) ck = ck.filter(x => !(x.lvl === "warn" && /no expiry date on record/.test(x.msg)) && (canTsUpd || !/^Driver|No driver chosen/.test(x.msg)));
   $("bkWarn").hidden = !ck.length || b.status === "cancelled" || b.status === "completed";
   const nBad = ck.filter(x => x.lvl === "bad").length;
-  $("bkWarn").innerHTML = `<button type="button" class="wh" id="bkWarnT" aria-expanded="${$("bkWarn").classList.contains("open")}">Checks before ${canBookings && b.status === "pending" ? "approving" : "confirming"} <span class="wn${nBad ? " bad" : ""}">${ck.length}</span><span class="wchev" aria-hidden="true">▾</span></button>` + ck.map(x => `<span class="wl ${x.lvl}">${esc(x.msg)}</span>`).join("");
+  $("bkWarn").innerHTML = `<button type="button" class="wh" id="bkWarnT" title="Checks before ${canBookings && b.status === "pending" ? "approving" : "confirming"}" aria-expanded="${$("bkWarn").classList.contains("open")}"><span aria-hidden="true">⚠</span> <span class="wn${nBad ? " bad" : ""}">${ck.length}</span> check${ck.length === 1 ? "" : "s"}<span class="wchev" aria-hidden="true">▾</span></button>` +
+    `<span class="wlist"><b class="wt">Checks before ${canBookings && b.status === "pending" ? "approving" : "confirming"}</b>` + ck.map(x => `<span class="wl ${x.lvl}">${esc(x.msg)}</span>`).join("") + `</span>`;
   $("bkTb-files").textContent = bkFiles.length || ""; $("bkTb-files").className = "tb";
   $("bkTab-send").hidden = !bkEditId || bkMode === "trip";
   if (bkTab === "send") fillMsgs(false);
