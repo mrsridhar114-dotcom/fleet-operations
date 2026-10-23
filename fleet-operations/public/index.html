@@ -1243,7 +1243,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpex label { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .tpex label > span:first-child { font: 600 12px var(--body); color: var(--muted); }
 .tpex .tpsel { height: 48px; padding: 0 8px; font-size: 16px; } .tpex .tpin { width: 100%; height: 48px; padding: 0 6px; } .tpex .tpin input { font-size: 17px; }
 .tpex .tpbin { width: 26px; height: 48px; } .tpex .tpbin svg { width: 20px; height: 20px; } .tpex .tpnote { grid-column: 1 / -1; margin-top: 2px; }
-.tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; }
+.tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; text-transform: uppercase; }
 #bwTotHint.bwerr { color: var(--danger); font-weight: 600; }
 .tpamt { font: 700 19px var(--body); white-space: nowrap; } .tptot { border-top: 2px solid var(--line); border-bottom: 0; } .tptot .tpamt { color: var(--accent); font-size: 21px; }
 .tpfc .tpin.pl input { font: 600 15px var(--body); } .tpfc .tpbin { width: 26px; height: 48px; } .tpfc .tpbin svg { width: 20px; height: 20px; }
@@ -8173,7 +8173,7 @@ function twPageHtml() {
   const s = num(tw.startKm), e = num(tw.endKm);
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     sec("Collection", twCollectHtml()) +
-    sec("Special Permit No.", `<label class="bwin tpin tpspl"><b>${esc(splPrefix(twBk()))}</b><input type="text" inputmode="numeric" maxlength="12" autocomplete="off" data-k="spl" value="${esc(tw.spl)}" placeholder="Number" aria-label="Special permit running number"${rd}></label>`) +
+    sec("Special Permit No.", `<label class="bwin tpin tpspl"><b>${esc(splPrefix(twBk()))}</b><input type="text" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" data-k="spl" value="${esc(tw.spl)}" placeholder="Number or letters" aria-label="Special permit running number"${rd}></label>`) +
     sec("Driver and cleaner", twCrewHtml()) +
     sec("On the way", twRowHtml("Toll gate", "toll", tw.toll) + twRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel",       tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
@@ -8220,7 +8220,7 @@ function twCheckHtml() {
   const ex = twExtraList();
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : st && !tw.edit ? `<p class="bwnote"><b>${st}.</b></p>` : "") + `<div class="bwcard">` +
     row("Collection", m("Rent", rs(num(twBk()?.rent))) + ex.map(x => m("Extra · " + esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") + (ex.length ? m("<b style='color:var(--ink)'>Total collection</b>", rs(twCollect())) : "")) +
-    row("Special Permit No.", `<b>${tw.spl.trim() ? esc(splPrefix(twBk()) + tw.spl.trim()) : "—"}</b>`) +
+    row("Special Permit No.", `<b>${tw.spl.trim() ? esc(splPrefix(twBk()) + tw.spl.trim().replace(/\s+/g, "").toUpperCase()) : "—"}</b>`) +
     row("Driver and cleaner", m("Driver", esc(twDriverName() || "—")) + m("Cleaner", tw.noCleaner ? "No cleaner" : esc(tw.cleaner.trim() || "—"))) +
     row("Padi, permit and toll", TW_MONEY.map(([k, l]) => m(l, rs(num(tw[k])))).join("")) +
     row(`Diesel · ${lines} fill${lines === 1 ? "" : "s"}`, m(`${nf(twLitres(), 2)} L`, rs(twDiesel()))) +
@@ -8299,7 +8299,7 @@ async function twSaveBooking() {
   if (tw.noCleaner) next.noCleaner = true; else delete next.noCleaner;
   if (other.length) { next.otherList = other; next.otherExp = other.reduce((a, x) => a + x.amt, 0); } else { delete next.otherList; delete next.otherExp; }
   const ex = twExtraList(); if (ex.length) next.extras = ex; else delete next.extras;
-  const sp = String(tw.spl || "").trim().replace(/\s+/g, ""); if (sp) next.splPermit = splPrefix(cur) + sp; else delete next.splPermit;
+  const sp = String(tw.spl || "").trim().replace(/\s+/g, "").toUpperCase(); if (sp) next.splPermit = splPrefix(cur) + sp; else delete next.splPermit;
   if (tw.files.length) next.attachments = tw.files.map(f => ({ ...f })); else delete next.attachments;
   if (!canBookings) { if (!cur.tsBy) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); } if (!cur.tsStatus) next.tsStatus = "draft"; next.tsDraftOn = todayISO(); }
   const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
