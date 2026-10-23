@@ -1244,6 +1244,65 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpex .tpsel { height: 48px; padding: 0 8px; font-size: 16px; } .tpex .tpin { width: 100%; height: 48px; padding: 0 6px; } .tpex .tpin input { font-size: 17px; }
 .tpex .tpbin { width: 26px; height: 48px; } .tpex .tpbin svg { width: 20px; height: 20px; } .tpex .tpnote { grid-column: 1 / -1; margin-top: 2px; }
 .tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; text-transform: uppercase; }
+/* Computer: the booking screens laid out wide (tabs, two columns, three-column trip sheet). */
+@media (max-width: 700px) { .bwtabs, .bhdesk, .bhmoney, .deskonly { display: none !important; } }
+.bhmoney { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 18px; }
+.bhmoney h3 { margin: 0 0 6px; font: 700 14px var(--body); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+.bmrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 15px; } .bmrow:first-of-type { border-top: 0; }
+.bmrow small { color: var(--muted); } .bmrow.tot { border-top: 2px solid var(--line); } .bmrow.tot b:last-child { color: var(--accent); font-size: 19px; }
+.bmrow.neg b:last-child { color: var(--danger); font-size: 19px; } .bmrow.pos b:last-child { color: var(--accent); font-size: 19px; } .bmrow.due b:last-child { color: var(--warn); font-size: 19px; }
+.bhdesk { display: flex; flex-direction: column; gap: 10px; }
+.bhdacts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.bhgap { flex: 1; }
+.bhck, .bhbt, .bhstage button { height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.bhck { background: var(--warn-soft); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); } .bhck.bad { background: var(--danger-soft); color: var(--danger); } .bhck.ok { background: var(--accent-soft); color: var(--accent); cursor: default; }
+.bhstage { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; } .bhstage > span { font-size: 13px; font-weight: 600; color: var(--muted); margin-right: 2px; }
+.bhstage button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.bhdel { height: 40px; border: 0; background: none; color: var(--danger); font: 600 15px var(--body); cursor: pointer; padding: 0 6px; }
+.bhcklist { margin: 0; padding: 10px 14px 10px 32px; border-radius: 12px; background: var(--warn-soft); color: var(--ink); font-size: 14px; display: grid; gap: 4px; } .bhcklist li.bad { color: var(--danger); font-weight: 600; }
+.bwtab { border: 0; background: none; padding: 14px 2px 11px; font: 600 16px var(--body); color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; }
+.bwtab.on { color: var(--ink); border-bottom-color: var(--accent); }
+.bwmsg textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; padding: 12px; font: 500 15px/1.4 var(--body); background: var(--surface); color: var(--ink); resize: vertical; margin-bottom: 10px; }
+.bwmsg .bwseg a, .bwmsg .bwseg button { height: 46px; font-size: 16px; } .bwmsgs .bwnote { margin: 0 0 8px; }
+#tpFoot b.neg { color: var(--danger); } #tpFoot b.pos { color: var(--accent); }
+html.bw-on #hDrawer { z-index: 47; }
+@media (min-width: 701px) {
+  .bw .bwh, .bw .bwb, .bw .bwf, .bw .bwnb, .bwtabs { padding-left: max(28px, calc((100% - 1240px) / 2)); padding-right: max(28px, calc((100% - 1240px) / 2)); }
+  .bw .bwh { min-height: 60px; }
+  .bwtabs { display: flex; flex-wrap: wrap; gap: 0 26px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .bwbar { display: none; }
+  /* Back and Close sit at the right of the dark title bar, as on any computer page. */
+  .bw > .bwnb { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); right: max(28px, calc((100% - 1240px) / 2)); z-index: 2; display: flex; gap: 8px; padding: 0; background: none; border: 0; }
+  .bw > .bwnb button { width: auto; height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+  .bw .bwh { padding-right: calc(max(28px, calc((100% - 1240px) / 2)) + 230px); }
+  /* The booking page's tiles: compact, side by side; printing is in the tools row. */
+  #bwBody.bhome .bhbtn { flex-direction: row; justify-content: flex-start; text-align: left; min-height: 76px; padding: 12px 16px; gap: 12px; }
+  #bwBody.bhome .bhbtn .bht { align-items: flex-start; }
+  #bwBody.bhome .bhbtn[data-bw="tsprint"] { display: none; }
+  .bw .bwf { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 12px; }
+  .bw .bwf > .bwgo, .bw .bwf > .bwalt, .bw .bwf.two > * { width: auto; min-width: 190px; height: 48px; font-size: 17px; padding: 0 22px; border-radius: 12px; }
+  .bw .bwf .twspent { flex: 1; margin: 0; justify-content: flex-start; gap: 26px; }
+  .bwleave, .twsheet { align-items: center; justify-content: center; } .bwleave > div, .twsheet > div { max-width: 540px; border-radius: 18px; }
+  #bwBody.bhome { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; gap: 18px 20px; }
+  #bwBody.bhome > .bhdesk { grid-column: 1 / -1; }
+  #bwBody.bhome > .bhcard, #bwBody.bhome > .bhmoney { grid-column: 1; }
+  #bwBody.bhome > .bhbtns { grid-column: 2; grid-row: 2 / span 2; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; }
+  #bwBody.bhome > .bhcard .bhfacts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #tw .tpage { display: block; column-count: 3; column-gap: 16px; }
+  #tw .tpage > * { break-inside: avoid; margin: 0 0 16px; }
+  #tw .tws:not(.tpage) > .bwcard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .bwmsgs { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } .bwmsgs > .bwnote { grid-column: 1 / -1; }
+  .bwdgrid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+  .bwdcols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+  .bwdsec { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .bwdsec > h3 { margin: 0; font: 700 14px var(--body); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+  .bwdaside { position: sticky; top: 0; display: flex; flex-direction: column; gap: 12px; }
+  .bwdaside .bwlink[data-goto] { display: none; }
+}
+@media (min-width: 701px) and (max-width: 1100px) {
+  .bwdgrid, .bwdcols { grid-template-columns: minmax(0, 1fr); } #tw .tpage { column-count: 2; }
+  #bwBody.bhome { grid-template-columns: minmax(0, 1fr); } #bwBody.bhome > * { grid-column: 1 !important; grid-row: auto !important; }
+}
 #bwTotHint.bwerr { color: var(--danger); font-weight: 600; }
 .tpsub { display: block; font: 500 13px var(--body); color: var(--muted); }
 .tpamt { font: 700 19px var(--body); white-space: nowrap; } .tptot { border-top: 2px solid var(--line); border-bottom: 0; } .tptot .tpamt { color: var(--accent); font-size: 21px; }
@@ -7603,14 +7662,14 @@ $("bAvail").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.clear) { bSelA = bSelB = ""; renderSpare(); return; }
   if (b.dataset.bk) { openBooking(b.dataset.bk); return; }
-  if (b.dataset.book) { const [lo, hi] = bkRange(); if (bwIsPhone() && canBookReq) { bwOpen({ vehicleId: b.dataset.book, from: lo, to: hi }); return; } openBooking(null, { vehicleId: b.dataset.book, from: lo, to: hi }); }
+  if (b.dataset.book) { const [lo, hi] = bkRange(); if (canBookReq) { bwOpen({ vehicleId: b.dataset.book, from: lo, to: hi }); return; } openBooking(null, { vehicleId: b.dataset.book, from: lo, to: hi }); }
 });
 $("bList").addEventListener("click", e => { const r = e.target.closest("tr[data-bk]"); if (r) openBooking(r.dataset.bk); });
 $("bList").addEventListener("keydown", e => { const r = e.target.closest("tr[data-bk]"); if (r && e.key === "Enter") openBooking(r.dataset.bk); });
 $("bPrevM").onclick = () => { bMonth = ymAdd(bMonth, -1); renderSpare(); };
 $("bNextM").onclick = () => { bMonth = ymAdd(bMonth, 1); renderSpare(); };
 $("bToday").onclick = () => { bMonth = todayISO().slice(0, 7); renderSpare(); };
-$("sAdd").onclick = () => { const [lo, hi] = bkRange(); if (bwIsPhone() && canBookReq) { bwOpen(lo ? { from: lo, to: hi } : null); return; } openBooking(null, lo ? { from: lo, to: hi } : null); };
+$("sAdd").onclick = () => { const [lo, hi] = bkRange(); if (canBookReq) { bwOpen(lo ? { from: lo, to: hi } : null); return; } openBooking(null, lo ? { from: lo, to: hi } : null); };
 /* ---------- Easy booking on phones: one question per screen ----------
    A new booking on a phone goes through six short steps (dates, bus, party, places, money, check). Saving fills the
    full booking form behind the scenes and saves it the usual way, so the booking, its checks, approvals and history
@@ -7716,7 +7775,9 @@ function bwApprCard(b) {
 }
 const BW_ASK = { reject: ["Reject this booking?", "The booking planner sees your reason and can change and send it again.", "Why? e.g. bus not free on these days", "Reject"],
   tsback: ["Send the trip sheet back?", "The driver sees your reason and can correct and send it again.", "What should be corrected?", "Send back"],
-  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"] };
+  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"],
+  cancel: ["Cancel this booking?", "The bus becomes free on these days. Money already received stays on record.", "", "Yes, cancel"],
+  del: ["Delete this booking?", "It is removed for everyone, with its payments and trip sheet. This can't be undone.", "", "Delete"] };
 function bwAskHtml() {
   const [t, p, ph, go] = BW_ASK[bw.ask];
   return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwAkT"><div><b id="bwAkT">${t}</b><p>${p}</p>` +
@@ -7738,6 +7799,8 @@ async function bwDeskAct(prep) {
 }
 async function bwAskGo() {
   const note = String(bw.askNote || "").trim(), cur = bwBkNow(); if (!cur) return;
+  if (bw.ask === "cancel") { bw.ask = ""; bwCancel(); return; }
+  if (bw.ask === "del") { bwDelete(); return; }
   if (bw.ask === "reject") { if (!note) { toast("Type the reason for rejecting."); return; } bwDeskAct(() => { $("bkRejectWhy").value = note; $("bkReject").click(); }); return; }
   if (bw.ask === "tsback") { if (!note) { toast("Type what should be corrected."); return; } bwDeskAct(() => { $("tsRejectWhy").value = note; $("tsReject").click(); }); return; }
   // Bring back: only if the bus is still free on those days.
@@ -7773,19 +7836,22 @@ async function bwLockGo(adj) {
 }
 const bwLeaveHtml = () => `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwLvT"><div><b id="bwLvT">Leave without saving?</b><p>${bw.editId ? "The changes you made to this booking are not saved." : "This new booking is not saved yet."}</p>` +
   `<div class="bwseg c2"><button type="button" data-bw="leavestay">Keep editing</button><button type="button" class="bwdanger" data-bw="leavego">Discard</button></div></div></div>`;
-function bwCanNext() {
-  const s = bw.step;
+function bwCanNext(s = bw.step) {
   if (s === 0) return !!(bw.from && bw.to && bw.to >= bw.from && bw.vehicleId) && !bwClash();
   if (s === 1) { const d = bw.phone.replace(/\D/g, "").length; return (d === 0 || d >= 10) && (!canBookings || !!bw.party.trim()); }
   if (s === 3) return (!canBookings || num(bw.rate) > 0) && !bwRentLow();
   return true;
 }
+// Computer: the four steps on one page, so every step must be fine before saving.
+const bwDeskOk = () => [0, 1, 3].every(s => bwCanNext(s));
+const bwDesk = () => !bwIsPhone() && !bw.readOnly;
 // What is still needed before a booking can be sent for approval (a draft can be saved without these).
 const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) && "rent for one day"].filter(Boolean);
 function bwRender(top) {
   const el = $("bw"), s = bw.step, first = !bw.home && s === 0 && !bw.fromCheck;  // on the first screen Back already goes to the list, so there is no Close
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
-  if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (bw.lockAsk) el.insertAdjacentHTML("beforeend", bwLockHtml()); if (bw.ask) el.insertAdjacentHTML("beforeend", bwAskHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
+  if (bw.sub) { el.innerHTML = bwSubHtml(); bwTabsIn(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (bw.lockAsk) el.insertAdjacentHTML("beforeend", bwLockHtml()); if (bw.ask) el.insertAdjacentHTML("beforeend", bwAskHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
+  if (bwDesk()) { bwDeskRender(top); return; }
   el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of ${BW_LAST + 1}` : `Step ${s + 1} of ${BW_LAST + 1}`}</span></div></header>` +
     `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
     `<div class="bwb s${s}" id="bwBody"><h2>${s === BW_LAST && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
@@ -7797,6 +7863,22 @@ function bwRender(top) {
   if (bw.leave) el.insertAdjacentHTML("beforeend", bwLeaveHtml());
   if (top) $("bwBody").scrollTop = 0;
   if (bw.slide) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; }
+}
+// Computer: Booking details on one page. The four steps side by side, the summary (Check and save) beside them.
+function bwDeskRender(top) {
+  const el = $("bw"), keep = !top && $("bwBody") ? $("bwBody").scrollTop : 0;
+  const sec = (i, html) => `<section class="bwdsec"><h3>${i + 1} · ${BW_TITLES[i]}</h3>${html}</section>`;
+  el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") : "Fill in what you know; the rest can be added later"}</span></div></header>` +
+    `<div class="bwb bwdesk" id="bwBody"><h2>${bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : "New booking"}</h2>` +
+    `<div class="bwdgrid"><div class="bwdcols">${sec(0, bwDatesHtml())}${sec(1, bwPartyHtml())}${sec(2, bwPlacesHtml())}${sec(3, bwMoneyHtml())}</div>` +
+    `<aside class="bwdaside" id="bwAside">${bwCheckHtml()}</aside></div></div>` +
+    `<footer class="bwf">${canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving || !bwDeskOk() ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
+      : `<button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length || !bwDeskOk() ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button>`}</footer>` + navBar("bw", true);
+  bwTabsIn();
+  if (bw.sheet) el.insertAdjacentHTML("beforeend", bwSheetHtml());
+  if (bw.leave) el.insertAdjacentHTML("beforeend", bwLeaveHtml());
+  if (bw.ask) el.insertAdjacentHTML("beforeend", bwAskHtml());
+  if (keep) $("bwBody").scrollTop = keep;
 }
 function bwDatesHtml() {
   const { from, to } = bw, t = todayISO(), w = bwWhole(), dd = bwDays(), opt = (v, l) => `<button type="button" data-half="${v}" aria-pressed="${bw.half === v}">${l}</button>`;
@@ -7908,11 +7990,15 @@ function bwPartyRows() {
 const bwSheetHtml = () => `<div class="bwsheet" role="dialog" aria-modal="true" aria-label="Choose a party"><header class="bwh"><div><b>Choose a party</b><span>From past bookings</span></div></header>` +
   `<div class="bwsb">${bwHasContacts() ? `<button type="button" class="bwpc" data-bw="contacts">${BW_ICON.book}<span><b>Open phone contacts</b><small>For a new party not in this list</small></span>${BW_ICON.next}</button>` : ""}` +
   `<input type="search" data-k="q" placeholder="Search name or phone number" aria-label="Search parties" autocomplete="off" value="${esc(bw.q || "")}"></div><div class="bwpl" id="bwPl">${bwPartyRows()}</div><nav class="bwnb one"><button type="button" data-bw="sheetclose">${BW_ICON.x} Close</button></nav></div>`;
-function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext(); }
+function bwSyncNext() {
+  const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext();
+  if (bwDesk() && !bw.sub && $("bwAside")) { $("bwAside").innerHTML = bwCheckHtml(); const sv = $("bw").querySelector('.bwgo[data-bw="save"]'); if (sv) sv.disabled = !!bw.saving || !bwDeskOk() || (!canBookings && bwMissing().length > 0); }
+}
 function bwInput(e) {
   const k = e.target.dataset.k; if (!k || !bw) return;
   if (k.startsWith("pay.")) { bw.pay[k.slice(4)] = e.target.value; return; }
   if (k.startsWith("da.")) { bw.da[k.slice(3)] = e.target.value; bwAdvRefresh(); bwAdvSoon(900); return; }
+  if (k.startsWith("msg.")) { bw.msg[k.slice(4)] = e.target.value; bwMsgLinks(); return; }
   bw[k] = e.target.value;
   if (k === "q") { bw[k] = e.target.value; $("bwPl").innerHTML = bwPartyRows(); return; }
   if (k === "party" && bw.fromContact) bw.fromContact = false;
@@ -7954,6 +8040,15 @@ function bwClick(e) {
   if (a === "apprbk") { bwDeskAct(() => $("bkApprove").click()); return; }
   if (a === "apprts") { bwDeskAct(() => $("tsApprove").click()); return; }
   if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b, t); return; }
+  if (t.dataset.bwtab) { bwTab(t.dataset.bwtab); return; }
+  if (a === "checks") { bw.showChecks = !bw.showChecks; bwRender(); return; }
+  if (a === "slip") { bwSlip(t); return; }
+  if (a === "mcopy") { navigator.clipboard?.writeText(bw.msg?.[t.dataset.who] || "").then(() => toast("Copied"), () => toast("Couldn't copy.")); return; }
+  if (a === "stage") {
+    const st = t.dataset.st, b = bwBkNow(); if (!b || st === b.status) return;
+    if (st === "cancelled") { bw.ask = "cancel"; bwRender(); return; }
+    bwDeskAct(() => { const r = document.querySelector(`input[name="bkStatus"][value="${st}"]`); if (r) r.checked = true; syncBk(); $("bkForm").requestSubmit(); }); return;
+  }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
   if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
   if (a === "advtoll") { bw.da.toll = !bw.da.toll; bwRender(); bwAdvSoon(50); return; }
@@ -8243,18 +8338,22 @@ function twRender(top) {
   const el = $("tw"), page = tw.view === "page", keep = !top && $("twBody") ? $("twBody").scrollTop : 0;
   const x = tw.backTo || (!page && tw.edit);  // Close only when Back would not already go back to the list
   el.innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${esc([tw.places, tw.dates].filter(Boolean).join(" · "))}</span></div></header>` +
-    (page ? `<div class="bwb tws tpage" id="twBody">${twPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>Check and send</h2>${twCheckHtml()}</div>`) +
-    (!page && !tw.edit ? "" : `<footer class="bwf${!page && !tw.admin ? " two" : ""}">${page ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span><span>Total <b id="tpTot">${rs(twTotal())}</b></span></div><button type="button" class="bwgo" data-tw="check">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
-      : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
+    (page ? `<div class="bwb tws tpage" id="twBody">${twPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>${tw.admin ? "Check and save" : "Check and send"}</h2>${twCheckHtml()}</div>`) +
+    (!page && !tw.edit ? (bwIsPhone() ? "" : `<footer class="bwf">${twPrintBtn()}</footer>`) : `<footer class="bwf${!page && !tw.admin ? " two" : ""}">${page ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span>${tw.admin ? `<span class="deskonly" id="tpFoot">${twFootHtml()}</span>` : ""}<span>Total spent <b id="tpTot">${rs(twTotal())}</b></span></div>${twPrintBtn()}<button type="button" class="bwgo" data-tw="check">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
+      : tw.admin ? `${twPrintBtn()}<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
       : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>`) + navBar("tw", x);
   if (top) $("twBody").scrollTop = 0; else if (keep) $("twBody").scrollTop = keep;
   if (tw.slide) { $("twBody").classList.add("bwsl-" + tw.slide); tw.slide = ""; }
 }
+// Computer: Print beside the save buttons, and the collection and balance in the bottom bar (office only).
+const twPrintBtn = () => `<button type="button" class="bwalt deskonly" data-tw="print">Print</button>`;
+const twFootHtml = () => { const n = twCollect() - twTotal(); return `Collection <b>${rs(twCollect())}</b> · Balance <b class="${n < 0 ? "neg" : "pos"}">${n < 0 ? "− " : ""}${rs(Math.abs(n))}</b>`; };
 function twSaveState(t) { const el = $("tpSt"); if (el) { el.textContent = t; el.className = "tpst" + (t.startsWith("✓") ? " ok" : t.startsWith("Not") ? " bad" : ""); } }
 function twRefresh() {
   if ($("tpTot")) $("tpTot").textContent = rs(twTotal());
   if ($("tpMoney")) $("tpMoney").innerHTML = twMoneyHtml();
   if ($("tpCol")) $("tpCol").textContent = rs(twCollect());
+  if ($("tpFoot")) $("tpFoot").innerHTML = twFootHtml();
   if ($("tpToll")) $("tpToll").textContent = rs(Math.round(num(tw.toll)));
   const s = num(tw.startKm), e = num(tw.endKm);
   if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
@@ -8287,6 +8386,7 @@ function twClick(e) {
   if (a === "back" || a === "close") { twBack(a === "close"); return; }
   if (a === "check") { twSaveState("Saving…"); twFlush().then(() => { if (!tw) return; tw.view = "check"; tw.slide = "l"; twRender(true); }); return; }
   if (a === "page") { tw.view = "page"; tw.slide = "r"; twRender(true); return; }
+  if (a === "print") { const go = () => { const b = twBk(); if (b) tsPrint(b, t); }; if (tw.edit) { twSaveState("Saving…"); twFlush().then(go); } else go(); return; }
   if (a === "rowadd") { tw.rows.push(twNewRow()); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
   if (t.dataset.rowdel != null) { twDelRow(+t.dataset.rowdel); return; }
   if (a === "exadd") { tw.extras.push({ kind: EXTRA_KINDS[0], amt: "", note: "" }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":amt"]'); ins[ins.length - 1]?.focus(); return; }
@@ -8479,10 +8579,10 @@ function bwHomeHtml(b) {
   const byKind = BW_FILE_KINDS.map(k => [k, (b.attachments || []).filter(f => fileKindOf(f) === k).length]).filter(x => x[1]);
   const fp = tsFill(b), fpBadge = tsOpen ? `<span class="bhpct ${fp.pct === 100 ? "ok" : fp.pct >= 50 ? "mid" : ""}" title="${fp.done} of ${fp.all} filled in${fp.left.length ? ": still to fill " + fp.left.join(", ") : ""}">${fp.pct}%</span>` : "";
   return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(stageName(b))}</span></div></header>` +
-    `<div class="bwb tws" id="bwBody"><div class="bhcard">` +
+    `<div class="bwb tws bhome" id="bwBody">` + (bw.driver ? "" : bwDeskTools(b, tripOk && confirmed)) + `<div class="bhcard">` +
       `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}${tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span>`}</div>` +
       `<b class="bhplace">${esc(b.places || "—")}</b>` + bwFactsHtml(b, c) +
-    `</div><div class="bhbtns">` + (canBookings ? bwApprCard(b) : "") +
+    `</div>` + (bw.driver ? "" : bwMoneyCard(b, c)) + `<div class="bhbtns">` + (canBookings ? bwApprCard(b) : "") +
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
@@ -8495,11 +8595,85 @@ function bwHomeHtml(b) {
       : canCloseTrips && confirmed ? `<button type="button" class="bhclose" data-bw="lockask" data-how="close">🔒 Close trip</button>` : "") +
     `</div></div>` + navBar("bw", false);
 }
+/* ---------- computer: the same booking screens, laid out wide ----------
+   Tabs across the top of every booking screen, a tools row on the booking page (checks, stage, print, delete),
+   the trip money card, and WhatsApp / SMS messages. All hidden on phones, where the tiles do this. */
+function bwTabsHtml() {
+  const b = bwBkNow(); if (!b || !bw.home) return "";
+  const confirmed = ["booked", "ontrip", "completed"].includes(b.status), tripOk = canBookings || (canTsUpd && confirmed);
+  const cur = bw.sub || "details";
+  const t = [["home", "Overview"], !bw.driver && ["details", "Booking details"], !bw.driver && ["pay", "Payments"], tripOk && ["trip", "Trip sheet"],
+    canBookings && confirmed && ["money", "Driver advance"], ["files", "Files"], !bw.driver && ["msg", "WhatsApp / SMS"], !bw.driver && ["hist", "History"]].filter(Boolean);
+  return `<nav class="bwtabs" aria-label="Booking sections">${t.map(([k, l]) => `<button type="button" class="bwtab${k === cur ? " on" : ""}" data-bwtab="${k}"${k === cur ? ' aria-current="page"' : ""}>${l}</button>`).join("")}</nav>`;
+}
+function bwTabsIn() { const h = $("bw").querySelector("header.bwh"); if (h && bw.home) h.insertAdjacentHTML("afterend", bwTabsHtml()); }
+function bwTab(k) {
+  if (bw.sub === "money" && bw.da) { clearTimeout(bw.advTimer); bwAdvSave(); bw.da = null; bw.advSaved = ""; }
+  bw.pay = null; bw.lockAsk = ""; bw.ask = ""; bw.askCancel = false;
+  if (k === "trip") { const id = bw.editId; bwClose(); twOpen(ops.bookings.find(x => x.id === id), id); return; }
+  if (k === "hist") { openHDrawer(bw.editId, "", "booking"); return; }
+  if (k === "details") { bw.sub = ""; bw.step = BW_LAST; bwRender(true); return; }
+  if (k === "msg") bwMsgLoad();
+  bw.sub = k; bwRender(true);
+}
+function bwDeskTools(b, canPrintTs) {
+  const closed = tripClosed(b), checks = bkChecks(b, b.id), bad = checks.some(x => x.lvl === "bad");
+  const stages = canBookings && !closed && ["booked", "ontrip", "completed"].includes(b.status);
+  const busy = bw.apprBusy ? " disabled" : "";
+  return `<div class="bhdesk"><div class="bhdacts">` +
+    (checks.length ? `<button type="button" class="bhck${bad ? " bad" : ""}" data-bw="checks" aria-expanded="${!!bw.showChecks}">⚠ ${checks.length} check${checks.length === 1 ? "" : "s"}</button>` : `<span class="bhck ok">✓ All checks OK</span>`) +
+    (stages ? `<span class="bhstage" role="group" aria-label="Stage"><span>Stage</span>${[["booked", "Booked"], ["ontrip", "On trip"], ["completed", "Completed"], ["cancelled", "Cancelled"]].map(([k, l]) => `<button type="button" data-bw="stage" data-st="${k}" aria-pressed="${b.status === k}"${busy}>${l}</button>`).join("")}</span>` : "") +
+    `<span class="bhgap"></span><button type="button" class="bhbt" data-bw="slip">Print booking slip</button>` +
+    (canPrintTs ? `<button type="button" class="bhbt" data-bw="tsprint">Print trip sheet</button>` : "") +
+    (canBookings && !closed ? `<button type="button" class="bhdel" data-bw="ask" data-how="del">Delete</button>` : "") + `</div>` +
+    (bw.showChecks && checks.length ? `<ul class="bhcklist">${checks.map(x => `<li class="${x.lvl}">${esc(x.msg)}</li>`).join("")}</ul>` : "") + `</div>`;
+}
+// Trip money on the booking page: rent + extra from party + toll = collection, then expenses, balance and what is still to collect.
+function bwMoneyCard(b, c) {
+  const r = (l, v, cls = "") => `<div class="bmrow${cls}"><span>${l}</span><b>${v}</b></div>`;
+  return `<section class="bhmoney"><h3>Trip money</h3>` + r("Rent", rs(num(b.rent))) +
+    bkExtras(b).map(x => r(`Extra from party · ${esc(x.kind)}${x.note ? ` <small>${esc(x.note)}</small>` : ""}`, rs(Math.round(num(x.amt))))).join("") +
+    (num(b.toll) ? r("Toll gate", rs(num(b.toll))) : "") + r("<b>Total collection</b>", rs(c.due), " tot") + r("Total expenses", rs(c.exp)) +
+    r("<b>Balance</b>", bkNetTxt(c.due - c.exp), c.due - c.exp < 0 ? " neg" : " pos") +
+    r("Received from party", rs(c.received)) + r(c.balance > 0 || c.adj ? "<b>Still to collect</b>" : "<b>Paid extra</b>", rs(Math.abs(c.balance)), c.balance > 0 ? " due" : "") + `</section>`;
+}
+// Messages to the party and the driver, worked out by the booking form behind the screen.
+function bwMsgLoad() {
+  const id = bw.editId; bwBusy = true;
+  try { openBooking(id, null, true); const m = bkMsgTexts(); bw.msg = { party: m.party, duty: m.duty, pn: waNum(m.b.phone), dn: waNum(m.drv?.mobile), drv: m.drv?.name || m.b.driverName || "" }; }
+  finally { closeBkDrawer(); bwBusy = false; }
+}
+const bwMsgHref = (who, how) => { const m = bw.msg, n = who === "party" ? m.pn : m.dn; return !n ? "" : how === "wa" ? `https://wa.me/${n}?text=${encodeURIComponent(m[who])}` : `sms:+${n}?body=${encodeURIComponent(m[who])}`; };
+function bwMsgLinks() { $("bw").querySelectorAll("[data-mlink]").forEach(a => { const [who, how] = a.dataset.mlink.split(":"), h = bwMsgHref(who, how); if (h) a.href = h; }); }
+function bwMsgHtml(b) {
+  const m = bw.msg || {}, card = (who, title, to) => { const ok = who === "party" ? m.pn : m.dn;
+    return `<section class="tpsec bwmsg"><h3>${title}</h3><p class="bwnote">${to}</p><textarea rows="10" data-k="msg.${who}" aria-label="${title}">${esc(m[who] || "")}</textarea>` +
+      `<div class="bwseg c3">${ok ? `<a class="bwalt" data-mlink="${who}:wa" href="${esc(bwMsgHref(who, "wa"))}" target="_blank" rel="noopener">WhatsApp</a><a class="bwalt" data-mlink="${who}:sms" href="${esc(bwMsgHref(who, "sms"))}">SMS</a>` : `<span class="bwnote" style="grid-column:span 2">No number on record</span>`}<button type="button" class="bwalt" data-bw="mcopy" data-who="${who}">Copy</button></div></section>`; };
+  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">WhatsApp / SMS</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div></header><div class="bwb tws bwmsgs" id="bwBody">` +
+    card("party", "Message to the party", m.pn ? `To +${m.pn}` : "No phone number for the party") + card("duty", "Duty message to the driver", m.dn ? `To ${esc(m.drv)} · +${m.dn}` : m.drv ? `${esc(m.drv)} has no mobile on record` : "No driver chosen yet") +
+    `<p class="bwnote">WhatsApp or SMS opens with the message filled in; press send there. Edit the text first if needed.</p></div>` + navBar("bw", true);
+}
+// Booking slip PDF from the booking page: the booking form behind the screen gives the slip's details.
+function bwSlip(btn) {
+  const id = bw.editId; let d; bwBusy = true;
+  try { openBooking(id, null, true); d = slipData(); } finally { closeBkDrawer(); bwBusy = false; }
+  slipSave(d, btn);
+}
+async function bwDelete() {
+  const cur = bwBkNow(); if (!cur || bw.apprBusy) return;
+  bw.apprBusy = true; bwRender();
+  try {
+    await opsDelete("bookings", cur.id); ops.bookings = ops.bookings.filter(x => x.id !== cur.id);
+    await addBHistory([{ field: "status", from: cur.status, to: "", bookingId: cur.id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", byName: whoAmI(), note: `Booking ${cur.no || ""} deleted` }]).catch(() => {});
+    bwClose(); renderOps(); toast("Booking deleted");
+  } catch { toast("Couldn't delete. Try again."); if (bw) { bw.apprBusy = false; bw.ask = ""; bwRender(); } }
+}
 function bwSubHtml() {
   const b = bwBkNow(); if (!b) { bw.sub = ""; return ""; }
   if (bw.sub === "home") return bwHomeHtml(b);
   const head = t => `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div></header>`;
   if (bw.sub === "money") return bwDrvMoneyHtml(b);
+  if (bw.sub === "msg") return bwMsgHtml(b);
   if (bw.sub === "pay") {
     const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite && !tripClosed(b);
     const card = (p, i) => `<div class="twcard"><span class="twmain" style="cursor:default"><span class="twn twk" aria-hidden="true">₹</span><span class="twci"><b>${rs(num(p.amount))}</b><span>${[p.date ? fmtDate(p.date) : "", p.mode || "Cash", i === 0 && !p.note ? "Advance" : p.note].filter(Boolean).map(esc).join(" · ")}</span>${p.byName ? `<span>By ${esc(p.byName)}</span>` : ""}</span></span>` +
@@ -8650,7 +8824,8 @@ function bkTabBadges(b, c) {
 let bkMode = "view", bkApproving = false, bkSaveAs = "draft", bkHalfDay = "";
 function openBooking(id, preset, full) {
   const b = id ? ops.bookings.find(x => x.id === id) : null; bkEditId = b?.id || null;
-  if (b && !bwBusy && !full && bwIsPhone()) {
+  // Phone and computer open the same booking page; the booking form (bkDrawer) only does the saving behind it.
+  if (b && !bwBusy && !full) {
     const own = (b.status === "draft" || b.status === "rejected") && (b.createdBy || b.submittedBy || "") === (myUserId || "");
     const canEd = (canBookings || (canBookReq && own)) && !tripClosed(b);
     const tripWork = !canEd && canTsUpd && (b.status === "booked" || b.status === "ontrip" || b.status === "completed");
@@ -10338,8 +10513,9 @@ function pWire(cfg) {
 pWire(P_CFG.driver); pWire(P_CFG.conductor);
 V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
 function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
-$("bkPrint").onclick = async () => {
-  const btn = $("bkPrint"), d = slipData(), name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
+$("bkPrint").onclick = () => slipSave(slipData(), $("bkPrint"));
+async function slipSave(d, btn) {
+  const name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
   let downloads = null;
   try { downloads = await auDownloads(); } catch { downloads = null; }
   if (!downloads) { toast("Saving files isn't available in this view. Reload the page and try again."); return; }
@@ -10355,7 +10531,7 @@ $("bkPrint").onclick = async () => {
     else if (e?.message === "load failed") toast("Couldn't prepare the slip. Check your internet connection and try again.");
     else toast("Couldn't save the slip. Try again.");
   } finally { btn.disabled = false; btn.textContent = label; }
-};
+}
 
 /* ---------- truck trips ---------- */
 let kBusId = "", kFy = 0, lgEditId = null, lgDaysTouched = false;
