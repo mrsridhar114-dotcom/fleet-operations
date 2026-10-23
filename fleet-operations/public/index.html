@@ -7468,16 +7468,17 @@ let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bk
 const blocks = b => b.status === "draft" || b.status === "pending" || b.status === "booked" || b.status === "ontrip" || b.status === "completed";
 const META = ["tsStatus", "tsBy", "tsByName", "tsDraftOn", "tsSubmittedBy", "tsSubmittedByName", "tsSubmittedOn", "tsSubmitCount", "tsApprovedByName", "tsApprovedOn", "tsRejectedByName", "tsRejectedOn", "tsRejectReason", "tsRejections",
   "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason",
-  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle", "extras", "splPermit"];
+  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle", "extras", "splPermit", "balAdj"];
 const whoAmI = () => myRecord()?.name || me?.name || (store ? "Someone" : "This browser");
 const bkEnd = b => b.to || b.from;
 const bkCalc = b => {
   const pp = b.partyPays || {}, partyKeys = Object.entries(PP_FIELD).filter(([p]) => pp[p]).map(([, f]) => f);
   const exp = Object.values(BK_EXP).reduce((a, k) => a + (partyKeys.includes(k) ? 0 : num(b[k])), 0);
-  const ext = bkExtraSum(b), paid = (b.payments || []).reduce((a, p) => a + num(p.amount), 0);
-  const due = num(b.rent) + num(b.toll) + ext, received = paid + ext;
+  // balAdj: what was still to collect when the trip was closed, written off as adjusted with the driver advance.
+  const ext = bkExtraSum(b), paid = (b.payments || []).reduce((a, p) => a + num(p.amount), 0), adj = Math.round(num(b.balAdj?.amount));
+  const due = num(b.rent) + num(b.toll) + ext, received = paid + ext + adj;
   const km = b.endKm && b.startKm && b.endKm > b.startKm ? b.endKm - b.startKm : 0;
-  return { due, received, paid, ext, balance: due - received, exp, profit: due - exp, km };
+  return { due, received, paid, ext, adj, balance: due - received, exp, profit: due - exp, km };
 };
 const bkSettled = b => b.status === "completed" && bkCalc(b).balance <= 0;
 // A closed trip is final: its booking, payments, files, trip sheet and diesel lines are view-only for everyone (admin too)
@@ -7749,17 +7750,22 @@ async function bwAskGo() {
 }
 // Close trip / Reopen trip on the phone: a sheet that says what happens (reopening asks why).
 function bwLockHtml() {
-  const close = bw.lockAsk === "close";
+  const close = bw.lockAsk === "close", bal = close ? bkCalc(bwBkNow() || {}).balance : 0, dis = bw.lockBusy ? " disabled" : "";
+  if (bal > 0) return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwLkT"><div><b id="bwLkT">Close this trip?</b>` +
+    `<p><b>${rs(bal)}</b> is still to collect from the party. Close this pending amount too?</p>` +
+    `<p>Yes: it is marked <i>Adjusted with driver advance</i>, still to collect becomes ₹0 and it no longer shows as pending.</p>` +
+    `<div class="bwseg c2"><button type="button" data-bw="lockgo" data-adj="0"${dis}>No, keep pending</button><button type="button" class="twsave" data-bw="lockgo" data-adj="1"${dis}>${bw.lockBusy ? "Saving…" : "Yes, close it"}</button></div>` +
+    `<button type="button" class="bwlink" data-bw="lockno"${dis}>Cancel</button></div></div>`;
   return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwLkT"><div><b id="bwLkT">${close ? "Close this trip?" : "Reopen this trip?"}</b>` +
     `<p>${close ? "The booking, payments, files and trip sheet become view only for everyone. Only an admin can reopen it." : "The booking can be changed again. Close it again when the corrections are done."}</p>` +
     (close ? "" : `<input type="text" id="bwLockNote" data-k="lockNote" maxlength="200" placeholder="Why reopen? e.g. toll bill missed" aria-label="Reason" value="${esc(bw.lockNote || "")}">`) +
     `<div class="bwseg c2"><button type="button" data-bw="lockno"${bw.lockBusy ? " disabled" : ""}>Cancel</button><button type="button" class="twsave" data-bw="lockgo"${bw.lockBusy ? " disabled" : ""}>${bw.lockBusy ? "Saving…" : close ? "Close trip" : "Reopen trip"}</button></div></div></div>`;
 }
-async function bwLockGo() {
+async function bwLockGo(adj) {
   if (!bw || bw.lockBusy) return;
   const id = bw.editId, how = bw.lockAsk;
   bw.lockBusy = true; bwRender();
-  const err = await tripLock(id, how, bw?.lockNote || "");
+  const err = await tripLock(id, how, bw?.lockNote || "", adj);
   if (!bw) return;
   bw.lockBusy = false;
   if (err) { toast(err); bwRender(); setTimeout(() => $("bwLockNote")?.focus(), 30); return; }
@@ -7941,7 +7947,7 @@ function bwClick(e) {
   if (a === "leavestay") { bw.leave = ""; bwRender(); return; }
   if (a === "lockask") { bw.lockAsk = t.dataset.how; bw.lockNote = ""; bwRender(); setTimeout(() => $("bwLockNote")?.focus(), 30); return; }
   if (a === "lockno") { bw.lockAsk = ""; bwRender(); return; }
-  if (a === "lockgo") { bwLockGo(); return; }
+  if (a === "lockgo") { bwLockGo(t.dataset.adj === "1"); return; }
   if (a === "ask") { bw.ask = t.dataset.how; bw.askNote = ""; bwRender(); setTimeout(() => $("bwAskNote")?.focus(), 30); return; }
   if (a === "askno") { bw.ask = ""; bwRender(); return; }
   if (a === "askgo") { bwAskGo(); return; }
@@ -8504,7 +8510,8 @@ function bwSubHtml() {
       (c.ext || num(b.toll) ? `<span class="bwm"><span><b>Total collection</b></span><b>${rs(c.due)}</b></span>` : "") +
       `<span class="bwm"><span>Received (${pays.length} payment${pays.length === 1 ? "" : "s"})</span><b>${rs(c.paid)}</b></span>` +
       (c.ext ? `<span class="bwm"><span>Extra collected by the driver</span><b>${rs(c.ext)}</b></span>` : "") +
-      `<span class="bwm bal"><span>${c.balance > 0 ? "Still to collect" : c.balance < 0 ? "Paid extra" : "Balance"}</span><b>${rs(Math.abs(c.balance))}</b></span></div></div></div>` +
+      (c.adj ? `<span class="bwm"><span>${esc(b.balAdj.note || "Adjusted with driver advance")}${b.balAdj.on ? ` · ${fmtShort(b.balAdj.on)}` : ""}</span><b>${rs(c.adj)}</b></span>` : "") +
+      `<span class="bwm bal"><span>${c.balance > 0 || c.adj ? "Still to collect" : c.balance < 0 ? "Paid extra" : "Balance"}</span><b>${rs(Math.abs(c.balance))}</b></span></div></div></div>` +
       (pays.length ? pays.map(card).join("") : `<p class="bwnote">No payments yet.</p>`) +
       (canAdd ? `<button type="button" class="twadd" data-bw="payadd">${TW_PLUS} Add payment</button>` : "") +
       (num(b.padi) ? `<p class="bwnote">Driver padi from the party (${rs(num(b.padi))}) goes to the driver and is not counted here.</p>` : "") + `</div>` + navBar("bw", true);
@@ -9206,7 +9213,8 @@ $("tsReject").onclick = async () => {
   catch { toast("Couldn't save. Try again."); }
 };
 // Close a trip, or reopen a closed one (with the reason). Admin, at any time. Returns "" or the problem.
-async function tripLock(id, how, note) {
+// adj: when closing with money still to collect, the admin can close that too: it is recorded as adjusted with the driver advance.
+async function tripLock(id, how, note, adj) {
   const cur = ops.bookings.find(x => x.id === id); note = String(note || "").trim();
   if (!cur || !canCloseTrips) return "Only an admin can close or reopen a trip.";
   let next, action;
@@ -9214,6 +9222,8 @@ async function tripLock(id, how, note) {
     if (tripClosed(cur)) return "This trip is already closed.";
     next = { ...cur, closedOn: todayISO(), closedByName: whoAmI() };
     action = "Trip closed";
+    const bal = bkCalc(cur).balance;
+    if (adj && bal > 0) { next.balAdj = { amount: bal, note: "Adjusted with driver advance", on: todayISO(), by: whoAmI() }; action = `Trip closed · ${rs(bal)} still to collect adjusted with driver advance`; }
   } else {
     if (!tripClosed(cur)) return "This trip is not closed.";
     if (!note) return "Type why the trip is reopened.";
@@ -9245,8 +9255,10 @@ function syncBkLock(b) {
 $("bkLockBtn").onclick = async () => {
   const cur = ops.bookings.find(x => x.id === bkEditId); if (!cur) return;
   const how = tripClosed(cur) ? "reopen" : "close";
+  const bal = how === "close" ? bkCalc(cur).balance : 0;
+  const adj = bal > 0 && confirm(`${rs(bal)} is still to collect from the party.\n\nClose this pending amount too? It will be marked "Adjusted with driver advance" and still to collect becomes ₹0.\n\nOK = Yes, close it    Cancel = No, keep it pending`);
   $("bkLockBtn").disabled = true;
-  const err = await tripLock(cur.id, how, $("bkLockWhy").value);
+  const err = await tripLock(cur.id, how, $("bkLockWhy").value, adj);
   $("bkLockBtn").disabled = false;
   if (err) { toast(err); $("bkLockWhy").focus(); return; }
   closeBkDrawer(); openBooking(cur.id, null, true); toast(how === "close" ? "Trip closed" : "Trip reopened");
@@ -9330,6 +9342,7 @@ function bkRead() {
   if (bb.startsWith("id:")) { b.bookedById = bb.slice(3); b.bookedByName = drivers.find(d => d.id === b.bookedById)?.name || ""; } else if (bb) b.bookedByName = bb.slice(5);
   if (bkFiles.length) b.attachments = bkFiles.map(f => ({ ...f }));
   if (bkOtherList.length && bkOtherList.reduce((a, x) => a + num(x.amt), 0) === num(b.otherExp)) b.otherList = bkOtherList.map(x => ({ ...x }));
+  if (cur?.extras) b.extras = cur.extras; if (cur?.balAdj) b.balAdj = cur.balAdj;
   b.payments = [...$("bkPays").querySelectorAll(".payrow")].map(r => ({ date: r.querySelector("[data-pd]").value, amount: Math.round(num(r.querySelector("[data-pa]").value)), mode: r.querySelector("[data-pm]").value, note: r.querySelector("[data-pn]").value.trim() })).filter(p => p.amount > 0);
   return b;
 }
