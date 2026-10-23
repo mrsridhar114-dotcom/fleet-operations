@@ -1243,6 +1243,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpex label { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .tpex label > span:first-child { font: 600 12px var(--body); color: var(--muted); }
 .tpex .tpsel { height: 48px; padding: 0 8px; font-size: 16px; } .tpex .tpin { width: 100%; height: 48px; padding: 0 6px; } .tpex .tpin input { font-size: 17px; }
 .tpex .tpbin { width: 26px; height: 48px; } .tpex .tpbin svg { width: 20px; height: 20px; } .tpex .tpnote { grid-column: 1 / -1; margin-top: 2px; }
+.tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; }
 #bwTotHint.bwerr { color: var(--danger); font-weight: 600; }
 .tpamt { font: 700 19px var(--body); white-space: nowrap; } .tptot { border-top: 2px solid var(--line); border-bottom: 0; } .tptot .tpamt { color: var(--accent); font-size: 21px; }
 .tpfc .tpin.pl input { font: 600 15px var(--body); } .tpfc .tpbin { width: 26px; height: 48px; } .tpfc .tpbin svg { width: 20px; height: 20px; }
@@ -7465,7 +7466,7 @@ let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bk
 const blocks = b => b.status === "draft" || b.status === "pending" || b.status === "booked" || b.status === "ontrip" || b.status === "completed";
 const META = ["tsStatus", "tsBy", "tsByName", "tsDraftOn", "tsSubmittedBy", "tsSubmittedByName", "tsSubmittedOn", "tsSubmitCount", "tsApprovedByName", "tsApprovedOn", "tsRejectedByName", "tsRejectedOn", "tsRejectReason", "tsRejections",
   "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason",
-  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle", "extras"];
+  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle", "extras", "splPermit"];
 const whoAmI = () => myRecord()?.name || me?.name || (store ? "Someone" : "This browser");
 const bkEnd = b => b.to || b.from;
 const bkCalc = b => {
@@ -8071,6 +8072,9 @@ const twTotal = () => twSumMoney() + twDiesel() + twOtherSum();
 const twExtraList = () => tw.extras.filter(x => num(x.amt) > 0).map(x => ({ kind: x.kind, amt: Math.round(num(x.amt)), ...(String(x.note || "").trim() ? { note: String(x.note).trim().replace(/\s+/g, " ") } : {}) }));
 const twExtraSum = () => tw.extras.reduce((a, x) => a + Math.round(num(x.amt)), 0);
 const twCollect = () => { const b = twBk(); return b ? num(b.rent) + twExtraSum() : 0; };
+// Special permit no. is TN + the trip's year + -SPL- + the running number from the government site; the driver types only the number.
+const splPrefix = b => `TN${String(b?.from || todayISO()).slice(0, 4)}-SPL-`;
+const splNum = v => String(v || "").replace(/^.*SPL-?/i, "").trim();
 // Top of the sheet: the rent from the booking, then what the party gave over it (extra km, return diesel…), then the total.
 function twCollectHtml() {
   const b = twBk(), rd = tw.edit ? "" : " readonly";
@@ -8102,6 +8106,7 @@ function twOpen(b, backTo) {
     view: edit ? "page" : "check", edit, admin: canBookings, status: b.tsStatus || "", rejectReason: b.tsStatus === "rejected" ? (b.tsRejectReason || "") : "",
     padiPaid: str(b.padiPaid), cleanerPadi: str(b.cleanerPadi), permit: str(b.permit), toll: str(b.toll), startKm: str(b.startKm), endKm: str(b.endKm), prevKm,
     files: (b.attachments || []).map(f => ({ ...f })), saving: false, backTo: backTo || "",
+    spl: splNum(b.splPermit),
     extras: bkExtras(b).map(x => ({ kind: EXTRA_KINDS.includes(x.kind) ? x.kind : "Other", amt: String(x.amt), note: x.note || "" })),
     drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
     rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", pay: f.pay || "Cash", place: f.bunk || "", file: f.file || null })), legacy: dslLegacyOf(b) };
@@ -8168,6 +8173,7 @@ function twPageHtml() {
   const s = num(tw.startKm), e = num(tw.endKm);
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     sec("Collection", twCollectHtml()) +
+    sec("Special Permit No.", `<label class="bwin tpin tpspl"><b>${esc(splPrefix(twBk()))}</b><input type="text" inputmode="numeric" maxlength="12" autocomplete="off" data-k="spl" value="${esc(tw.spl)}" placeholder="Number" aria-label="Special permit running number"${rd}></label>`) +
     sec("Driver and cleaner", twCrewHtml()) +
     sec("On the way", twRowHtml("Toll gate", "toll", tw.toll) + twRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel",       tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
@@ -8214,6 +8220,7 @@ function twCheckHtml() {
   const ex = twExtraList();
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : st && !tw.edit ? `<p class="bwnote"><b>${st}.</b></p>` : "") + `<div class="bwcard">` +
     row("Collection", m("Rent", rs(num(twBk()?.rent))) + ex.map(x => m("Extra · " + esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") + (ex.length ? m("<b style='color:var(--ink)'>Total collection</b>", rs(twCollect())) : "")) +
+    row("Special Permit No.", `<b>${tw.spl.trim() ? esc(splPrefix(twBk()) + tw.spl.trim()) : "—"}</b>`) +
     row("Driver and cleaner", m("Driver", esc(twDriverName() || "—")) + m("Cleaner", tw.noCleaner ? "No cleaner" : esc(tw.cleaner.trim() || "—"))) +
     row("Padi, permit and toll", TW_MONEY.map(([k, l]) => m(l, rs(num(tw[k])))).join("")) +
     row(`Diesel · ${lines} fill${lines === 1 ? "" : "s"}`, m(`${nf(twLitres(), 2)} L`, rs(twDiesel()))) +
@@ -8292,10 +8299,11 @@ async function twSaveBooking() {
   if (tw.noCleaner) next.noCleaner = true; else delete next.noCleaner;
   if (other.length) { next.otherList = other; next.otherExp = other.reduce((a, x) => a + x.amt, 0); } else { delete next.otherList; delete next.otherExp; }
   const ex = twExtraList(); if (ex.length) next.extras = ex; else delete next.extras;
+  const sp = String(tw.spl || "").trim().replace(/\s+/g, ""); if (sp) next.splPermit = splPrefix(cur) + sp; else delete next.splPermit;
   if (tw.files.length) next.attachments = tw.files.map(f => ({ ...f })); else delete next.attachments;
   if (!canBookings) { if (!cur.tsBy) { next.tsBy = myUserId || ""; next.tsByName = whoAmI(); } if (!cur.tsStatus) next.tsStatus = "draft"; next.tsDraftOn = todayISO(); }
   const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
-  const keys = [...TW_MONEY.map(([k]) => k), "startKm", "endKm", "otherList", "otherExp", "extras", "attachments", "tsStatus", "driverId", "driverName", "cleanerName", "noCleaner"];
+  const keys = [...TW_MONEY.map(([k]) => k), "startKm", "endKm", "otherList", "otherExp", "extras", "splPermit", "attachments", "tsStatus", "driverId", "driverName", "cleanerName", "noCleaner"];
   if (keys.every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { twSaveState("✓ Saved"); return; }
   try {
     await opsSave("bookings", next);
@@ -9617,7 +9625,9 @@ async function tsLayout(L, pdf, b) {
     field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 22; });
   // trip / rent box
   const boxTop = y + 6; y -= 8;
-  text("Trip / rent details :", X0 + 6, y, { size: 8.5, color: grey }); y -= 16;
+  text("Trip / rent details :", X0 + 6, y, { size: 8.5, color: grey });
+  if (b.splPermit) { const w = text(b.splPermit, X1 - 8, y, { size: 10.5, bold: true, align: "right" }); text("Special Permit No.", X1 - 14 - w, y, { size: 8.5, color: grey, align: "right" }); }
+  y -= 16;
   text(fit(b.places || "", reg, 11, X1 - X0 - 14), X0 + 10, y, { size: 11 }); y -= 18;
   text(c.ext ? `${nf(num(b.rent))} + ${nf(c.ext)} = ${nf(c.due)}` : nf(c.due), X0 + 10, y, { size: 12, bold: true }); y -= 10;
   if (c.ext) { y -= 4; text(fit("Extra from party: " + bkExtras(b).map(x => `${x.kind}${x.note ? " (" + x.note + ")" : ""} ${nf(Math.round(num(x.amt)))}`).join(", "), reg, 9, X1 - X0 - 14), X0 + 10, y, { size: 9, color: grey }); y -= 8; }
