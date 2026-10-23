@@ -1245,6 +1245,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpex .tpbin { width: 26px; height: 48px; } .tpex .tpbin svg { width: 20px; height: 20px; } .tpex .tpnote { grid-column: 1 / -1; margin-top: 2px; }
 .tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; text-transform: uppercase; }
 #bwTotHint.bwerr { color: var(--danger); font-weight: 600; }
+.tpsub { display: block; font: 500 13px var(--body); color: var(--muted); }
 .tpamt { font: 700 19px var(--body); white-space: nowrap; } .tptot { border-top: 2px solid var(--line); border-bottom: 0; } .tptot .tpamt { color: var(--accent); font-size: 21px; }
 .tpfc .tpin.pl input { font: 600 15px var(--body); } .tpfc .tpbin { width: 26px; height: 48px; } .tpfc .tpbin svg { width: 20px; height: 20px; }
 .tprun { margin: 4px 0 6px; } .tprun .avg { font-weight: 700; color: var(--ink); }
@@ -7452,10 +7453,11 @@ const BK_STAGES = { draft: "Draft", pending: "Awaiting approval", rejected: "Rej
 const PARTY_ITEMS = [["toll", "Toll / FASTag"], ["parking", "Parking"], ["route", "Route expenses"]];
 // Expenses on the trip sheet, in the order of the spare bus sheet. Parking and route expenses go under Other when we pay them.
 const BK_EXP = { bkPadiPaid: "padiPaid", bkCleanerPadi: "cleanerPadi", bkPermit: "permit", bkToll: "toll", bkFuel: "fuelCost", bkOther: "otherExp" };
-// Toll is entered on the trip sheet as an expense only. Money the party gives on the trip over the rent (extra km, return
-// diesel, toll paid back…) is entered on the trip sheet as Extra from party: it is collected by the driver, so it counts
+// Toll is entered on the trip sheet: it is an expense and is collected back from the party, so it is part of the collection
+// (but not shown on the booking screens, where it is not known yet). Money the party gives on the trip over the rent (extra km, return
+// diesel, waiting…) is entered on the trip sheet as Extra from party: it is collected by the driver, so it counts
 // as income and as received, and the driver hands it to the office with his advance settlement.
-const EXTRA_KINDS = ["Extra km", "Return diesel", "Waiting / extra hours", "Toll from party", "Other"];
+const EXTRA_KINDS = ["Extra km", "Return diesel", "Waiting / extra hours", "Other"];
 const bkExtras = b => (b?.extras || []).filter(x => num(x.amt) > 0);
 const bkExtraSum = b => bkExtras(b).reduce((a, x) => a + Math.round(num(x.amt)), 0);
 const PP_FIELD = { parking: "parking", route: "routeExp" };
@@ -7473,7 +7475,7 @@ const bkCalc = b => {
   const pp = b.partyPays || {}, partyKeys = Object.entries(PP_FIELD).filter(([p]) => pp[p]).map(([, f]) => f);
   const exp = Object.values(BK_EXP).reduce((a, k) => a + (partyKeys.includes(k) ? 0 : num(b[k])), 0);
   const ext = bkExtraSum(b), paid = (b.payments || []).reduce((a, p) => a + num(p.amount), 0);
-  const due = num(b.rent) + ext, received = paid + ext;
+  const due = num(b.rent) + num(b.toll) + ext, received = paid + ext;
   const km = b.endKm && b.startKm && b.endKm > b.startKm ? b.endKm - b.startKm : 0;
   return { due, received, paid, ext, balance: due - received, exp, profit: due - exp, km };
 };
@@ -8068,10 +8070,10 @@ const twOtherSum = () => TW_OTHER.reduce((a, [k]) => a + num(tw.oth[k].amt), 0);
 const twDiesel = () => tw.rows.reduce((a, r) => a + num(r.amount), 0) + tw.legacy.reduce((a, r) => a + num(r.amount), 0);
 const twLitres = () => tw.rows.reduce((a, r) => a + num(r.litres), 0) + tw.legacy.reduce((a, r) => a + num(r.litres), 0);
 const twTotal = () => twSumMoney() + twDiesel() + twOtherSum();
-// Collection is the booked rent plus the extra money the party gave on the trip; balance = collection − expenses.
+// Collection is the booked rent + the extra money the party gave on the trip + the toll gate; balance = collection − expenses.
 const twExtraList = () => tw.extras.filter(x => num(x.amt) > 0).map(x => ({ kind: x.kind, amt: Math.round(num(x.amt)), ...(String(x.note || "").trim() ? { note: String(x.note).trim().replace(/\s+/g, " ") } : {}) }));
 const twExtraSum = () => tw.extras.reduce((a, x) => a + Math.round(num(x.amt)), 0);
-const twCollect = () => { const b = twBk(); return b ? num(b.rent) + twExtraSum() : 0; };
+const twCollect = () => { const b = twBk(); return b ? num(b.rent) + twExtraSum() + Math.round(num(tw.toll)) : 0; };
 // Special permit no. is TN + the trip's year + -SPL- + the running number from the government site; the driver types only the number.
 const splPrefix = b => `TN${String(b?.from || todayISO()).slice(0, 4)}-SPL-`;
 const splNum = v => String(v || "").replace(/^.*SPL-?/i, "").trim();
@@ -8086,7 +8088,8 @@ function twCollectHtml() {
   return `<div class="tprow"><span class="tpl">Rent</span><b class="tpamt">${rs(num(b?.rent))}</b></div>` +
     tw.extras.map(row).join("") +
     (tw.edit ? `<button type="button" class="tpadd" data-tw="exadd">${TW_PLUS} Add extra from party</button>` : "") +
-    (tw.extras.length ? `<div class="tprow tptot"><span class="tpl">Total collection</span><b class="tpamt" id="tpCol">${rs(twCollect())}</b></div>` : "");
+    `<div class="tprow"><span class="tpl">Toll gate<small class="tpsub">From On the way below</small></span><b class="tpamt" id="tpToll">${rs(Math.round(num(tw.toll)))}</b></div>` +
+    `<div class="tprow tptot"><span class="tpl">Total collection</span><b class="tpamt" id="tpCol">${rs(twCollect())}</b></div>`;
 }
 function twMoneyHtml() {
   const col = twCollect(), exp = twTotal(), net = col - exp, m = (l, v, cls = "") => `<span class="bwm${cls}"><span>${l}</span><b>${v}</b></span>`;
@@ -8173,7 +8176,7 @@ function twPageHtml() {
   const s = num(tw.startKm), e = num(tw.endKm);
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : "") +
     sec("Collection", twCollectHtml()) +
-    sec("Special Permit No.", `<label class="bwin tpin tpspl"><b>${esc(splPrefix(twBk()))}</b><input type="text" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" data-k="spl" value="${esc(tw.spl)}" placeholder="Number or letters" aria-label="Special permit running number"${rd}></label>`) +
+    sec("Special Permit No.", `<label class="bwin tpin tpspl"><b>${esc(splPrefix(twBk()))}</b><input type="text" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" data-k="spl" value="${esc(tw.spl)}" placeholder="Running no." aria-label="Special permit running number"${rd}></label>`) +
     sec("Driver and cleaner", twCrewHtml()) +
     sec("On the way", twRowHtml("Toll gate", "toll", tw.toll) + twRowHtml("Permit", "permit", tw.permit)) +
     sec("Diesel",       tw.legacy.map(r => `<div class="tprow"><span class="tpl" style="font-weight:500">${nf(num(r.litres), 2)} L · ${rs(num(r.amount))}</span><small class="bwnote">${esc(r.note || "")}</small></div>`).join("") +
@@ -8219,7 +8222,7 @@ function twCheckHtml() {
   const other = twOtherList();
   const ex = twExtraList();
   return (tw.rejectReason ? `<p class="bwnote" style="color:var(--danger)"><b>Sent back by the office:</b> ${esc(tw.rejectReason)}</p>` : st && !tw.edit ? `<p class="bwnote"><b>${st}.</b></p>` : "") + `<div class="bwcard">` +
-    row("Collection", m("Rent", rs(num(twBk()?.rent))) + ex.map(x => m("Extra · " + esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") + (ex.length ? m("<b style='color:var(--ink)'>Total collection</b>", rs(twCollect())) : "")) +
+    row("Collection", m("Rent", rs(num(twBk()?.rent))) + ex.map(x => m("Extra · " + esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(x.amt))).join("") + m("Toll gate", rs(Math.round(num(tw.toll)))) + m("<b style='color:var(--ink)'>Total collection</b>", rs(twCollect()))) +
     row("Special Permit No.", `<b>${tw.spl.trim() ? esc(splPrefix(twBk()) + tw.spl.trim().replace(/\s+/g, "").toUpperCase()) : "—"}</b>`) +
     row("Driver and cleaner", m("Driver", esc(twDriverName() || "—")) + m("Cleaner", tw.noCleaner ? "No cleaner" : esc(tw.cleaner.trim() || "—"))) +
     row("Padi, permit and toll", TW_MONEY.map(([k, l]) => m(l, rs(num(tw[k])))).join("")) +
@@ -8246,6 +8249,7 @@ function twRefresh() {
   if ($("tpTot")) $("tpTot").textContent = rs(twTotal());
   if ($("tpMoney")) $("tpMoney").innerHTML = twMoneyHtml();
   if ($("tpCol")) $("tpCol").textContent = rs(twCollect());
+  if ($("tpToll")) $("tpToll").textContent = rs(Math.round(num(tw.toll)));
   const s = num(tw.startKm), e = num(tw.endKm);
   if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
   if ($("tpRun")) { const h = twRunHtml(); if ($("tpRun").innerHTML !== h) $("tpRun").innerHTML = h; }
@@ -8496,7 +8500,8 @@ function bwSubHtml() {
       (canRm ? `<button type="button" class="twdel" data-payrm="${i}" aria-label="Remove this payment"${bw.paySaving ? " disabled" : ""}>${TW_BIN}</button>` : "") + `</div>`;
     return head("Payments") + `<div class="bwb tws" id="bwBody">` +
       `<div class="bwcard"><div class="bwrow"><div><span class="bwm"><span>Rent</span><b>${rs(num(b.rent))}</b></span>` +
-      (c.ext ? `<span class="bwm"><span>Extra from party</span><b>${rs(c.ext)}</b></span><span class="bwm"><span><b>Total collection</b></span><b>${rs(c.due)}</b></span>` : "") +
+      (c.ext ? `<span class="bwm"><span>Extra from party</span><b>${rs(c.ext)}</b></span>` : "") + (num(b.toll) ? `<span class="bwm"><span>Toll gate</span><b>${rs(num(b.toll))}</b></span>` : "") +
+      (c.ext || num(b.toll) ? `<span class="bwm"><span><b>Total collection</b></span><b>${rs(c.due)}</b></span>` : "") +
       `<span class="bwm"><span>Received (${pays.length} payment${pays.length === 1 ? "" : "s"})</span><b>${rs(c.paid)}</b></span>` +
       (c.ext ? `<span class="bwm"><span>Extra collected by the driver</span><b>${rs(c.ext)}</b></span>` : "") +
       `<span class="bwm bal"><span>${c.balance > 0 ? "Still to collect" : c.balance < 0 ? "Paid extra" : "Balance"}</span><b>${rs(Math.abs(c.balance))}</b></span></div></div></div>` +
@@ -8827,7 +8832,7 @@ function bkMsgTexts() {
   const party = [
     `${b.status === "completed" ? "Trip completed" : conf ? "Booking confirmed" : "Booking details"} · No. ${b.no}`,
     `Name: ${b.party}`, `Bus: ${bus ? plateOf(bus) : ""}`, `Dates: ${dates}`, b.places ? `Places: ${b.places}` : "",
-    `Rent: ${rs(num(b.rent))} (${b.rentType === "day" ? "Day rent" : "Empty rent"})`, c.ext ? `Extra: ${rs(c.ext)} (${bkExtras(b).map(x => x.kind).join(", ")})` : "",
+    `Rent: ${rs(num(b.rent))} (${b.rentType === "day" ? "Day rent" : "Empty rent"})`, c.ext ? `Extra: ${rs(c.ext)} (${bkExtras(b).map(x => x.kind).join(", ")})` : "", num(b.toll) ? `Toll: ${rs(num(b.toll))}` : "",
     pp.length ? `Paid by you: ${pp.join(", ")}` : "",
     `Received: ${rs(c.received)}`, `Balance: ${rs(c.balance)}`,
     drv || b.driverName ? `Driver: ${drv?.name || b.driverName}${drv?.mobile ? `, ${drv.mobile}` : ""}` : "",
@@ -9629,7 +9634,8 @@ async function tsLayout(L, pdf, b) {
   if (b.splPermit) { const w = text(b.splPermit, X1 - 8, y, { size: 10.5, bold: true, align: "right" }); text("Special Permit No.", X1 - 14 - w, y, { size: 8.5, color: grey, align: "right" }); }
   y -= 16;
   text(fit(b.places || "", reg, 11, X1 - X0 - 14), X0 + 10, y, { size: 11 }); y -= 18;
-  text(c.ext ? `${nf(num(b.rent))} + ${nf(c.ext)} = ${nf(c.due)}` : nf(c.due), X0 + 10, y, { size: 12, bold: true }); y -= 10;
+  const parts = [["Rent", num(b.rent)], ["Extra", c.ext], ["Toll", num(b.toll)]].filter(x => x[1]);
+  text(parts.length > 1 ? `${parts.map(([l, v]) => `${l} ${nf(v)}`).join(" + ")} = ${nf(c.due)}` : nf(c.due), X0 + 10, y, { size: 12, bold: true }); y -= 10;
   if (c.ext) { y -= 4; text(fit("Extra from party: " + bkExtras(b).map(x => `${x.kind}${x.note ? " (" + x.note + ")" : ""} ${nf(Math.round(num(x.amt)))}`).join(", "), reg, 9, X1 - X0 - 14), X0 + 10, y, { size: 9, color: grey }); y -= 8; }
   // expenses table
   const cx = X1 - 92, rowH = 19, other = (b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : []).slice(0, 4);
