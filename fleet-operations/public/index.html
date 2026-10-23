@@ -744,8 +744,6 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 #bkDrawer form { gap: 10px; padding: 0 20px 12px; }
 #bkDrawer .bktabs { top: 0; margin: 0 -20px; padding: 8px 20px 0; }
 #bkDrawer .bkpanel { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
-.g6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px 10px; }
-.g6 .s2 { grid-column: span 2; } .g6 .s3 { grid-column: span 3; } .g6 .s4 { grid-column: span 4; } .g6 .s6 { grid-column: 1 / -1; }
 /* booking checks, files and messages */
 .bkwarn { display: flex; flex-direction: column; gap: 3px; margin: 8px -20px 0; padding: 8px 20px; background: var(--warn-soft); font-size: 12.5px; }
 .bkwarn[hidden] { display: none; }
@@ -968,13 +966,9 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
   #bkDrawer .bkhead { grid-template-columns: minmax(0, 1fr) auto; }
   #bkDrawer .bkhead .seg { grid-column: 1 / -1; grid-row: 2; }
   #bkDrawer .bkhead .bkheadbtns { grid-column: 2; grid-row: 1; }
-  .g6 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .g6 .s3, .g6 .s4, .g6 .s6 { grid-column: 1 / -1; }
   .payhead { display: none; }
 }
 @media (max-width: 560px) {
-  .g6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .g6 .s2, .g6 .s3, .g6 .s4, .g6 .s6 { grid-column: 1 / -1; }
   .bksum { padding: 6px 14px; }
 }
 .calcbox { display: block; font-family: var(--mono); font-size: 14px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 6px; background: var(--surface); min-height: 42px; color: var(--ink); }
@@ -1244,6 +1238,39 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpex .tpsel { height: 48px; padding: 0 8px; font-size: 16px; } .tpex .tpin { width: 100%; height: 48px; padding: 0 6px; } .tpex .tpin input { font-size: 17px; }
 .tpex .tpbin { width: 26px; height: 48px; } .tpex .tpbin svg { width: 20px; height: 20px; } .tpex .tpnote { grid-column: 1 / -1; margin-top: 2px; }
 .tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; text-transform: uppercase; }
+/* Booking window: the booking at a glance (header) and the Booking slip in four groups. */
+.bkinfo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 32px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.bkinfo > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .bkinfo-pl { flex: 1; min-width: 180px; }
+.bkinfo > div > span { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.bkinfo > div > b { font-size: 17px; } .bkinfo .plate { font-size: 14px; }
+.bkinfo #bkHistBtn { margin-left: auto; font-size: 14px; padding: 7px 12px; } #bkHistBtn .hl { font-weight: 600; }
+.bkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 760px) { .bkgrid { grid-template-columns: minmax(0, 1fr); } }
+.bkgrp { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); min-width: 0; }
+.bkgrp h4 { margin: 0; font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+#bkDrawer > .bktabs { position: static; margin: 0; padding: 8px 20px 0; }
+/* Computer: the booking opens as a full screen. The sections are a menu on the left; on the right, the booking header
+   and the chosen section, its fields in rows with the label on the left, as in any desktop application. */
+@media (min-width: 1000px) {
+  #bkDrawer { width: 100%; display: grid; grid-template-columns: 240px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto; }
+  #bkDrawer > header { grid-column: 1 / -1; }
+  #bkDrawer > .bktabs { grid-column: 1; grid-row: 2 / span 3; position: static; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 16px 12px; border-bottom: 0; border-right: 1px solid var(--line); overflow-y: auto; background: var(--surface); }
+  #bkDrawer > .bktabs button { width: 100%; top: 0; flex-direction: column; align-items: flex-start; gap: 2px; padding: 11px 14px; border: 0; border-radius: 10px; box-shadow: none; text-align: left; }
+  #bkDrawer > .bktabs button .tl { font-size: 16px; color: var(--ink); } #bkDrawer > .bktabs .req { display: none; }
+  #bkDrawer > .bktabs .tb { padding: 0; background: none; font-size: 13px; font-weight: 600; }
+  #bkDrawer > .bktabs .tb:empty { display: block; } #bkDrawer > .bktabs .tb:empty::before { content: "\00a0"; }
+  #bkDrawer > .bktabs button:hover { background: var(--bg); }
+  #bkDrawer > .bktabs button[aria-selected="true"] { background: var(--accent-soft); box-shadow: none; } #bkDrawer > .bktabs button[aria-selected="true"] .tl { color: var(--accent); }
+  #bkDrawer > form, #bkDrawer > .bksum, #bkDrawer > footer { grid-column: 2; }
+  #bkDrawer > form { padding: 18px 24px; background: var(--bg); }
+  #bkDrawer > form > .bkappr, #bkDrawer > form > .bkwarn, #bkDrawer #tsAppr { margin: 0 !important; border-radius: 10px; }
+  .bkgrp .field, .tsc .tsf .field, .bkadvin .field { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; column-gap: 12px; row-gap: 3px; }
+  .bkgrp .field > *, .tsc .tsf .field > * { grid-column: 2; min-width: 0; }
+  .bkgrp .field > label, .bkgrp .field > .lbl, .tsc .tsf .field > label, .tsc .tsf .field > .lbl { grid-column: 1; grid-row: 1; margin: 0; }
+  .tsc .tsf { display: flex; flex-direction: column; gap: 8px; }
+  #bkPaySet:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); column-gap: 20px; row-gap: 8px; align-items: start; }
+  #bkPaySet > * { grid-column: 1; } #bkPaySet > .bkacct { grid-column: 2; grid-row: 1 / span 6; margin: 0; max-width: none; }
+}
 /* Booking window: Collection with extra from party, special permit, party account, driver advance tab. */
 .bkcolr { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; } .bkcolr b { font-size: 16px; }
 .bkcolr.tot { border-top: 1px solid var(--line); padding-top: 8px; } .bkcolr.tot b { color: var(--accent); font-size: 19px; }
@@ -2513,10 +2540,25 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <label><input type="radio" name="bkStatus" value="completed"><span>Completed</span></label>
       <label><input type="radio" name="bkStatus" value="cancelled"><span>Cancelled</span></label>
     </div>
-    <span class="bkheadbtns"><button class="btn" type="button" id="bkHistBtn" aria-label="Change history" title="Change history" hidden><span class="hico" aria-hidden="true"></span><span class="hcount" id="bkHistCount" hidden></span></button>
-    <button class="icon" type="button" id="bkClose" aria-label="Close">Close ✕</button></span>
+    <span class="bkheadbtns"><button class="icon" type="button" id="bkClose" aria-label="Close">Close ✕</button></span>
   </header>
+    <nav class="bktabs" role="tablist" id="bkTabs" aria-label="Booking sections">
+      <button type="button" role="tab" data-tab="slip" id="bkTab-slip" aria-controls="bkSlipSet"><span class="tl">Booking slip</span><span class="ts">Slip</span><span class="tb" id="bkTb-slip"></span></button>
+      <button type="button" role="tab" data-tab="pay" id="bkTab-pay" aria-controls="bkPaySet"><span class="tl">Payments</span><span class="ts">Pay</span><span class="req" aria-hidden="true">*</span><span class="tb" id="bkTb-pay"></span></button>
+      <button type="button" role="tab" data-tab="trip" id="bkTab-trip" aria-controls="bkTripSet"><span class="tl">Trip sheet</span><span class="ts">Trip</span><span class="tb" id="bkTb-trip"></span></button>
+      <button type="button" role="tab" data-tab="adv" id="bkTab-adv" aria-controls="bkAdvSet"><span class="tl">Driver advance</span><span class="ts">Adv</span><span class="tb" id="bkTb-adv"></span></button>
+      <button type="button" role="tab" data-tab="files" id="bkTab-files" aria-controls="bkFilesSet"><span class="tl">Files</span><span class="ts">Files</span><span class="tb" id="bkTb-files"></span></button>
+      <button type="button" role="tab" data-tab="send" id="bkTab-send" aria-controls="bkSendSet"><span class="tl">WhatsApp / SMS</span><span class="ts">Send</span></button>
+    </nav>
   <form id="bkForm" novalidate>
+    <!-- The booking at a glance, on every section: bus, dates, days, places, and the change history in the corner. -->
+    <div class="bkinfo" id="bkInfo">
+      <div><span>Bus number</span><b id="bkI_bus">—</b></div>
+      <div><span>Dates</span><b id="bkI_dates">—</b></div>
+      <div><span>No. of days</span><b id="bkI_days">—</b></div>
+      <div class="bkinfo-pl"><span>Places of visit</span><b id="bkI_places">—</b></div>
+      <button class="btn" type="button" id="bkHistBtn" aria-label="Change history" title="Change history" hidden><span class="hico" aria-hidden="true"></span><span class="hcount" id="bkHistCount" hidden></span></button>
+    </div>
     <div class="bkappr" id="bkAppr" hidden>
       <span id="bkApprText"></span>
       <span class="bkappr-act" id="bkApprAct">
@@ -2533,36 +2575,36 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </span>
     </div>
     <div class="bkwarn" id="bkWarn" role="status" hidden></div>
-    <div class="bktabs" role="tablist" id="bkTabs" aria-label="Booking sections">
-      <button type="button" role="tab" data-tab="slip" id="bkTab-slip" aria-controls="bkSlipSet"><span class="tl">Booking slip</span><span class="ts">Slip</span><span class="tb" id="bkTb-slip"></span></button>
-      <button type="button" role="tab" data-tab="pay" id="bkTab-pay" aria-controls="bkPaySet"><span class="tl">Payments</span><span class="ts">Pay</span><span class="req" aria-hidden="true">*</span><span class="tb" id="bkTb-pay"></span></button>
-      <button type="button" role="tab" data-tab="trip" id="bkTab-trip" aria-controls="bkTripSet"><span class="tl">Trip sheet</span><span class="ts">Trip</span><span class="tb" id="bkTb-trip"></span></button>
-      <button type="button" role="tab" data-tab="adv" id="bkTab-adv" aria-controls="bkAdvSet"><span class="tl">Driver advance</span><span class="ts">Adv</span><span class="tb" id="bkTb-adv"></span></button>
-      <button type="button" role="tab" data-tab="files" id="bkTab-files" aria-controls="bkFilesSet"><span class="tl">Files</span><span class="ts">Files</span><span class="tb" id="bkTb-files"></span></button>
-      <button type="button" role="tab" data-tab="send" id="bkTab-send" aria-controls="bkSendSet"><span class="tl">WhatsApp / SMS</span><span class="ts">Send</span></button>
-    </div>
     <section class="bkpanel" id="bkSlipSet" role="tabpanel" aria-labelledby="bkTab-slip">
-      <div class="g6">
+      <div class="bkgrid">
+        <section class="bkgrp"><h4>Booking</h4>
         <div class="field"><label for="bkNo">Booking no.</label><input id="bkNo" inputmode="numeric" maxlength="10"><span class="err" id="e-bkNo"></span></div>
         <div class="field"><label for="bkBookedOn">Booked on</label><input id="bkBookedOn" type="date"></div>
-        <div class="field s2"><label for="bkBus">Bus</label><select id="bkBus"></select><span class="err" id="e-bkBus"></span></div>
-        <div class="field s2"><label for="bkParty">Party name</label><input id="bkParty" autocomplete="off" maxlength="80"><span class="err" id="e-bkParty"></span></div>
-        <div class="field"><label for="bkPhone">Phone</label><input id="bkPhone" type="tel" inputmode="tel" autocomplete="off" maxlength="20"><span class="telacts" id="bkPhoneAct"></span><span class="err" id="e-bkPhone"></span></div>
-        <div class="field s2"><label for="bkAddress">Address</label><input id="bkAddress" autocomplete="off" maxlength="160"></div>
+        <div class="field"><label for="bkBookedBy">Booked by</label><select id="bkBookedBy"></select><span class="hint" id="bkBookedByHint">Drivers ticked Spare bus under Vehicle category in Driver master.</span></div>
+        </section>
+        <section class="bkgrp"><h4>Trip</h4>
+        <div class="field"><label for="bkBus">Bus</label><select id="bkBus"></select><span class="err" id="e-bkBus"></span></div>
         <div class="field"><label for="bkFrom">Start date <span class="req" aria-hidden="true">*</span></label><input id="bkFrom" type="date"><span class="err" id="e-bkFrom"></span></div>
         <div class="field"><label for="bkTo">End date</label><input id="bkTo" type="date"><span class="err" id="e-bkTo"></span></div>
         <div class="field"><label for="bkDays">Total days</label><input id="bkDays" type="number" inputmode="decimal" min="0.5" step="0.5"><span class="err" id="e-bkDays"></span></div>
-        <div class="field s4"><label for="bkPlaces">Places</label><input id="bkPlaces" autocomplete="off" maxlength="200" placeholder="Enter the place names for this trip"><span class="hint">Enter the place names for this trip</span><span class="err" id="e-bkPlaces"></span></div>
-        <div class="field s2"><label for="bkBookedBy">Booked by</label><select id="bkBookedBy"></select><span class="hint" id="bkBookedByHint">Drivers ticked Spare bus under Vehicle category in Driver master.</span></div>
-        <div class="field s3"><span class="lbl">Rent type</span><div class="seg" role="radiogroup" aria-label="Rent type">
+        <div class="field"><label for="bkPlaces">Places</label><input id="bkPlaces" autocomplete="off" maxlength="200" placeholder="Enter the place names for this trip"><span class="hint">Enter the place names for this trip</span><span class="err" id="e-bkPlaces"></span></div>
+        </section>
+        <section class="bkgrp"><h4>Party</h4>
+        <div class="field"><label for="bkParty">Party name</label><input id="bkParty" autocomplete="off" maxlength="80"><span class="err" id="e-bkParty"></span></div>
+        <div class="field"><label for="bkPhone">Phone</label><input id="bkPhone" type="tel" inputmode="tel" autocomplete="off" maxlength="20"><span class="telacts" id="bkPhoneAct"></span><span class="err" id="e-bkPhone"></span></div>
+        <div class="field"><label for="bkAddress">Address</label><input id="bkAddress" autocomplete="off" maxlength="160"></div>
+        </section>
+        <section class="bkgrp"><h4>Rent and remarks</h4>
+        <div class="field"><span class="lbl">Rent type</span><div class="seg" role="radiogroup" aria-label="Rent type">
           <label><input type="radio" name="bkRentType" value="mt"><span>Empty rent</span></label>
           <label><input type="radio" name="bkRentType" value="day"><span>Day rent</span></label>
         </div><span class="hint" id="bkRentHint"></span></div>
         <div class="field"><label for="bkRate">Rent per day (₹)</label><input id="bkRate" type="number" inputmode="numeric" min="0"></div>
         <div class="field"><label for="bkRent">Total rent (₹)</label><input id="bkRent" type="number" inputmode="numeric" min="0" title="Rent per day × days; it can be raised, not lowered"><span class="hint" id="bkRentMin"></span><span class="err" id="e-bkRent"></span></div>
         <div class="field"><label for="bkPadi">Driver padi from party (₹)</label><input id="bkPadi" type="number" inputmode="numeric" min="0" title="Extra money the party gives the driver. For the record only; not part of the trip sheet."></div>
-        <div class="field s3"><span class="lbl">Paid by the party</span><div class="bkpp" id="bkPP"></div></div>
-        <div class="field s3"><label for="bkRemarks">Remarks</label><input id="bkRemarks" autocomplete="off" maxlength="300"></div>
+        <div class="field"><span class="lbl">Paid by the party</span><div class="bkpp" id="bkPP"></div></div>
+        <div class="field"><label for="bkRemarks">Remarks</label><input id="bkRemarks" autocomplete="off" maxlength="300"></div>
+        </section>
       </div>
     </section>
     <section class="bkpanel" id="bkPaySet" role="tabpanel" aria-labelledby="bkTab-pay">
@@ -9521,6 +9563,11 @@ function syncBk() {
   $("bkStageHint").textContent = b.status === "completed" ? (c.balance <= 0 ? "Settled · the party has paid in full." : `${rs(c.balance)} still to collect from the party.`) : b.status === "cancelled" ? `Cancelled. ${c.received ? `${rs(c.received)} advance received is kept on record.` : ""}` : "";
   const bus = vehicles.find(v => v.id === b.vehicleId);
   $("bkSub").textContent = [bus ? plateOf(bus) : "", BK_STAGES[b.status], b.from ? `${fmtShort(b.from)}${b.to !== b.from ? ` – ${fmtShort(b.to)}` : ""}` : ""].filter(Boolean).join(" · ");
+  // The header on every section: bus, dates, days and places, as on the booking now.
+  $("bkI_bus").innerHTML = bus ? `<span class="plate ${bus.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(bus))}</span>` : "—";
+  $("bkI_dates").textContent = b.from ? `${bwFmt(b.from)}${b.to && b.to !== b.from ? ` – ${bwFmt(b.to)}` : ""}` : "—";
+  $("bkI_days").textContent = num(b.days) ? `${fmtDays(num(b.days))} ${num(b.days) <= 1 ? "day" : "days"}` : "—";
+  $("bkI_places").textContent = $("bkPlaces").value.trim() || "—";
   const fdT = iso => iso ? fmtDate(iso) : "—", setT = (id, v, cls = "") => { $(id).textContent = v; $(id).className = "calcbox" + (cls ? " " + cls : ""); };
   $("bkT_rent").textContent = rs(num(b.rent)); $("bkT_toll").textContent = rs(num(b.toll)); $("bkT_coltot").textContent = rs(c.due); $("bkSplPre").textContent = splPrefix(b);
   { const base = Math.round(num(b.rate) * num(b.days)), low = base > 0 && num(b.rent) < base;
@@ -9628,7 +9675,7 @@ $("bkForm").addEventListener("keydown", e => {
   const f = [...$("bkForm").querySelectorAll("input:not([type=radio]):not([type=checkbox]), select")].filter(el => !el.disabled && el.offsetParent !== null), i = f.indexOf(e.target);
   if (i >= 0 && i < f.length - 1) f[i + 1].focus();
 });
-$("bkHistBtn").innerHTML = HIST_SVG + '<span class="hcount" id="bkHistCount" hidden></span>';
+$("bkHistBtn").innerHTML = HIST_SVG + '<span class="hl">History</span><span class="hcount" id="bkHistCount" hidden></span>';
 $("bkHistBtn").onclick = () => { if (bkEditId) openHDrawer(bkEditId, "", "booking"); };
 $("bkApprove").onclick = () => { if (!canBookings) return; bkApproving = true; $("bkForm").requestSubmit(); };
 $("bkReject").onclick = async () => {
