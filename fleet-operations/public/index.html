@@ -1244,65 +1244,26 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpex .tpsel { height: 48px; padding: 0 8px; font-size: 16px; } .tpex .tpin { width: 100%; height: 48px; padding: 0 6px; } .tpex .tpin input { font-size: 17px; }
 .tpex .tpbin { width: 26px; height: 48px; } .tpex .tpbin svg { width: 20px; height: 20px; } .tpex .tpnote { grid-column: 1 / -1; margin-top: 2px; }
 .tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; text-transform: uppercase; }
-/* Computer: the booking screens laid out wide (tabs, two columns, three-column trip sheet). */
-@media (max-width: 700px) { .bwtabs, .bhdesk, .bhmoney, .deskonly { display: none !important; } }
-.bhmoney { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 18px; }
-.bhmoney h3 { margin: 0 0 6px; font: 700 14px var(--body); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
-.bmrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 15px; } .bmrow:first-of-type { border-top: 0; }
-.bmrow small { color: var(--muted); } .bmrow.tot { border-top: 2px solid var(--line); } .bmrow.tot b:last-child { color: var(--accent); font-size: 19px; }
-.bmrow.neg b:last-child { color: var(--danger); font-size: 19px; } .bmrow.pos b:last-child { color: var(--accent); font-size: 19px; } .bmrow.due b:last-child { color: var(--warn); font-size: 19px; }
-.bhdesk { display: flex; flex-direction: column; gap: 10px; }
-.bhdacts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
-.bhgap { flex: 1; }
-.bhck, .bhbt, .bhstage button { height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.bhck { background: var(--warn-soft); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); } .bhck.bad { background: var(--danger-soft); color: var(--danger); } .bhck.ok { background: var(--accent-soft); color: var(--accent); cursor: default; }
-.bhstage { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; } .bhstage > span { font-size: 13px; font-weight: 600; color: var(--muted); margin-right: 2px; }
-.bhstage button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-.bhdel { height: 40px; border: 0; background: none; color: var(--danger); font: 600 15px var(--body); cursor: pointer; padding: 0 6px; }
-.bhcklist { margin: 0; padding: 10px 14px 10px 32px; border-radius: 12px; background: var(--warn-soft); color: var(--ink); font-size: 14px; display: grid; gap: 4px; } .bhcklist li.bad { color: var(--danger); font-weight: 600; }
-.bwtab { border: 0; background: none; padding: 14px 2px 11px; font: 600 16px var(--body); color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; }
-.bwtab.on { color: var(--ink); border-bottom-color: var(--accent); }
-.bwmsg textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; padding: 12px; font: 500 15px/1.4 var(--body); background: var(--surface); color: var(--ink); resize: vertical; margin-bottom: 10px; }
-.bwmsg .bwseg a, .bwmsg .bwseg button { height: 46px; font-size: 16px; } .bwmsgs .bwnote { margin: 0 0 8px; }
-#tpFoot b.neg { color: var(--danger); } #tpFoot b.pos { color: var(--accent); }
-html.bw-on #hDrawer { z-index: 47; }
-@media (min-width: 701px) {
-  .bw .bwh, .bw .bwb, .bw .bwf, .bw .bwnb, .bwtabs { padding-left: max(28px, calc((100% - 1240px) / 2)); padding-right: max(28px, calc((100% - 1240px) / 2)); }
-  .bw .bwh { min-height: 60px; }
-  .bwtabs { display: flex; flex-wrap: wrap; gap: 0 26px; background: var(--surface); border-bottom: 1px solid var(--line); }
-  .bwbar { display: none; }
-  /* Back and Close sit at the right of the dark title bar, as on any computer page. */
-  .bw > .bwnb { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); right: max(28px, calc((100% - 1240px) / 2)); z-index: 2; display: flex; gap: 8px; padding: 0; background: none; border: 0; }
-  .bw > .bwnb button { width: auto; height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
-  .bw .bwh { padding-right: calc(max(28px, calc((100% - 1240px) / 2)) + 230px); }
-  /* The booking page's tiles: compact, side by side; printing is in the tools row. */
-  #bwBody.bhome .bhbtn { flex-direction: row; justify-content: flex-start; text-align: left; min-height: 76px; padding: 12px 16px; gap: 12px; }
-  #bwBody.bhome .bhbtn .bht { align-items: flex-start; }
-  #bwBody.bhome .bhbtn[data-bw="tsprint"] { display: none; }
-  .bw .bwf { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 12px; }
-  .bw .bwf > .bwgo, .bw .bwf > .bwalt, .bw .bwf.two > * { width: auto; min-width: 190px; height: 48px; font-size: 17px; padding: 0 22px; border-radius: 12px; }
-  .bw .bwf .twspent { flex: 1; margin: 0; justify-content: flex-start; gap: 26px; }
-  .bwleave, .twsheet { align-items: center; justify-content: center; } .bwleave > div, .twsheet > div { max-width: 540px; border-radius: 18px; }
-  #bwBody.bhome { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; gap: 18px 20px; }
-  #bwBody.bhome > .bhdesk { grid-column: 1 / -1; }
-  #bwBody.bhome > .bhcard, #bwBody.bhome > .bhmoney { grid-column: 1; }
-  #bwBody.bhome > .bhbtns { grid-column: 2; grid-row: 2 / span 2; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; }
-  #bwBody.bhome > .bhcard .bhfacts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  #tw .tpage { display: block; column-count: 3; column-gap: 16px; }
-  #tw .tpage > * { break-inside: avoid; margin: 0 0 16px; }
-  #tw .tws:not(.tpage) > .bwcard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
-  .bwmsgs { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } .bwmsgs > .bwnote { grid-column: 1 / -1; }
-  .bwdgrid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
-  .bwdcols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
-  .bwdsec { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
-  .bwdsec > h3 { margin: 0; font: 700 14px var(--body); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
-  .bwdaside { position: sticky; top: 0; display: flex; flex-direction: column; gap: 12px; }
-  .bwdaside .bwlink[data-goto] { display: none; }
-}
-@media (min-width: 701px) and (max-width: 1100px) {
-  .bwdgrid, .bwdcols { grid-template-columns: minmax(0, 1fr); } #tw .tpage { column-count: 2; }
-  #bwBody.bhome { grid-template-columns: minmax(0, 1fr); } #bwBody.bhome > * { grid-column: 1 !important; grid-row: auto !important; }
-}
+/* Booking window: Collection with extra from party, special permit, party account, driver advance tab. */
+.bkcolr { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; } .bkcolr b { font-size: 16px; }
+.bkcolr.tot { border-top: 1px solid var(--line); padding-top: 8px; } .bkcolr.tot b { color: var(--accent); font-size: 19px; }
+.bkexhead, .bkexrow { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px minmax(0, 1.3fr) auto; gap: 6px; align-items: center; }
+.bkexhead { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.bkexrow + .bkexrow { margin-top: 6px; } .bkexrow input, .bkexrow select { min-width: 0; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; width: 100%; }
+.bkspl { display: flex; align-items: center; gap: 2px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; background: var(--surface); min-height: 40px; }
+.bkspl span { font-weight: 700; color: var(--muted); white-space: nowrap; } .bkspl input { border: 0 !important; outline: 0; background: none !important; flex: 1; min-width: 0; text-transform: uppercase; font-weight: 600; padding: 8px 2px !important; box-shadow: none !important; }
+.bkacct { margin-top: 14px; max-width: 460px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--surface); }
+.bkacct h4, .bkadv h4 { margin: 0 0 4px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.bkacr { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 14px; } .bkacr:first-of-type { border-top: 0; }
+.bkacr.tot b { font-size: 16px; } .bkacr.due b { color: var(--warn); font-size: 18px; }
+.bkadv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; } .bkadvc { display: flex; flex-direction: column; gap: 12px; }
+@media (max-width: 760px) { .bkadv { grid-template-columns: minmax(0, 1fr); } }
+.bkadvin { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 16px; } .bkadvin .field { flex: 1; min-width: 140px; }
+.bkdanet { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); }
+.bkdanet small { display: block; color: var(--muted); font-size: 12px; } .bkdanet > b { font-size: 24px; color: var(--accent); }
+.bkdanet.neg { background: var(--danger-soft); } .bkdanet.neg > b { color: var(--danger); }
+.bkadvst { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; font-size: 14px; } .bkadvst select { width: auto; } .bkadvst .btn.primary { margin-left: auto; }
+.bkdaexp { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 14px; cursor: pointer; } .bkdaexp b { margin-left: auto; } .bkdaexp:first-of-type { border-top: 0; }
 #bwTotHint.bwerr { color: var(--danger); font-weight: 600; }
 .tpsub { display: block; font: 500 13px var(--body); color: var(--muted); }
 .tpamt { font: 700 19px var(--body); white-space: nowrap; } .tptot { border-top: 2px solid var(--line); border-bottom: 0; } .tptot .tpamt { color: var(--accent); font-size: 21px; }
@@ -2576,6 +2537,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <button type="button" role="tab" data-tab="slip" id="bkTab-slip" aria-controls="bkSlipSet"><span class="tl">Booking slip</span><span class="ts">Slip</span><span class="tb" id="bkTb-slip"></span></button>
       <button type="button" role="tab" data-tab="pay" id="bkTab-pay" aria-controls="bkPaySet"><span class="tl">Payments</span><span class="ts">Pay</span><span class="req" aria-hidden="true">*</span><span class="tb" id="bkTb-pay"></span></button>
       <button type="button" role="tab" data-tab="trip" id="bkTab-trip" aria-controls="bkTripSet"><span class="tl">Trip sheet</span><span class="ts">Trip</span><span class="tb" id="bkTb-trip"></span></button>
+      <button type="button" role="tab" data-tab="adv" id="bkTab-adv" aria-controls="bkAdvSet"><span class="tl">Driver advance</span><span class="ts">Adv</span><span class="tb" id="bkTb-adv"></span></button>
       <button type="button" role="tab" data-tab="files" id="bkTab-files" aria-controls="bkFilesSet"><span class="tl">Files</span><span class="ts">Files</span><span class="tb" id="bkTb-files"></span></button>
       <button type="button" role="tab" data-tab="send" id="bkTab-send" aria-controls="bkSendSet"><span class="tl">WhatsApp / SMS</span><span class="ts">Send</span></button>
     </div>
@@ -2597,7 +2559,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <label><input type="radio" name="bkRentType" value="day"><span>Day rent</span></label>
         </div><span class="hint" id="bkRentHint"></span></div>
         <div class="field"><label for="bkRate">Rent per day (₹)</label><input id="bkRate" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="bkRent">Total rent (₹)</label><input id="bkRent" type="number" inputmode="numeric" min="0" title="Rent per day × days, unless changed"><span class="err" id="e-bkRent"></span></div>
+        <div class="field"><label for="bkRent">Total rent (₹)</label><input id="bkRent" type="number" inputmode="numeric" min="0" title="Rent per day × days; it can be raised, not lowered"><span class="hint" id="bkRentMin"></span><span class="err" id="e-bkRent"></span></div>
         <div class="field"><label for="bkPadi">Driver padi from party (₹)</label><input id="bkPadi" type="number" inputmode="numeric" min="0" title="Extra money the party gives the driver. For the record only; not part of the trip sheet."></div>
         <div class="field s3"><span class="lbl">Paid by the party</span><div class="bkpp" id="bkPP"></div></div>
         <div class="field s3"><label for="bkRemarks">Remarks</label><input id="bkRemarks" autocomplete="off" maxlength="300"></div>
@@ -2608,6 +2570,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="paylist" id="bkPays"></div>
       <span class="err" id="e-bkPays" role="alert"></span>
       <div><button class="btn" type="button" id="bkAddPay" style="padding:6px 12px;font-size:13px">+ Add payment</button></div>
+      <div class="bkacct" id="bkPayAcct"></div>
     </section>
     <section class="bkpanel" id="bkTripSet" role="tabpanel" aria-labelledby="bkTab-trip">
       <div class="bkappr" id="tsAppr" hidden style="margin:0 -20px"><span id="tsApprText"></span>
@@ -2620,12 +2583,18 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <p class="hint" id="bkTripHint" style="margin:0"></p>
       <!-- Trip sheet grouped the way it is filled in (same order as the phone trip sheet). -->
       <div class="tsg" id="bkExpGrid">
-        <div class="tsc tsw"><h4>Trip</h4><div class="tsf">
-          <div class="field"><span class="lbl">From date</span><output class="calcbox" id="bkT_from"></output></div>
-          <div class="field"><span class="lbl">To date</span><output class="calcbox" id="bkT_to"></output></div>
-          <div class="field"><span class="lbl">Days</span><output class="calcbox" id="bkT_days"></output></div>
-          <div class="field"><span class="lbl">Total rent</span><output class="calcbox" id="bkT_rent"></output></div>
-        </div></div>
+        <div class="tsc"><h4>Collection</h4>
+          <div class="bkcolr"><span>Rent (booked)</span><b id="bkT_rent"></b></div>
+          <div class="bkexhead"><span>Extra from party</span><span>Amount</span><span>Note</span><span></span></div>
+          <div id="bkExtras"></div>
+          <div><button class="btn" type="button" id="bkExAdd" style="padding:5px 12px;font-size:13px">+ Add extra from party</button></div>
+          <div class="bkcolr"><span>Toll gate <span class="sub">(from On the way)</span></span><b id="bkT_toll"></b></div>
+          <div class="bkcolr tot"><span>Total collection</span><b id="bkT_coltot"></b></div>
+        </div>
+        <div class="tsc"><h4>Special Permit No.</h4>
+          <label class="bkspl" for="bkSpl"><span id="bkSplPre">TN-SPL-</span><input id="bkSpl" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Running no." aria-label="Special permit running number"></label>
+          <span class="hint">Type only the running number from the government site; TN, the year and SPL are filled in.</span>
+        </div>
         <div class="tsc"><h4>Driver and cleaner</h4><div class="tsf">
           <div class="field tsx"><label for="bkDriver">Driver</label><select id="bkDriver"></select><span class="hint" id="bkDrvHint"></span><span class="err" id="e-bkDriver"></span></div>
           <div class="field tsx"><label for="bkCleaner">Cleaner</label><input id="bkCleaner" list="bkCleaners" autocomplete="off" maxlength="60"><datalist id="bkCleaners"></datalist><span class="err" id="e-bkCleaner"></span></div>
@@ -2665,6 +2634,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tsc tsw"><div class="field"><label for="bkTripNote">Remarks</label><input id="bkTripNote" autocomplete="off" maxlength="300"></div></div>
       </div>
     </section>
+    <section class="bkpanel" id="bkAdvSet" role="tabpanel" aria-labelledby="bkTab-adv"><div id="bkAdv"></div></section>
     <section class="bkpanel" id="bkFilesSet" role="tabpanel" aria-labelledby="bkTab-files">
       <div class="bkupl" id="bkUpl"><select id="bkFileKind" aria-label="What the file is"><option>Permit</option><option>Trip sheet</option><option>Diesel bill</option><option>Others</option></select>
         <label class="btn filebtn" for="bkFileIn" style="padding:6px 12px;font-size:13px">+ Attach file</label><input id="bkFileIn" type="file" accept="image/*,application/pdf" hidden multiple>
@@ -2690,6 +2660,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <span class="bknote" id="bkNote"></span>
     <button class="btn bkmore" type="button" id="bkMore" aria-expanded="false" aria-label="More actions">⋯</button>
     <button class="btn" type="button" id="bkPrint">Print slip</button>
+    <button class="btn" type="button" id="bkTsPrint">Print trip sheet</button>
     <button class="btn" type="button" id="bkCancel">Close</button>
     <button class="btn" type="button" id="bkDraft" hidden>Save draft</button>
     <button class="btn primary" type="submit" form="bkForm" id="bkSave">Save booking</button>
@@ -7527,7 +7498,7 @@ let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bk
 const blocks = b => b.status === "draft" || b.status === "pending" || b.status === "booked" || b.status === "ontrip" || b.status === "completed";
 const META = ["tsStatus", "tsBy", "tsByName", "tsDraftOn", "tsSubmittedBy", "tsSubmittedByName", "tsSubmittedOn", "tsSubmitCount", "tsApprovedByName", "tsApprovedOn", "tsRejectedByName", "tsRejectedOn", "tsRejectReason", "tsRejections",
   "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason",
-  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle", "extras", "splPermit", "balAdj"];
+  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle", "balAdj"];
 const whoAmI = () => myRecord()?.name || me?.name || (store ? "Someone" : "This browser");
 const bkEnd = b => b.to || b.from;
 const bkCalc = b => {
@@ -7662,14 +7633,14 @@ $("bAvail").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.clear) { bSelA = bSelB = ""; renderSpare(); return; }
   if (b.dataset.bk) { openBooking(b.dataset.bk); return; }
-  if (b.dataset.book) { const [lo, hi] = bkRange(); if (canBookReq) { bwOpen({ vehicleId: b.dataset.book, from: lo, to: hi }); return; } openBooking(null, { vehicleId: b.dataset.book, from: lo, to: hi }); }
+  if (b.dataset.book) { const [lo, hi] = bkRange(); if (bwIsPhone() && canBookReq) { bwOpen({ vehicleId: b.dataset.book, from: lo, to: hi }); return; } openBooking(null, { vehicleId: b.dataset.book, from: lo, to: hi }); }
 });
 $("bList").addEventListener("click", e => { const r = e.target.closest("tr[data-bk]"); if (r) openBooking(r.dataset.bk); });
 $("bList").addEventListener("keydown", e => { const r = e.target.closest("tr[data-bk]"); if (r && e.key === "Enter") openBooking(r.dataset.bk); });
 $("bPrevM").onclick = () => { bMonth = ymAdd(bMonth, -1); renderSpare(); };
 $("bNextM").onclick = () => { bMonth = ymAdd(bMonth, 1); renderSpare(); };
 $("bToday").onclick = () => { bMonth = todayISO().slice(0, 7); renderSpare(); };
-$("sAdd").onclick = () => { const [lo, hi] = bkRange(); if (canBookReq) { bwOpen(lo ? { from: lo, to: hi } : null); return; } openBooking(null, lo ? { from: lo, to: hi } : null); };
+$("sAdd").onclick = () => { const [lo, hi] = bkRange(); if (bwIsPhone() && canBookReq) { bwOpen(lo ? { from: lo, to: hi } : null); return; } openBooking(null, lo ? { from: lo, to: hi } : null); };
 /* ---------- Easy booking on phones: one question per screen ----------
    A new booking on a phone goes through six short steps (dates, bus, party, places, money, check). Saving fills the
    full booking form behind the scenes and saves it the usual way, so the booking, its checks, approvals and history
@@ -7775,9 +7746,7 @@ function bwApprCard(b) {
 }
 const BW_ASK = { reject: ["Reject this booking?", "The booking planner sees your reason and can change and send it again.", "Why? e.g. bus not free on these days", "Reject"],
   tsback: ["Send the trip sheet back?", "The driver sees your reason and can correct and send it again.", "What should be corrected?", "Send back"],
-  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"],
-  cancel: ["Cancel this booking?", "The bus becomes free on these days. Money already received stays on record.", "", "Yes, cancel"],
-  del: ["Delete this booking?", "It is removed for everyone, with its payments and trip sheet. This can't be undone.", "", "Delete"] };
+  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"] };
 function bwAskHtml() {
   const [t, p, ph, go] = BW_ASK[bw.ask];
   return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwAkT"><div><b id="bwAkT">${t}</b><p>${p}</p>` +
@@ -7799,8 +7768,6 @@ async function bwDeskAct(prep) {
 }
 async function bwAskGo() {
   const note = String(bw.askNote || "").trim(), cur = bwBkNow(); if (!cur) return;
-  if (bw.ask === "cancel") { bw.ask = ""; bwCancel(); return; }
-  if (bw.ask === "del") { bwDelete(); return; }
   if (bw.ask === "reject") { if (!note) { toast("Type the reason for rejecting."); return; } bwDeskAct(() => { $("bkRejectWhy").value = note; $("bkReject").click(); }); return; }
   if (bw.ask === "tsback") { if (!note) { toast("Type what should be corrected."); return; } bwDeskAct(() => { $("tsRejectWhy").value = note; $("tsReject").click(); }); return; }
   // Bring back: only if the bus is still free on those days.
@@ -7836,22 +7803,19 @@ async function bwLockGo(adj) {
 }
 const bwLeaveHtml = () => `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwLvT"><div><b id="bwLvT">Leave without saving?</b><p>${bw.editId ? "The changes you made to this booking are not saved." : "This new booking is not saved yet."}</p>` +
   `<div class="bwseg c2"><button type="button" data-bw="leavestay">Keep editing</button><button type="button" class="bwdanger" data-bw="leavego">Discard</button></div></div></div>`;
-function bwCanNext(s = bw.step) {
+function bwCanNext() {
+  const s = bw.step;
   if (s === 0) return !!(bw.from && bw.to && bw.to >= bw.from && bw.vehicleId) && !bwClash();
   if (s === 1) { const d = bw.phone.replace(/\D/g, "").length; return (d === 0 || d >= 10) && (!canBookings || !!bw.party.trim()); }
   if (s === 3) return (!canBookings || num(bw.rate) > 0) && !bwRentLow();
   return true;
 }
-// Computer: the four steps on one page, so every step must be fine before saving.
-const bwDeskOk = () => [0, 1, 3].every(s => bwCanNext(s));
-const bwDesk = () => !bwIsPhone() && !bw.readOnly;
 // What is still needed before a booking can be sent for approval (a draft can be saved without these).
 const bwMissing = () => [!bw.party.trim() && "party name", !(num(bw.rate) > 0) && "rent for one day"].filter(Boolean);
 function bwRender(top) {
   const el = $("bw"), s = bw.step, first = !bw.home && s === 0 && !bw.fromCheck;  // on the first screen Back already goes to the list, so there is no Close
   if (bw.done) { el.innerHTML = bwDoneHtml(); return; }
-  if (bw.sub) { el.innerHTML = bwSubHtml(); bwTabsIn(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (bw.lockAsk) el.insertAdjacentHTML("beforeend", bwLockHtml()); if (bw.ask) el.insertAdjacentHTML("beforeend", bwAskHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
-  if (bwDesk()) { bwDeskRender(top); return; }
+  if (bw.sub) { el.innerHTML = bwSubHtml(); if (bw.pay) el.insertAdjacentHTML("beforeend", bwPaySheetHtml()); if (bw.lockAsk) el.insertAdjacentHTML("beforeend", bwLockHtml()); if (bw.ask) el.insertAdjacentHTML("beforeend", bwAskHtml()); if (top && $("bwBody")) $("bwBody").scrollTop = 0; if (bw.slide && $("bwBody")) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; } return; }
   el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") + ` · step ${s + 1} of ${BW_LAST + 1}` : `Step ${s + 1} of ${BW_LAST + 1}`}</span></div></header>` +
     `<div class="bwbar">${BW_TITLES.map((t, i) => (bw.editId && !bw.readOnly) || i < s ? `<button type="button" class="bwseg-i${i <= s ? " on" : ""}${i === s ? " cur" : ""}" data-goto="${i}" aria-label="Go to ${t}"></button>` : `<i class="${i <= s ? "on" : ""}" aria-hidden="true"></i>`).join("")}</div>` +
     `<div class="bwb s${s}" id="bwBody"><h2>${s === BW_LAST && bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : BW_TITLES[s]}</h2>${[bwDatesHtml, bwPartyHtml, bwPlacesHtml, bwMoneyHtml, bwCheckHtml][s]()}</div>` +
@@ -7863,22 +7827,6 @@ function bwRender(top) {
   if (bw.leave) el.insertAdjacentHTML("beforeend", bwLeaveHtml());
   if (top) $("bwBody").scrollTop = 0;
   if (bw.slide) { $("bwBody").classList.add("bwsl-" + bw.slide); bw.slide = ""; }
-}
-// Computer: Booking details on one page. The four steps side by side, the summary (Check and save) beside them.
-function bwDeskRender(top) {
-  const el = $("bw"), keep = !top && $("bwBody") ? $("bwBody").scrollTop : 0;
-  const sec = (i, html) => `<section class="bwdsec"><h3>${i + 1} · ${BW_TITLES[i]}</h3>${html}</section>`;
-  el.innerHTML = `<header class="bwh"><div style="flex:1"><b id="bwTitle">${bw.editId ? "Booking " + esc(bw.no || "") : "New booking"}</b><span>${bw.editId ? esc(BK_STAGES[bw.status] || "") : "Fill in what you know; the rest can be added later"}</span></div></header>` +
-    `<div class="bwb bwdesk" id="bwBody"><h2>${bw.editId ? (bw.status === "rejected" ? "Sent back" : bw.status === "draft" ? "Draft" : "Booking details") : "New booking"}</h2>` +
-    `<div class="bwdgrid"><div class="bwdcols">${sec(0, bwDatesHtml())}${sec(1, bwPartyHtml())}${sec(2, bwPlacesHtml())}${sec(3, bwMoneyHtml())}</div>` +
-    `<aside class="bwdaside" id="bwAside">${bwCheckHtml()}</aside></div></div>` +
-    `<footer class="bwf">${canBookings ? `<button type="button" class="bwgo" data-bw="save"${bw.saving || !bwDeskOk() ? " disabled" : ""}>${BW_ICON.ok} ${bw.saving ? "Saving…" : bw.editId ? "Save changes" : "Save booking"}</button>`
-      : `<button type="button" class="bwalt" data-bw="draft"${bw.saving ? " disabled" : ""}>Save draft</button><button type="button" class="bwgo" data-bw="save"${bw.saving || bwMissing().length || !bwDeskOk() ? " disabled" : ""}>${bw.saving ? "Saving…" : "Send for approval"}</button>`}</footer>` + navBar("bw", true);
-  bwTabsIn();
-  if (bw.sheet) el.insertAdjacentHTML("beforeend", bwSheetHtml());
-  if (bw.leave) el.insertAdjacentHTML("beforeend", bwLeaveHtml());
-  if (bw.ask) el.insertAdjacentHTML("beforeend", bwAskHtml());
-  if (keep) $("bwBody").scrollTop = keep;
 }
 function bwDatesHtml() {
   const { from, to } = bw, t = todayISO(), w = bwWhole(), dd = bwDays(), opt = (v, l) => `<button type="button" data-half="${v}" aria-pressed="${bw.half === v}">${l}</button>`;
@@ -7990,15 +7938,11 @@ function bwPartyRows() {
 const bwSheetHtml = () => `<div class="bwsheet" role="dialog" aria-modal="true" aria-label="Choose a party"><header class="bwh"><div><b>Choose a party</b><span>From past bookings</span></div></header>` +
   `<div class="bwsb">${bwHasContacts() ? `<button type="button" class="bwpc" data-bw="contacts">${BW_ICON.book}<span><b>Open phone contacts</b><small>For a new party not in this list</small></span>${BW_ICON.next}</button>` : ""}` +
   `<input type="search" data-k="q" placeholder="Search name or phone number" aria-label="Search parties" autocomplete="off" value="${esc(bw.q || "")}"></div><div class="bwpl" id="bwPl">${bwPartyRows()}</div><nav class="bwnb one"><button type="button" data-bw="sheetclose">${BW_ICON.x} Close</button></nav></div>`;
-function bwSyncNext() {
-  const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext();
-  if (bwDesk() && !bw.sub && $("bwAside")) { $("bwAside").innerHTML = bwCheckHtml(); const sv = $("bw").querySelector('.bwgo[data-bw="save"]'); if (sv) sv.disabled = !!bw.saving || !bwDeskOk() || (!canBookings && bwMissing().length > 0); }
-}
+function bwSyncNext() { const b = $("bw").querySelector('.bwgo[data-bw="next"]'); if (b) b.disabled = !bwCanNext(); }
 function bwInput(e) {
   const k = e.target.dataset.k; if (!k || !bw) return;
   if (k.startsWith("pay.")) { bw.pay[k.slice(4)] = e.target.value; return; }
   if (k.startsWith("da.")) { bw.da[k.slice(3)] = e.target.value; bwAdvRefresh(); bwAdvSoon(900); return; }
-  if (k.startsWith("msg.")) { bw.msg[k.slice(4)] = e.target.value; bwMsgLinks(); return; }
   bw[k] = e.target.value;
   if (k === "q") { bw[k] = e.target.value; $("bwPl").innerHTML = bwPartyRows(); return; }
   if (k === "party" && bw.fromContact) bw.fromContact = false;
@@ -8040,15 +7984,6 @@ function bwClick(e) {
   if (a === "apprbk") { bwDeskAct(() => $("bkApprove").click()); return; }
   if (a === "apprts") { bwDeskAct(() => $("tsApprove").click()); return; }
   if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b, t); return; }
-  if (t.dataset.bwtab) { bwTab(t.dataset.bwtab); return; }
-  if (a === "checks") { bw.showChecks = !bw.showChecks; bwRender(); return; }
-  if (a === "slip") { bwSlip(t); return; }
-  if (a === "mcopy") { navigator.clipboard?.writeText(bw.msg?.[t.dataset.who] || "").then(() => toast("Copied"), () => toast("Couldn't copy.")); return; }
-  if (a === "stage") {
-    const st = t.dataset.st, b = bwBkNow(); if (!b || st === b.status) return;
-    if (st === "cancelled") { bw.ask = "cancel"; bwRender(); return; }
-    bwDeskAct(() => { const r = document.querySelector(`input[name="bkStatus"][value="${st}"]`); if (r) r.checked = true; syncBk(); $("bkForm").requestSubmit(); }); return;
-  }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
   if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
   if (a === "advtoll") { bw.da.toll = !bw.da.toll; bwRender(); bwAdvSoon(50); return; }
@@ -8338,22 +8273,18 @@ function twRender(top) {
   const el = $("tw"), page = tw.view === "page", keep = !top && $("twBody") ? $("twBody").scrollTop : 0;
   const x = tw.backTo || (!page && tw.edit);  // Close only when Back would not already go back to the list
   el.innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="twTitle">Trip sheet · ${esc(tw.plate)}</b><span>${esc([tw.places, tw.dates].filter(Boolean).join(" · "))}</span></div></header>` +
-    (page ? `<div class="bwb tws tpage" id="twBody">${twPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>${tw.admin ? "Check and save" : "Check and send"}</h2>${twCheckHtml()}</div>`) +
-    (!page && !tw.edit ? (bwIsPhone() ? "" : `<footer class="bwf">${twPrintBtn()}</footer>`) : `<footer class="bwf${!page && !tw.admin ? " two" : ""}">${page ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span>${tw.admin ? `<span class="deskonly" id="tpFoot">${twFootHtml()}</span>` : ""}<span>Total spent <b id="tpTot">${rs(twTotal())}</b></span></div>${twPrintBtn()}<button type="button" class="bwgo" data-tw="check">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
-      : tw.admin ? `${twPrintBtn()}<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
+    (page ? `<div class="bwb tws tpage" id="twBody">${twPageHtml()}</div>` : `<div class="bwb tws" id="twBody"><h2>Check and send</h2>${twCheckHtml()}</div>`) +
+    (!page && !tw.edit ? "" : `<footer class="bwf${!page && !tw.admin ? " two" : ""}">${page ? `<div class="twspent"><span class="tpst ok" id="tpSt">✓ Saved</span><span>Total <b id="tpTot">${rs(twTotal())}</b></span></div><button type="button" class="bwgo" data-tw="check">${tw.admin ? "Check and save" : "Send to office"} ${BW_ICON.next}</button>`
+      : tw.admin ? `<button type="button" class="bwgo" data-tw="save"${tw.saving ? " disabled" : ""}>${BW_ICON.ok} ${tw.saving ? "Saving…" : "Save trip sheet"}</button>`
       : `<button type="button" class="bwalt" data-tw="draft"${tw.saving ? " disabled" : ""}>Save for later</button><button type="button" class="bwgo" data-tw="send"${tw.saving || twMissing().length ? " disabled" : ""}>${tw.saving ? "Saving…" : "Send to office"}</button>`}</footer>`) + navBar("tw", x);
   if (top) $("twBody").scrollTop = 0; else if (keep) $("twBody").scrollTop = keep;
   if (tw.slide) { $("twBody").classList.add("bwsl-" + tw.slide); tw.slide = ""; }
 }
-// Computer: Print beside the save buttons, and the collection and balance in the bottom bar (office only).
-const twPrintBtn = () => `<button type="button" class="bwalt deskonly" data-tw="print">Print</button>`;
-const twFootHtml = () => { const n = twCollect() - twTotal(); return `Collection <b>${rs(twCollect())}</b> · Balance <b class="${n < 0 ? "neg" : "pos"}">${n < 0 ? "− " : ""}${rs(Math.abs(n))}</b>`; };
 function twSaveState(t) { const el = $("tpSt"); if (el) { el.textContent = t; el.className = "tpst" + (t.startsWith("✓") ? " ok" : t.startsWith("Not") ? " bad" : ""); } }
 function twRefresh() {
   if ($("tpTot")) $("tpTot").textContent = rs(twTotal());
   if ($("tpMoney")) $("tpMoney").innerHTML = twMoneyHtml();
   if ($("tpCol")) $("tpCol").textContent = rs(twCollect());
-  if ($("tpFoot")) $("tpFoot").innerHTML = twFootHtml();
   if ($("tpToll")) $("tpToll").textContent = rs(Math.round(num(tw.toll)));
   const s = num(tw.startKm), e = num(tw.endKm);
   if ($("twKmErr")) $("twKmErr").textContent = s && e && e <= s ? "End km must be more than start km." : "";
@@ -8386,7 +8317,6 @@ function twClick(e) {
   if (a === "back" || a === "close") { twBack(a === "close"); return; }
   if (a === "check") { twSaveState("Saving…"); twFlush().then(() => { if (!tw) return; tw.view = "check"; tw.slide = "l"; twRender(true); }); return; }
   if (a === "page") { tw.view = "page"; tw.slide = "r"; twRender(true); return; }
-  if (a === "print") { const go = () => { const b = twBk(); if (b) tsPrint(b, t); }; if (tw.edit) { twSaveState("Saving…"); twFlush().then(go); } else go(); return; }
   if (a === "rowadd") { tw.rows.push(twNewRow()); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":litres"]'); ins[ins.length - 1]?.focus(); return; }
   if (t.dataset.rowdel != null) { twDelRow(+t.dataset.rowdel); return; }
   if (a === "exadd") { tw.extras.push({ kind: EXTRA_KINDS[0], amt: "", note: "" }); twRender(); const ins = $("tw").querySelectorAll('[data-k$=":amt"]'); ins[ins.length - 1]?.focus(); return; }
@@ -8579,10 +8509,10 @@ function bwHomeHtml(b) {
   const byKind = BW_FILE_KINDS.map(k => [k, (b.attachments || []).filter(f => fileKindOf(f) === k).length]).filter(x => x[1]);
   const fp = tsFill(b), fpBadge = tsOpen ? `<span class="bhpct ${fp.pct === 100 ? "ok" : fp.pct >= 50 ? "mid" : ""}" title="${fp.done} of ${fp.all} filled in${fp.left.length ? ": still to fill " + fp.left.join(", ") : ""}">${fp.pct}%</span>` : "";
   return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Booking ${esc(b.no || "")}</b><span>${esc(stageName(b))}</span></div></header>` +
-    `<div class="bwb tws bhome" id="bwBody">` + (bw.driver ? "" : bwDeskTools(b, tripOk && confirmed)) + `<div class="bhcard">` +
+    `<div class="bwb tws" id="bwBody"><div class="bhcard">` +
       `<div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}${tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ${b.status}">${esc(BK_STAGES[b.status] || "")}</span>`}</div>` +
       `<b class="bhplace">${esc(b.places || "—")}</b>` + bwFactsHtml(b, c) +
-    `</div>` + (bw.driver ? "" : bwMoneyCard(b, c)) + `<div class="bhbtns">` + (canBookings ? bwApprCard(b) : "") +
+    `</div><div class="bhbtns">` + (canBookings ? bwApprCard(b) : "") +
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
@@ -8595,85 +8525,11 @@ function bwHomeHtml(b) {
       : canCloseTrips && confirmed ? `<button type="button" class="bhclose" data-bw="lockask" data-how="close">🔒 Close trip</button>` : "") +
     `</div></div>` + navBar("bw", false);
 }
-/* ---------- computer: the same booking screens, laid out wide ----------
-   Tabs across the top of every booking screen, a tools row on the booking page (checks, stage, print, delete),
-   the trip money card, and WhatsApp / SMS messages. All hidden on phones, where the tiles do this. */
-function bwTabsHtml() {
-  const b = bwBkNow(); if (!b || !bw.home) return "";
-  const confirmed = ["booked", "ontrip", "completed"].includes(b.status), tripOk = canBookings || (canTsUpd && confirmed);
-  const cur = bw.sub || "details";
-  const t = [["home", "Overview"], !bw.driver && ["details", "Booking details"], !bw.driver && ["pay", "Payments"], tripOk && ["trip", "Trip sheet"],
-    canBookings && confirmed && ["money", "Driver advance"], ["files", "Files"], !bw.driver && ["msg", "WhatsApp / SMS"], !bw.driver && ["hist", "History"]].filter(Boolean);
-  return `<nav class="bwtabs" aria-label="Booking sections">${t.map(([k, l]) => `<button type="button" class="bwtab${k === cur ? " on" : ""}" data-bwtab="${k}"${k === cur ? ' aria-current="page"' : ""}>${l}</button>`).join("")}</nav>`;
-}
-function bwTabsIn() { const h = $("bw").querySelector("header.bwh"); if (h && bw.home) h.insertAdjacentHTML("afterend", bwTabsHtml()); }
-function bwTab(k) {
-  if (bw.sub === "money" && bw.da) { clearTimeout(bw.advTimer); bwAdvSave(); bw.da = null; bw.advSaved = ""; }
-  bw.pay = null; bw.lockAsk = ""; bw.ask = ""; bw.askCancel = false;
-  if (k === "trip") { const id = bw.editId; bwClose(); twOpen(ops.bookings.find(x => x.id === id), id); return; }
-  if (k === "hist") { openHDrawer(bw.editId, "", "booking"); return; }
-  if (k === "details") { bw.sub = ""; bw.step = BW_LAST; bwRender(true); return; }
-  if (k === "msg") bwMsgLoad();
-  bw.sub = k; bwRender(true);
-}
-function bwDeskTools(b, canPrintTs) {
-  const closed = tripClosed(b), checks = bkChecks(b, b.id), bad = checks.some(x => x.lvl === "bad");
-  const stages = canBookings && !closed && ["booked", "ontrip", "completed"].includes(b.status);
-  const busy = bw.apprBusy ? " disabled" : "";
-  return `<div class="bhdesk"><div class="bhdacts">` +
-    (checks.length ? `<button type="button" class="bhck${bad ? " bad" : ""}" data-bw="checks" aria-expanded="${!!bw.showChecks}">⚠ ${checks.length} check${checks.length === 1 ? "" : "s"}</button>` : `<span class="bhck ok">✓ All checks OK</span>`) +
-    (stages ? `<span class="bhstage" role="group" aria-label="Stage"><span>Stage</span>${[["booked", "Booked"], ["ontrip", "On trip"], ["completed", "Completed"], ["cancelled", "Cancelled"]].map(([k, l]) => `<button type="button" data-bw="stage" data-st="${k}" aria-pressed="${b.status === k}"${busy}>${l}</button>`).join("")}</span>` : "") +
-    `<span class="bhgap"></span><button type="button" class="bhbt" data-bw="slip">Print booking slip</button>` +
-    (canPrintTs ? `<button type="button" class="bhbt" data-bw="tsprint">Print trip sheet</button>` : "") +
-    (canBookings && !closed ? `<button type="button" class="bhdel" data-bw="ask" data-how="del">Delete</button>` : "") + `</div>` +
-    (bw.showChecks && checks.length ? `<ul class="bhcklist">${checks.map(x => `<li class="${x.lvl}">${esc(x.msg)}</li>`).join("")}</ul>` : "") + `</div>`;
-}
-// Trip money on the booking page: rent + extra from party + toll = collection, then expenses, balance and what is still to collect.
-function bwMoneyCard(b, c) {
-  const r = (l, v, cls = "") => `<div class="bmrow${cls}"><span>${l}</span><b>${v}</b></div>`;
-  return `<section class="bhmoney"><h3>Trip money</h3>` + r("Rent", rs(num(b.rent))) +
-    bkExtras(b).map(x => r(`Extra from party · ${esc(x.kind)}${x.note ? ` <small>${esc(x.note)}</small>` : ""}`, rs(Math.round(num(x.amt))))).join("") +
-    (num(b.toll) ? r("Toll gate", rs(num(b.toll))) : "") + r("<b>Total collection</b>", rs(c.due), " tot") + r("Total expenses", rs(c.exp)) +
-    r("<b>Balance</b>", bkNetTxt(c.due - c.exp), c.due - c.exp < 0 ? " neg" : " pos") +
-    r("Received from party", rs(c.received)) + r(c.balance > 0 || c.adj ? "<b>Still to collect</b>" : "<b>Paid extra</b>", rs(Math.abs(c.balance)), c.balance > 0 ? " due" : "") + `</section>`;
-}
-// Messages to the party and the driver, worked out by the booking form behind the screen.
-function bwMsgLoad() {
-  const id = bw.editId; bwBusy = true;
-  try { openBooking(id, null, true); const m = bkMsgTexts(); bw.msg = { party: m.party, duty: m.duty, pn: waNum(m.b.phone), dn: waNum(m.drv?.mobile), drv: m.drv?.name || m.b.driverName || "" }; }
-  finally { closeBkDrawer(); bwBusy = false; }
-}
-const bwMsgHref = (who, how) => { const m = bw.msg, n = who === "party" ? m.pn : m.dn; return !n ? "" : how === "wa" ? `https://wa.me/${n}?text=${encodeURIComponent(m[who])}` : `sms:+${n}?body=${encodeURIComponent(m[who])}`; };
-function bwMsgLinks() { $("bw").querySelectorAll("[data-mlink]").forEach(a => { const [who, how] = a.dataset.mlink.split(":"), h = bwMsgHref(who, how); if (h) a.href = h; }); }
-function bwMsgHtml(b) {
-  const m = bw.msg || {}, card = (who, title, to) => { const ok = who === "party" ? m.pn : m.dn;
-    return `<section class="tpsec bwmsg"><h3>${title}</h3><p class="bwnote">${to}</p><textarea rows="10" data-k="msg.${who}" aria-label="${title}">${esc(m[who] || "")}</textarea>` +
-      `<div class="bwseg c3">${ok ? `<a class="bwalt" data-mlink="${who}:wa" href="${esc(bwMsgHref(who, "wa"))}" target="_blank" rel="noopener">WhatsApp</a><a class="bwalt" data-mlink="${who}:sms" href="${esc(bwMsgHref(who, "sms"))}">SMS</a>` : `<span class="bwnote" style="grid-column:span 2">No number on record</span>`}<button type="button" class="bwalt" data-bw="mcopy" data-who="${who}">Copy</button></div></section>`; };
-  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">WhatsApp / SMS</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div></header><div class="bwb tws bwmsgs" id="bwBody">` +
-    card("party", "Message to the party", m.pn ? `To +${m.pn}` : "No phone number for the party") + card("duty", "Duty message to the driver", m.dn ? `To ${esc(m.drv)} · +${m.dn}` : m.drv ? `${esc(m.drv)} has no mobile on record` : "No driver chosen yet") +
-    `<p class="bwnote">WhatsApp or SMS opens with the message filled in; press send there. Edit the text first if needed.</p></div>` + navBar("bw", true);
-}
-// Booking slip PDF from the booking page: the booking form behind the screen gives the slip's details.
-function bwSlip(btn) {
-  const id = bw.editId; let d; bwBusy = true;
-  try { openBooking(id, null, true); d = slipData(); } finally { closeBkDrawer(); bwBusy = false; }
-  slipSave(d, btn);
-}
-async function bwDelete() {
-  const cur = bwBkNow(); if (!cur || bw.apprBusy) return;
-  bw.apprBusy = true; bwRender();
-  try {
-    await opsDelete("bookings", cur.id); ops.bookings = ops.bookings.filter(x => x.id !== cur.id);
-    await addBHistory([{ field: "status", from: cur.status, to: "", bookingId: cur.id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", byName: whoAmI(), note: `Booking ${cur.no || ""} deleted` }]).catch(() => {});
-    bwClose(); renderOps(); toast("Booking deleted");
-  } catch { toast("Couldn't delete. Try again."); if (bw) { bw.apprBusy = false; bw.ask = ""; bwRender(); } }
-}
 function bwSubHtml() {
   const b = bwBkNow(); if (!b) { bw.sub = ""; return ""; }
   if (bw.sub === "home") return bwHomeHtml(b);
   const head = t => `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">${t}</b><span>Booking ${esc(b.no || "")} · ${esc(b.party || "")}</span></div></header>`;
   if (bw.sub === "money") return bwDrvMoneyHtml(b);
-  if (bw.sub === "msg") return bwMsgHtml(b);
   if (bw.sub === "pay") {
     const c = bkCalc(b), pays = b.payments || [], canAdd = canPayAdd(b), canRm = canBookings && platformWrite && !tripClosed(b);
     const card = (p, i) => `<div class="twcard"><span class="twmain" style="cursor:default"><span class="twn twk" aria-hidden="true">₹</span><span class="twci"><b>${rs(num(p.amount))}</b><span>${[p.date ? fmtDate(p.date) : "", p.mode || "Cash", i === 0 && !p.note ? "Advance" : p.note].filter(Boolean).map(esc).join(" · ")}</span>${p.byName ? `<span>By ${esc(p.byName)}</span>` : ""}</span></span>` +
@@ -8793,6 +8649,81 @@ async function bwFileRemove(i) {
   finally { if (bw) { bw.fileBusy = false; bwRender(); } }
 }
 
+/* ---------- booking window (computer): extra from party, driver advance, print trip sheet ---------- */
+const bkExRowHtml = (x = {}) => `<div class="bkexrow"><select data-exk aria-label="Extra is for">${EXTRA_KINDS.map(k => `<option${(EXTRA_KINDS.includes(x.kind) ? x.kind : "Other") === k ? " selected" : ""}>${esc(k)}</option>`).join("")}</select>` +
+  `<input type="number" inputmode="numeric" min="0" data-exa value="${x.amt ?? ""}" placeholder="₹" aria-label="Amount"><input data-exn maxlength="80" value="${esc(x.note || "")}" placeholder="e.g. 150 km over" aria-label="Note"><button class="icon" type="button" data-exrm>Remove</button></div>`;
+$("bkExAdd").onclick = () => { $("bkExtras").insertAdjacentHTML("beforeend", bkExRowHtml({ kind: EXTRA_KINDS[0] })); $("bkExtras").lastElementChild.querySelector("[data-exa]").focus(); syncBk(); };
+$("bkExtras").addEventListener("click", e => { const x = e.target.closest("[data-exrm]"); if (x) { x.closest(".bkexrow").remove(); syncBk(); } });
+$("bkTsPrint").onclick = () => { const b = ops.bookings.find(x => x.id === bkEditId); if (b) tsPrint(b, $("bkTsPrint")); };
+// Driver advance tab: the same figures as the phone's Driver advance screen. It saves by itself (not with Save booking).
+let bkDa = null, bkDaTimer = 0, bkDaBusy = false;
+const bkDaCur = () => ops.bookings.find(x => x.id === bkEditId);
+function bkAdvRender() {
+  const b = bkDaCur(); if (!b) { $("bkAdv").innerHTML = ""; return; }
+  const st = b.drvSettle, ed = canBookings && platformWrite && !tripClosed(b) && !st, dis = ed ? "" : " disabled";
+  const v = bkDa ||= { amt: num(b.drvAdvance) ? String(num(b.drvAdvance)) : "", toll: !!b.drvAdvToll, off: drvCalc(b).off.slice(), mode: "Cash" };
+  const d = drvCalc(b, v), r = (l, val, cls = "", id = "") => `<div class="bkacr${cls}"><span>${l}</span><b${id ? ` id="${id}"` : ""}>${val}</b></div>`;
+  $("bkAdv").innerHTML = `<div class="bkadv"><div class="bkadvc">` +
+    `<div class="tsc"><h4>Advance given${b.driverName ? " to " + esc(b.driverName) : ""}</h4><div class="bkadvin"><div class="field"><label for="bkDaAmt">Advance (₹)</label><input id="bkDaAmt" type="number" inputmode="numeric" min="0" value="${esc(v.amt)}"${dis}></div>` +
+      `<label class="chk"><input type="checkbox" id="bkDaToll"${v.toll ? " checked" : ""}${dis}> Add toll money ${rs(num(b.toll))}</label></div>` + r("Total advance", rs(d.total), " tot", "bkDaTot") + `</div>` +
+    (d.ext ? `<div class="tsc"><h4>Extra from party (collected by the driver)</h4>` + bkExtras(b).map(x => r(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(Math.round(num(x.amt))))).join("") + `</div>` : "") +
+    `<div class="bkdanet${d.net < 0 ? " neg" : ""}" id="bkDaNetBox"><span><b id="bkDaWho">${d.net < 0 ? "Office pays the driver" : "Driver gives to office"}</b><small>${d.ext ? "Advance + extra from party − expenses he paid" : "Advance − expenses he paid"}</small></span><b id="bkDaNet">${rs(Math.abs(d.net))}</b></div>` +
+    (st ? `<div class="bkadvst"><b>✓ Settled</b> · ${st.dir === "pay" ? "Office paid the driver" : "Driver gave the office"} ${rs(num(st.amount))} · ${esc(st.mode)} · ${fmtDate(st.on)}${st.by ? ` · ${esc(st.by)}` : ""}` +
+        (canBookings && platformWrite && !tripClosed(b) ? ` <button class="btn" type="button" id="bkDaUndo"${bkDaBusy ? " disabled" : ""}>Undo settlement</button>` : "") + `</div>`
+      : ed && (d.total || d.ext || d.spent) ? `<div class="bkadvst"><label for="bkDaMode">Settled by</label><select id="bkDaMode">${["Cash", "UPI", "Next trip"].map(m => `<option${v.mode === m ? " selected" : ""}>${m}</option>`).join("")}</select>` +
+        `<span class="sub" id="bkDaSt"></span><button class="btn primary" type="button" id="bkDaSettle"${bkDaBusy ? " disabled" : ""}>${bkDaBusy ? "Saving…" : "Mark settled"}</button></div>` : "") +
+    `</div><div class="tsc"><h4>Expenses from the trip sheet <span class="sub" style="text-transform:none;letter-spacing:0;font-weight:400">· untick what he did not pay</span></h4>` +
+    (d.exp.length ? d.exp.map(x => `<label class="bkdaexp"><input type="checkbox" data-daexp="${esc(x.key)}"${d.off.includes(x.key) ? "" : " checked"}${dis}><span>${esc(x.label)}</span><b>${rs(x.amt)}</b></label>`).join("") : `<p class="hint" style="margin:0">No expenses in the trip sheet yet.</p>`) +
+    r("Total expenses", rs(d.spent), " tot", "bkDaSpent") + `</div></div>`;
+}
+function bkAdvNums() {
+  const b = bkDaCur(); if (!b || !bkDa) return; const d = drvCalc(b, bkDa);
+  $("bkDaTot").textContent = rs(d.total); $("bkDaSpent").textContent = rs(d.spent); $("bkDaNet").textContent = rs(Math.abs(d.net));
+  $("bkDaWho").textContent = d.net < 0 ? "Office pays the driver" : "Driver gives to office"; $("bkDaNetBox").classList.toggle("neg", d.net < 0); bkTabBadges(bkRead(), bkCalc(bkRead()));
+}
+async function bkQuickSave(cur, next, action) {
+  const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
+  await opsSave("bookings", next);
+  const i = ops.bookings.findIndex(x => x.id === next.id); if (i >= 0) ops.bookings[i] = next;
+  await addBHistory(bookingChanges(cur, next, action)).catch(() => {});
+}
+function bkDaApply(cur, next) {
+  const v = bkDa, amt = Math.round(num(v.amt));
+  if (amt > 0) next.drvAdvance = amt; else delete next.drvAdvance;
+  if (v.toll) next.drvAdvToll = true; else delete next.drvAdvToll;
+  next.drvExpOff = v.off.slice();
+  if (num(next.drvAdvance) !== num(cur.drvAdvance)) { next.drvAdvanceOn = todayISO(); next.drvAdvanceBy = whoAmI(); }
+}
+async function bkDaSave() {
+  const cur = bkDaCur(); if (!cur || !bkDa || !canBookings || tripClosed(cur) || cur.drvSettle) return;
+  const next = { ...cur }; bkDaApply(cur, next);
+  const st = t => { if ($("bkDaSt")) $("bkDaSt").textContent = t; };
+  if (["drvAdvance", "drvAdvToll", "drvExpOff"].every(k => JSON.stringify(next[k] ?? null) === JSON.stringify(cur[k] ?? null))) { st("✓ Saved"); return; }
+  try { await bkQuickSave(cur, next, "Driver advance"); st("✓ Saved"); } catch { st("Not saved. Check the connection."); }
+}
+function bkDaSoon(ms) { clearTimeout(bkDaTimer); if ($("bkDaSt")) $("bkDaSt").textContent = "Saving…"; bkDaTimer = setTimeout(bkDaSave, ms); }
+async function bkDaSettle(undo) {
+  const cur = bkDaCur(); if (!cur || bkDaBusy || !canBookings || tripClosed(cur)) return;
+  clearTimeout(bkDaTimer);
+  const next = { ...cur };
+  if (undo) delete next.drvSettle;
+  else { bkDaApply(cur, next); const d = drvCalc(cur, bkDa); next.drvSettle = { on: todayISO(), by: whoAmI(), amount: Math.abs(d.net), mode: bkDa.mode || "Cash", dir: d.net < 0 ? "pay" : "back" }; }
+  bkDaBusy = true; bkAdvRender();
+  try { await bkQuickSave(cur, next, undo ? "Driver settlement undone" : "Driver settled"); toast(undo ? "Settlement undone" : "Driver settled"); }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+  bkDaBusy = false; bkDa = null; if (!$("bkDrawer").hidden && bkEditId === cur.id) { bkAdvRender(); syncBk(); }
+}
+$("bkAdv").addEventListener("input", e => {
+  e.stopPropagation(); if (!bkDa) return;
+  if (e.target.id === "bkDaAmt") { bkDa.amt = e.target.value; bkAdvNums(); bkDaSoon(900); }
+});
+$("bkAdv").addEventListener("change", e => {
+  e.stopPropagation(); if (!bkDa) return; const t = e.target;
+  if (t.id === "bkDaToll") { bkDa.toll = t.checked; bkAdvNums(); bkDaSoon(50); }
+  else if (t.dataset.daexp) { const k = t.dataset.daexp; bkDa.off = t.checked ? bkDa.off.filter(x => x !== k) : [...bkDa.off, k]; bkAdvNums(); bkDaSoon(50); }
+  else if (t.id === "bkDaMode") bkDa.mode = t.value;
+});
+$("bkAdv").addEventListener("click", e => { const t = e.target.closest("button"); if (!t) return; if (t.id === "bkDaSettle") bkDaSettle(false); if (t.id === "bkDaUndo") bkDaSettle(true); });
 function bkPayRow(p = {}) {
   return `<div class="payrow bk"><label class="pf"><span>Date</span><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></label><label class="pf"><span>Amount (₹)</span><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" placeholder="Amount ₹" aria-label="Amount"></label>
     <label class="pf"><span>Paid by</span><select data-pm aria-label="Paid by">${PAY_MODES.map(m => `<option${m === (p.mode || "Cash") ? " selected" : ""}>${m}</option>`).join("")}</select></label><label class="pf"><span>Note</span><input data-pn value="${esc(p.note || "")}" placeholder="Advance, balance…" maxlength="60" aria-label="Note"></label><button class="icon prm" type="button" data-prm>Remove</button></div>`;
@@ -8802,8 +8733,9 @@ let bkTab = "slip";
 function setBkTab(t) {
   bkTab = t;
   document.querySelectorAll("#bkTabs button").forEach(x => x.setAttribute("aria-selected", String(x.dataset.tab === t)));
-  [["slip", "bkSlipSet"], ["pay", "bkPaySet"], ["trip", "bkTripSet"], ["files", "bkFilesSet"], ["send", "bkSendSet"]].forEach(([k, id]) => $(id).hidden = k !== t);
+  [["slip", "bkSlipSet"], ["pay", "bkPaySet"], ["trip", "bkTripSet"], ["adv", "bkAdvSet"], ["files", "bkFilesSet"], ["send", "bkSendSet"]].forEach(([k, id]) => $(id).hidden = k !== t);
   if (t === "send") fillMsgs(false);
+  if (t === "adv") bkAdvRender();
   $("bkForm").scrollTop = 0;
 }
 $("bkTabs").addEventListener("click", e => { const x = e.target.closest("button[data-tab]"); if (x) setBkTab(x.dataset.tab); });
@@ -8814,9 +8746,10 @@ $("bkTabs").addEventListener("keydown", e => {
 });
 function bkTabBadges(b, c) {
   const tb = (id, txt, cls = "") => { $(id).textContent = txt; $(id).className = "tb" + (cls ? " " + cls : ""); };
-  tb("bkTb-slip", c.due ? rs(c.due) : "");
+  tb("bkTb-slip", num(b.rent) ? rs(num(b.rent)) : "");
   tb("bkTb-pay", !c.due ? "" : c.balance <= 0 ? "Paid" : `${rs(c.balance)} due`, !c.due ? "" : c.balance <= 0 ? "ok" : "warn");
   const cur = bkEditId ? ops.bookings.find(x => x.id === bkEditId) : null;
+  if (cur) { const d = drvCalc(cur, bkDa); tb("bkTb-adv", cur.drvSettle ? "Settled" : !d.total && !d.ext && !d.spent ? "" : d.net < 0 ? `Pay ${rs(-d.net)}` : d.net > 0 ? `Gets ${rs(d.net)}` : "Nil", cur.drvSettle ? "ok" : d.net ? "warn" : ""); }
   if (cur?.tsStatus || bkMode === "trip") { const op = cur && tsIsOpen(cur);
     tb("bkTb-trip", bkMode === "trip" && !op ? `Opens ${fmtShort(tsOpenDate(cur))}` : TS_STAGES[cur?.tsStatus] || "To fill", cur?.tsStatus === "approved" ? "ok" : cur?.tsStatus === "rejected" ? "warn" : bkMode === "trip" && !op ? "" : "warn"); return; }
   tb("bkTb-trip", b.status === "draft" || b.status === "pending" || b.status === "rejected" || b.status === "enquiry" || b.status === "booked" || b.status === "cancelled" ? "" : b.endKm ? "Filled" : "To fill", b.endKm ? "ok" : "warn");
@@ -8824,8 +8757,7 @@ function bkTabBadges(b, c) {
 let bkMode = "view", bkApproving = false, bkSaveAs = "draft", bkHalfDay = "";
 function openBooking(id, preset, full) {
   const b = id ? ops.bookings.find(x => x.id === id) : null; bkEditId = b?.id || null;
-  // Phone and computer open the same booking page; the booking form (bkDrawer) only does the saving behind it.
-  if (b && !bwBusy && !full) {
+  if (b && !bwBusy && !full && bwIsPhone()) {
     const own = (b.status === "draft" || b.status === "rejected") && (b.createdBy || b.submittedBy || "") === (myUserId || "");
     const canEd = (canBookings || (canBookReq && own)) && !tripClosed(b);
     const tripWork = !canEd && canTsUpd && (b.status === "booked" || b.status === "ontrip" || b.status === "completed");
@@ -8872,6 +8804,7 @@ function openBooking(id, preset, full) {
     (b?.bookedByName && !b.bookedById ? `<option value="name:${esc(b.bookedByName)}">${esc(b.bookedByName)}</option>` : "");
   $("bkBookedBy").value = b?.bookedById ? "id:" + b.bookedById : b?.bookedByName ? "name:" + b.bookedByName : "";
   bkFiles = (b?.attachments || []).map(f => ({ ...f })); bkOtherList = (b?.otherList || []).map(x => ({ ...x })); bkMsgEdited = { party: false, drv: false };
+  $("bkExtras").innerHTML = bkExtras(b || {}).map(bkExRowHtml).join(""); $("bkSpl").value = splNum(b?.splPermit); bkDa = null; clearTimeout(bkDaTimer);
   $("bkMsgParty").value = $("bkMsgDrv").value = "";
   // A cleaner can be a driver too: drivers who have driven a spare bus come first, then other active drivers, conductors and past cleaners.
   buildCleaners();
@@ -8879,6 +8812,7 @@ function openBooking(id, preset, full) {
   if (!b) { const last = ops.bookings.filter(x => x.vehicleId === $("bkBus").value && x.endKm).sort((a, c) => bkEnd(c).localeCompare(bkEnd(a)))[0]; if (last) $("bkStartKm").value = last.endKm; }
   $("bkForm").querySelectorAll("input, select").forEach(el => el.disabled = !canE);
   if (bkMode === "trip" && bkTripEdit) { $("bkExpGrid").querySelectorAll("input, select").forEach(el => el.disabled = false); }
+  $("bkExAdd").hidden = !bkTripEdit; $("bkExtras").querySelectorAll("[data-exrm]").forEach(x => x.hidden = !bkTripEdit);
   $("tsRejectWhy").disabled = false; $("tsRejectWhy").value = "";
   const fE = bkFilesEdit();
   $("bkAddPay").hidden = !canE; $("bkPays").querySelectorAll("button").forEach(x => x.hidden = !canE);
@@ -8898,6 +8832,9 @@ function openBooking(id, preset, full) {
   $("bkTab-trip").disabled = bkMode === "trip" && !tsOpen;
   $("bkTab-trip").title = $("bkTab-trip").disabled ? `The trip sheet opens on ${fmtDate(tsOpenDate(b))}` : "";
   $("bkPrint").hidden = tsOnly;
+  $("bkTsPrint").hidden = !confirmed;
+  // Driver advance: the admin's, once the booking is confirmed.
+  $("bkTab-adv").hidden = !(canBookings && confirmed);
   syncTsAppr(b); syncBkLock(b);
   $("bkAppr").hidden = !(pending || b?.status === "rejected" || b?.status === "draft");
   $("bkApprAct").hidden = !(pending && canBookings);
@@ -8926,7 +8863,7 @@ function openBooking(id, preset, full) {
   { const c = bkCalc(bkRead()), st = b?.status || "booked";
     setBkTab(bkMode === "trip" ? (tsOpen ? "trip" : "slip") : b?.tsStatus === "submitted" && canBookings ? "trip" : !b || st === "draft" || st === "pending" || st === "rejected" || st === "enquiry" || st === "booked" || st === "cancelled" ? "slip" : st === "ontrip" || !b.endKm ? "trip" : c.balance > 0 ? "pay" : "trip"); }
   $("bkMore").closest("footer").classList.remove("more-open"); $("bkMore").setAttribute("aria-expanded", "false");
-  $("bkWarn").classList.toggle("open", innerWidth > 700);
+  $("bkWarn").classList.remove("open");  // one line; it opens with a click
   $("scrim").hidden = false; $("bkDrawer").hidden = false; $("bkForm").scrollTop = 0;
   if (!bwBusy) setTimeout(() => (canE && bkTab === "slip" ? $("bkParty") : $("bkTab-" + bkTab)).focus({ preventScroll: true }), 30);
 }
@@ -9318,7 +9255,7 @@ $("flCsv").onclick = async () => {
 // Someone who also books (booking planner + trip update) can start the trip sheet the day before the trip; trip update alone
 // once the trip is over (its last day). Admins can open it any time.
 const TS_STAGES = { draft: "Draft", submitted: "Sent for approval", approved: "Approved", rejected: "Sent back" };
-const TS_KEYS = ["driverId", "driverName", "cleanerName", "padiPaid", "cleanerPadi", "permit", "toll", "litres", "fuelCost", "diesel", "otherExp", "otherList", "startKm", "endKm", "tripNote", "attachments"];
+const TS_KEYS = ["driverId", "driverName", "cleanerName", "padiPaid", "cleanerPadi", "permit", "toll", "litres", "fuelCost", "diesel", "otherExp", "otherList", "startKm", "endKm", "tripNote", "attachments", "extras", "splPermit"];
 function tsOpenDate(b) {
   if (!b?.from) return "";
   if (canBookings) return b.from;
@@ -9517,7 +9454,12 @@ function bkRead() {
   if (bb.startsWith("id:")) { b.bookedById = bb.slice(3); b.bookedByName = drivers.find(d => d.id === b.bookedById)?.name || ""; } else if (bb) b.bookedByName = bb.slice(5);
   if (bkFiles.length) b.attachments = bkFiles.map(f => ({ ...f }));
   if (bkOtherList.length && bkOtherList.reduce((a, x) => a + num(x.amt), 0) === num(b.otherExp)) b.otherList = bkOtherList.map(x => ({ ...x }));
-  if (cur?.extras) b.extras = cur.extras; if (cur?.balAdj) b.balAdj = cur.balAdj;
+  if (cur?.balAdj) b.balAdj = cur.balAdj;
+  // Trip sheet: extra from party rows and the special permit's running number.
+  const ex = [...$("bkExtras").querySelectorAll(".bkexrow")].map(r => ({ kind: r.querySelector("[data-exk]").value, amt: Math.round(num(r.querySelector("[data-exa]").value)), note: r.querySelector("[data-exn]").value.trim().replace(/\s+/g, " ") }))
+    .filter(x => x.amt > 0).map(x => x.note ? x : { kind: x.kind, amt: x.amt });
+  if (ex.length) b.extras = ex;
+  const sp = $("bkSpl").value.trim().replace(/\s+/g, "").toUpperCase(); if (sp) b.splPermit = splPrefix(b) + sp;
   b.payments = [...$("bkPays").querySelectorAll(".payrow")].map(r => ({ date: r.querySelector("[data-pd]").value, amount: Math.round(num(r.querySelector("[data-pa]").value)), mode: r.querySelector("[data-pm]").value, note: r.querySelector("[data-pn]").value.trim() })).filter(p => p.amount > 0);
   return b;
 }
@@ -9580,15 +9522,23 @@ function syncBk() {
   const bus = vehicles.find(v => v.id === b.vehicleId);
   $("bkSub").textContent = [bus ? plateOf(bus) : "", BK_STAGES[b.status], b.from ? `${fmtShort(b.from)}${b.to !== b.from ? ` – ${fmtShort(b.to)}` : ""}` : ""].filter(Boolean).join(" · ");
   const fdT = iso => iso ? fmtDate(iso) : "—", setT = (id, v, cls = "") => { $(id).textContent = v; $(id).className = "calcbox" + (cls ? " " + cls : ""); };
-  setT("bkT_from", fdT(b.from)); setT("bkT_to", fdT(b.to)); setT("bkT_days", b.days ? fmtDays(b.days) : "—"); setT("bkT_rent", rs(num(b.rent)));
+  $("bkT_rent").textContent = rs(num(b.rent)); $("bkT_toll").textContent = rs(num(b.toll)); $("bkT_coltot").textContent = rs(c.due); $("bkSplPre").textContent = splPrefix(b);
+  { const base = Math.round(num(b.rate) * num(b.days)), low = base > 0 && num(b.rent) < base;
+    $("bkRentMin").textContent = !base ? "" : low ? `Can't be less than ${rs(base)} (${fmtDays(b.days)} × ${rs(num(b.rate))}).` : `${fmtDays(b.days)} × ${rs(num(b.rate))} = ${rs(base)}. You can add more, not less.`;
+    $("bkRentMin").className = low ? "err" : "hint"; }
   setT("bkT_exp", rs(c.exp)); setT("bkT_col", rs(c.due)); setT("bkT_bal", rs(c.profit), c.profit < 0 ? "neg" : "pos");
   setT("bkT_avg", b.days ? rs(c.profit / b.days) : "—"); setT("bkT_km", c.km ? nf(c.km) : "—");
   setT("bkT_kmday", c.km && b.days ? nf(c.km / b.days) : "—"); setT("bkT_mil", c.km && b.litres ? `${nf(c.km / b.litres, 2)} km/L` : "—");
   const cell = (k, v, col = "") => `<div><div class="k">${k}</div><div class="v"${col ? ` style="color:${col}"` : ""}>${v}</div></div>`;
   // Expenses and profit are for the admin; the booking planner sees only what the party owes.
-  $("bkCalc").innerHTML = cell("Due", rs(c.due)) + cell("Received", rs(c.received)) + cell("Balance due", rs(c.balance), c.balance > 0 ? "var(--warn)" : "var(--ok)") +
-    (canBookings ? cell("Our expenses", rs(c.exp)) + cell("Profit", rs(c.profit), c.profit < 0 ? "var(--danger)" : "var(--ok)") + cell("Km run", c.km ? nf(c.km) : "—") + cell("Km / L", c.km && b.litres ? nf(c.km / b.litres, 2) : "—") : "") +
-    cell("Rent a day", b.days ? rs(c.due / b.days) : "—");
+  $("bkCalc").innerHTML = cell("Collection", rs(c.due)) + cell("Received", rs(c.received)) + cell("To collect", rs(c.balance), c.balance > 0 ? "var(--warn)" : "var(--ok)") +
+    (canBookings ? cell("Expenses", rs(c.exp)) + cell("Balance", bkNetTxt(c.profit), c.profit < 0 ? "var(--danger)" : "var(--ok)") + cell("Km run", c.km ? nf(c.km) : "—") + cell("Km / L", c.km && b.litres ? nf(c.km / b.litres, 2) : "—") : "");
+  // Payments tab: the party's account, rent + extra + toll = collection, less what is received.
+  { const r = (l, v, cls = "") => `<div class="bkacr${cls}"><span>${l}</span><b>${v}</b></div>`;
+    $("bkPayAcct").innerHTML = `<h4>Party account</h4>` + r("Rent", rs(num(b.rent))) + (c.ext ? r("Extra from party", rs(c.ext)) : "") + (num(b.toll) ? r("Toll gate", rs(num(b.toll))) : "") +
+      r("Total collection", rs(c.due), " tot") + r("Payments received", rs(c.paid)) + (c.ext ? r("Extra collected by the driver", rs(c.ext)) : "") +
+      (c.adj ? r(esc(b.balAdj.note || "Adjusted with driver advance") + (b.balAdj.on ? ` · ${fmtShort(b.balAdj.on)}` : ""), rs(c.adj)) : "") +
+      r(c.balance < 0 ? "Paid extra" : "Still to collect", rs(Math.abs(c.balance)), c.balance > 0 ? " due" : " tot"); }
   bkTabBadges(b, c);
   const drv = b.driverId ? drivers.find(d => d.id === b.driverId) : null;
   $("bkDrvHint").textContent = drv ? [drv.mobile ? `Mobile ${drv.mobile}` : "No mobile on record", drv.valTR ? `Transport licence to ${fmtShort(drv.valTR)}` : ""].filter(Boolean).join(" · ") : "";
@@ -9644,6 +9594,8 @@ $("bkForm").addEventListener("submit", async e => {
     const amt = $("bkPays").querySelector("[data-pa]"); if (amt) amt.setAttribute("aria-invalid", "true"); else $("bkAddPay").setAttribute("aria-invalid", "true");
   }
   if (b.startKm && b.endKm && b.endKm <= b.startKm) err("bkEndKm", "Must be more than the start km.");
+  { const base = Math.round(num(b.rate) * num(b.days));
+    if (base && num(b.rent) < base && (!prev || num(prev.rent) !== num(b.rent) || num(prev.rate) !== num(b.rate) || num(prev.days) !== num(b.days))) err("bkRent", `Can't be less than ${rs(base)} (rent per day × days). You can add more, not less.`); }
   const clash = b.vehicleId && b.from && blocks(b) ? clashOf(b, b.id) : null;
   if (clash) err("bkFrom", `The bus is already booked by ${clash.party || "another party"} from ${fmtShort(clash.from)} to ${fmtShort(bkEnd(clash))}.`);
   if (b.cleanerName && b.driverName && b.cleanerName.trim().toUpperCase() === bkDriverName().trim().toUpperCase()) err("bkCleaner", "The cleaner can't be the same person as the driver.");
@@ -10513,9 +10465,8 @@ function pWire(cfg) {
 pWire(P_CFG.driver); pWire(P_CFG.conductor);
 V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
 function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
-$("bkPrint").onclick = () => slipSave(slipData(), $("bkPrint"));
-async function slipSave(d, btn) {
-  const name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
+$("bkPrint").onclick = async () => {
+  const btn = $("bkPrint"), d = slipData(), name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
   let downloads = null;
   try { downloads = await auDownloads(); } catch { downloads = null; }
   if (!downloads) { toast("Saving files isn't available in this view. Reload the page and try again."); return; }
@@ -10531,7 +10482,7 @@ async function slipSave(d, btn) {
     else if (e?.message === "load failed") toast("Couldn't prepare the slip. Check your internet connection and try again.");
     else toast("Couldn't save the slip. Try again.");
   } finally { btn.disabled = false; btn.textContent = label; }
-}
+};
 
 /* ---------- truck trips ---------- */
 let kBusId = "", kFy = 0, lgEditId = null, lgDaysTouched = false;
