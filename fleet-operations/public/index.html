@@ -929,8 +929,8 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
   #bkDrawer footer { flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
   #bkDrawer footer .bknote { display: none; }
   .bkmore { display: inline-flex; order: -1; padding: 8px 14px; font-size: 18px; line-height: 1; }
-  #bkDrawer footer:not(.more-open) #bkDelete, #bkDrawer footer:not(.more-open) #bkPrint { display: none !important; }
-  #bkDrawer footer.more-open #bkDelete, #bkDrawer footer.more-open #bkPrint { order: 5; flex: 1 1 40%; }
+  #bkDrawer footer:not(.more-open) #bkDelete, #bkDrawer footer:not(.more-open) #bkCancelBk { display: none !important; }
+  #bkDrawer footer.more-open #bkDelete, #bkDrawer footer.more-open #bkCancelBk { order: 5; flex: 1 1 40%; }
   #bkDrawer footer #bkSave { flex: 1 1 auto; } #bkDrawer footer #bkDraft { flex: 1 1 auto; }
   .camonly { display: inline-flex; }
   .dslrow [data-dfl], .dslrow [data-dlg] { padding: 6px 4px; }
@@ -1024,6 +1024,22 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .bchip.draft, .bstage.draft { background: var(--surface); color: var(--muted); border: 1px dashed var(--muted); }
 #bkDrawer footer { flex-wrap: wrap; align-items: center; row-gap: 8px; }
 .bknote { flex: 1 1 200px; font-size: 12px; color: var(--muted); }
+/* Print buttons in the booking header, beside Checks and History. */
+.bkinfo .bkhp { font-size: 14px; padding: 7px 12px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .bkinfo .bkhp svg { width: 16px; height: 16px; }
+.bkinfo .bkhp[hidden] { display: none; }
+/* Narrower windows: Checks, History and the print buttons become icons (their names show on hover) so the bus, dates and places keep their room. */
+@media (max-width: 1600px) {
+  .bkinfo #bkHistBtn .hl { display: none; } .bkinfo .bkhp, .bkinfo #bkHistBtn { padding: 7px 9px; }
+  .bkinfo .bkhp .pl { font-size: 0; } .bkinfo .bkhp .pl::after { font-size: 13px; } #bkPrint .pl::after { content: "Slip"; } #bkTsPrint .pl::after { content: "Trip sheet"; }
+  .bkinfo .bkwarn .wh { font-size: 0 !important; gap: 4px; padding: 0 9px !important; } .bkinfo .bkwarn .wh > * { font-size: 14px; }
+  #bkDrawer .bkhead { column-gap: 18px; } #bkDrawer .bkhead .bkinfo { column-gap: 16px; } #bkDrawer .bkhead h2 { font-size: 19px; }
+}
+.bkinfo > div > b { overflow: hidden; text-overflow: ellipsis; }
+/* Yes / No confirmation */
+.askbox { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(0, 0, 0, .45); padding: 16px; }
+.askbox[hidden] { display: none; }
+.askcard { background: var(--surface); color: var(--ink); border-radius: 14px; padding: 20px 22px 18px; width: min(420px, 100%); box-shadow: 0 20px 60px rgba(0, 0, 0, .3); }
+.askcard p { margin: 0 0 18px; font-size: 16px; line-height: 1.45; white-space: pre-line; } .askbtns { display: flex; justify-content: flex-end; gap: 10px; } .askbtns .btn { min-width: 90px; justify-content: center; }
 .bkheadbtns { display: inline-flex; align-items: center; gap: 6px; }
 #bkHistBtn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; font-size: 13px; }
 #bkHistBtn svg { width: 15px; height: 15px; }
@@ -2627,6 +2643,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="bkinfo-pl"><span>Places of visit</span><b id="bkI_places">—</b></div>
       <div class="bkwarn" id="bkWarn" role="status" hidden></div>
       <button class="btn" type="button" id="bkHistBtn" aria-label="Change history" title="Change history" hidden><span class="hico" aria-hidden="true"></span><span class="hcount" id="bkHistCount" hidden></span></button>
+      <button class="btn bkhp" type="button" id="bkPrint" title="Print booking slip"><span class="pl">Print slip</span></button>
+      <button class="btn bkhp" type="button" id="bkTsPrint" title="Print trip sheet"><span class="pl">Print trip sheet</span></button>
     </div>
     <span class="bkheadbtns"><button class="icon" type="button" id="bkClose" aria-label="Close">Close ✕</button></span>
   </header>
@@ -2784,19 +2802,21 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </section>
   </form>
   <div class="bksum"><span class="bkstagehint" id="bkStageHint"></span><span class="bkclash" id="bkClashCard" hidden><span id="bkClash"></span></span></div>
+  <!-- Bottom bar: Delete and Cancel on the left, Close trip and Save on the right (Close ✕ is in the header). -->
   <footer>
-    <button class="btn danger" type="button" id="bkDelete" hidden>Delete</button>
+    <button class="btn danger" type="button" id="bkDelete" hidden>Delete booking</button>
+    <button class="btn" type="button" id="bkCancelBk" hidden>Cancel booking</button>
     <span class="bknote" id="bkNote"></span>
     <button class="btn bkmore" type="button" id="bkMore" aria-expanded="false" aria-label="More actions">⋯</button>
-    <button class="btn" type="button" id="bkPrint">Print slip</button>
-    <button class="btn" type="button" id="bkTsPrint">Print trip sheet</button>
     <span class="bklockf" id="bkLockAct"><input id="bkLockWhy" maxlength="200" aria-label="Reason"><button class="btn" type="button" id="bkLockBtn" title="Close the trip to make it view only for everyone">Close trip</button></span>
-    <button class="btn" type="button" id="bkCancelBk" hidden>Cancel booking</button>
-    <button class="btn" type="button" id="bkCancel">Close</button>
     <button class="btn" type="button" id="bkDraft" hidden>Save draft</button>
-    <button class="btn primary" type="submit" form="bkForm" id="bkSave">Save booking</button>
+    <button class="btn primary" type="submit" form="bkForm" id="bkSave">Save</button>
   </footer>
 </aside>
+<!-- Yes / No confirmation used by the booking window (delete, cancel, close trip). -->
+<div class="askbox" id="askBox" role="alertdialog" aria-modal="true" aria-labelledby="askMsg" hidden>
+  <div class="askcard"><p id="askMsg"></p><div class="askbtns"><button class="btn" type="button" id="askNo">No</button><button class="btn primary" type="button" id="askYes">Yes</button></div></div>
+</div>
 <aside class="drawer" id="lgDrawer" role="dialog" aria-modal="true" aria-labelledby="lgTitle" hidden>
   <header><div style="min-width:0"><h2 id="lgTitle">Add trip</h2><div class="vsub" id="lgSub"></div></div><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></header>
   <form id="lgForm" novalidate><div class="tfgrid"><div class="tfmain">
@@ -8788,7 +8808,7 @@ const bkExRowHtml = (x = {}) => `<div class="bkexrow"><select data-exk aria-labe
 $("bkExAdd").onclick = () => { $("bkExtras").insertAdjacentHTML("beforeend", bkExRowHtml({ kind: EXTRA_KINDS[0] })); $("bkExtras").lastElementChild.querySelector("[data-exa]").focus(); syncBk(); };
 $("bkExtras").addEventListener("click", e => { const x = e.target.closest("[data-exrm]"); if (x) { x.closest(".bkexrow").remove(); syncBk(); } });
 $("bkTsPrint").onclick = () => { const b = ops.bookings.find(x => x.id === bkEditId); if (b) tsPrint(b, $("bkTsPrint")); };
-// Driver advance tab: the same figures as the phone's Driver advance screen. It saves by itself (not with Save booking).
+// Driver advance tab: the same figures as the phone's Driver advance screen. It saves by itself (not with Save).
 let bkDa = null, bkDaTimer = 0, bkDaBusy = false;
 const bkDaCur = () => ops.bookings.find(x => x.id === bkEditId);
 function bkAdvRender() {
@@ -8980,7 +9000,7 @@ function openBooking(id, preset, full) {
     : b?.status === "rejected" ? `<b>Rejected</b>${b.rejectedByName ? ` by ${esc(b.rejectedByName)}` : ""}${b.rejectedOn ? ` on ${fmtDate(b.rejectedOn)}` : ""}${b.rejectReason ? `: ${esc(b.rejectReason).replace(/[.\s]*$/, "")}.` : "."}${bkMode === "request" ? " Make the changes asked for, then submit it again." : ""}` : "";
   $("bkAppr").className = "bkappr" + (b?.status === "rejected" ? " rej" : b?.status === "draft" ? " draft" : "");
   $("bkForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("bkForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
-  $("bkSave").hidden = bkMode === "trip" ? !bkTripEdit : (!canE || (pending && !canBookings)); $("bkSave").textContent = bkMode === "request" || bkMode === "trip" ? "Submit for approval" : "Save booking";
+  $("bkSave").hidden = bkMode === "trip" ? !bkTripEdit : (!canE || (pending && !canBookings)); $("bkSave").textContent = bkMode === "request" || bkMode === "trip" ? "Submit for approval" : "Save";
   $("bkDelete").hidden = !(b && (bkMode === "edit" || (bkMode === "request" && (b.status === "draft" || b.status === "rejected"))));
   $("bkDraft").hidden = !(bkMode === "request" || (bkMode === "trip" && bkTripEdit));
   // Say why a button is missing, so nobody is left looking for it.
@@ -8991,7 +9011,7 @@ function openBooking(id, preset, full) {
     : closed ? (canCloseTrips ? "This trip is closed. Reopen it to make changes." : "This trip is closed. Only an admin can reopen it.")
     : !platformWrite ? "View only: your access to this app doesn't allow changes. Ask the owner to share it with edit rights."
     : b?.status === "pending" ? "Sent for approval. The admin will approve or reject it."
-    : canBookReq ? "Only drafts you created can be changed." : "View only."; $("bkDelete").textContent = "Delete"; delete $("bkDelete").dataset.confirm;
+    : canBookReq ? "Only drafts you created can be changed." : "View only.";
   renderDsl(b);
   syncBk(); syncBkHistBtn();
   { const c = bkCalc(bkRead()), st = b?.status || "booked";
@@ -9518,16 +9538,16 @@ function syncBkLock(b) {
   $("bkLockBtn").textContent = closed ? "Reopen trip" : "Close trip";
   $("bkLockBtn").className = "btn " + (closed ? "" : "primary");
 }
-$("bkCancelBk").onclick = () => {
+$("bkCancelBk").onclick = async () => {
   const restore = $("bkStatus").value === "cancelled";
-  if (!confirm(restore ? "Restore this booking? It becomes active again." : "Cancel this booking? Any advance received stays on record.")) return;
+  if (!await askYesNo(restore ? "Restore this booking? It becomes active again." : "Cancel this booking? Any advance received stays on record.", { yes: restore ? "Yes, restore" : "Yes, cancel it", danger: !restore })) return;
   $("bkStatus").value = restore ? "booked" : "cancelled"; syncBk(); $("bkForm").requestSubmit();
 };
 $("bkLockBtn").onclick = async () => {
   const cur = ops.bookings.find(x => x.id === bkEditId); if (!cur) return;
   const how = tripClosed(cur) ? "reopen" : "close";
   const bal = how === "close" ? bkCalc(cur).balance : 0;
-  const adj = bal > 0 && confirm(`${rs(bal)} is still to collect from the party.\n\nClose this pending amount too? It will be marked "Adjusted with driver advance" and still to collect becomes ₹0.\n\nOK = Yes, close it    Cancel = No, keep it pending`);
+  const adj = bal > 0 && await askYesNo(`${rs(bal)} is still to collect from the party.\n\nClose this pending amount too? It will be marked "Adjusted with driver advance" and still to collect becomes ₹0.`, { yes: "Yes, close it", no: "No, keep it pending" });
   $("bkLockBtn").disabled = true;
   const err = await tripLock(cur.id, how, $("bkLockWhy").value, adj);
   $("bkLockBtn").disabled = false;
@@ -9811,12 +9831,25 @@ $("bkReject").onclick = async () => {
   catch { toast("Couldn't save. Try again."); }
 };
 $("bkDelete").onclick = async () => {
-  const x = $("bkDelete"); if (!x.dataset.confirm) { x.dataset.confirm = "1"; x.textContent = "Click again to delete"; return; }
   if (bkMode === "view") return;
+  if (!await askYesNo(`Delete booking ${$("bkNo").value.trim()}? This cannot be undone.`, { yes: "Yes, delete", danger: true })) return;
   const gone = ops.bookings.find(x => x.id === bkEditId);
   try { await opsDelete("bookings", bkEditId); if (gone) await addBHistory([{ field: "status", from: gone.status, to: "", bookingId: gone.id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", byName: whoAmI(), note: `Booking ${gone.no || ""} deleted` }]).catch(() => {}); closeBkDrawer(); toast("Booking deleted"); } catch { toast("Couldn't delete. Try again."); }
 };
-$("bkClose").onclick = $("bkCancel").onclick = closeBkDrawer;
+$("bkClose").onclick = closeBkDrawer;
+// A Yes / No question in the app's own window; resolves true for Yes. Esc or a click outside is No.
+function askYesNo(msg, { yes = "Yes", no = "No", danger = false } = {}) {
+  return new Promise(res => {
+    const box = $("askBox");
+    const key = e => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); done(false); } };
+    const done = v => { box.hidden = true; document.removeEventListener("keydown", key, true); res(v); };
+    $("askMsg").textContent = msg; $("askYes").textContent = yes; $("askNo").textContent = no;
+    $("askYes").className = "btn " + (danger ? "danger" : "primary");
+    $("askYes").onclick = () => done(true); $("askNo").onclick = () => done(false);
+    box.onclick = e => { if (e.target === box) done(false); };
+    box.hidden = false; document.addEventListener("keydown", key, true); $("askYes").focus();
+  });
+}
 // Booking slip in the same order as the receipt book. The app runs in a frame where the browser's print
 // window is blocked, so the slip is made as a PDF and handed to the viewer to save, open and print.
 let pdfLibLoading = null;
@@ -10634,6 +10667,7 @@ function pWire(cfg) {
 pWire(P_CFG.driver); pWire(P_CFG.conductor);
 V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
 function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
+["bkPrint", "bkTsPrint"].forEach(id => $(id).insertAdjacentHTML("afterbegin", ICON_PRINT));
 $("bkPrint").onclick = async () => {
   const btn = $("bkPrint"), d = slipData(), name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
   let downloads = null;
