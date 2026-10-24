@@ -865,7 +865,9 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .upok { padding: 12px 14px; border-radius: 8px; background: var(--ok-soft); color: var(--ink); }
 @media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } .uptpl { flex-direction: column; align-items: stretch; } }
 /* Route expenses and padi calculation */
-.rxlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; align-items: start; }
+.rxlist { display: grid; grid-template-columns: minmax(0, 640px); gap: 14px; align-items: start; }
+.rxtbl td.c { width: 1%; text-align: right; } .rxtbl .btn { padding: 5px 14px; }
+@media (max-width: 700px) { table.rxtbl th, table.rxtbl td { white-space: normal; } table.rxtbl th:nth-child(4), table.rxtbl td:nth-child(4) { display: none; } #rxTblWrap { padding: 10px; } }
 .rxcard { display: flex; flex-direction: column; gap: 8px; }
 .rxhead { display: flex; align-items: center; gap: 8px; } .rxhead h2 { margin: 0; flex: 1; font-size: 18px; } .rxhead .icon { font-size: 13px; }
 .rxrow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 32px; gap: 6px; align-items: center; }
@@ -2125,14 +2127,15 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <h1>Route expenses<span class="ro-tag" id="rxRoTag" hidden>View only</span></h1>
           <p class="sync">The standard expenses of a route bus for one day, kept separately for each starting place (Vellore, Thiruthani and so on).</p>
         </div>
-        <div class="tcontrols"><button class="btn primary" type="button" id="rxAdd">+ Add starting place</button></div>
+        <div class="tcontrols"><button class="btn primary" type="button" id="rxAdd">+ Add new expense</button></div>
       </header>
       <div class="rxnew panel" id="rxNew" hidden>
         <div class="hf"><label for="rxNewPlace">Starting place</label><input id="rxNewPlace" list="rxPlaces" autocomplete="off" maxlength="60" placeholder="e.g. Vellore"><datalist id="rxPlaces"></datalist></div>
         <span class="err" id="rxNewErr"></span>
         <div class="rxbtns"><button class="btn" type="button" id="rxNewCancel">Cancel</button><button class="btn primary" type="button" id="rxNewSave">Add</button></div>
       </div>
-      <div class="rxlist" id="rxList"></div>
+      <section class="panel" id="rxTblWrap"><div class="tscroll"><table class="ctable rxtbl" id="rxTbl"></table></div></section>
+      <div class="rxlist" id="rxList" hidden></div>
     </section>
 
     <section class="wrap twrap" id="view-tpadi" hidden>
@@ -3428,6 +3431,7 @@ function showView() {
   if (acc.trips === "update" && ["thub", "trips", "tday", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
   // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
   if (want === "tday" && matchMedia("(max-width: 700px)").matches) want = "trsheet";
+  if (want === "trexp" && view !== "trexp") { rxOpen = ""; rxAdding = false; }
   view = (want === "tguide" && acc.bookings === "none" && acc.tripsheets === "none") || acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
   ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "tguide", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
   const navKey = want === "tguide" ? "guide" : want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
@@ -5688,7 +5692,7 @@ async function opsDelete(c, id) {
    Both are edited by whoever may edit route trip sheets. */
 const placeName = s => String(s || "").trim().replace(/\s+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 const rxStamp = () => ({ updatedOn: todayISO(), updatedByName: whoAmI() });
-let rxAdding = false, rxPress = false;
+let rxAdding = false, rxPress = false, rxOpen = "";  // rxOpen: the starting place being edited or viewed; none shows the table
 function rxKnownPlaces() {
   const set = new Set();
   [...yearsAll(), ...allTripYears].forEach(y => { if (y.a) set.add(placeName(y.a)); if (y.b) set.add(placeName(y.b)); });
@@ -5698,19 +5702,26 @@ function rxKnownPlaces() {
 }
 function renderRxp() {
   const can = canTrips, list = [...ops.routeExpenses].sort((a, b) => String(a.place).localeCompare(String(b.place)));
-  $("rxRoTag").hidden = can; $("rxAdd").hidden = !can || rxAdding; $("rxNew").hidden = !rxAdding;
+  if (rxOpen && !list.some(x => x.id === rxOpen)) rxOpen = "";
+  $("rxRoTag").hidden = can; $("rxAdd").hidden = !can || rxAdding || !!rxOpen; $("rxNew").hidden = !rxAdding;
+  $("rxTblWrap").hidden = rxAdding || !!rxOpen; $("rxList").hidden = !rxOpen;
   $("rxPlaces").innerHTML = rxKnownPlaces().map(p => `<option value="${esc(p)}">`).join("");
-  if (document.activeElement?.closest?.("#rxList") || rxPress) return;  // don't redraw under someone typing or tapping
+  const tot = x => (x.items || []).reduce((a, i) => a + num(i.amount), 0);
+  $("rxTbl").innerHTML = list.length ? `<thead><tr><th>Starting place</th><th class="n">No. of expenses</th><th class="n">Expenses total</th><th>Last changed</th><th></th></tr></thead><tbody>` +
+    list.map(x => `<tr><td class="nm">${esc(x.place)}</td><td class="n">${(x.items || []).length}</td><td class="n">${rs(tot(x))}</td><td>${x.updatedOn ? `${fmtDate(x.updatedOn)}${x.updatedByName ? ` · ${esc(x.updatedByName)}` : ""}` : "—"}</td><td class="c"><button class="btn" type="button" data-rxo="${x.id}">${can ? "Edit" : "View"}</button></td></tr>`).join("") + `</tbody>`
+    : `<tbody><tr><td class="sub" style="white-space:normal">No starting places yet.${can ? " Use + Add new expense to set up the first one." : ""}</td></tr></tbody>`;
+  if (!rxOpen || document.activeElement?.closest?.("#rxList") || rxPress) return;  // don't redraw under someone typing or tapping
   // A new expense typed but not yet added stays in its boxes when the list is redrawn.
   const draft = {}; $("rxList").querySelectorAll("[data-rx]").forEach(c => { const n = c.querySelector('[data-new="name"]')?.value || "", a = c.querySelector('[data-new="amount"]')?.value || ""; if (n || a) draft[c.dataset.rx] = [n, a]; });
-  $("rxList").innerHTML = list.length ? list.map(x => {
-    const items = x.items || [], tot = items.reduce((a, i) => a + num(i.amount), 0), ro = can ? "" : " readonly";
+  $("rxList").innerHTML = list.filter(x => x.id === rxOpen).map(x => {
+    const items = x.items || [], ro = can ? "" : " readonly";
     return `<section class="panel rxcard" data-rx="${x.id}"><div class="rxhead"><h2>${esc(x.place)}</h2>${can ? `<button class="icon" type="button" data-rxa="rename">Rename</button><button class="icon del" type="button" data-rxa="delete">Delete</button>` : ""}</div>` +
       (items.length ? items.map((i, k) => `<div class="rxrow"><input data-rxi="${k}" data-f="name" maxlength="60" value="${esc(i.name)}" aria-label="Expense name"${ro}><input class="n" data-rxi="${k}" data-f="amount" type="number" inputmode="numeric" min="0" value="${esc(String(i.amount ?? ""))}" aria-label="Amount for ${esc(i.name)}"${ro}>${can ? `<button class="rxdel" type="button" data-rxa="rm" data-k="${k}" aria-label="Remove ${esc(i.name)}">✕</button>` : "<span></span>"}</div>`).join("")
         : `<p class="sub" style="margin:0">No expenses yet.${can ? " Add the first one below." : ""}</p>`) +
       (can ? `<div class="rxrow"><input data-new="name" maxlength="60" placeholder="New expense" aria-label="New expense name"><input class="n" data-new="amount" type="number" inputmode="numeric" min="0" placeholder="₹" aria-label="New expense amount"><button class="rxdel" type="button" data-rxa="add" aria-label="Add expense" style="color:var(--accent)">＋</button></div><span class="err" data-err></span>` : "") +
-      `<div class="rxtot"><span>Total for a day</span><span>${rs(tot)}</span></div>${x.updatedOn ? `<span class="rxsaved">Last changed ${fmtDate(x.updatedOn)}${x.updatedByName ? ` by ${esc(x.updatedByName)}` : ""}</span>` : ""}</section>`;
-  }).join("") : `<div class="empty panel"><strong>No starting places yet</strong>${can ? "Use + Add starting place, then add its standard expenses." : "Nothing has been set up yet."}</div>`;
+      `<div class="rxtot"><span>Total for a day</span><span>${rs(tot(x))}</span></div>${x.updatedOn ? `<span class="rxsaved">Last changed ${fmtDate(x.updatedOn)}${x.updatedByName ? ` by ${esc(x.updatedByName)}` : ""}</span>` : ""}` +
+      `<div class="rxbtns" style="justify-content:flex-end"><button class="btn primary" type="button" data-rxa="back">${can ? "Done" : "Back to list"}</button></div></section>`;
+  }).join("");
   Object.entries(draft).forEach(([id, [n, a]]) => { const c = $("rxList").querySelector(`[data-rx="${id}"]`); if (!c?.querySelector("[data-new]")) return; c.querySelector('[data-new="name"]').value = n; c.querySelector('[data-new="amount"]').value = a; });
 }
 async function rxSave(doc, msg) {
@@ -5723,12 +5734,16 @@ $("rxNewPlace").addEventListener("keydown", e => { if (e.key === "Enter") { e.pr
 $("rxNewSave").onclick = async () => {
   const place = placeName($("rxNewPlace").value);
   if (!place) { $("rxNewErr").textContent = "Enter the starting place."; return; }
-  if (ops.routeExpenses.some(x => placeName(x.place).toLowerCase() === place.toLowerCase())) { $("rxNewErr").textContent = `${place} is already in the list.`; return; }
+  const have = ops.routeExpenses.find(x => placeName(x.place).toLowerCase() === place.toLowerCase());
+  if (have) { rxAdding = false; rxOpen = have.id; renderRxp(); $("rxList").querySelector('[data-new="name"]')?.focus(); return; }  // already set up: open it
   const id = genId("rx");
-  if (await rxSave({ id, place, items: [] }, `${place} added`)) { rxAdding = false; renderRxp(); $("rxList").querySelector(`[data-rx="${id}"] [data-new="name"]`)?.focus(); }
+  if (await rxSave({ id, place, items: [] }, `${place} added`)) { rxAdding = false; rxOpen = id; renderRxp(); $("rxList").querySelector(`[data-rx="${id}"] [data-new="name"]`)?.focus(); }
 };
+$("rxTbl").addEventListener("click", e => { const b = e.target.closest("[data-rxo]"); if (!b) return; rxOpen = b.dataset.rxo; renderRxp(); scrollTo(0, 0); });
 $("rxList").addEventListener("click", async e => {
-  const b = e.target.closest("[data-rxa]"); if (!b || !canTrips) return;
+  const b = e.target.closest("[data-rxa]"); if (!b) return;
+  if (b.dataset.rxa === "back") { rxOpen = ""; document.activeElement?.blur(); renderRxp(); return; }
+  if (!canTrips) return;
   const card = b.closest("[data-rx]"), x = ops.routeExpenses.find(r => r.id === card.dataset.rx); if (!x) return;
   const a = b.dataset.rxa, items = [...(x.items || [])], errEl = card.querySelector("[data-err]");
   if (a === "add") {
@@ -5760,7 +5775,7 @@ $("rxList").addEventListener("click", async e => {
   }
   if (a === "delete") {
     if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "Tap again to delete"; return; }
-    try { await opsDelete("routeExpenses", x.id); toast(`${x.place} deleted`); } catch { toast("Couldn't delete. Try again."); }
+    try { await opsDelete("routeExpenses", x.id); toast(`${x.place} deleted`); rxOpen = ""; } catch { toast("Couldn't delete. Try again."); }
     renderRxp();
   }
 });
