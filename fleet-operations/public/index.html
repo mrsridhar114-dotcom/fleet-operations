@@ -672,7 +672,7 @@ a.btn { text-decoration: none; display: inline-block; }
 .dbcard .field label, .dbcard .field .lbl { font-size: 12px; }
 .dbcard .field .hint { font-size: 11px; }
 .dbcard .field input.sgl { font-family: var(--mono); font-size: 15px; text-align: right; }
-.dbtot input { font-family: var(--mono); font-weight: 700; text-align: right; } .dbtot input[readonly] { background: transparent; border-color: transparent; color: var(--accent); }
+.dbtot input { font-family: var(--mono); font-weight: 700; text-align: right; }
 .hint.warn { color: var(--warn); font-weight: 600; }
 .dbtot span { font-size: 11px; color: var(--muted); font-weight: 600; }
 .dbtot span.warn { color: var(--warn); }
@@ -1438,13 +1438,14 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 /* route bus trip sheet on the phone */
 .rsn { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; font-size: 12px; margin-right: 2px; }
 .rssub { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted); }
-.rstot .tpl b { font-size: 18px; } .rstot .tpl small { margin-top: 2px; } .tpin.rssum { background: var(--bg); } .tpin.rssum input { color: var(--accent); font-weight: 700; }
+.rstot .tpl b { font-size: 18px; } .rstot .tpl small { margin-top: 2px; }
 .rshow { font: 500 13px var(--body); color: var(--muted); display: block; } .rswarnt { font: 600 13px var(--body); color: var(--warn); display: block; }
 .rscrew .tpl { display: flex; flex-direction: column; gap: 1px; } .rsrole { font: 700 18px/1.15 var(--body); }
 .rssel { appearance: none; -webkit-appearance: none; border: 0; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b7d1e' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 2px center / 16px; padding: 2px 22px 2px 0; font: 500 16px var(--body); color: var(--ink); max-width: 100%; text-overflow: ellipsis; cursor: pointer; }
 .rssel:disabled { background-image: none; padding-right: 0; opacity: 1; color: var(--ink); }
 .rslink { min-height: 36px; font-size: 16px; } .rsq { margin: 10px 0 6px; font: 700 15px var(--body); color: var(--ink); }
 .rsname { width: 100%; box-sizing: border-box; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 16px var(--body); padding: 0 10px; }
+.tpin.rsoth { background: var(--bg); } .tpin.rsoth input { color: var(--ink); font-weight: 700; }
 .rsxmode { margin: 4px 0 8px; } .rsxmode button { font-size: 15px; }
 .rsreset { border: 0; background: none; color: var(--accent); font: 600 14px var(--body); text-decoration: underline; padding: 6px 0; cursor: pointer; }
 .rsmiss { margin: 6px 0 0; font-size: 13px; color: var(--warn); text-align: center; }
@@ -5131,12 +5132,13 @@ const crewName = (kind, t) => {
   return (id && list.find(x => x.id === id)?.name) || t[kind + "Name"] || "";
 };
 const crewKey = (kind, t) => t[kind + "Id"] ? "id:" + t[kind + "Id"] : (t[kind + "Name"] ? "name:" + t[kind + "Name"].toUpperCase() : "");
-// Collection: the singles added up; when only the day's total is known (told at night), that total (colTotal).
+// Collection: the day's total when it is typed (colTotal; some or all singles may not be known yet), else the singles added up.
 const singlesSum = t => num(t.s1) + num(t.s2) + num(t.s3) + num(t.s4) + num(t.s5);
-const tripCollection = t => singlesSum(t) || num(t.colTotal);
-const totalOnly = t => !t?.notRun && !singlesSum(t) && num(t?.colTotal) > 0;
-// The total entered earlier against the singles entered later: the difference, 0 when they match or nothing to compare.
-const colTotalDiff = t => singlesSum(t) && num(t.colTotal) ? singlesSum(t) - num(t.colTotal) : 0;
+const tripCollection = t => num(t.colTotal) || singlesSum(t);
+// The part of the typed total not yet split into singles (negative when the singles add up to more than the total).
+const colNotSplit = t => num(t?.colTotal) ? num(t.colTotal) - singlesSum(t) : 0;
+const totalOnly = t => !t?.notRun && colNotSplit(t) > 0;
+const colSplitText = t => { const d = colNotSplit(t), s = singlesSum(t); return !d ? "" : d < 0 ? `Singles add up to ${rs(s)}, ${rs(-d)} more than the total ${rs(num(t.colTotal))}` : s ? `${rs(d)} of the total ${rs(num(t.colTotal))} not split into singles yet` : `Only the day's total so far (${rs(num(t.colTotal))})`; };
 // Full operation is 5 singles a day; a day with fewer singles counts as part of a day (3 singles = 0.6 day).
 const SINGLES_PER_DAY = 5;
 // A day with only the total counts as a full day until the singles are entered.
@@ -5334,10 +5336,10 @@ function renderTrips() {
     const col = tripCollection(t), exp = tripExpense(t), b = col - exp; run += b;
     const kmRun = M.kmBy[date] ?? null;
     const cell = v => v ? `<td class="n">${nf(v)}</td>` : `<td class="n"><span class="sub">—</span></td>`;
-    const singlesCell = t => { if (totalOnly(t)) return `<td class="n" title="Only the day's total so far; the singles are not split yet"><span class="pill d30" style="padding:0 6px">Total</span></td>`; const n = singlesRun(t); return `<td class="n" title="${n} of ${SINGLES_PER_DAY} singles · counts as ${fmtDays(n / SINGLES_PER_DAY)} day">${n < SINGLES_PER_DAY ? `<span class="pill d30" style="padding:0 6px">${n}/${SINGLES_PER_DAY}</span>` : `${n}/${SINGLES_PER_DAY}`}</td>`; };
+    const singlesCell = t => { if (totalOnly(t)) return `<td class="n" title="${esc(colSplitText(t))}"><span class="pill d30" style="padding:0 6px">Total</span></td>`; const n = singlesRun(t); return `<td class="n" title="${n} of ${SINGLES_PER_DAY} singles · counts as ${fmtDays(n / SINGLES_PER_DAY)} day">${n < SINGLES_PER_DAY ? `<span class="pill d30" style="padding:0 6px">${n}/${SINGLES_PER_DAY}</span>` : `${n}/${SINGLES_PER_DAY}`}</td>`; };
     const kmL = kmRun && t.litres ? nf(kmRun / t.litres, 2) : "—", epkm = kmRun ? nf(col / kmRun, 2) : "—";
     const planned = plannedStart(date), shown = startShown(t, date), sgl = singlesRun(t);
-    const flags = [sgl < SINGLES_PER_DAY ? `Only ${sgl} of ${SINGLES_PER_DAY} singles run` : "", b < 0 ? `Loss of ₹${nf(-b)} for the day` : "", totalOnly(t) ? "Only the day's total so far" : "", colTotalDiff(t) ? `Singles add up to ${rs(singlesSum(t))}; the total entered was ${rs(num(t.colTotal))}` : ""].filter(Boolean);
+    const flags = [sgl < SINGLES_PER_DAY ? `Only ${sgl} of ${SINGLES_PER_DAY} singles run` : "", b < 0 ? `Loss of ₹${nf(-b)} for the day` : "", colSplitText(t)].filter(Boolean);
     const hl = (b < 0 ? " loss" : "") + (sgl < SINGLES_PER_DAY ? " short" : "");
     rows.push(`<tr data-tdate="${date}" tabindex="0" class="${cls}${hl}"${flags.length ? ` title="${flags.join(" · ")}"` : ""}>${dateCell}<td${t.startFixed && planned && shown !== planned ? ` title="Changed for this day. The plan was ${esc(planned)}."` : ""}>${esc(shown)}${t.startFixed && planned && shown !== planned ? ' <span class="pill d30" style="padding:0 5px">changed</span>' : ""}</td><td>${esc(crewName("driver", t))}</td><td>${esc(crewName("conductor", t))}</td><td>${esc(crewName("checker", t)) || '<span class="sub">—</span>'}</td>
       <td class="n">${t.dieselRate ? nf(t.dieselRate, 2) : "—"}</td>${cell(t.litres)}${cell(t.fuelCost)}${cell(t.driverPay)}${cell(t.conductorPay)}${cell(t.checkerPay)}
@@ -7072,7 +7074,7 @@ function rsPrevKm(bus, date) {
   return t;
 }
 const rsSum = () => rsh.s.reduce((a, v) => a + num(v), 0);
-const rsCol = () => rsSum() || num(rsh.colTot);
+const rsCol = () => num(rsh.colTot) || rsSum();
 const rsTrips = () => rsh.s.filter(v => num(v) > 0).length;
 // Padi rules: the saved ones, or the company's starting rules until they are saved.
 const rsRules = () => pdSaved().length ? pdSaved() : PADI_START.bands;
@@ -7137,7 +7139,7 @@ function rsSel(k) {
   const opts = list.map(p => [`id:${p.id}`, p.name]); if (v && !opts.some(o => o[0] === v)) opts.unshift([v, rsCrewName(k) || "—"]);
   return `<select class="rssel" data-k="crew:${k}" aria-label="${k}"${rsh.edit ? "" : " disabled"}>${k === "checker" ? `<option value="">No checker</option>` : v ? "" : `<option value="">Choose</option>`}${opts.map(([val, n]) => `<option value="${esc(val)}"${val === v ? " selected" : ""}>${esc(n)}${k === "conductor" && val === "id:" + (rsMe()?.id || "-") ? " (you)" : ""}</option>`).join("")}</select>`;
 }
-const rsMoneyIn = (key, val, label, extra = "") => `<span class="bwin tpin${extra.includes("data-sum") ? " rssum" : ""}"${extra}><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="0" aria-label="${label}"${rsh.edit && !extra.includes("data-sum") ? "" : " readonly"}></span>`;
+const rsMoneyIn = (key, val, label, extra = "") => `<span class="bwin tpin"${extra}><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${key === "coltot" && rsSum() ? rsSum() : 0}" aria-label="${label}"${rsh.edit ? "" : " readonly"}></span>`;
 const rsSec = (n, t, inner, sub = "") => `<section class="tpsec"><h3>${n ? `<span class="rsn">${n}</span> ` : ""}${t}${sub ? ` <span class="rssub">· ${sub}</span>` : ""}</h3>${inner}</section>`;
 function rsCrewHtml() {
   const sys = rsSys(), col = rsCol();
@@ -7189,7 +7191,7 @@ function rsPageHtml() {
     (!rsh.edit && !rsh.admin && rsh.status !== "draft" ? `<div class="bhlock"><b>${rsh.status === "approved" ? "✓ Approved by the office" : "Sent to the office"}</b><span>${rsh.status === "approved" ? "This day is in the trip sheet." : "Waiting for approval. Ask the office if something needs changing."}</span></div>` : "") +
     (ch.length ? `<div class="bhappr rswarn"><b>⚠ Padi changed by the conductor</b>${ch.map(([k, l]) => `<span>${l}: ${rs(num(d.padi[k]))} entered · system gave ${rs(num(d.padiSys[k]))} (${num(d.padi[k]) > num(d.padiSys[k]) ? "+" : "−"}${rs(Math.abs(num(d.padi[k]) - num(d.padiSys[k])))})</span>`).join("")}</div>` : "") +
     (rsh.admin && d && rsExpChanges(d).length ? `<div class="bhappr rswarn"><b>⚠ Route expenses changed by the conductor</b>${rsExpChanges(d).map(c => `<span>${esc(c)}</span>`).join("")}</div>` : "") +
-    (rsh.admin && d && !d.notRun && (totalOnly(d) || colTotalDiff(d)) ? `<div class="bhappr rswarn"><b>${totalOnly(d) ? "Only the day's total so far" : "⚠ Trips differ from the total entered earlier"}</b><span>${totalOnly(d) ? `Total collection ${rs(num(d.colTotal))}. The trip-wise collection is not filled yet.` : `Trips add up to ${rs(singlesSum(d))} · total entered ${rs(num(d.colTotal))} (${colTotalDiff(d) > 0 ? "+" : "−"}${rs(Math.abs(colTotalDiff(d)))})`}</span></div>` : "") +
+    (rsh.admin && d && !d.notRun && colNotSplit(d) ? `<div class="bhappr rswarn"><b>${colNotSplit(d) < 0 ? "⚠ Trips add up to more than the total" : "Collection not fully split into trips"}</b><span>${esc(colSplitText(d))}</span></div>` : "") +
     (rsh.admin && d && !d.notRun && num(d.expTotal) ? (() => { const parts = num(d.expense) - Math.max(0, num(d.expTotal) - (num(d.dsl?.amount) + RS_ROLES.reduce((a, [k]) => a + num(d.padi?.[k]), 0) + (d.exp || []).filter(x => !x.off).reduce((a, x) => a + num(x.amt), 0))), un = num(d.expense) - parts;
       return un ? `<div class="bhappr rswarn"><b>Expenses not fully split</b><span>Total expenses ${rs(num(d.expTotal))} told · ${rs(un)} sits as Other, not split. It can be approved like this.</span></div>` : ""; })() : "") +
     (office ? `<div class="bhappr"><b>The office already entered this day</b><span>Approving puts this sheet in its place.</span></div>` : "") +
@@ -7201,7 +7203,7 @@ function rsPageHtml() {
         : `<label class="bwf1" style="margin-top:8px"><span>Started from</span><input type="text" data-k="start" value="${esc(rsh.start)}" maxlength="40"${ro}></label>`)) +
     (rsh.notRun ? "" :
       rsSec("2", "Collection", rsh.s.map((v, i) => `<div class="tprow"><span class="tpl">${RS_TRIPS[i]}</span>${rsMoneyIn("s:" + i, v, RS_TRIPS[i] + " collection")}</div>`).join("") +
-        `<div class="tprow rstot"><span class="tpl"><b>Total collection</b><small class="rshow" id="rsTrips">${rsTripsText()}</small></span>${rsMoneyIn("coltot", rsSum() ? String(rsSum()) : rsh.colTot, "Total collection", rsSum() ? ' data-sum="1"' : "")}</div>` +
+        `<div class="tprow rstot"><span class="tpl"><b>Total collection</b><small class="rshow" id="rsTrips">${rsTripsText()}</small></span>${rsMoneyIn("coltot", rsh.colTot, "Total collection")}</div>` +
         `<p class="bwnote" id="rsColNote" style="margin:2px 0 4px">${rsColNote()}</p>`) +
       rsSec("3", "Crew and padi", `<div id="rsCrew">${rsCrewHtml()}</div>`) +
       rsSec("4", "Diesel", `<div class="tpfc">` +
@@ -7225,7 +7227,8 @@ function rsExpHtml() {
   const changed = rsh.edit && rsh.start && rsExpChanges({ exp: rsh.exp, expDef: rsh.expDef }).length;
   const has = rsList(rsh.start).length, list = rsh.expMode === "list";
   const seg = `<div class="bwseg c2 rsxmode"><button type="button" data-rs="exmode" data-v="other" aria-pressed="${!list}"${rsh.edit ? "" : " disabled"}>Rest as Other</button><button type="button" data-rs="exmode" data-v="list" aria-pressed="${list}"${rsh.edit && has ? "" : " disabled"}>${rsh.start ? `${esc(placeName(rsh.start))} list` : "Route list"}</button></div>`;
-  if (!list) return seg + `<p class="bwnote" style="margin:4px 0">${num(rsh.expTot) ? `What the Total expenses (in section 6) don't cover goes under Other: <b>${rs(rsUnsplit())}</b>.` : "Type the Total expenses in section 6; what diesel and padi don't cover goes under Other."}${has ? ` Or use the ${esc(placeName(rsh.start))} list.` : ""}</p>` +
+  if (!list) return seg + `<p class="bwnote" style="margin:4px 0">What the Total expenses (in section 6) don't cover after diesel and padi goes here as Other expenses.${has ? ` Or use the ${esc(placeName(rsh.start))} list.` : ""}</p>` +
+    `<div class="tprow"><span class="tpl">Other expenses<small class="rshow" id="rsOthNote">${num(rsh.expTot) ? "The rest of the total expenses" : "Type the Total expenses in section 6"}</small></span><span class="bwin tpin rsoth"><b>₹</b><input type="text" id="rsOthAmt" value="${rs(rsUnsplit()).slice(1)}" readonly tabindex="-1" aria-label="Other expenses"></span></div>` +
     rsh.exp.map((x, i) => `<div class="tprow rsex"><span class="tpl"><input class="rsname" type="text" maxlength="40" data-k="en:${i}" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}></span>${rsMoneyIn("ex:" + i, x.amt, x.name || "Expense")}${rsh.edit ? `<button type="button" class="tpbin" data-rs="exdel" data-i="${i}" aria-label="Remove ${esc(x.name || "expense")}">${TW_BIN}</button>` : ""}</div>`).join("") +
     (rsh.edit ? `<button type="button" class="tpadd" data-rs="exadd">${TW_PLUS} Add expense</button>` : "");
   return seg + (rsh.exp.length ? (rsh.edit ? `<p class="bwnote" style="margin:0 0 4px">Change an amount, remove an expense not spent today, or add one. The office will see the changes.</p>` : "")
@@ -7238,11 +7241,11 @@ function rsExpHtml() {
     (rsh.edit ? `<button type="button" class="tpadd" data-rs="exadd">${TW_PLUS} Add expense</button>` : "") +
     (changed && has ? `<button type="button" class="rsreset" data-rs="exreset">Bring back the default list of ${esc(placeName(rsh.start))}</button>` : "");
 }
-// The total box: typed when only the day's total is known; once the trips are typed it shows their sum.
-const rsTripsText = () => rsSum() ? `${rsTrips()} of 5 trips` : num(rsh.colTot) ? "Total only · trips can be added later" : "Type each trip, or just the total";
+// The total box: the trips add up by themselves; type the day's total when some trips are not known yet.
+const rsTripsText = () => num(rsh.colTot) ? (rsSum() ? `${rsTrips()} of 5 trips typed · total typed` : "Total only · trips can be added later") : rsSum() ? `${rsTrips()} of 5 trips` : "Type each trip, or just the total";
 function rsColNote() {
-  const sum = rsSum(), told = num(rsh.colTot);
-  return sum && told && sum !== told ? `<span class="rswarnt">The trips add up to ${rs(sum)}; ${rs(told)} was entered as the total (${sum > told ? "+" : "−"}${rs(Math.abs(sum - told))}).</span>` : "";
+  const sum = rsSum(), told = num(rsh.colTot), d = told - sum;
+  return !told || !sum || !d ? "" : d > 0 ? `<span class="rswarnt">${rs(d)} of the total not split into trips yet (trips add up to ${rs(sum)}).</span>` : `<span class="rswarnt">The trips add up to ${rs(sum)}, ${rs(-d)} more than the total.</span>`;
 }
 // Nothing is required: the conductor sends whatever he knows and the office fills in the rest.
 function rsMissing() { return []; }
@@ -7264,8 +7267,9 @@ function rsRender(top) {
 // Light refresh while typing, so the box being typed in keeps its focus.
 function rsRefresh() {
   const tot = $("rsw").querySelector('[data-k="coltot"]');
-  if (tot) { const sum = rsSum(); tot.readOnly = !rsh.edit || !!sum; tot.closest(".bwin")?.classList.toggle("rssum", !!sum); if (document.activeElement !== tot) tot.value = sum ? String(sum) : rsh.colTot; $("rsTrips").textContent = rsTripsText(); $("rsColNote").innerHTML = rsColNote(); }
+  if (tot) { tot.placeholder = rsSum() || 0; $("rsTrips").textContent = rsTripsText(); $("rsColNote").innerHTML = rsColNote(); }
   if ($("rsMoney")) $("rsMoney").innerHTML = rsMoneyHtml();
+  if ($("rsOthAmt")) { $("rsOthAmt").value = rs(rsUnsplit()).slice(1); $("rsOthNote").textContent = num(rsh.expTot) ? "The rest of the total expenses" : "Type the Total expenses in section 6"; }
   if ($("rsRun")) { const h = rsKmHtml(); if ($("rsRun").innerHTML !== h) $("rsRun").innerHTML = h; }
   // The crew rows show the system padi as the collection changes; redraw them unless a padi box is being typed in.
   const ck = JSON.stringify([rsSys(), rsh.crew]);
@@ -7279,7 +7283,7 @@ function rsInput(e) {
   const k = e.target.dataset.k; if (!k || !rsh?.edit) return;
   const v = e.target.value;
   if (k.startsWith("s:")) rsh.s[+k.slice(2)] = v;
-  else if (k === "coltot") { if (rsSum()) return; rsh.colTot = v; }
+  else if (k === "coltot") rsh.colTot = v;
   else if (k === "exptot") rsh.expTot = v;
   else if (k.startsWith("padi:")) { const r = k.slice(5); rsh.padi[r] = v; rsh.padiEd[r] = true; }
   else if (k.startsWith("crew:")) { rsh.crew[k.slice(5)] = v; rsRefresh(); if ($("rsCrew")) $("rsCrew").innerHTML = rsCrewHtml(); }
@@ -7690,7 +7694,7 @@ function renderHub() {
 }
 
 /* ---------- route bus daily entry ---------- */
-// dbColTold: the total typed in the Total box (kept when the singles come later); dbPayTouched: pay typed by hand, not from the padi rules.
+// dbColTold: the total typed in the Total box (some singles may not be known); dbPayTouched: pay typed by hand, not from the padi rules.
 let dbColTold = "", dbPayTouched = {};
 let dbBus = "", dbDirty = false, dbFuelTouched = false, dbFilledKey = "", dbPending = null;
 const busWin = id => winTrips().filter(t => t.vehicleId === id);
@@ -7743,6 +7747,7 @@ function renderDbExp() {
   $("dbXOther").checked = !list; $("dbXList").checked = list; $("dbXList").disabled = !canTrips || !has; $("dbXListL").textContent = start && has ? `${placeName(start)} list` : "Route list";
   $("dbExpHint").textContent = list ? `· default from ${placeName(start)}` : "· what the Total expense doesn't cover goes under Other";
   $("dbChips").innerHTML = (dbExp.length || !list ? "" : `<p class="hint" style="margin:0">No route expenses on this entry.</p>`) +
+    (list ? "" : `<div class="dbxrow"><span class="nm">Other expenses<small style="color:var(--muted);font-weight:500" id="dbOthNote"></small></span><input class="n" id="dbOthAmt" readonly tabindex="-1" aria-label="Other expenses (₹)"><span></span></div>`) +
     dbExp.map((x, i) => { const m = !x.own && dbExpDef?.find(y => key(y.name) === key(x.name)), diff = m && num(x.amt) !== num(m.amt);
       return `<div class="dbxrow">${x.own ? `<span><input data-xn="${i}" maxlength="40" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}>${dbExpDef ? "<small>Added</small>" : ""}</span>`
         : `<span class="nm">${esc(x.name)}${diff ? `<small>Default ${rs(m.amt)}</small>` : !m && dbExpDef ? "<small>Added</small>" : ""}</span>`}` +
@@ -7801,8 +7806,8 @@ function dbCalc() {
   const rate = num($("dbRate").value), lit = num($("dbLitres").value);
   if (!dbFuelTouched) $("dbFuel").value = rate && lit ? Math.round(rate * lit) : "";
   const sg = [1, 2, 3, 4, 5].filter(i => num($("dbS" + i).value) > 0).length;
-  const sum = [1, 2, 3, 4, 5].reduce((a, i) => a + num($("dbS" + i).value), 0), col = sum || num(dbColTold);
-  const tot = $("dbColTot"); tot.readOnly = !!sum || !canTrips; if (document.activeElement !== tot) tot.value = sum ? sum : dbColTold;
+  const sum = [1, 2, 3, 4, 5].reduce((a, i) => a + num($("dbS" + i).value), 0), col = num(dbColTold) || sum;
+  const tot = $("dbColTot"); tot.placeholder = sum || ""; if (document.activeElement !== tot) tot.value = dbColTold;
   const sys = dbPadiSys(col, !!$("dbChecker").value);
   DB_PAY.forEach(([id, k]) => { if (!dbPayTouched[id]) $(id).value = col ? sys[k] || "" : ""; });
   $("dbPadiHint").textContent = DB_PAY.some(([id]) => dbPayTouched[id]) ? "Pay changed by hand. Clear a box to use the padi rules." : col ? "Pay worked out from the padi rules." : "Pay is worked out from the collection.";
@@ -7810,14 +7815,15 @@ function dbCalc() {
   if ($("dbExpTot")) $("dbExpTot").textContent = rs(other);
   const parts = num($("dbFuel").value) + num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value) + other, told = num($("dbExpAll").value);
   const unsplit = Math.max(0, told - parts), exp = parts + unsplit, bal = col - exp;
+  if ($("dbOthAmt")) { $("dbOthAmt").value = unsplit || 0; $("dbOthNote").textContent = told ? "The rest of the Total expense" : "Type the Total expense below"; }
   $("dbExpAllHint").textContent = !told ? "Only if just the day's total is known" : unsplit ? `${rs(unsplit)} sits as Other, not split` : parts > told ? `Entered expenses add up to ${rs(parts)}, more than this` : "Fully split ✓";
   $("dbExpAllHint").className = told && (unsplit || parts > told) ? "hint warn" : "hint";
   const prev = prevOdoFor(dbBus, opDate), odo = num($("dbOdo").value), km = odo && prev != null ? odo - prev : null;
   $("dbOdoHint").textContent = prev != null ? `Last reading ${nf(prev)}${km > 0 ? ` · ${nf(km)} km today` : ""}` : "No earlier reading";
-  const diff = sum && num(dbColTold) ? sum - num(dbColTold) : 0;
-  $("dbSg").textContent = diff ? `Total entered was ${rs(num(dbColTold))} (${diff > 0 ? "+" : "−"}${rs(Math.abs(diff))})` : !sum && col ? "Total only · singles later" : `${sg} of ${SINGLES_PER_DAY} singles`;
-  $("dbSg").className = diff || (sum && sg < SINGLES_PER_DAY) || (!sum && col) ? "warn" : "";
-  $("dbCalc").innerHTML = `<span class="${sg < SINGLES_PER_DAY ? "warn" : ""}">${!sum && col ? "Total only" : `${sg} of ${SINGLES_PER_DAY} singles`}</span><span>Collection <b>${rs(col)}</b></span><span>Expense <b>${rs(exp)}</b></span><span>Balance <b class="${bal < 0 ? "neg" : "pos"}">${rs(bal)}</b></span>${km > 0 ? `<span>${nf(km)} km${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}</span>` : ""}`;
+  const diff = num(dbColTold) ? num(dbColTold) - sum : 0;
+  $("dbSg").textContent = !diff ? `${sg} of ${SINGLES_PER_DAY} singles` : diff < 0 ? `Singles are ${rs(-diff)} more than the total` : sum ? `${rs(diff)} not split into singles` : "Total only · singles later";
+  $("dbSg").className = diff || sg < SINGLES_PER_DAY ? "warn" : "";
+  $("dbCalc").innerHTML = `<span class="${sg < SINGLES_PER_DAY || diff ? "warn" : ""}">${diff > 0 ? (sum ? `${sg} singles + ${rs(diff)} not split` : "Total only") : `${sg} of ${SINGLES_PER_DAY} singles`}</span><span>Collection <b>${rs(col)}</b></span><span>Expense <b>${rs(exp)}</b></span><span>Balance <b class="${bal < 0 ? "neg" : "pos"}">${rs(bal)}</b></span>${km > 0 ? `<span>${nf(km)} km${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}</span>` : ""}`;
 }
 function dbGo(target) {
   if (dbDirty && canTrips) { dbPending = target; $("dbDirty").hidden = false; $("dbDirtySave").focus(); return; }
@@ -7863,7 +7869,7 @@ document.getElementsByName("dbExpMode").forEach(r => r.addEventListener("change"
 $("dbForm").addEventListener("input", e => { dbDirty = true; $("dbSaved").textContent = "";
   const id = e.target.id;
   if (id === "dbFuel") dbFuelTouched = $("dbFuel").value !== "";
-  if (id === "dbColTot" && !e.target.readOnly) dbColTold = e.target.value;
+  if (id === "dbColTot") dbColTold = e.target.value;
   if (DB_PAY.some(([p]) => p === id)) dbPayTouched[id] = e.target.value !== "";
   dbCalc(); });
 $("dbForm").addEventListener("change", e => { if (e.target.name === "dbMode") { dbDirty = true; syncDbMode(); dbCalc(); } });
