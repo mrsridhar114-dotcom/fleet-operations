@@ -677,6 +677,7 @@ a.btn { text-decoration: none; display: inline-block; }
 .dbtot span { font-size: 11px; color: var(--muted); font-weight: 600; }
 .dbtot span.warn { color: var(--warn); }
 .dbsec { font-size: 12px; font-weight: 600; margin: 0 0 6px; }
+.dbxhead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; } .dbxhead .seg span { padding: 4px 10px; font-size: 12px; }
 .dbx { display: grid; gap: 6px; margin-bottom: 12px; max-width: 560px; }
 .dbxrow { display: grid; grid-template-columns: minmax(0, 1fr) 120px 32px; gap: 6px; align-items: center; }
 .dbxrow input { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; min-width: 0; box-sizing: border-box; }
@@ -1444,6 +1445,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rssel:disabled { background-image: none; padding-right: 0; opacity: 1; color: var(--ink); }
 .rslink { min-height: 36px; font-size: 16px; } .rsq { margin: 10px 0 6px; font: 700 15px var(--body); color: var(--ink); }
 .rsname { width: 100%; box-sizing: border-box; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 16px var(--body); padding: 0 10px; }
+.rsxmode { margin: 4px 0 8px; } .rsxmode button { font-size: 15px; }
 .rsreset { border: 0; background: none; color: var(--accent); font: 600 14px var(--body); text-decoration: underline; padding: 6px 0; cursor: pointer; }
 .rsmiss { margin: 6px 0 0; font-size: 13px; color: var(--warn); text-align: center; }
 .bhappr.rswarn { background: var(--warn-soft); }
@@ -1907,7 +1909,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                 <div class="field"><label for="dbPayK">Checker pay (₹)</label><input id="dbPayK" type="number" inputmode="numeric" min="0"></div>
                 <p class="hint" id="dbPadiHint" style="align-self:center;margin:0"></p>
               </div>
-              <p class="dbsec">Route expenses <span class="hint" style="font-weight:400" id="dbExpHint"></span></p>
+              <div class="dbxhead"><p class="dbsec" style="margin:0">Route expenses <span class="hint" style="font-weight:400" id="dbExpHint"></span></p>
+                <div class="seg" role="radiogroup" aria-label="Route expenses"><label><input type="radio" name="dbExpMode" id="dbXOther" value="other"><span>Rest as Other</span></label><label><input type="radio" name="dbExpMode" id="dbXList" value="list"><span id="dbXListL">Route list</span></label></div></div>
               <div class="dbx" id="dbChips"></div>
               <div class="dbgrid c4"><div class="field"><label for="dbExpAll">Total expense (₹)</label><input id="dbExpAll" type="number" inputmode="numeric" min="0"><span class="hint" id="dbExpAllHint">Only if just the day's total is known</span></div></div>
             </div>
@@ -7122,9 +7125,10 @@ function rsLoad() {
     Object.assign(rsh, { notRun: false, idle: "", start, s: ["", "", "", "", ""], colTot: "", expTot: "",
       crew: { driver: crewValue("driver", last), conductor: me ? "id:" + me.id : crewValue("conductor", last), checker: crewValue("checker", last) },
       padi: { driver: "", conductor: "", checker: "" }, padiEd: { driver: false, conductor: false, checker: false },
-      dsl: { litres: "", amount: "", pay: "Fuel card", place: rsOpposite(start, ends) }, exp: rsList(start), expDef: rsDefOf(rsList(start)), startKm: prev != null ? String(prev) : "", endKm: "", remarks: "", status: "draft" });
+      dsl: { litres: "", amount: "", pay: "Fuel card", place: rsOpposite(start, ends) }, exp: [], expDef: null, startKm: prev != null ? String(prev) : "", endKm: "", remarks: "", status: "draft" });
   }
-  if (!rsh.exp.length && !rsh.expDef?.length && rsh.status === "draft" && rsh.start) { rsh.exp = rsList(rsh.start); rsh.expDef = rsDefOf(rsh.exp); }
+  // Route expenses: "other" (default) puts whatever the total expenses don't cover under Other; "list" uses the starting place's list.
+  rsh.expMode = rsh.expDef ? "list" : "other";
   rsh.ends = ends; rsh.ready = true;
 }
 function rsSel(k) {
@@ -7171,7 +7175,7 @@ function rsPast() {
 function rsMoneyHtml() {
   const c = rsCol(), e = rsExpTot(), b = c - e;
   return `<div class="tpmoney"><span class="bwm"><span>Total collection</span><b>${rs(c)}</b></span>` +
-    `<span class="bwm"><span>Total expenses<br><small class="rshow">Diesel ${rs(num(rsh.dsl.amount))} · Padi ${rs(rsPadiTot())} · Route ${rs(rsOther())}${rsUnsplit() ? ` · Other, not split ${rs(rsUnsplit())}` : ""}</small>${num(rsh.expTot) && rsParts() > num(rsh.expTot) ? `<small class="rswarnt">The expenses entered add up to ${rs(rsParts())}, more than the total ${rs(num(rsh.expTot))}.</small>` : ""}</span><b>${rs(e)}</b></span>` +
+    `<span class="bwm"><span>Total expenses<br><small class="rshow">Diesel ${rs(num(rsh.dsl.amount))} · Padi ${rs(rsPadiTot())}${rsOther() ? ` · Route ${rs(rsOther())}` : ""}${rsUnsplit() ? ` · Other, not split ${rs(rsUnsplit())}` : ""}</small>${num(rsh.expTot) && rsParts() > num(rsh.expTot) ? `<small class="rswarnt">The expenses entered add up to ${rs(rsParts())}, more than the total ${rs(num(rsh.expTot))}.</small>` : ""}</span><b>${rs(e)}</b></span>` +
     `<span class="bwm net${b < 0 ? " neg" : ""}"><span><b style="font-size:19px">Balance</b></span><b>${b < 0 ? "− " : ""}${rs(Math.abs(b))}</b></span></div>`;
 }
 function rsPageHtml() {
@@ -7217,8 +7221,12 @@ function rsPageHtml() {
 function rsExpHtml() {
   const ro = rsh.edit ? "" : " readonly", key = n => String(n || "").trim().toLowerCase();
   const changed = rsh.edit && rsh.start && rsExpChanges({ exp: rsh.exp, expDef: rsh.expDef }).length;
-  const has = rsList(rsh.start).length;
-  return (rsh.exp.length ? (rsh.edit ? `<p class="bwnote" style="margin:0 0 4px">Change an amount, remove an expense not spent today, or add one. The office will see the changes.</p>` : "")
+  const has = rsList(rsh.start).length, list = rsh.expMode === "list";
+  const seg = `<div class="bwseg c2 rsxmode"><button type="button" data-rs="exmode" data-v="other" aria-pressed="${!list}"${rsh.edit ? "" : " disabled"}>Rest as Other</button><button type="button" data-rs="exmode" data-v="list" aria-pressed="${list}"${rsh.edit && has ? "" : " disabled"}>${rsh.start ? `${esc(placeName(rsh.start))} list` : "Route list"}</button></div>`;
+  if (!list) return seg + `<p class="bwnote" style="margin:4px 0">${num(rsh.expTot) ? `What the Total expenses (in section 6) don't cover goes under Other: <b>${rs(rsUnsplit())}</b>.` : "Type the Total expenses in section 6; what diesel and padi don't cover goes under Other."}${has ? ` Or use the ${esc(placeName(rsh.start))} list.` : ""}</p>` +
+    rsh.exp.map((x, i) => `<div class="tprow rsex"><span class="tpl"><input class="rsname" type="text" maxlength="40" data-k="en:${i}" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}></span>${rsMoneyIn("ex:" + i, x.amt, x.name || "Expense")}${rsh.edit ? `<button type="button" class="tpbin" data-rs="exdel" data-i="${i}" aria-label="Remove ${esc(x.name || "expense")}">${TW_BIN}</button>` : ""}</div>`).join("") +
+    (rsh.edit ? `<button type="button" class="tpadd" data-rs="exadd">${TW_PLUS} Add expense</button>` : "");
+  return seg + (rsh.exp.length ? (rsh.edit ? `<p class="bwnote" style="margin:0 0 4px">Change an amount, remove an expense not spent today, or add one. The office will see the changes.</p>` : "")
       : `<p class="bwnote" style="margin:0 0 4px">${!rsh.start ? "Choose where the bus started to bring its route expenses." : has ? "No route expenses on this sheet." : `No route expenses for ${esc(placeName(rsh.start))} in the Route expenses master yet.`}</p>`) +
     rsh.exp.map((x, i) => { const m = !x.own && rsh.expDef?.find(y => key(y.name) === key(x.name)), diff = m && num(x.amt) !== num(m.amt);
       return `<div class="tprow rsex">` +
@@ -7289,12 +7297,19 @@ function rsClick(e) {
   if (a === "start") {
     // A new starting place brings its own expense list and diesel place, unless they were already changed.
     const was = rsh.start, def = rsList(was); rsh.start = b.dataset.v;
-    if (JSON.stringify(rsh.exp.map(x => [x.name, x.amt])) === JSON.stringify(def.map(x => [x.name, x.amt]))) { rsh.exp = rsList(rsh.start); rsh.expDef = rsDefOf(rsh.exp); }
+    if (rsh.expMode === "list" && JSON.stringify(rsh.exp.map(x => [x.name, x.amt])) === JSON.stringify(def.map(x => [x.name, x.amt]))) { rsh.exp = rsList(rsh.start); rsh.expDef = rsDefOf(rsh.exp); }
     if (!rsh.dsl.place || rsh.dsl.place === rsOpposite(was, rsh.ends)) rsh.dsl.place = rsOpposite(rsh.start, rsh.ends);
     rsRender(); rsSoon(); return;
   }
   if (a === "padireset") { RS_ROLES.forEach(([k]) => { rsh.padiEd[k] = false; rsh.padi[k] = ""; }); rsRender(); rsSoon(); return; }
   if (a === "exadd") { rsh.exp.push({ name: "", amt: "", own: true }); rsRender(); const ins = $("rsw").querySelectorAll(".rsname"); ins[ins.length - 1]?.focus(); return; }
+  if (a === "exmode") {
+    const v = b.dataset.v; if (v === rsh.expMode) return;
+    rsh.expMode = v;
+    if (v === "list") { rsh.exp = [...rsList(rsh.start), ...rsh.exp.filter(x => x.own)]; rsh.expDef = rsDefOf(rsList(rsh.start)); }
+    else { rsh.exp = rsh.exp.filter(x => x.own); rsh.expDef = null; }
+    rsRender(); rsSoon(); return;
+  }
   if (a === "exreset") { askYesNo(`Bring back the default route expenses of ${placeName(rsh.start)}? Changes made here will be lost.`, { yes: "Bring back" }).then(ok => { if (!ok || !rsh) return; rsh.exp = rsList(rsh.start); rsh.expDef = rsDefOf(rsh.exp); rsRender(); rsSoon(); }); return; }
   if (a === "exdel") { rsh.exp.splice(+b.dataset.i, 1); rsRender(); rsSoon(); return; }
   if (a === "send") { rsSave("submitted"); return; }
@@ -7714,9 +7729,10 @@ function dbExpFrom(t) {
 function dbExpDefault(start) { dbExp = rsList(start); dbExpDef = rsDefOf(dbExp); }
 function renderDbExp() {
   const ro = canTrips ? "" : " disabled", key = n => String(n || "").trim().toLowerCase(), start = $("dbStart").value.trim();
-  const has = rsList(start).length, changed = dbExpDef && rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length;
-  $("dbExpHint").textContent = start && has ? `· default from ${placeName(start)}` : "";
-  $("dbChips").innerHTML = (dbExp.length ? "" : `<p class="hint" style="margin:0">${!start ? "Enter the starting point to bring its route expenses." : has ? "No route expenses on this entry." : `No route expenses for ${esc(placeName(start))} in the Route expenses master yet.`}</p>`) +
+  const has = rsList(start).length, changed = dbExpDef && rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length, list = !!dbExpDef;
+  $("dbXOther").checked = !list; $("dbXList").checked = list; $("dbXList").disabled = !canTrips || !has; $("dbXListL").textContent = start && has ? `${placeName(start)} list` : "Route list";
+  $("dbExpHint").textContent = list ? `· default from ${placeName(start)}` : "· what the Total expense doesn't cover goes under Other";
+  $("dbChips").innerHTML = (dbExp.length || !list ? "" : `<p class="hint" style="margin:0">No route expenses on this entry.</p>`) +
     dbExp.map((x, i) => { const m = !x.own && dbExpDef?.find(y => key(y.name) === key(x.name)), diff = m && num(x.amt) !== num(m.amt);
       return `<div class="dbxrow">${x.own ? `<span><input data-xn="${i}" maxlength="40" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}>${dbExpDef ? "<small>Added</small>" : ""}</span>`
         : `<span class="nm">${esc(x.name)}${diff ? `<small>Default ${rs(m.amt)}</small>` : !m && dbExpDef ? "<small>Added</small>" : ""}</span>`}` +
@@ -7748,7 +7764,7 @@ function fillDayForm() {
   dbPayTouched = Object.fromEntries(DB_PAY.map(([id, k]) => [id, !!t && t[DB_FIELDS[id]] != null && num(t[DB_FIELDS[id]]) !== sys[k]]));
   const planned = plannedFor(dbBus, opDate);
   $("dbStart").value = t ? (t.startFixed ? t.start : planned || t.start || "") : planned;
-  const was = dbExpFrom(t); if (was) { dbExp = was.list; dbExpDef = was.def; } else dbExpDefault($("dbStart").value); renderDbExp();
+  const was = dbExpFrom(t); if (was) { dbExp = was.list; dbExpDef = was.def; } else { dbExp = []; dbExpDef = null; } renderDbExp();
   $("dbNote").textContent = t ? `Saved entry. Change anything and save to update it.` : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
   dbFuelTouched = !!t && num(t.fuelCost) !== Math.round(num(t.dieselRate) * num(t.litres));
   $("dbForm").querySelectorAll("input, select").forEach(el => el.disabled = !canTrips);
@@ -7826,8 +7842,14 @@ $("dbChips").addEventListener("input", e => {
   if (el.dataset.xa != null) dbExp[+el.dataset.xa].amt = el.value;
   else if (el.dataset.xn != null) dbExp[+el.dataset.xn].name = el.value;
 });
-// A new starting point brings its own list, unless the list was already changed.
-$("dbStart").addEventListener("change", () => { if (!dbExpDef || !rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length) { dbExpDefault($("dbStart").value); renderDbExp(); dbCalc(); } });
+// A new starting point brings its own list (when the list is used), unless the list was already changed.
+$("dbStart").addEventListener("change", () => { if (dbExpDef && !rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length) dbExpDefault($("dbStart").value); renderDbExp(); dbCalc(); });
+document.getElementsByName("dbExpMode").forEach(r => r.addEventListener("change", () => {
+  if (!canTrips) return;
+  if ($("dbXList").checked) { const own = dbExp.filter(x => x.own); dbExpDefault($("dbStart").value); dbExp.push(...own); }
+  else { dbExp = dbExp.filter(x => x.own); dbExpDef = null; }
+  dbDirty = true; renderDbExp(); dbCalc();
+}));
 $("dbForm").addEventListener("input", e => { dbDirty = true; $("dbSaved").textContent = "";
   const id = e.target.id;
   if (id === "dbFuel") dbFuelTouched = $("dbFuel").value !== "";
