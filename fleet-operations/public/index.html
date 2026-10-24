@@ -866,8 +866,18 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 @media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } .uptpl { flex-direction: column; align-items: stretch; } }
 /* Route expenses and padi calculation */
 .rxlist { display: grid; grid-template-columns: minmax(0, 640px); gap: 14px; align-items: start; }
-.rxtbl td.c { width: 1%; text-align: right; } .rxtbl .btn { padding: 5px 14px; }
-@media (max-width: 700px) { table.rxtbl th, table.rxtbl td { white-space: normal; } table.rxtbl th:nth-child(4), table.rxtbl td:nth-child(4) { display: none; } #rxTblWrap { padding: 10px; } }
+table.rxtbl { table-layout: fixed; } table.rxtbl td { padding-top: 9px; padding-bottom: 9px; }
+table.rxtbl th:nth-child(1) { width: 30%; } table.rxtbl th:nth-child(2) { width: 14%; } table.rxtbl th:nth-child(3) { width: 15%; } table.rxtbl th:nth-child(4) { width: 20%; } table.rxtbl th:nth-child(5) { width: 21%; }
+table.rxtbl .m { text-align: center; font-variant-numeric: tabular-nums; } table.rxtbl th.n, table.rxtbl td.n { padding-right: 18px; }
+table.rxtbl td.nm, table.rxtbl td.lc { overflow: hidden; text-overflow: ellipsis; } table.rxtbl td.lc span { display: block; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+table.rxtbl td.c { text-align: right; } .rxacts { display: inline-flex; gap: 6px; } .rxacts .btn { padding: 5px 12px; gap: 5px; } .rxacts svg { width: 15px; height: 15px; margin-right: 5px; vertical-align: -2px; }
+.askcard.rxhcard { width: min(640px, 100%); min-width: 0; box-sizing: border-box; max-height: min(80vh, 640px); display: flex; flex-direction: column; padding: 16px 18px; }
+.rxhcard header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; } .rxhcard h2 { margin: 0; font-size: 18px; } .rxhcard header > div { flex: 1; min-width: 0; }
+.rxhbody { overflow: auto; } .rxhbody table.ctable td { white-space: normal; vertical-align: top; } .rxhbody table.ctable td.w { white-space: nowrap; color: var(--muted); } .rxhbody .hby { display: none; }
+.rxhcard button.icon { border: 1.5px solid color-mix(in srgb, var(--danger) 60%, var(--line)); color: var(--danger); background: var(--surface); font-weight: 700; font-size: 14px; padding: 7px 12px; border-radius: 6px; cursor: pointer; }
+@media (max-width: 700px) { table.rxtbl th, table.rxtbl td { white-space: normal; } table.rxtbl th:nth-child(1) { width: 36%; } table.rxtbl th:nth-child(2) { width: 22%; } table.rxtbl th:nth-child(3) { width: 24%; } table.rxtbl th:nth-child(5) { width: 18%; }
+  table.rxtbl th:nth-child(4), table.rxtbl td:nth-child(4) { display: none; } table.rxtbl th.n, table.rxtbl td.n { padding-right: 8px; } #rxTblWrap { padding: 10px; }
+  .rxacts { flex-direction: column; align-items: stretch; } .rxacts .btn { justify-content: center; padding: 5px 6px; } .rxacts .btn > span { display: none; } .rxacts svg { margin: 0; } .rxhbody table.ctable td.w { white-space: normal; width: 36%; } .rxhbody th:nth-child(3), .rxhbody td.hb { display: none; } .rxhbody .hby { display: block; font-size: 12px; color: var(--muted); } .askcard.rxhcard { padding: 14px 12px; } }
 .rxcard { display: flex; flex-direction: column; gap: 8px; }
 .rxhead { display: flex; align-items: center; gap: 8px; } .rxhead h2 { margin: 0; flex: 1; font-size: 18px; } .rxhead .icon { font-size: 13px; }
 .rxrow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 32px; gap: 6px; align-items: center; }
@@ -2957,6 +2967,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   </footer>
 </aside>
 <!-- Yes / No confirmation used by the booking window (delete, cancel, close trip). -->
+<div class="askbox" id="rxHistBox" role="dialog" aria-modal="true" aria-labelledby="rxHistTitle" hidden>
+  <div class="askcard rxhcard"><header><div><h2 id="rxHistTitle">Change history</h2><div class="sub" id="rxHistSub"></div></div><button class="icon" type="button" id="rxHistClose" aria-label="Close">Close ✕</button></header><div class="rxhbody" id="rxHistBody"></div></div>
+</div>
 <div class="askbox" id="askBox" role="alertdialog" aria-modal="true" aria-labelledby="askMsg" hidden>
   <div class="askcard"><p id="askMsg"></p><div class="askbtns"><button class="btn" type="button" id="askNo">No</button><button class="btn primary" type="button" id="askYes">Yes</button></div></div>
 </div>
@@ -5692,7 +5705,7 @@ async function opsDelete(c, id) {
    Both are edited by whoever may edit route trip sheets. */
 const placeName = s => String(s || "").trim().replace(/\s+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 const rxStamp = () => ({ updatedOn: todayISO(), updatedByName: whoAmI() });
-let rxAdding = false, rxPress = false, rxOpen = "";  // rxOpen: the starting place being edited or viewed; none shows the table
+let rxAdding = false, rxPress = false, rxOpen = "", rxSnap = null;  // rxOpen: the starting place being edited or viewed; none shows the table
 function rxKnownPlaces() {
   const set = new Set();
   [...yearsAll(), ...allTripYears].forEach(y => { if (y.a) set.add(placeName(y.a)); if (y.b) set.add(placeName(y.b)); });
@@ -5707,8 +5720,8 @@ function renderRxp() {
   $("rxTblWrap").hidden = rxAdding || !!rxOpen; $("rxList").hidden = !rxOpen;
   $("rxPlaces").innerHTML = rxKnownPlaces().map(p => `<option value="${esc(p)}">`).join("");
   const tot = x => (x.items || []).reduce((a, i) => a + num(i.amount), 0);
-  $("rxTbl").innerHTML = list.length ? `<thead><tr><th>Starting place</th><th class="n">No. of expenses</th><th class="n">Expenses total</th><th>Last changed</th><th></th></tr></thead><tbody>` +
-    list.map(x => `<tr><td class="nm">${esc(x.place)}</td><td class="n">${(x.items || []).length}</td><td class="n">${rs(tot(x))}</td><td>${x.updatedOn ? `${fmtDate(x.updatedOn)}${x.updatedByName ? ` · ${esc(x.updatedByName)}` : ""}` : "—"}</td><td class="c"><button class="btn" type="button" data-rxo="${x.id}">${can ? "Edit" : "View"}</button></td></tr>`).join("") + `</tbody>`
+  $("rxTbl").innerHTML = list.length ? `<thead><tr><th>Starting place</th><th class="m">No. of expenses</th><th class="n">Expenses total</th><th>Last changed</th><th></th></tr></thead><tbody>` +
+    list.map(x => `<tr><td class="nm">${esc(x.place)}</td><td class="m">${(x.items || []).length}</td><td class="n">${rs(tot(x))}</td><td class="lc">${x.updatedOn ? `${fmtDate(x.updatedOn)}${x.updatedByName ? `<span>${esc(x.updatedByName)}</span>` : ""}` : "—"}</td><td class="c"><span class="rxacts"><button class="btn" type="button" data-rxh="${x.id}" title="Change history">${HIST_SVG}<span>History</span></button><button class="btn" type="button" data-rxo="${x.id}">${can ? "Edit" : "View"}</button></span></td></tr>`).join("") + `</tbody>`
     : `<tbody><tr><td class="sub" style="white-space:normal">No starting places yet.${can ? " Use + Add new expense to set up the first one." : ""}</td></tr></tbody>`;
   if (!rxOpen || document.activeElement?.closest?.("#rxList") || rxPress) return;  // don't redraw under someone typing or tapping
   // A new expense typed but not yet added stays in its boxes when the list is redrawn.
@@ -5720,12 +5733,14 @@ function renderRxp() {
         : `<p class="sub" style="margin:0">No expenses yet.${can ? " Add the first one below." : ""}</p>`) +
       (can ? `<div class="rxrow"><input data-new="name" maxlength="60" placeholder="New expense" aria-label="New expense name"><input class="n" data-new="amount" type="number" inputmode="numeric" min="0" placeholder="₹" aria-label="New expense amount"><button class="rxdel" type="button" data-rxa="add" aria-label="Add expense" style="color:var(--accent)">＋</button></div><span class="err" data-err></span>` : "") +
       `<div class="rxtot"><span>Total for a day</span><span>${rs(tot(x))}</span></div>${x.updatedOn ? `<span class="rxsaved">Last changed ${fmtDate(x.updatedOn)}${x.updatedByName ? ` by ${esc(x.updatedByName)}` : ""}</span>` : ""}` +
-      `<div class="rxbtns" style="justify-content:flex-end"><button class="btn primary" type="button" data-rxa="back">${can ? "Done" : "Back to list"}</button></div></section>`;
+      `<div class="rxbtns" style="justify-content:flex-end">${can ? `<button class="btn" type="button" data-rxa="cancel">Cancel</button>` : ""}<button class="btn primary" type="button" data-rxa="back">${can ? "Done" : "Back to list"}</button></div></section>`;
   }).join("");
   Object.entries(draft).forEach(([id, [n, a]]) => { const c = $("rxList").querySelector(`[data-rx="${id}"]`); if (!c?.querySelector("[data-new]")) return; c.querySelector('[data-new="name"]').value = n; c.querySelector('[data-new="amount"]').value = a; });
 }
-async function rxSave(doc, msg) {
-  try { await opsSave("routeExpenses", { ...doc, ...rxStamp() }); toast(msg); return true; }
+// Each starting place keeps its own change history (log), newest last, the last 300 changes.
+async function rxSave(doc, msg, what) {
+  const log = [...(doc.log || []), ...[].concat(what || []).map(w => ({ at: new Date().toISOString(), by: whoAmI(), what: w }))].slice(-300);
+  try { await opsSave("routeExpenses", { ...doc, log, ...rxStamp() }); toast(msg); return true; }
   catch { toast("Couldn't save. Check your connection and try again."); return false; }
 }
 $("rxAdd").onclick = () => { rxAdding = true; $("rxNewErr").textContent = ""; $("rxNewPlace").value = ""; renderRxp(); $("rxNewPlace").focus(); };
@@ -5735,14 +5750,34 @@ $("rxNewSave").onclick = async () => {
   const place = placeName($("rxNewPlace").value);
   if (!place) { $("rxNewErr").textContent = "Enter the starting place."; return; }
   const have = ops.routeExpenses.find(x => placeName(x.place).toLowerCase() === place.toLowerCase());
-  if (have) { rxAdding = false; rxOpen = have.id; renderRxp(); $("rxList").querySelector('[data-new="name"]')?.focus(); return; }  // already set up: open it
+  if (have) { rxAdding = false; rxOpenId(have.id); $("rxList").querySelector('[data-new="name"]')?.focus(); return; }  // already set up: open it
   const id = genId("rx");
-  if (await rxSave({ id, place, items: [] }, `${place} added`)) { rxAdding = false; rxOpen = id; renderRxp(); $("rxList").querySelector(`[data-rx="${id}"] [data-new="name"]`)?.focus(); }
+  if (await rxSave({ id, place, items: [] }, `${place} added`, "Starting place added")) { rxAdding = false; rxOpen = id; rxSnap = { id, isNew: true }; renderRxp(); $("rxList").querySelector(`[data-rx="${id}"] [data-new="name"]`)?.focus(); }
 };
-$("rxTbl").addEventListener("click", e => { const b = e.target.closest("[data-rxo]"); if (!b) return; rxOpen = b.dataset.rxo; renderRxp(); scrollTo(0, 0); });
+// Opening a starting place remembers how it was, so Cancel can put it back.
+function rxOpenId(id) { const x = ops.routeExpenses.find(r => r.id === id); if (!x) return; rxOpen = id; rxSnap = { id, place: x.place, items: (x.items || []).map(i => ({ ...i })) }; renderRxp(); scrollTo(0, 0); }
+$("rxTbl").addEventListener("click", e => {
+  const o = e.target.closest("[data-rxo]"); if (o) { rxOpenId(o.dataset.rxo); return; }
+  const h = e.target.closest("[data-rxh]"); if (h) rxHistOpen(h.dataset.rxh);
+});
+// Change history of one starting place.
+function rxHistOpen(id) {
+  const x = ops.routeExpenses.find(r => r.id === id); if (!x) return;
+  const log = [...(x.log || [])].reverse();
+  $("rxHistSub").textContent = x.place;
+  $("rxHistBody").innerHTML = log.length ? `<table class="ctable"><thead><tr><th>When</th><th>Change</th><th>By</th></tr></thead><tbody>` +
+    log.map(l => `<tr><td class="w">${fmtStamp(l.at)}</td><td>${esc(l.what)}<span class="hby">${esc(l.by || "—")}</span></td><td class="hb">${esc(l.by || "—")}</td></tr>`).join("") + `</tbody></table>`
+    : `<p class="sub" style="margin:0">No changes recorded yet. Changes saved from now on will appear here.</p>`;
+  $("rxHistBox").hidden = false; $("rxHistClose").focus();
+}
+const rxHistShut = () => { $("rxHistBox").hidden = true; };
+$("rxHistClose").onclick = rxHistShut;
+$("rxHistBox").addEventListener("click", e => { if (e.target === $("rxHistBox")) rxHistShut(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("rxHistBox").hidden) rxHistShut(); });
 $("rxList").addEventListener("click", async e => {
   const b = e.target.closest("[data-rxa]"); if (!b) return;
-  if (b.dataset.rxa === "back") { rxOpen = ""; document.activeElement?.blur(); renderRxp(); return; }
+  if (b.dataset.rxa === "back") { rxOpen = ""; rxSnap = null; document.activeElement?.blur(); renderRxp(); return; }
+  if (b.dataset.rxa === "cancel") { rxCancel(); return; }
   if (!canTrips) return;
   const card = b.closest("[data-rx]"), x = ops.routeExpenses.find(r => r.id === card.dataset.rx); if (!x) return;
   const a = b.dataset.rxa, items = [...(x.items || [])], errEl = card.querySelector("[data-err]");
@@ -5754,13 +5789,13 @@ $("rxList").addEventListener("click", async e => {
     items.push({ name: nm, amount: Math.round(num(amt)) });
     card.querySelectorAll("[data-new]").forEach(i => i.value = ""); errEl.textContent = "";
     document.activeElement?.blur();
-    const ok = await rxSave({ ...x, items }, `${nm} added to ${x.place}`); renderRxp();
+    const ok = await rxSave({ ...x, items }, `${nm} added to ${x.place}`, `Added ${nm} (${rs(num(amt))})`); renderRxp();
     const box = $("rxList").querySelector(`[data-rx="${x.id}"]`);
     if (!ok && box) { box.querySelector('[data-new="name"]').value = nm; box.querySelector('[data-new="amount"]').value = amt; }
     box?.querySelector('[data-new="name"]')?.focus();
     return;
   }
-  if (a === "rm") { const [gone] = items.splice(+b.dataset.k, 1); document.activeElement?.blur(); if (await rxSave({ ...x, items }, `${gone?.name || "Expense"} removed`)) renderRxp(); return; }
+  if (a === "rm") { const [gone] = items.splice(+b.dataset.k, 1); document.activeElement?.blur(); if (await rxSave({ ...x, items }, `${gone?.name || "Expense"} removed`, `Removed ${gone?.name || "expense"} (${rs(num(gone?.amount))})`)) renderRxp(); return; }
   if (a === "rename") {
     const head = card.querySelector(".rxhead");
     head.innerHTML = `<input data-ren maxlength="60" value="${esc(x.place)}" aria-label="Starting place" style="flex:1;font:inherit;font-size:16px;padding:6px 8px;border:1px solid var(--accent);border-radius:6px"><button class="icon" type="button" data-rxa="rencancel">Cancel</button><button class="btn primary" type="button" data-rxa="rensave" style="padding:6px 12px">Save</button>`;
@@ -5771,11 +5806,11 @@ $("rxList").addEventListener("click", async e => {
     const place = placeName(card.querySelector("[data-ren]").value);
     if (!place) return;
     if (ops.routeExpenses.some(r => r.id !== x.id && placeName(r.place).toLowerCase() === place.toLowerCase())) { toast(`${place} is already in the list.`); return; }
-    document.activeElement?.blur(); if (await rxSave({ ...x, place }, `Renamed to ${place}`)) renderRxp(); return;
+    document.activeElement?.blur(); if (place !== x.place && await rxSave({ ...x, place }, `Renamed to ${place}`, `Starting place renamed from ${x.place} to ${place}`)) renderRxp(); else renderRxp(); return;
   }
   if (a === "delete") {
-    if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "Tap again to delete"; return; }
-    try { await opsDelete("routeExpenses", x.id); toast(`${x.place} deleted`); rxOpen = ""; } catch { toast("Couldn't delete. Try again."); }
+    if (!await askYesNo(`Delete ${x.place} and all its expenses?`, { yes: "Delete", danger: true })) return;
+    try { await opsDelete("routeExpenses", x.id); toast(`${x.place} deleted`); rxOpen = ""; rxSnap = null; } catch { toast("Couldn't delete. Try again."); }
     renderRxp();
   }
 });
@@ -5784,10 +5819,27 @@ $("rxList").addEventListener("change", async e => {
   const el = e.target; if (el.dataset.rxi == null || !canTrips) return;
   const card = el.closest("[data-rx]"), x = ops.routeExpenses.find(r => r.id === card.dataset.rx); if (!x) return;
   const items = (x.items || []).map(i => ({ ...i })), i = items[+el.dataset.rxi]; if (!i) return;
-  if (el.dataset.f === "name") { const nm = el.value.trim().replace(/\s+/g, " "); if (!nm) { el.value = i.name; return; } i.name = nm; }
-  else { if (el.value === "" || num(el.value) < 0) { el.value = i.amount; return; } i.amount = Math.round(num(el.value)); }
-  await rxSave({ ...x, items }, `${x.place}: ${i.name} saved`);
+  let what;
+  if (el.dataset.f === "name") { const nm = el.value.trim().replace(/\s+/g, " "); if (!nm) { el.value = i.name; return; } if (nm === i.name) return; what = `${i.name} renamed to ${nm}`; i.name = nm; }
+  else { if (el.value === "" || num(el.value) < 0) { el.value = i.amount; return; } const v = Math.round(num(el.value)); if (v === num(i.amount)) return; what = `${i.name}: ${rs(num(i.amount))} → ${rs(v)}`; i.amount = v; }
+  await rxSave({ ...x, items }, `${x.place}: ${i.name} saved`, what);
 });
+// Cancel puts the starting place back as it was when it was opened (a new one is removed), then shows the table.
+async function rxCancel() {
+  document.activeElement?.blur();
+  const x = ops.routeExpenses.find(r => r.id === rxOpen), sn = rxSnap?.id === rxOpen ? rxSnap : null;
+  const back = () => { rxOpen = ""; rxSnap = null; renderRxp(); };
+  if (!x || !sn || !canTrips) return back();
+  if (sn.isNew) {
+    if ((x.items || []).length && !await askYesNo(`Cancel adding ${x.place}? Its expenses will be removed.`, { yes: "Yes, remove", no: "Keep it", danger: true })) return;
+    try { await opsDelete("routeExpenses", x.id); toast(`${x.place} not added`); } catch { toast("Couldn't cancel. Try again."); return; }
+    return back();
+  }
+  const same = x.place === sn.place && JSON.stringify((x.items || []).map(i => [i.name, num(i.amount)])) === JSON.stringify(sn.items.map(i => [i.name, num(i.amount)]));
+  if (same) return back();
+  if (!await askYesNo(`Undo the changes made to ${x.place} since you opened it?`, { yes: "Undo changes", no: "Keep editing" })) return;
+  if (await rxSave({ ...x, place: sn.place, items: sn.items }, "Changes undone", "Changes undone with Cancel")) back();
+}
 $("rxList").addEventListener("focusout", () => setTimeout(() => { if (!document.activeElement?.closest?.("#rxList") && view === "trexp") renderRxp(); }, 0));
 // Safari and iPhone don't move focus to a tapped button, so the redraw waits until the tap is over.
 $("rxList").addEventListener("pointerdown", () => { rxPress = true; });
