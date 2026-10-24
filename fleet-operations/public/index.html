@@ -664,6 +664,7 @@ a.btn { text-decoration: none; display: inline-block; }
 .dbhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 12px; }
 .dbhead h2 { font-family: var(--display); font-size: 26px; margin: 0; line-height: 1; }
 .dbnote { font-size: 12px; color: var(--muted); margin: -4px 0 12px; }
+.dbnight { background: var(--warn-soft); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; } .dbnight b { font-weight: 700; } .dbnight .btn { padding: 5px 12px; font-size: 13px; }
 .dbgrid { display: grid; gap: 10px; margin-bottom: 12px; }
 .dbgrid.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .dbgrid.c6 { grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(90px, .9fr); align-items: end; }
@@ -1446,6 +1447,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsreset { border: 0; background: none; color: var(--accent); font: 600 14px var(--body); text-decoration: underline; padding: 6px 0; cursor: pointer; }
 .rsmiss { margin: 6px 0 0; font-size: 13px; color: var(--warn); text-align: center; }
 .bhappr.rswarn { background: var(--warn-soft); }
+.rsnightbtn { height: auto; min-height: 50px; padding: 8px 12px; font-size: 15px; margin: 0 0 10px; border-color: var(--warn); color: var(--warn); background: var(--warn-soft); }
 .rshome { display: flex; flex-direction: column; gap: 12px; } .rsbus { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .rsbus .plate { font-size: 18px; }
 .rsbus select { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); padding: 0 8px; }
 .rstoday { max-width: 520px; } .rstst { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -1871,10 +1873,20 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
               <div><h2 id="dbTitle">Bus</h2><div class="vsub" id="dbSub"></div></div>
               <div class="seg" role="radiogroup" aria-label="Did the bus run">
                 <label><input type="radio" name="dbMode" id="dbModeRan" value="ran"><span>Ran</span></label>
+                <label><input type="radio" name="dbMode" id="dbModeNight" value="night"><span>Totals only</span></label>
                 <label><input type="radio" name="dbMode" id="dbModeIdle" value="idle"><span>Did not run</span></label>
               </div>
             </div>
             <p class="dbnote" id="dbNote"></p>
+            <div class="dbnight" id="dbNightNote" hidden></div>
+            <div id="dbNightFields" hidden>
+              <p class="dbsec">Totals told at night <span class="hint" style="font-weight:400">· the full details can be entered tomorrow</span></p>
+              <div class="dbgrid c4">
+                <div class="field"><label for="dbNCol">Total collection (₹)</label><input id="dbNCol" type="number" inputmode="numeric" min="0"><span class="err" id="e-dbNCol"></span></div>
+                <div class="field"><label for="dbNExp">Total expense (₹)</label><input id="dbNExp" type="number" inputmode="numeric" min="0"><span class="err" id="e-dbNExp"></span></div>
+                <div class="field"><label for="dbNBy">Told by</label><input id="dbNBy" autocomplete="off" maxlength="40" placeholder="e.g. conductor's name"></div>
+              </div>
+            </div>
             <div id="dbIdleFields" hidden>
               <div class="dbgrid c4"><div class="field" style="grid-column:span 2"><label for="dbIdleReason">Why the bus did not run</label><select id="dbIdleReason"></select><span class="err" id="e-dbIdleReason"></span></div></div>
             </div>
@@ -5125,14 +5137,18 @@ const crewName = (kind, t) => {
   return (id && list.find(x => x.id === id)?.name) || t[kind + "Name"] || "";
 };
 const crewKey = (kind, t) => t[kind + "Id"] ? "id:" + t[kind + "Id"] : (t[kind + "Name"] ? "name:" + t[kind + "Name"].toUpperCase() : "");
-const tripCollection = t => num(t.s1) + num(t.s2) + num(t.s3) + num(t.s4) + num(t.s5);
+// The details entered the next day against the totals told at night: [collection diff, expense diff] (0 when they match).
+const nightDiff = t => t?.night && !t.nightOnly ? [tripCollection(t) - num(t.night.col), tripExpense(t) - num(t.night.exp)] : [0, 0];
+const nightDiffText = t => { const [c, e] = nightDiff(t), w = (d, l) => d ? `${l} ${rs(Math.abs(d))} ${d > 0 ? "more" : "less"} than told at night` : ""; return [w(c, "Collection"), w(e, "Expense")].filter(Boolean).join(" · "); };
+// A day with only the night totals (told by phone; details come the next day) counts those totals until the details are in.
+const tripCollection = t => t.nightOnly ? num(t.nightCol) : num(t.s1) + num(t.s2) + num(t.s3) + num(t.s4) + num(t.s5);
 // Full operation is 5 singles a day; a day with fewer singles counts as part of a day (3 singles = 0.6 day).
 const SINGLES_PER_DAY = 5;
-const singlesRun = t => t && !t.notRun ? [1, 2, 3, 4, 5].filter(i => num(t["s" + i]) > 0).length : 0;
+const singlesRun = t => t && !t.notRun ? (t.nightOnly ? SINGLES_PER_DAY : [1, 2, 3, 4, 5].filter(i => num(t["s" + i]) > 0).length) : 0;
 const fmtDays = v => Number.isInteger(v) ? nf(v) : nf(v, 1);
 const utilPct = (singles, days) => days ? Math.round(singles / (days * SINGLES_PER_DAY) * 100) : null;
 const tripPay = t => num(t.driverPay) + num(t.conductorPay) + num(t.checkerPay);
-const tripExpense = t => num(t.fuelCost) + tripPay(t) + num(t.otherExp);
+const tripExpense = t => t.nightOnly ? num(t.nightExp) : num(t.fuelCost) + tripPay(t) + num(t.otherExp);
 // Other expenses are itemised; trips imported before this held one lump sum in otherExp.
 const EXP_CATS = [["toll", "Toll / FASTag"], ["stand", "Bus stand fees"], ["commission", "Commission"], ["cleaning", "Cleaning & washing"],
   ["police", "Police / check post"], ["food", "Food allowance"], ["repairs", "Repairs on route"], ["misc", "Other"]];
@@ -5320,12 +5336,17 @@ function renderTrips() {
       continue;
     }
     const col = tripCollection(t), exp = tripExpense(t), b = col - exp; run += b;
+    if (t.nightOnly) {
+      rows.push(`<tr data-tdate="${date}" tabindex="0" class="${cls}" title="Only the night totals so far. Open to enter the details.">${dateCell}<td>${esc(startShown(t, date))}</td><td>${esc(crewName("driver", t))}</td><td>${esc(crewName("conductor", t))}</td><td>${esc(crewName("checker", t)) || '<span class="sub">—</span>'}</td>` +
+        `<td colspan="12"><span class="pill d30">Night totals only</span> <span class="sub">details to come</span></td><td class="n"><b>${nf(col)}</b></td><td class="n"><span class="sub">—</span></td><td class="n">${nf(exp)}</td><td class="n ${b < 0 ? "neg" : "pos"}">${nf(b)}</td><td class="n">${nf(run)}</td><td colspan="4"></td><td class="rm" title="${esc(t.remarks || "")}">${esc(t.remarks || "")}</td></tr>`);
+      continue;
+    }
     const kmRun = M.kmBy[date] ?? null;
     const cell = v => v ? `<td class="n">${nf(v)}</td>` : `<td class="n"><span class="sub">—</span></td>`;
     const singlesCell = t => { const n = singlesRun(t); return `<td class="n" title="${n} of ${SINGLES_PER_DAY} singles · counts as ${fmtDays(n / SINGLES_PER_DAY)} day">${n < SINGLES_PER_DAY ? `<span class="pill d30" style="padding:0 6px">${n}/${SINGLES_PER_DAY}</span>` : `${n}/${SINGLES_PER_DAY}`}</td>`; };
     const kmL = kmRun && t.litres ? nf(kmRun / t.litres, 2) : "—", epkm = kmRun ? nf(col / kmRun, 2) : "—";
     const planned = plannedStart(date), shown = startShown(t, date), sgl = singlesRun(t);
-    const flags = [sgl < SINGLES_PER_DAY ? `Only ${sgl} of ${SINGLES_PER_DAY} singles run` : "", b < 0 ? `Loss of ₹${nf(-b)} for the day` : ""].filter(Boolean);
+    const flags = [sgl < SINGLES_PER_DAY ? `Only ${sgl} of ${SINGLES_PER_DAY} singles run` : "", b < 0 ? `Loss of ₹${nf(-b)} for the day` : "", nightDiffText(t)].filter(Boolean);
     const hl = (b < 0 ? " loss" : "") + (sgl < SINGLES_PER_DAY ? " short" : "");
     rows.push(`<tr data-tdate="${date}" tabindex="0" class="${cls}${hl}"${flags.length ? ` title="${flags.join(" · ")}"` : ""}>${dateCell}<td${t.startFixed && planned && shown !== planned ? ` title="Changed for this day. The plan was ${esc(planned)}."` : ""}>${esc(shown)}${t.startFixed && planned && shown !== planned ? ' <span class="pill d30" style="padding:0 5px">changed</span>' : ""}</td><td>${esc(crewName("driver", t))}</td><td>${esc(crewName("conductor", t))}</td><td>${esc(crewName("checker", t)) || '<span class="sub">—</span>'}</td>
       <td class="n">${t.dieselRate ? nf(t.dieselRate, 2) : "—"}</td>${cell(t.litres)}${cell(t.fuelCost)}${cell(t.driverPay)}${cell(t.conductorPay)}${cell(t.checkerPay)}
@@ -5368,8 +5389,8 @@ function monthStats(ym) {
   const ranList = list.filter(t => !t.notRun), idle = list.filter(t => t.notRun);
   const tot = ranList.reduce((a, t) => { a.col += tripCollection(t); a.exp += tripExpense(t); a.lit += num(t.litres); a.fuel += num(t.fuelCost);
     a.pd += num(t.driverPay); a.pc += num(t.conductorPay); a.pk += num(t.checkerPay); for (let i = 1; i <= 5; i++) a["s" + i] += num(t["s" + i]); a.other += num(t.otherExp);
-    EXP_CATS.forEach(([k]) => a.cat[k] += num(t["ex_" + k])); a.unItem += unItemised(t); return a; },
-    { col: 0, exp: 0, lit: 0, fuel: 0, pd: 0, pc: 0, pk: 0, s1: 0, s2: 0, s3: 0, s4: 0, s5: 0, other: 0, unItem: 0, cat: Object.fromEntries(EXP_CATS.map(([k]) => [k, 0])) });
+    EXP_CATS.forEach(([k]) => a.cat[k] += num(t["ex_" + k])); a.unItem += unItemised(t); if (t.nightOnly) a.night += num(t.nightExp); return a; },
+    { col: 0, exp: 0, lit: 0, fuel: 0, pd: 0, pc: 0, pk: 0, s1: 0, s2: 0, s3: 0, s4: 0, s5: 0, other: 0, unItem: 0, night: 0, cat: Object.fromEntries(EXP_CATS.map(([k]) => [k, 0])) });
   const singles = ranList.reduce((a, t) => a + singlesRun(t), 0), days = singles / SINGLES_PER_DAY;
   const tripDays = ranList.filter(t => singlesRun(t) > 0).length, shortDays = ranList.filter(t => { const n = singlesRun(t); return n > 0 && n < SINGLES_PER_DAY; }).length;
   const open = openingKm(ym), lastOdo = [...ranList].reverse().find(t => t.odo)?.odo;
@@ -5402,7 +5423,7 @@ function renderExpenseSplit(M) {
   const t = M.tot, total = t.exp;
   if (!total) { $("tExpense").innerHTML = `<tbody><tr><td class="sub" style="padding:14px">No expenses entered this month.</td></tr></tbody>`; return; }
   const heads = [["Diesel", t.fuel], ["Driver pay", t.pd], ["Conductor pay", t.pc], ["Checker pay", t.pk],
-    ...EXP_CATS.map(([k, l]) => [l, t.cat[k]]), ["Other, not itemised", t.unItem]].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+    ...EXP_CATS.map(([k, l]) => [l, t.cat[k]]), ["Other, not itemised", t.unItem], ["Night totals, details to come", t.night]].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
   const max = Math.max(...heads.map(h => h[1]));
   $("tExpense").innerHTML = `<thead><tr><th>Head</th><th class="n">Amount</th><th>Share</th><th class="n">Per km</th><th class="n" title="Per full day (5 singles)">Per day run</th></tr></thead>
     <tbody>${heads.map(([l, v]) => `<tr><td class="nm">${l}</td><td class="n">${nf(v)}</td><td><span class="sharebar" style="width:${Math.max(2, Math.round(v / max * 56))}px"></span><span class="num" style="font-size:12px">${nf(v / total * 100, 1)}%</span></td><td class="n">${M.km ? nf(v / M.km, 2) : "—"}</td><td class="n">${M.days ? nf(v / M.days) : "—"}</td></tr>`).join("")}</tbody>
@@ -6442,7 +6463,7 @@ function autoOnTrip() {
 }
 setInterval(() => { try { autoOnTrip(); } catch {} }, 10 * 60 * 1000);
 function updRemBadge() { try { const n = remDue().filter(x => !x.sent).length; $("remBadge").hidden = !n || !canBookings; $("remBadge").textContent = n; } catch {} }
-function updApprBadge() { updRemBadge(); updTsBadge(); const n = ops.bookings.filter(b => b.status === "pending" || b.tsStatus === "submitted").length + (canTrips ? ops.routeSheets.filter(x => x.status === "submitted").length : 0); $("apprBadge").hidden = !n || !canBookings; $("apprBadge").textContent = n; }
+function updApprBadge() { updRemBadge(); updTsBadge(); const n = ops.bookings.filter(b => b.status === "pending" || b.tsStatus === "submitted").length + (canTrips ? ops.routeSheets.filter(x => x.status === "submitted").length + rsNightWaiting().length : 0); $("apprBadge").hidden = !n || !canBookings; $("apprBadge").textContent = n; }
 function renderApprovals() {
   const pl = id => plateOf(vehicles.find(v => v.id === id));
   const pend = ops.bookings.filter(b => b.status === "pending").sort((a, c) => String(a.submittedOn || "").localeCompare(String(c.submittedOn || "")) || a.from.localeCompare(c.from));
@@ -6454,7 +6475,7 @@ function renderApprovals() {
         <td>${b.rentType === "day" ? "Day rent" : "Empty rent"}</td><td class="n">${nf(num(b.rent))}</td><td class="n">${nf(c.received)}</td><td>${checkPill(bkChecks(b, b.id))}</td><td><button class="btn primary" type="button" data-bk="${b.id}" style="padding:5px 12px;font-size:13px">Review</button></td></tr>`; }).join("") + "</tbody>"
     : `<tbody><tr><td class="sub" style="padding:14px">Nothing waiting. New bookings from the booking planner appear here.</td></tr></tbody>`;
   const tsp = ops.bookings.filter(b => b.tsStatus === "submitted").sort((a, c) => String(a.tsSubmittedOn || "").localeCompare(String(c.tsSubmittedOn || "")) || a.from.localeCompare(c.from));
-  { const w = rsWaiting(); $("apRsTitle").textContent = `Route bus trip sheets waiting${w.length ? ` (${w.length})` : ""}`; $("apRs").innerHTML = rsWaitHtml(); }
+  { const w = rsWaiting(); $("apRsTitle").textContent = `Route bus trip sheets waiting${w.length ? ` (${w.length})` : ""}`; $("apRs").innerHTML = rsWaitHtml() + rsNightListHtml(true); }
   $("apTsTitle").textContent = `Trip sheets waiting for approval${tsp.length ? ` (${tsp.length})` : ""}`;
   $("apTs").innerHTML = tsp.length ? `<thead><tr><th>No.</th><th>Sent on</th><th>Sent by</th><th>Bus</th><th>Dates</th><th>Party</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Km</th><th></th></tr></thead><tbody>` +
     tsp.map(b => { const c = bkCalc(b);
@@ -7091,7 +7112,7 @@ function rsLoad() {
   if (!rsh || rsh.ready || !dayReady()) return;
   let d = rsDoc(rsh.bus, rsh.date); const ends = rsEnds(rsh.bus, rsh.date);
   // A day the office already entered opens with what was entered, so it can be checked or corrected here.
-  const t = !d && winTrips().find(x => x.vehicleId === rsh.bus && x.date === rsh.date);
+  const t = !d && winTrips().find(x => x.vehicleId === rsh.bus && x.date === rsh.date && !x.nightOnly);
   if (t) { const prev = rsPrevKm(rsh.bus, rsh.date), pay = { driver: t.driverPay, conductor: t.conductorPay, checker: t.checkerPay };
     d = { ...t, status: "approved", padi: pay, padiEd: Object.fromEntries(RS_ROLES.map(([k]) => [k, pay[k] != null])), dsl: { litres: t.litres, amount: t.fuelCost, pay: t.dieselPay || "Fuel card", place: t.dieselPlace || "" },
       exp: t.expList || EXP_CATS.filter(([k]) => num(t["ex_" + k])).map(([k, l]) => ({ name: l, amt: num(t["ex_" + k]) })).concat(unItemised(t) ? [{ name: "Other", amt: unItemised(t) }] : []),
@@ -7111,6 +7132,7 @@ function rsLoad() {
       dsl: { litres: "", amount: "", pay: "Fuel card", place: rsOpposite(start, ends) }, exp: rsList(start), expDef: rsDefOf(rsList(start)), startKm: prev != null ? String(prev) : "", endKm: "", remarks: "", status: "draft" });
   }
   if (!rsh.exp.length && !rsh.expDef?.length && rsh.status === "draft" && rsh.start) { rsh.exp = rsList(rsh.start); rsh.expDef = rsDefOf(rsh.exp); }
+  rsh.night = { col: String(d?.night?.col ?? ""), exp: String(d?.night?.exp ?? "") }; rsh.nightOpen = !!d?.night;
   rsh.ends = ends; rsh.ready = true;
 }
 function rsSel(k) {
@@ -7163,7 +7185,7 @@ function rsMoneyHtml() {
 function rsPageHtml() {
   if (!rsh.ready) return `<p class="bwnote" style="padding:20px 0">Loading the last days of this bus…</p>`;
   const d = rsDoc(rsh.bus, rsh.date), ro = rsh.edit ? "" : " readonly", ch = rsh.admin && d ? rsPadiChanged(d) : [];
-  const office = rsh.admin && d && trips.concat(winTrips()).some(t => t.id === rsId(rsh.bus, rsh.date) && !t.fromSheet);
+  const office = rsh.admin && d && trips.concat(winTrips()).some(t => t.id === rsId(rsh.bus, rsh.date) && !t.fromSheet && !t.nightOnly);
   const ends = rsh.ends.length === 2 ? rsh.ends : [];
   return (rsh.status === "rejected" && d?.rejectReason ? `<div class="bhappr"><b>Sent back by the office</b><span>${esc(d.rejectReason)}</span><span class="rshow">Correct it and send again.</span></div>` : "") +
     (!rsh.edit && !rsh.admin && rsh.status !== "draft" ? `<div class="bhlock"><b>${rsh.status === "approved" ? "✓ Approved by the office" : "Sent to the office"}</b><span>${rsh.status === "approved" ? "This day is in the trip sheet." : "Waiting for approval. Ask the office if something needs changing."}</span></div>` : "") +
@@ -7171,6 +7193,8 @@ function rsPageHtml() {
     (rsh.admin && d && rsExpChanges(d).length ? `<div class="bhappr rswarn"><b>⚠ Route expenses changed by the conductor</b>${rsExpChanges(d).map(c => `<span>${esc(c)}</span>`).join("")}</div>` : "") +
     (office ? `<div class="bhappr"><b>The office already entered this day</b><span>Approving puts this sheet in its place.</span></div>` : "") +
     (rsh.edit && !rsh.admin ? `<div class="tptip"><b>Type each amount.</b> It saves by itself. You can finish it later.</div>` : "") +
+    (rsh.admin && d ? rsNightWarn(d) : "") +
+    (rsh.edit && !rsh.admin && !rsh.notRun ? rsNightHtml(d) : "") +
     rsSec("1", "Did the bus run today?", `<div class="bwseg c2"><button type="button" data-rs="ran" aria-pressed="${!rsh.notRun}"${rsh.edit ? "" : " disabled"}>✅ Bus ran</button><button type="button" data-rs="idle" aria-pressed="${rsh.notRun}"${rsh.edit ? "" : " disabled"}>⛔ Did not run</button></div>` +
       (rsh.notRun ? `<p class="rsq">Why did it not run?</p><div class="bwchips">${IDLE_REASONS.map(r => `<button type="button" data-rs="why" data-v="${esc(r)}" aria-pressed="${rsh.idle === r}"${rsh.edit ? "" : " disabled"}>${esc(r)}</button>`).join("")}</div>`
         : ends.length ? `<p class="rsq">Started from</p><div class="bwseg c2">${ends.map(p => `<button type="button" data-rs="start" data-v="${esc(p)}" aria-pressed="${placeName(rsh.start).toLowerCase() === placeName(p).toLowerCase()}"${rsh.edit ? "" : " disabled"}>${esc(p)}</button>`).join("")}</div>`
@@ -7209,6 +7233,45 @@ function rsExpHtml() {
         rsMoneyIn("ex:" + i, x.amt, x.name || "Expense") + (rsh.edit ? `<button type="button" class="tpbin" data-rs="exdel" data-i="${i}" aria-label="Remove ${esc(x.name || "expense")}">${TW_BIN}</button>` : "") + `</div>`; }).join("") +
     (rsh.edit ? `<button type="button" class="tpadd" data-rs="exadd">${TW_PLUS} Add expense</button>` : "") +
     (changed && has ? `<button type="button" class="rsreset" data-rs="exreset">Bring back the default list of ${esc(placeName(rsh.start))}</button>` : "");
+}
+// Tonight's totals: when the full sheet can't be filled at night, the conductor sends just the total collection and
+// expense; the office records them for the day, and the details follow the next day on the same sheet.
+function rsNightHtml(d) {
+  if (!rsh.nightOpen) return `<button type="button" class="tpadd rsnightbtn" data-rs="nightopen">📞 Only the totals now? Send them to the office</button>`;
+  const c = num(rsh.night.col), x = num(rsh.night.exp), sent = d?.night;
+  return rsSec("", "Tonight's totals", `<p class="bwnote" style="margin:0 0 4px">Send just the totals now. Fill the full details below tomorrow.</p>` +
+    `<div class="tprow"><span class="tpl">Total collection</span>${rsMoneyIn("nt:col", rsh.night.col, "Total collection")}</div>` +
+    `<div class="tprow"><span class="tpl">Total expense</span>${rsMoneyIn("nt:exp", rsh.night.exp, "Total expense")}</div>` +
+    `<div class="tpmoney"><span class="bwm net${c - x < 0 ? " neg" : ""}"><span><b style="font-size:18px">Balance</b></span><b id="rsNBal">${c - x < 0 ? "− " : ""}${rs(Math.abs(c - x))}</b></span></div>` +
+    (sent ? `<p class="bwnote" style="margin:6px 0 0;color:var(--ok);font-weight:600" id="rsNSent">✓ Sent ${fmtStamp(sent.at)}: ${rs(num(sent.col))} / ${rs(num(sent.exp))}</p>` : "") +
+    `<button type="button" class="bwgo" data-rs="nightsend" style="width:100%;margin:8px 0 4px">${sent ? "Send the totals again" : "Send totals to office"}</button>`);
+}
+// The office's review: the details against the totals told at night.
+function rsNightWarn(d) {
+  const t = winTrips().find(x => x.id === d.id), n = d.night || (t?.nightOnly ? { col: t.nightCol, exp: t.nightExp } : null);
+  if (!n || d.notRun) return "";
+  const dc = num(d.collection) - num(n.col), de = num(d.expense) - num(n.exp);
+  return !dc && !de ? `<div class="bhappr"><b>✓ Matches the totals told at night</b><span>${rs(num(n.col))} collection · ${rs(num(n.exp))} expense</span></div>`
+    : `<div class="bhappr rswarn"><b>⚠ Different from the totals told at night</b>${dc ? `<span>Collection ${rs(num(d.collection))} · told ${rs(num(n.col))} (${dc > 0 ? "+" : "−"}${rs(Math.abs(dc))})</span>` : ""}${de ? `<span>Expense ${rs(num(d.expense))} · told ${rs(num(n.exp))} (${de > 0 ? "+" : "−"}${rs(Math.abs(de))})</span>` : ""}</div>`;
+}
+async function rsNightSend() {
+  const c = rsh.night.col, x = rsh.night.exp;
+  if (c === "" || x === "") { toast("Enter the total collection and the total expense."); return; }
+  clearTimeout(rsh.timer); rsh.saving = true;
+  const cur = rsDoc(rsh.bus, rsh.date), doc = rsBuild(cur?.status === "rejected" ? "rejected" : cur?.status || "draft");
+  doc.night = { col: Math.round(num(c)), exp: Math.round(num(x)), at: new Date().toISOString(), by: whoAmI() };
+  try { await opsSave("routeSheets", doc); rsh.saved = true; toast("Totals sent to the office"); }
+  catch { toast("Couldn't send. Check your connection and try again."); }
+  finally { if (rsh) { rsh.saving = false; rsRender(); } }
+}
+// The office records the totals a conductor sent as the day's entry until the details come.
+async function rsNightRecord(sheet) {
+  if (!canTrips || !sheet?.night || winTrips().some(t => t.id === sheet.id)) return;
+  const n = sheet.night, t = { id: sheet.id, vehicleId: sheet.vehicleId, date: sheet.date, nightOnly: true, nightCol: num(n.col), nightExp: num(n.exp), nightAt: n.at, ...(n.by ? { nightBy: n.by } : {}) };
+  if (sheet.start) t.start = sheet.start;
+  RS_ROLES.forEach(([k]) => { if (sheet[k + "Id"]) t[k + "Id"] = sheet[k + "Id"]; if (sheet[k + "Name"]) t[k + "Name"] = sheet[k + "Name"]; });
+  t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
+  try { await dayTripSave(t); toast(`${plateOf(vehicles.find(v => v.id === t.vehicleId))} · night totals recorded`); renderOps(); } catch { toast("Couldn't save. Check your connection and try again."); }
 }
 // Nothing is required: the conductor sends whatever he knows and the office fills in the rest.
 function rsMissing() { return []; }
@@ -7249,6 +7312,7 @@ function rsInput(e) {
   else if (k.startsWith("dsl:")) rsh.dsl[k.slice(4)] = v;
   else if (k.startsWith("ex:")) rsh.exp[+k.slice(3)].amt = v;
   else if (k.startsWith("en:")) rsh.exp[+k.slice(3)].name = v;
+  else if (k.startsWith("nt:")) { rsh.night[k.slice(3)] = v; const b = num(rsh.night.col) - num(rsh.night.exp); if ($("rsNBal")) $("rsNBal").textContent = `${b < 0 ? "− " : ""}${rs(Math.abs(b))}`; return; }
   else rsh[k] = v;
   rsRefresh(); rsSoon();
 }
@@ -7270,6 +7334,8 @@ function rsClick(e) {
   if (a === "exadd") { rsh.exp.push({ name: "", amt: "", own: true }); rsRender(); const ins = $("rsw").querySelectorAll(".rsname"); ins[ins.length - 1]?.focus(); return; }
   if (a === "exreset") { askYesNo(`Bring back the default route expenses of ${placeName(rsh.start)}? Changes made here will be lost.`, { yes: "Bring back" }).then(ok => { if (!ok || !rsh) return; rsh.exp = rsList(rsh.start); rsh.expDef = rsDefOf(rsh.exp); rsRender(); rsSoon(); }); return; }
   if (a === "exdel") { rsh.exp.splice(+b.dataset.i, 1); rsRender(); rsSoon(); return; }
+  if (a === "nightopen") { rsh.nightOpen = true; rsRender(); $("rsw").querySelector('[data-k="nt:col"]')?.focus(); return; }
+  if (a === "nightsend") { if (!rsh.saving) rsNightSend(); return; }
   if (a === "send") { rsSave("submitted"); return; }
   if (a === "approve") { rsApprove(); return; }
   if (a === "reject") { rsh.askWhy = true; rsRender(); $("rsWhy")?.focus(); return; }
@@ -7293,7 +7359,7 @@ function rsBuild(status) {
     out.collection = rsCol(); out.expense = rsExpTot(); out.balance = out.collection - out.expense;
   }
   if (rsh.remarks.trim()) out.remarks = rsh.remarks.trim();
-  ["by", "byName", "createdOn", "submittedOn", "submitCount", "rejectReason", "rejectedByName", "rejectedOn"].forEach(k => { if (d[k] != null) out[k] = d[k]; });
+  ["by", "byName", "createdOn", "submittedOn", "submitCount", "rejectReason", "rejectedByName", "rejectedOn", "night"].forEach(k => { if (d[k] != null) out[k] = d[k]; });
   if (!out.by && !rsh.admin) { out.by = myUserId || ""; out.byName = whoAmI(); out.createdOn = todayISO(); }
   out.updatedOn = new Date().toISOString();
   return out;
@@ -7337,6 +7403,8 @@ async function rsApprove() {
     t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
   }
   if (s.remarks) t.remarks = s.remarks;
+  const prevT = winTrips().find(x => x.id === s.id), n = s.night || (prevT?.nightOnly ? { col: prevT.nightCol, exp: prevT.nightExp, by: prevT.nightBy, at: prevT.nightAt } : prevT?.night);
+  if (n && !t.notRun) t.night = Object.fromEntries(Object.entries(n).filter(([, v]) => v != null));
   rsh.saving = true; rsRender();
   try {
     await dayTripSave(t);
@@ -7364,7 +7432,17 @@ function renderRsList() {
     days.map(day => { const x = rsDoc(bus, day), t = winTrips().find(y => y.vehicleId === bus && y.date === day);
       return `<button type="button" class="rsday" data-rsopen="${day}"><span><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${x && !x.notRun ? `<small>Collection ${rs(num(x.collection))} · Balance ${rs(num(x.balance))}</small>` : x?.notRun ? `<small>Did not run</small>` : t ? `<small>Entered by the office</small>` : ""}</span>${x ? st(x) : t ? `<span class="bstage completed">In trip sheet</span>` : st(null)}</button>`; }).join("") +
     `</div></section>` +
-    (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
+    (canTrips ? rsNightListHtml() + `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
+}
+// Night totals sent by conductors whose full sheet hasn't been approved yet.
+const rsNightWaiting = () => ops.routeSheets.filter(x => x.night && x.status !== "approved" && !winTrips().some(t => t.id === x.id));
+function rsNightListHtml(inner) {
+  const w = ops.routeSheets.filter(x => x.night && x.status !== "approved").sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  if (!w.length) return "";
+  return `${inner ? `<h3 class="sec" style="margin:18px 0 0">Night totals from conductors</h3>` : `<section class="panel"><h2 class="sec">Night totals from conductors</h2>`}<div class="tscroll" style="margin-top:10px"><table class="ctable"><thead><tr><th>Day</th><th>Bus</th><th>Sent by</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th></th></tr></thead><tbody>` +
+    w.map(x => { const rec = winTrips().some(t => t.id === x.id);
+      return `<tr><td class="num">${fmtShort(x.date)}</td><td class="num" style="white-space:nowrap">${esc(plateOf(vehicles.find(v => v.id === x.vehicleId)))}</td><td>${esc(x.night.by || x.byName || "")}<br><span class="sub">${fmtStamp(x.night.at)}</span></td><td class="n">${nf(num(x.night.col))}</td><td class="n">${nf(num(x.night.exp))}</td><td class="n">${nf(num(x.night.col) - num(x.night.exp))}</td>` +
+        `<td>${rec ? '<span class="pill ok">Recorded</span>' : `<button class="btn primary" type="button" data-rsnight="${x.id}" style="padding:5px 12px;font-size:13px">Record</button>`}</td></tr>`; }).join("") + `</tbody></table></div><p class="sub" style="margin:8px 0 0">Recording puts the totals in the trip sheet for the day. The full sheet replaces them when it is approved.</p>${inner ? "" : "</section>"}`;
 }
 const rsWaiting = () => ops.routeSheets.filter(x => x.status === "submitted").sort((a, b) => String(a.submittedOn || "").localeCompare(String(b.submittedOn || "")));
 function rsWaitHtml() {
@@ -7377,6 +7455,7 @@ function rsWaitHtml() {
 }
 document.addEventListener("click", e => {
   const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) { rsOpen(rsBus, o.dataset.rsopen); return; }
+  const nr = e.target.closest("[data-rsnight]"); if (nr) { rsNightRecord(ops.routeSheets.find(y => y.id === nr.dataset.rsnight)); return; }
   const a = e.target.closest("[data-rsappr]"); if (a) { const x = ops.routeSheets.find(y => y.id === a.dataset.rsappr); if (x) rsOpen(x.vehicleId, x.date, true); }
 });
 document.addEventListener("change", e => { if (e.target.id === "rsBusSel") { rsBus = e.target.value; renderRsList(); } });
@@ -7626,6 +7705,7 @@ function renderHub() {
       <div class="oc-act"><a class="btn" href="#trips-truck">Open trips</a></div></article>`;
   $("oTodoTitle").textContent = `To do · ${fmtDate(opDate)}`;
   const rows = [];
+  if (ready) on.filter(t => t.nightOnly).forEach(t => { const b = vehicles.find(v => v.id === t.vehicleId); if (b) rows.push(`<div class="orow"><div class="what"><span class="plate psv">${esc(plateOf(b))}</span><span>Route bus</span><span class="sub">night totals ${rs(num(t.nightCol))} / ${rs(num(t.nightExp))}</span><span class="pill d30">Details to come</span></div>${canTrips ? `<button class="btn primary" type="button" data-go="day" data-id="${b.id}">Enter details</button>` : ""}</div>`); });
   if (ready) pend.forEach(b => rows.push(`<div class="orow"><div class="what"><span class="plate ${b.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(b))}</span><span>Route bus</span><span class="pill d30">Not entered</span></div>${canTrips ? `<button class="btn primary" type="button" data-go="day" data-id="${b.id}">Enter now</button>` : `<button class="btn" type="button" data-go="day" data-id="${b.id}">View</button>`}</div>`));
   openR.forEach(r => { const b = vehicles.find(v => v.id === r.vehicleId);
     rows.push(`<div class="orow"><div class="what"><span class="plate psv">${esc(plateOf(b))}</span><span>Round trip ${esc(r.path)}</span><span class="sub">from ${fmtShort(r.from)} · received ${rs(r.received)} of ${rs(r.rent)}</span><span class="pill d30">Not settled</span></div><button class="btn" type="button" data-go="truck" data-id="${r.vehicleId}">Settle</button></div>`); });
@@ -7661,7 +7741,7 @@ function renderDayBook() {
   const done = rb.filter(b => entryOf(b.id)).length;
   $("dbList").innerHTML = `<p class="dbl-h">${ready ? `${done} of ${rb.length} entered` : "Loading…"}</p>` + rb.map(b => {
     const t = ready ? entryOf(b.id) : null, bal = t && !t.notRun ? tripCollection(t) - tripExpense(t) : 0;
-    const st = !ready ? "" : !t ? '<span class="st todo">To enter</span>' : t.notRun ? '<span class="st">Not run</span>'
+    const st = !ready ? "" : !t ? '<span class="st todo">To enter</span>' : t.notRun ? '<span class="st">Not run</span>' : t.nightOnly ? '<span class="st todo">Totals only</span>'
       : `<span class="st ${bal < 0 ? "neg" : "ok"}">✓ ${rs(bal)}</span>`;
     return `<button type="button" class="dbitem${b.id === dbBus ? " on" : ""}" data-bus="${b.id}"${b.id === dbBus ? ' aria-current="true"' : ""}><span class="num">${esc(plateOf(b))}</span>${st}</button>`;
   }).join("");
@@ -7673,6 +7753,7 @@ function renderDayBook() {
 // dbExp rows are { name, amt, own?, def? }; dbExpDef is the default list it started from (null for older entries).
 let dbExp = [], dbExpDef = null;
 function dbExpFrom(t) {
+  if (t?.nightOnly) return null;
   if (t?.expList) return { list: t.expList.filter(x => !x.off).map(x => ({ name: x.name, amt: String(x.amt ?? ""), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: num(x.def) } : {}) })), def: t.expDef || null };
   if (t) return { list: EXP_CATS.filter(([k]) => num(t["ex_" + k])).map(([k, l]) => ({ name: l, amt: String(num(t["ex_" + k])), own: true })).concat(unItemised(t) ? [{ name: "Other", amt: String(unItemised(t)), own: true }] : []), def: null };
   return null;
@@ -7693,12 +7774,14 @@ function renderDbExp() {
 }
 function fillDayForm() {
   dbFilledKey = `${dbBus}|${opDate}`;
-  const bus = vehicles.find(v => v.id === dbBus), t = entryOf(dbBus), last = t ? null : lastOf(dbBus), bw = busWin(dbBus);
+  const bus = vehicles.find(v => v.id === dbBus), t = entryOf(dbBus), last = t && !t.nightOnly ? null : lastOf(dbBus), bw = busWin(dbBus);
   $("dbTitle").textContent = plateOf(bus);
   $("dbSub").textContent = `${vName(bus)} · ${DAYS[new Date(opDate + "T00:00:00").getDay()]}, ${fmtDate(opDate)}`;
   if (!$("dbIdleReason").options.length) $("dbIdleReason").innerHTML = `<option value="">Choose a reason</option>` + IDLE_REASONS.map(r => `<option>${r}</option>`).join("");
-  const idle = !!t?.notRun;
-  $("dbModeIdle").checked = idle; $("dbModeRan").checked = !idle; $("dbIdleReason").value = t?.idleReason || "";
+  const idle = !!t?.notRun, night = !!t?.nightOnly;
+  $("dbModeIdle").checked = idle; $("dbModeNight").checked = night; $("dbModeRan").checked = !idle && !night; $("dbIdleReason").value = t?.idleReason || "";
+  $("dbNCol").value = night ? t.nightCol ?? "" : ""; $("dbNExp").value = night ? t.nightExp ?? "" : ""; $("dbNBy").value = night ? t.nightBy || "" : "";
+  dbNightNote(t);
   $("dbStarts").innerHTML = [...new Set(bw.map(x => x.start).filter(Boolean))].map(x => `<option value="${esc(x)}">`).join("");
   $("dbDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, bw, bus?.type, [t?.driverId]);
   $("dbConductor").innerHTML = `<option value="">Choose the conductor</option>` + crewOptions("conductor", null, bw);
@@ -7706,7 +7789,7 @@ function fillDayForm() {
   const src = t || last;
   $("dbDriver").value = crewValue("driver", src); $("dbConductor").value = crewValue("conductor", src); $("dbChecker").value = crewValue("checker", src);
   Object.entries(DB_FIELDS).forEach(([id, k]) => $(id).value = t?.[k] ?? "");
-  if (!t && last) ["dbRate", "dbPayD", "dbPayC", "dbPayK"].forEach(id => $(id).value = last[DB_FIELDS[id]] ?? "");
+  if ((!t || t.nightOnly) && last) ["dbRate", "dbPayD", "dbPayC", "dbPayK"].forEach(id => $(id).value = last[DB_FIELDS[id]] ?? "");
   const planned = plannedFor(dbBus, opDate);
   $("dbStart").value = t ? (t.startFixed ? t.start : planned || t.start || "") : planned;
   const was = dbExpFrom(t); if (was) { dbExp = was.list; dbExpDef = was.def; } else dbExpDefault($("dbStart").value); renderDbExp();
@@ -7718,11 +7801,27 @@ function fillDayForm() {
   $("dbForm").querySelectorAll(".err").forEach(e => e.textContent = ""); $("dbForm").querySelectorAll("[aria-invalid]").forEach(e => e.removeAttribute("aria-invalid"));
   dbDirty = false; $("dbDirty").hidden = true; $("dbSaved").textContent = "";
   syncDbMode(); dbCalc(); syncDbSaveLabel();
-  if (view === "tday" && canTrips) setTimeout(() => (idle ? $("dbIdleReason") : $("dbS1")).focus({ preventScroll: true }), 30);
+  if (view === "tday" && canTrips) setTimeout(() => (idle ? $("dbIdleReason") : night ? $("dbNCol") : $("dbS1")).focus({ preventScroll: true }), 30);
 }
+// The night totals of this day: recorded by the office, or sent by the conductor from his phone trip sheet.
+function dbNightNote(t) {
+  const sheet = rsDoc(dbBus, opDate), sent = !t && sheet?.night ? sheet.night : null, n = t?.nightOnly ? { col: t.nightCol, exp: t.nightExp, by: t.nightBy, at: t.nightAt } : t?.night || sent;
+  const el = $("dbNightNote"); el.hidden = !n; if (!n) return;
+  const fig = `Collection <b>${rs(num(n.col))}</b> · Expense <b>${rs(num(n.exp))}</b> · Balance <b>${rs(num(n.col) - num(n.exp))}</b>${n.by ? ` · told by ${esc(n.by)}` : ""}${n.at ? ` at ${fmtStamp(n.at)}` : ""}`;
+  el.innerHTML = sent ? `<span><b>Conductor sent tonight's totals.</b> ${fig}</span>${canTrips ? `<button class="btn primary" type="button" id="dbNightUse">Record these totals</button>` : ""}`
+    : t.nightOnly ? `<span><b>Only the night totals so far.</b> ${fig}</span>${canTrips ? `<button class="btn" type="button" id="dbNightDetails">Enter the full details</button>` : ""}`
+    : `<span><b>Told at night:</b> ${fig}</span>${nightDiffText(t) ? `<span style="color:var(--danger);font-weight:600">⚠ ${esc(nightDiffText(t))}</span>` : `<span style="color:var(--ok);font-weight:600">✓ Details match</span>`}`;
+}
+$("dbNightNote").addEventListener("click", e => {
+  if (!canTrips) return;
+  if (e.target.id === "dbNightUse") { const n = rsDoc(dbBus, opDate)?.night; if (!n) return; $("dbModeNight").checked = true; $("dbNCol").value = n.col ?? ""; $("dbNExp").value = n.exp ?? ""; $("dbNBy").value = n.by || ""; }
+  else if (e.target.id === "dbNightDetails") $("dbModeRan").checked = true;
+  else return;
+  dbDirty = true; syncDbMode(); dbCalc(); ($("dbModeNight").checked ? $("dbSave") : $("dbS1")).focus();
+});
 function syncDbMode() {
-  const idle = $("dbModeIdle").checked;
-  $("dbIdleFields").hidden = !idle; $("dbRanFields").hidden = idle;
+  const idle = $("dbModeIdle").checked, night = $("dbModeNight").checked;
+  $("dbIdleFields").hidden = !idle; $("dbNightFields").hidden = !night; $("dbRanFields").hidden = idle || night;
 }
 function nextPending() {
   const rb = routeBuses(), i = rb.findIndex(b => b.id === dbBus);
@@ -7731,6 +7830,7 @@ function nextPending() {
 function syncDbSaveLabel() { $("dbSave").textContent = nextPending() ? "Save, next bus ↵" : "Save ↵"; }
 function dbCalc() {
   if ($("dbModeIdle").checked) { $("dbCalc").innerHTML = `<span>Marked as not run · counts as 0 singles</span>`; return; }
+  if ($("dbModeNight").checked) { const c = num($("dbNCol").value), x = num($("dbNExp").value); $("dbCalc").innerHTML = `<span>Collection <b>${rs(c)}</b></span><span>Expense <b>${rs(x)}</b></span><span>Balance <b class="${c - x < 0 ? "neg" : "pos"}">${rs(c - x)}</b></span><span class="warn">Details to come</span>`; return; }
   const rate = num($("dbRate").value), lit = num($("dbLitres").value);
   if (!dbFuelTouched) $("dbFuel").value = rate && lit ? Math.round(rate * lit) : "";
   const sg = [1, 2, 3, 4, 5].filter(i => num($("dbS" + i).value) > 0).length;
@@ -7742,7 +7842,9 @@ function dbCalc() {
   $("dbOdoHint").textContent = prev != null ? `Last reading ${nf(prev)}${km > 0 ? ` · ${nf(km)} km today` : ""}` : "No earlier reading";
   $("dbTotal").textContent = rs(col);
   $("dbSg").textContent = `${sg} of ${SINGLES_PER_DAY} singles`; $("dbSg").className = sg < SINGLES_PER_DAY ? "warn" : "";
-  $("dbCalc").innerHTML = `<span class="${sg < SINGLES_PER_DAY ? "warn" : ""}">${sg} of ${SINGLES_PER_DAY} singles</span><span>Collection <b>${rs(col)}</b></span><span>Expense <b>${rs(exp)}</b></span><span>Balance <b class="${bal < 0 ? "neg" : "pos"}">${rs(bal)}</b></span>${km > 0 ? `<span>${nf(km)} km${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}</span>` : ""}`;
+  const e0 = entryOf(dbBus), n = e0?.nightOnly ? { col: e0.nightCol, exp: e0.nightExp } : e0?.night, dc = n ? col - num(n.col) : 0, de = n ? exp - num(n.exp) : 0;
+  $("dbCalc").innerHTML = `<span class="${sg < SINGLES_PER_DAY ? "warn" : ""}">${sg} of ${SINGLES_PER_DAY} singles</span><span>Collection <b>${rs(col)}</b></span><span>Expense <b>${rs(exp)}</b></span><span>Balance <b class="${bal < 0 ? "neg" : "pos"}">${rs(bal)}</b></span>${km > 0 ? `<span>${nf(km)} km${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}</span>` : ""}` +
+    (n ? `<span class="${dc || de ? "warn" : ""}">Night: ${rs(num(n.col))} / ${rs(num(n.exp))}${dc || de ? ` · differs by ${[dc ? `${dc > 0 ? "+" : "−"}${rs(Math.abs(dc))} collection` : "", de ? `${de > 0 ? "+" : "−"}${rs(Math.abs(de))} expense` : ""].filter(Boolean).join(", ")}` : " ✓"}</span>` : "");
 }
 function dbGo(target) {
   if (dbDirty && canTrips) { dbPending = target; $("dbDirty").hidden = false; $("dbDirtySave").focus(); return; }
@@ -7801,6 +7903,16 @@ $("dbForm").addEventListener("submit", async e => {
     const reason = $("dbIdleReason").value;
     if (!reason) err("dbIdleReason", "Choose why the bus did not run.");
     t = { ...base, notRun: true, idleReason: reason };
+  } else if ($("dbModeNight").checked) {
+    const c = $("dbNCol").value, x = $("dbNExp").value;
+    if (c === "" || num(c) < 0) err("dbNCol", "Enter the total collection.");
+    if (x === "" || num(x) < 0) err("dbNExp", "Enter the total expense (0 if none).");
+    const was = entryOf(bus);
+    t = { ...base, nightOnly: true, nightCol: Math.round(num(c)), nightExp: Math.round(num(x)), nightAt: was?.nightOnly && was.nightAt ? was.nightAt : new Date().toISOString() };
+    const by = $("dbNBy").value.trim(); if (by) t.nightBy = by;
+    const start = $("dbStart").value.trim() || plannedFor(bus, date); if (start) t.start = placeName(start);
+    ["driver", "conductor", "checker"].forEach(k => { const v = $("db" + k[0].toUpperCase() + k.slice(1)).value; if (v.startsWith("id:")) { const id = v.slice(3), p = (k === "driver" ? drivers : conductors).find(x => x.id === id); t[k + "Id"] = id; t[k + "Name"] = p?.name || ""; } else if (v) t[k + "Name"] = v.slice(5); });
+    t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
   } else {
     t = { ...base };
     const start = $("dbStart").value.trim().replace(/\s+/g, " ");
@@ -7830,6 +7942,8 @@ $("dbForm").addEventListener("submit", async e => {
     if (t.odo && prev != null && t.odo <= prev) err("dbOdo", `Must be more than the last reading (${nf(prev)} km).`);
     if (t.odo && prev != null && t.odo - prev > 1500) err("dbOdo", `That's ${nf(t.odo - prev)} km in a day. Check the reading.`);
     t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
+    // The totals told at night stay with the day, so the details can be checked against them.
+    const was = entryOf(bus); if (was?.nightOnly) t.night = { col: was.nightCol, exp: was.nightExp, ...(was.nightBy ? { by: was.nightBy } : {}), ...(was.nightAt ? { at: was.nightAt } : {}) }; else if (was?.night) t.night = was.night;
   }
   const rem = $("dbRemarks").value.trim(); if (rem) t.remarks = rem;
   if (!ok) { $("dbDirty").hidden = true; dbPending = null; $("dbForm").querySelector('[aria-invalid="true"]')?.focus(); return; }
@@ -7837,7 +7951,7 @@ $("dbForm").addEventListener("submit", async e => {
   try {
     await dayTripSave(t);
     const b = vehicles.find(v => v.id === bus);
-    toast(t.notRun ? `${plateOf(b)} marked as not run` : `${plateOf(b)} saved · ${singlesRun(t)} of 5 singles · balance ${rs(t.balance)}`);
+    toast(t.notRun ? `${plateOf(b)} marked as not run` : t.nightOnly ? `${plateOf(b)} night totals saved · balance ${rs(t.balance)} · details to come` : `${plateOf(b)} saved · ${singlesRun(t)} of 5 singles · balance ${rs(t.balance)}${nightDiffText(t) ? ` · ⚠ ${nightDiffText(t)}` : ""}`);
     dbDirty = false; $("dbDirty").hidden = true;
     const target = dbPending; dbPending = null;
     if (target) { applyDbTarget(target); return; }
