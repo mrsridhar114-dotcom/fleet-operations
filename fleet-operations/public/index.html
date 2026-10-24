@@ -5688,7 +5688,7 @@ async function opsDelete(c, id) {
    Both are edited by whoever may edit route trip sheets. */
 const placeName = s => String(s || "").trim().replace(/\s+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 const rxStamp = () => ({ updatedOn: todayISO(), updatedByName: whoAmI() });
-let rxAdding = false;
+let rxAdding = false, rxPress = false;
 function rxKnownPlaces() {
   const set = new Set();
   [...yearsAll(), ...allTripYears].forEach(y => { if (y.a) set.add(placeName(y.a)); if (y.b) set.add(placeName(y.b)); });
@@ -5700,7 +5700,9 @@ function renderRxp() {
   const can = canTrips, list = [...ops.routeExpenses].sort((a, b) => String(a.place).localeCompare(String(b.place)));
   $("rxRoTag").hidden = can; $("rxAdd").hidden = !can || rxAdding; $("rxNew").hidden = !rxAdding;
   $("rxPlaces").innerHTML = rxKnownPlaces().map(p => `<option value="${esc(p)}">`).join("");
-  if (document.activeElement?.closest?.("#rxList")) return;  // don't redraw under someone typing
+  if (document.activeElement?.closest?.("#rxList") || rxPress) return;  // don't redraw under someone typing or tapping
+  // A new expense typed but not yet added stays in its boxes when the list is redrawn.
+  const draft = {}; $("rxList").querySelectorAll("[data-rx]").forEach(c => { const n = c.querySelector('[data-new="name"]')?.value || "", a = c.querySelector('[data-new="amount"]')?.value || ""; if (n || a) draft[c.dataset.rx] = [n, a]; });
   $("rxList").innerHTML = list.length ? list.map(x => {
     const items = x.items || [], tot = items.reduce((a, i) => a + num(i.amount), 0), ro = can ? "" : " readonly";
     return `<section class="panel rxcard" data-rx="${x.id}"><div class="rxhead"><h2>${esc(x.place)}</h2>${can ? `<button class="icon" type="button" data-rxa="rename">Rename</button><button class="icon del" type="button" data-rxa="delete">Delete</button>` : ""}</div>` +
@@ -5709,6 +5711,7 @@ function renderRxp() {
       (can ? `<div class="rxrow"><input data-new="name" maxlength="60" placeholder="New expense" aria-label="New expense name"><input class="n" data-new="amount" type="number" inputmode="numeric" min="0" placeholder="₹" aria-label="New expense amount"><button class="rxdel" type="button" data-rxa="add" aria-label="Add expense" style="color:var(--accent)">＋</button></div><span class="err" data-err></span>` : "") +
       `<div class="rxtot"><span>Total for a day</span><span>${rs(tot)}</span></div>${x.updatedOn ? `<span class="rxsaved">Last changed ${fmtDate(x.updatedOn)}${x.updatedByName ? ` by ${esc(x.updatedByName)}` : ""}</span>` : ""}</section>`;
   }).join("") : `<div class="empty panel"><strong>No starting places yet</strong>${can ? "Use + Add starting place, then add its standard expenses." : "Nothing has been set up yet."}</div>`;
+  Object.entries(draft).forEach(([id, [n, a]]) => { const c = $("rxList").querySelector(`[data-rx="${id}"]`); if (!c?.querySelector("[data-new]")) return; c.querySelector('[data-new="name"]').value = n; c.querySelector('[data-new="amount"]').value = a; });
 }
 async function rxSave(doc, msg) {
   try { await opsSave("routeExpenses", { ...doc, ...rxStamp() }); toast(msg); return true; }
@@ -5734,8 +5737,12 @@ $("rxList").addEventListener("click", async e => {
     if (items.some(i => i.name.toLowerCase() === nm.toLowerCase())) { errEl.textContent = `${nm} is already in this list.`; return; }
     if (amt === "" || num(amt) < 0) { errEl.textContent = "Enter the amount (0 if it changes every day)."; card.querySelector('[data-new="amount"]').focus(); return; }
     items.push({ name: nm, amount: Math.round(num(amt)) });
+    card.querySelectorAll("[data-new]").forEach(i => i.value = ""); errEl.textContent = "";
     document.activeElement?.blur();
-    if (await rxSave({ ...x, items }, `${nm} added to ${x.place}`)) { renderRxp(); $("rxList").querySelector(`[data-rx="${x.id}"] [data-new="name"]`)?.focus(); }
+    const ok = await rxSave({ ...x, items }, `${nm} added to ${x.place}`); renderRxp();
+    const box = $("rxList").querySelector(`[data-rx="${x.id}"]`);
+    if (!ok && box) { box.querySelector('[data-new="name"]').value = nm; box.querySelector('[data-new="amount"]').value = amt; }
+    box?.querySelector('[data-new="name"]')?.focus();
     return;
   }
   if (a === "rm") { const [gone] = items.splice(+b.dataset.k, 1); document.activeElement?.blur(); if (await rxSave({ ...x, items }, `${gone?.name || "Expense"} removed`)) renderRxp(); return; }
@@ -5767,6 +5774,17 @@ $("rxList").addEventListener("change", async e => {
   await rxSave({ ...x, items }, `${x.place}: ${i.name} saved`);
 });
 $("rxList").addEventListener("focusout", () => setTimeout(() => { if (!document.activeElement?.closest?.("#rxList") && view === "trexp") renderRxp(); }, 0));
+// Safari and iPhone don't move focus to a tapped button, so the redraw waits until the tap is over.
+$("rxList").addEventListener("pointerdown", () => { rxPress = true; });
+addEventListener("pointerup", () => { if (rxPress) setTimeout(() => { rxPress = false; if (view === "trexp") renderRxp(); }, 0); });
+addEventListener("pointercancel", () => { rxPress = false; });
+// Enter in the new expense boxes adds it; Enter in a saved one keeps the change.
+$("rxList").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const el = e.target, card = el.closest("[data-rx]"); if (!card) return;
+  if (el.dataset.new) { e.preventDefault(); card.querySelector('[data-rxa="add"]')?.click(); }
+  else if (el.dataset.rxi != null) { e.preventDefault(); el.blur(); }
+});
 
 // Padi calculation. Stored as one record (id "rules") in padiSlabs:
 //   bands: [{ upto, steps: [{ upto, pct: { driver, conductor, checker } }] }], sorted; the last band and the last step have upto "" (above).
