@@ -1045,6 +1045,13 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .bchip.draft, .bstage.draft { background: var(--surface); color: var(--muted); border: 1px dashed var(--muted); }
 #bkDrawer footer { flex-wrap: wrap; align-items: center; row-gap: 8px; }
 .bknote { flex: 1 1 200px; font-size: 12px; color: var(--muted); }
+/* Training guide */
+.gtoc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; } .gtoc a { padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--accent); font-size: 13px; font-weight: 600; text-decoration: none; } .gtoc a:hover { background: var(--accent-soft); }
+.guide { max-width: 900px; padding: 8px 24px 28px; line-height: 1.55; font-size: 15px; } .guide h2 { margin: 28px 0 8px; font-size: 21px; scroll-margin-top: 16px; } .guide h2:first-child { margin-top: 12px; }
+.guide p { margin: 8px 0; } .guide ul, .guide ol { margin: 6px 0; padding-left: 22px; } .guide li { margin: 3px 0; }
+.guide figure { margin: 10px 0 18px; } .guide figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, .08); background: var(--surface); }
+.guide figure.gphone img { width: 300px; } .guide .gtbl td, .guide .gtbl th { white-space: normal !important; vertical-align: top; } .guide .tscroll { margin: 10px 0; }
+@media (max-width: 700px) { .guide { padding: 4px 14px 20px; font-size: 14.5px; } .guide figure.gphone img { width: 82%; } }
 /* Print buttons in the booking header, beside Checks and History. */
 .bkinfo .bkhp { font-size: 14px; padding: 7px 12px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .bkinfo .bkhp svg { width: 16px; height: 16px; }
 .bkinfo .bkhp[hidden] { display: none; }
@@ -1575,6 +1582,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li id="navRep"><a class="nav" href="#booking-reports" data-view="breports">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3M20 16V6"/></svg>
             Reports</a></li>
+          <li id="navGuide"><a class="nav" href="#training-guide" data-view="guide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7M8 11h7"/></svg>
+            Training guide</a></li>
         </ul>
       </div>
       <div class="group">
@@ -1928,6 +1938,115 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <section class="panel"><div class="sechead"><h2 class="sec" id="bListTitle">Bookings this month</h2><p>Click a booking to open its slip, trip sheet and payments</p></div>
           <div class="tscroll" style="margin-top:10px"><table class="ctable" id="bList"></table></div></section>
       </div>
+    </section>
+
+    <!-- ================= Training guide (spare bus booking and trip sheet) ================= -->
+    <section class="wrap twrap" id="view-tguide" hidden>
+      <header class="top">
+        <div>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Bookings</span><span class="slash">/</span><span>Training guide</span></nav>
+          <h1>Training guide</h1>
+          <p class="sync">Spare bus booking and trip sheet, step by step. The pictures use sample data.</p>
+        </div>
+      </header>
+      <nav class="gtoc" id="gToc" aria-label="Sections of the guide"><a href="#training-guide" data-gto="g-who-does-what">Who does what</a><a href="#training-guide" data-gto="g-booking-planner-make-a-booking-on-the-phone">Booking planner: make a booking on the phone</a><a href="#training-guide" data-gto="g-booking-planner-on-the-computer">Booking planner on the computer</a><a href="#training-guide" data-gto="g-payments-from-the-party">Payments from the party</a><a href="#training-guide" data-gto="g-trip-update-fill-the-trip-sheet-on-the-phone">Trip update: fill the trip sheet on the phone</a><a href="#training-guide" data-gto="g-admin-approve-settle-and-close">Admin: approve, settle and close</a><a href="#training-guide" data-gto="g-print-files-and-messages">Print, files and messages</a><a href="#training-guide" data-gto="g-quick-answers">Quick answers</a></nav>
+      <article class="guide panel" id="gBody">
+<h2 id="g-who-does-what">Who does what</h2>
+<p>A spare bus trip moves through four people: the booking planner books it, the admin confirms it, the driver (trip update) fills the trip sheet, and the admin approves and closes it.</p>
+<div class="tscroll"><table class="ctable gtbl"><thead><tr><th>Role</th><th>What they do</th><th>Where they usually work</th></tr></thead><tbody><tr><td>Booking planner</td><td>Takes the party&#x27;s booking, records the advance, sends the booking for approval</td><td>Phone</td></tr><tr><td>Trip update (driver)</td><td>Fills the trip sheet during and after the trip, sends it to the office</td><td>Phone</td></tr><tr><td>Booking planner + Trip update</td><td>Both of the above; can open the trip sheet one day before the trip</td><td>Phone</td></tr><tr><td>Admin</td><td>Confirms bookings, approves trip sheets, settles the driver advance, closes trips</td><td>Computer or phone</td></tr><tr><td>Viewer / Fleet manager</td><td>Sees bookings and trip sheets; cannot change anything</td><td>Computer or phone</td></tr></tbody></table></div>
+<p><b>Saving:</b> on the phone the trip sheet saves by itself as you type. Booking screens save when you press the green button at the bottom.</p>
+<figure class="gwide"><img src="/guide-lifecycle.webp" width="820" height="430" alt="booking life cycle · 8 stages" loading="lazy"></figure>
+<p>A booking the admin makes skips Draft and Awaiting approval and starts at Booked. Cancel booking is possible before the trip is closed.</p>
+<h2 id="g-booking-planner-make-a-booking-on-the-phone">Booking planner: make a booking on the phone</h2>
+<p>A new booking takes five short screens; the bar at the top shows which step you are on.</p>
+<p><b>Step 1 – Open Booking planner.</b> Open the menu, tap <b>Booking planner</b>, then <b>+ New booking</b>. You can also tap free days on the calendar first.</p>
+<figure class="gphone"><img src="/guide-p01-planner.webp" width="320" height="692" alt="Booking planner on the phone with the + New booking button" loading="lazy"></figure>
+<p><b>Step 2 – Dates and bus.</b> Pick the start and end date. For a half day at the start or end, tap <i>First day</i> or <i>Last day</i>. Then tap the bus under <i>Which bus?</i>; buses already booked on those days are not offered.</p>
+<figure class="gphone"><img src="/guide-p02-dates.webp" width="320" height="692" alt="Dates and bus step" loading="lazy"></figure>
+<p><b>Step 3 – Who is booking?</b> Type the mobile number and the party name. Under <i>Booked by</i>, tap the driver who brought the booking, or <i>Other</i>.</p>
+<figure class="gphone"><img src="/guide-p03-party.webp" width="320" height="692" alt="Who is booking step" loading="lazy"></figure>
+<p><b>Step 4 – Where are they going?</b> Type the places in order, for example <i>Town A - Town B</i>, and the pick-up place if known.</p>
+<figure class="gphone"><img src="/guide-p04-places.webp" width="320" height="692" alt="Where are they going step" loading="lazy"></figure>
+<p><b>Step 5 – Rent and advance.</b></p>
+<ul>
+<li>Type the <b>rent for one day</b>. Total rent fills itself as one day × days. You can raise the total; you cannot lower it below that figure.</li>
+<li>Type the driver padi the party gives, if any.</li>
+<li>Type the <b>advance received</b> and tap how it was paid: Cash, UPI, Bank or Cheque. Leave it empty if no advance was paid.</li>
+</ul>
+<figure class="gphone"><img src="/guide-p05-rent.webp" width="320" height="692" alt="Rent and advance step" loading="lazy"></figure>
+<p><b>Step 6 – Check and send.</b> Read the summary. Tap <b>Change</b> next to any part to correct it. Then tap <b>Send for approval</b>, or <b>Save draft</b> to finish later; nobody else sees a draft.</p>
+<figure class="gphone"><img src="/guide-p06-check.webp" width="320" height="692" alt="Check and send with Save draft and Send for approval" loading="lazy"></figure>
+<p><b>If the admin sends it back</b>, the booking shows <i>Sent back</i> with the reason. Open it, correct what was asked, and send it again.</p>
+<p><b>Checks before confirming:</b> the app warns if the bus&#x27;s FC, insurance, tax, permit or pollution certificate expires before the trip ends, or if the driver is not free. Fix these with the office before the trip.</p>
+<h2 id="g-booking-planner-on-the-computer">Booking planner on the computer</h2>
+<p>On the computer the planner shows the month calendar, four summary cards and a table of the month&#x27;s bookings; clicking a booking opens its window.</p>
+<p><b>Calendar.</b> Each coloured bar is one booking; hover for the bus, party, places and stage. A closed trip shows a 🔒. Click two days to select a range, then <b>+ New booking</b>.</p>
+<figure class="gwide"><img src="/guide-c01-planner.webp" width="1000" height="520" alt="Booking planner calendar on the computer" loading="lazy"></figure>
+<p><b>Summary cards.</b> Bookings this month, bus days booked, rent booked (received and still to collect), and profit on closed trips.</p>
+<p><b>Bookings table.</b> Stage is the second column. Every heading has a small ▾: sort A → Z or Z → A, or type in the filter box to show only matching rows. Click a row to open the booking.</p>
+<figure class="gwide"><img src="/guide-c02-table.webp" width="1000" height="520" alt="Summary cards and the bookings table with the stage second" loading="lazy"></figure>
+<p><b>The booking window</b></p>
+<div class="tscroll"><table class="ctable gtbl"><thead><tr><th>Part</th><th>What is there</th></tr></thead><tbody><tr><td>Top bar</td><td>Booking no. and party, bus, dates, days, places, the ⚠ checks button, History, Slip and Trip sheet print buttons, red Close</td></tr><tr><td>Left menu</td><td>Booking slip, Payments, Trip sheet, Driver advance, Files, WhatsApp / SMS, each with its status</td></tr><tr><td>Bottom bar, left</td><td>Delete booking, Cancel booking (Reopen trip when closed)</td></tr><tr><td>Bottom bar, right</td><td>Close trip, Save</td></tr></tbody></table></div>
+<p><b>Booking slip</b> is grouped as Booking, Trip, Party, and Rent and remarks; the same rules as the phone apply to rent and <i>Paid by the party</i>. Press <b>Save</b> after any change.</p>
+<figure class="gwide"><img src="/guide-c03-slip.webp" width="1000" height="520" alt="The booking window on the Booking slip section" loading="lazy"></figure>
+<p><b>Delete booking</b> and <b>Cancel booking</b> ask Yes / No first. A cancelled booking shows <b>Restore booking</b> to bring it back.</p>
+<h2 id="g-payments-from-the-party">Payments from the party</h2>
+<p>Every rupee the party pays for rent is entered as a payment; the app works out what is still to collect.</p>
+<ol>
+<li>Open the booking and go to <b>Payments</b>.</li>
+<li>Tap <b>+ Add payment</b>. Enter the date, amount, how it was paid (cash, UPI, bank) and a short note such as <i>Balance at drop</i>.</li>
+<li>Save. The first payment is shown as the advance.</li>
+</ol>
+<figure class="gwide"><img src="/guide-c04-pay.webp" width="1000" height="520" alt="Payments with the party account on the right" loading="lazy"></figure>
+<p><b>What the party owes</b> = rent + extra from party + toll gate. Extra from party (extra km, return diesel and so on) is entered on the trip sheet and counts as already received, because the driver collects it on the trip.</p>
+<p><b>Still to collect</b> = what the party owes − payments − extra from party. When it reaches ₹0 the booking shows <i>Fully paid</i>.</p>
+<p>If the trip is closed with money still pending and the admin chooses <i>Adjusted with driver advance</i>, still to collect becomes ₹0 and the payments page shows that line.</p>
+<h2 id="g-trip-update-fill-the-trip-sheet-on-the-phone">Trip update: fill the trip sheet on the phone</h2>
+<p>The trip sheet is one page that saves as you type; when the trip is over, the driver checks it and sends it to the office.</p>
+<p><b>When it opens.</b> For a trip update user, on the last day of the trip. For a booking planner + trip update user, one day before the trip starts. Find it under <b>Trip sheets</b> in the menu (<i>To fill</i>), or open the booking and tap <b>Trip sheet</b>.</p>
+<p><b>Step 1 – Open the trip sheet.</b> Open the booking and tap <b>Trip sheet</b>. The percentage shows how much is filled in.</p>
+<figure class="gphone"><img src="/guide-p07-bookingpage.webp" width="320" height="692" alt="Booking page with the Trip sheet tile" loading="lazy"></figure>
+<p><b>Step 2 – Collection.</b> Rent comes from the booking. If the party paid more on the trip, tap <b>+ Add extra from party</b>, choose <i>Extra km</i>, <i>Return diesel</i>, <i>Waiting / extra hours</i> or <i>Other</i>, and type the amount and a short note such as <i>150 km over</i>. Total collection = rent + extras + toll.</p>
+<figure class="gphone"><img src="/guide-p08-ts-top.webp" width="320" height="692" alt="Collection with two extras from the party" loading="lazy"></figure>
+<p><b>Step 3 – Special Permit No., driver and cleaner.</b> TN, the year and SPL are filled in; type only the running number from the government site. Then pick the driver and cleaner and type each one&#x27;s padi.</p>
+<figure class="gphone"><img src="/guide-p09-ts-mid.webp" width="320" height="692" alt="Special permit number, driver and cleaner" loading="lazy"></figure>
+<p><b>Step 4 – Toll, permit and diesel.</b> Type the toll gate and permit amounts. Add one diesel line per fill: litres, amount, Cash or Card, and the place. Tap <b>+ Add diesel</b> for another fill.</p>
+<figure class="gphone"><img src="/guide-p10-ts-low.webp" width="320" height="692" alt="Toll, permit and diesel fills" loading="lazy"></figure>
+<p><b>Step 5 – Other expenses and km.</b> Type Pooja, Mechanic and Other amounts; for Other, say what it was for. Then type the start and end km. The app shows km run and mileage and compares it with the last trip.</p>
+<figure class="gphone"><img src="/guide-p11-ts-end.webp" width="320" height="692" alt="Other expenses and km meter" loading="lazy"></figure>
+<p><b>Step 6 – Send to office.</b> Tap <b>Send to office</b>. The summary opens: check every line, tap <b>Change</b> to fix anything, then <b>Send to office</b>. Use <b>Save for later</b> if the trip is not finished.</p>
+<figure class="gphone"><img src="/guide-p12-ts-check.webp" width="320" height="692" alt="Check and send summary of the trip sheet" loading="lazy"></figure>
+<p><b>Leave empty what you did not spend.</b> A blank box means nothing was spent.</p>
+<p><b>Sent back.</b> If the admin finds a mistake, the trip sheet comes back under <i>Sent back to you</i> with the reason. Correct it and send again.</p>
+<p>Once sent, the trip sheet is locked for the driver until the admin approves it or sends it back.</p>
+<h2 id="g-admin-approve-settle-and-close">Admin: approve, settle and close</h2>
+<p>The admin confirms each booking, approves the trip sheet, settles the driver&#x27;s advance and closes the trip so nobody can change it.</p>
+<p><b>Approve a booking.</b> Bookings sent by planners wait under <b>Approvals</b> (and on the booking itself). Read the checks, then <b>Approve</b>, or type the reason and <b>Reject</b>. Bookings the admin makes are confirmed straight away. A confirmed booking turns <i>On trip</i> by itself on its start date.</p>
+<figure class="gwide"><img src="/guide-c10-approve.webp" width="1000" height="520" alt="A booking awaiting approval with Reject and Approve" loading="lazy"></figure>
+<p><b>Approve a trip sheet.</b> Trip sheets sent by drivers show <i>Sent for approval</i>. Check the expenses and km, correct anything if needed, then <b>Approve trip sheet</b>, or type what to correct and <b>Send back</b>. Approving marks the booking <i>Completed</i>.</p>
+<figure class="gwide"><img src="/guide-c05-trip.webp" width="1000" height="520" alt="Trip sheet on the computer, three columns" loading="lazy"></figure>
+<p><b>Driver advance.</b></p>
+<ol>
+<li>Enter the advance given to the driver. Tick <i>Add toll money</i> if the toll was given on top.</li>
+<li>Extra from party is listed; the driver collected it, so it counts on his side.</li>
+<li>Tick the expenses he paid out of the advance (padi, toll, permit, each diesel fill, other expenses). Untick anything paid another way, for example diesel on a fuel card.</li>
+<li>The app shows <b>Driver gives</b> or <b>Office pays the driver</b> (advance + extras − expenses he paid). Choose how it was settled and press <b>Mark settled</b>.</li>
+</ol>
+<figure class="gwide"><img src="/guide-c06-adv.webp" width="1000" height="520" alt="Driver advance: advance, extras, expenses he paid and the amount to settle" loading="lazy"></figure>
+<p><b>Close the trip.</b> When everything is done, press <b>Close trip</b>. If money is still to collect from the party, the app asks whether to mark it <i>Adjusted with driver advance</i>; Yes sets still to collect to ₹0. A closed trip is view only for everyone and moves to <i>Approved or closed</i> on the Trip sheets page.</p>
+<figure class="gwide"><img src="/guide-c09-close.webp" width="1000" height="520" alt="Closing a trip with money still to collect" loading="lazy"></figure>
+<p><b>Reopen a trip.</b> On a closed trip, type the reason (for example <i>toll bill missed</i>) and press <b>Reopen trip</b> at the bottom left.</p>
+<p><b>Cancel or delete.</b> Cancel booking keeps the record and any advance on file; Delete booking removes it for good. Both ask Yes / No first.</p>
+<h2 id="g-print-files-and-messages">Print, files and messages</h2>
+<p><b>Booking slip.</b> <b>Slip</b> in the top bar (computer) or the print option on the phone makes the booking slip for the party: bus, dates, places, rent, advance, balance and what the party pays.</p>
+<p><b>Trip sheet print.</b> <b>Trip sheet</b> in the top bar, or the 🖨 tile on the phone once the sheet is approved or fully filled. It makes the front and back pages: collection with extras and toll, the special permit number, expenses, diesel, km, and the driver advance table. Both prints carry the line <i>This is a computer-generated document. No signature is required.</i></p>
+<p><b>Files.</b> Keep the permit, the signed paper trip sheet, diesel bills and other papers on the booking. Choose what the file is, then <b>Choose file</b> or <b>Take photo</b>. Files are listed in a table; the eye icon opens one. On the computer, press <b>Save</b> after adding or removing a file.</p>
+<figure class="gwide"><img src="/guide-c07-files.webp" width="1000" height="520" alt="Files listed in a table with the eye icon" loading="lazy"></figure>
+<p><b>WhatsApp / SMS.</b> Ready-made messages for the party (booking confirmation, balance) and the driver (trip details). Check the text, then tap WhatsApp or SMS; nothing is sent until you press send in that app.</p>
+<figure class="gwide"><img src="/guide-c08-send.webp" width="1000" height="520" alt="Ready-made WhatsApp and SMS messages" loading="lazy"></figure>
+<h2 id="g-quick-answers">Quick answers</h2>
+<div class="tscroll"><table class="ctable gtbl"><thead><tr><th>Question</th><th>Answer</th></tr></thead><tbody><tr><td>The party paid ₹2,000 extra for extra km. Where does it go?</td><td>Trip sheet → Collection → + Add extra from party → Extra km. Not in the booking rent.</td></tr><tr><td>Can I reduce the total rent below one day × days?</td><td>No. You can only raise it.</td></tr><tr><td>Why can&#x27;t I open the trip sheet?</td><td>It opens on the last day of the trip (one day before for planner + trip update).</td></tr><tr><td>I sent the trip sheet with a mistake.</td><td>Ask the admin to send it back, then correct and resend.</td></tr><tr><td>The permit number shows only TN2026-SPL-.</td><td>Type the running number in the Special Permit No. box.</td></tr><tr><td>Why can&#x27;t I change anything on this booking?</td><td>It is closed, waiting for approval, or your role is view only.</td></tr><tr><td>A closed trip needs a correction.</td><td>The admin reopens it with a reason, corrects it and closes it again.</td></tr></tbody></table></div>
+      </article>
     </section>
 
     <!-- ================= Spare bus trip sheets ================= -->
@@ -3299,7 +3418,7 @@ async function connect() {
 /* ---------- routing & nav ---------- */
 const VIEW_MOD = { renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck", "route-sheet": "trsheet" };
+const TRIP_PAGES = { "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
@@ -3309,9 +3428,9 @@ function showView() {
   if (acc.trips === "update" && ["thub", "trips", "tday", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
   // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
   if (want === "tday" && matchMedia("(max-width: 700px)").matches) want = "trsheet";
-  view = acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  view = (want === "tguide" && acc.bookings === "none" && acc.tripsheets === "none") || acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "tguide", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = want === "tguide" ? "guide" : want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets" || VIEW_MOD[view] === "fuel") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
@@ -3321,6 +3440,9 @@ function showView() {
   if (view === "audit") renderAudit();
 }
 function route() { showView(); closeNav(); window.scrollTo(0, 0); }
+// A guide picture that is not on the site yet is left out quietly; it shows once the file is uploaded.
+$("gBody").addEventListener("error", e => { if (e.target.tagName === "IMG") e.target.closest("figure").hidden = true; }, true);
+$("gToc").addEventListener("click", e => { const a = e.target.closest("[data-gto]"); if (!a) return; e.preventDefault(); document.getElementById(a.dataset.gto)?.scrollIntoView({ behavior: "smooth", block: "start" }); });
 
 /* ---------- access ---------- */
 function myRecord() { return myId() ? users.find(u => u.accountId === myId()) : null; }
@@ -3360,6 +3482,7 @@ function applyAccess() {
   canBookReq = platformWrite && (acc.bookings === "edit" || acc.bookings === "request");
   $("navAppr").hidden = acc.bookings !== "edit";
   $("navRep").hidden = acc.bookings === "none" || acc.bookings === "request";
+  $("navGuide").hidden = acc.bookings === "none" && acc.tripsheets === "none";
   $("navStorage").hidden = acc.users !== "edit";
   $("navAudit").hidden = acc.users !== "edit"; $("navUtil").hidden = acc.users !== "edit";  // Utility: admin only
   $("navTs").hidden = !acc.tripsheets || acc.tripsheets === "none";
