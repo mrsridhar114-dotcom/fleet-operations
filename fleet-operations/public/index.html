@@ -677,14 +677,12 @@ a.btn { text-decoration: none; display: inline-block; }
 .dbtot span { font-size: 11px; color: var(--muted); font-weight: 600; }
 .dbtot span.warn { color: var(--warn); }
 .dbsec { font-size: 12px; font-weight: 600; margin: 0 0 6px; }
-.xchips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.xchip { display: inline-flex; align-items: center; gap: 4px; border: 1px dashed var(--line); border-radius: 6px; background: var(--surface); }
-.xchip button { border: 0; background: transparent; font: inherit; font-size: 12px; font-weight: 600; color: var(--muted); padding: 5px 4px 5px 9px; cursor: pointer; }
-.xchip.on { border-style: solid; border-color: var(--accent); }
-.xchip.on button { color: var(--ink); }
-.xchip input { display: none; width: 84px; font: inherit; font-family: var(--mono); font-size: 12px; padding: 4px 6px; margin-right: 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); text-align: right; }
-.xchip.on input { display: inline-block; }
-.xchip input:disabled { opacity: .7; }
+.dbx { display: grid; gap: 6px; margin-bottom: 12px; max-width: 560px; }
+.dbxrow { display: grid; grid-template-columns: minmax(0, 1fr) 120px 32px; gap: 6px; align-items: center; }
+.dbxrow input { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; min-width: 0; box-sizing: border-box; }
+.dbxrow input.n { text-align: right; font-family: var(--mono); } .dbxrow .nm { font-size: 13px; font-weight: 600; } .dbxrow small { display: block; font-size: 11px; font-weight: 600; color: var(--warn); }
+.dbxrow .rxdel { width: 32px; height: 30px; } .dbxacts { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; } .dbxacts .btn { padding: 5px 12px; font-size: 13px; }
+.dbxtot { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; border-top: 1px solid var(--line); padding-top: 6px; max-width: 520px; }
 .dbfoot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; }
 .dbcalc { font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .dbcalc b { font-family: var(--mono); }
@@ -1907,8 +1905,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                 <div class="field"><label for="dbPayC">Conductor pay (₹)</label><input id="dbPayC" type="number" inputmode="numeric" min="0"></div>
                 <div class="field"><label for="dbPayK">Checker pay (₹)</label><input id="dbPayK" type="number" inputmode="numeric" min="0"></div>
               </div>
-              <p class="dbsec">Other expenses <span class="hint" style="font-weight:400">· click a head to add an amount</span></p>
-              <div class="xchips" id="dbChips"></div>
+              <p class="dbsec">Route expenses <span class="hint" style="font-weight:400" id="dbExpHint"></span></p>
+              <div class="dbx" id="dbChips"></div>
             </div>
             <div class="dbgrid" style="grid-template-columns:minmax(0,1fr)"><div class="field"><label for="dbRemarks">Remarks</label><input id="dbRemarks" autocomplete="off" maxlength="200"></div></div>
             <div class="dbfoot">
@@ -5598,6 +5596,9 @@ $("tForm").addEventListener("submit", async e => {
   [1, 2, 3, 4, 5].forEach(i => put("tS" + i, "s" + i)); put("tOdo", "odo");
   EXP_CATS.forEach(([k]) => put("tx_" + k, "ex_" + k));
   t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
+  // The itemised route expenses stay with the day while their heads are not changed here.
+  const was = [...winTrips(), ...trips].find(x => x.id === t.id);
+  if (was?.expList && EXP_CATS.every(([k]) => num(was["ex_" + k]) === num(t["ex_" + k]))) { t.expList = was.expList; if (was.expDef) t.expDef = was.expDef; }
   if (t.litres && !t.dieselRate) err("tRate", "Enter the diesel rate.");
   if (t.dieselRate && (t.dieselRate < 50 || t.dieselRate > 200)) err("tRate", "Enter the rate per litre, e.g. 93.07.");
   if (t.litres > 600) err("tLitres", "That's more than a bus tank holds. Check the litres.");
@@ -7331,7 +7332,7 @@ async function rsApprove() {
     t.driverPay = s.padi.driver; t.conductorPay = s.padi.conductor; if (s.padi.checker) t.checkerPay = s.padi.checker;
     s.exp = s.exp.filter(x => !x.off);
     s.exp.forEach(x => { const c = RS_CAT.find(([re]) => re.test(x.name))?.[1] || "misc"; t["ex_" + c] = num(t["ex_" + c]) + x.amt; });
-    t.expList = s.exp; t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
+    t.expList = s.exp; if (s.expDef) t.expDef = s.expDef; t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
     if (s.endKm) t.odo = s.endKm;
     t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
   }
@@ -7668,9 +7669,27 @@ function renderDayBook() {
   const key = `${dbBus}|${opDate}`;
   if (ready && !dbDirty && key !== dbFilledKey) fillDayForm();
 }
-function chipsHtml(t) {
-  return EXP_CATS.map(([k, l]) => { const v = t?.["ex_" + k] ?? "";
-    return `<span class="xchip${v !== "" ? " on" : ""}" data-k="${k}"><button type="button" tabindex="-1">${v !== "" ? "" : "+ "}${l}</button><input id="dbx_${k}" type="number" inputmode="numeric" min="0" value="${v}" aria-label="${l} (₹)"></span>`; }).join("");
+// Route expenses on the computer entry: the same default list from the Route expenses master as the phone trip sheet.
+// dbExp rows are { name, amt, own?, def? }; dbExpDef is the default list it started from (null for older entries).
+let dbExp = [], dbExpDef = null;
+function dbExpFrom(t) {
+  if (t?.expList) return { list: t.expList.filter(x => !x.off).map(x => ({ name: x.name, amt: String(x.amt ?? ""), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: num(x.def) } : {}) })), def: t.expDef || null };
+  if (t) return { list: EXP_CATS.filter(([k]) => num(t["ex_" + k])).map(([k, l]) => ({ name: l, amt: String(num(t["ex_" + k])), own: true })).concat(unItemised(t) ? [{ name: "Other", amt: String(unItemised(t)), own: true }] : []), def: null };
+  return null;
+}
+function dbExpDefault(start) { dbExp = rsList(start); dbExpDef = rsDefOf(dbExp); }
+function renderDbExp() {
+  const ro = canTrips ? "" : " disabled", key = n => String(n || "").trim().toLowerCase(), start = $("dbStart").value.trim();
+  const has = rsList(start).length, changed = dbExpDef && rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length;
+  $("dbExpHint").textContent = start && has ? `· default from ${placeName(start)}` : "";
+  $("dbChips").innerHTML = (dbExp.length ? "" : `<p class="hint" style="margin:0">${!start ? "Enter the starting point to bring its route expenses." : has ? "No route expenses on this entry." : `No route expenses for ${esc(placeName(start))} in the Route expenses master yet.`}</p>`) +
+    dbExp.map((x, i) => { const m = !x.own && dbExpDef?.find(y => key(y.name) === key(x.name)), diff = m && num(x.amt) !== num(m.amt);
+      return `<div class="dbxrow">${x.own ? `<span><input data-xn="${i}" maxlength="40" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}>${dbExpDef ? "<small>Added</small>" : ""}</span>`
+        : `<span class="nm">${esc(x.name)}${diff ? `<small>Default ${rs(m.amt)}</small>` : !m && dbExpDef ? "<small>Added</small>" : ""}</span>`}` +
+        `<input class="n" data-xa="${i}" type="number" inputmode="numeric" min="0" value="${esc(x.amt)}" placeholder="₹" aria-label="${esc(x.name || "Expense")} amount (₹)"${ro}>` +
+        (canTrips ? `<button class="rxdel" type="button" data-xdel="${i}" aria-label="Remove ${esc(x.name || "expense")}">✕</button>` : "<span></span>") + `</div>`; }).join("") +
+    (dbExp.length ? `<div class="dbxtot"><span>Route expenses</span><span id="dbExpTot">${rs(dbExp.reduce((a, x) => a + num(x.amt), 0))}</span></div>` : "") +
+    (canTrips ? `<div class="dbxacts"><button class="btn" type="button" data-xadd>+ Add expense</button>${changed && has ? `<button class="rsreset" type="button" data-xreset>Bring back the default list of ${esc(placeName(start))}</button>` : ""}</div>` : "");
 }
 function fillDayForm() {
   dbFilledKey = `${dbBus}|${opDate}`;
@@ -7690,8 +7709,7 @@ function fillDayForm() {
   if (!t && last) ["dbRate", "dbPayD", "dbPayC", "dbPayK"].forEach(id => $(id).value = last[DB_FIELDS[id]] ?? "");
   const planned = plannedFor(dbBus, opDate);
   $("dbStart").value = t ? (t.startFixed ? t.start : planned || t.start || "") : planned;
-  const lump = t ? unItemised(t) : 0;
-  $("dbChips").innerHTML = chipsHtml(t && lump ? { ...t, ex_misc: num(t.ex_misc) + lump } : t);
+  const was = dbExpFrom(t); if (was) { dbExp = was.list; dbExpDef = was.def; } else dbExpDefault($("dbStart").value); renderDbExp();
   $("dbNote").textContent = t ? `Saved entry. Change anything and save to update it.` : last ? `Driver, conductor, diesel rate and pay are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
   dbFuelTouched = !!t && num(t.fuelCost) !== Math.round(num(t.dieselRate) * num(t.litres));
   $("dbForm").querySelectorAll("input, select").forEach(el => el.disabled = !canTrips);
@@ -7717,7 +7735,8 @@ function dbCalc() {
   if (!dbFuelTouched) $("dbFuel").value = rate && lit ? Math.round(rate * lit) : "";
   const sg = [1, 2, 3, 4, 5].filter(i => num($("dbS" + i).value) > 0).length;
   const col = [1, 2, 3, 4, 5].reduce((a, i) => a + num($("dbS" + i).value), 0);
-  const other = EXP_CATS.reduce((a, [k]) => a + num($("dbx_" + k)?.value), 0);
+  const other = dbExp.reduce((a, x) => a + num(x.amt), 0);
+  if ($("dbExpTot")) $("dbExpTot").textContent = rs(other);
   const exp = num($("dbFuel").value) + num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value) + other, bal = col - exp;
   const prev = prevOdoFor(dbBus, opDate), odo = num($("dbOdo").value), km = odo && prev != null ? odo - prev : null;
   $("dbOdoHint").textContent = prev != null ? `Last reading ${nf(prev)}${km > 0 ? ` · ${nf(km)} km today` : ""}` : "No earlier reading";
@@ -7744,13 +7763,22 @@ $("dbDirtyDiscard").onclick = () => { const t = dbPending; dbPending = null; dbD
 $("dbDirtyStay").onclick = () => { dbPending = null; $("dbDirty").hidden = true; };
 $("dbDirtySave").onclick = () => $("dbForm").requestSubmit();
 $("dbChips").addEventListener("click", e => {
-  const b = e.target.closest(".xchip button"); if (!b || !canTrips) return;
-  const c = b.parentElement; c.classList.add("on"); b.textContent = EXP_CATS.find(x => x[0] === c.dataset.k)[1]; c.querySelector("input").focus();
+  if (!canTrips) return;
+  const d = e.target.closest("[data-xdel]"), add = e.target.closest("[data-xadd]"), rst = e.target.closest("[data-xreset]");
+  if (d) { dbExp.splice(+d.dataset.xdel, 1); }
+  else if (add) { dbExp.push({ name: "", amt: "", own: true }); }
+  else if (rst) { dbExpDefault($("dbStart").value); }
+  else return;
+  dbDirty = true; $("dbSaved").textContent = ""; renderDbExp(); dbCalc();
+  if (add) $("dbChips").querySelector(`[data-xn="${dbExp.length - 1}"]`)?.focus();
 });
-$("dbChips").addEventListener("focusout", e => {
-  const inp = e.target.closest(".xchip input"); if (!inp || inp.value !== "") return;
-  const c = inp.parentElement; c.classList.remove("on"); c.querySelector("button").textContent = "+ " + EXP_CATS.find(x => x[0] === c.dataset.k)[1];
+$("dbChips").addEventListener("input", e => {
+  const el = e.target;
+  if (el.dataset.xa != null) dbExp[+el.dataset.xa].amt = el.value;
+  else if (el.dataset.xn != null) dbExp[+el.dataset.xn].name = el.value;
 });
+// A new starting point brings its own list, unless the list was already changed.
+$("dbStart").addEventListener("change", () => { if (!dbExpDef || !rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length) { dbExpDefault($("dbStart").value); renderDbExp(); dbCalc(); } });
 $("dbForm").addEventListener("input", e => { dbDirty = true; $("dbSaved").textContent = ""; if (e.target.id === "dbFuel") dbFuelTouched = $("dbFuel").value !== ""; dbCalc(); });
 $("dbForm").addEventListener("change", e => { if (e.target.name === "dbMode") { dbDirty = true; syncDbMode(); dbCalc(); } });
 $("dbForm").addEventListener("keydown", e => {
@@ -7791,7 +7819,9 @@ $("dbForm").addEventListener("submit", async e => {
     put("dbRate", "dieselRate", 2); put("dbLitres", "litres", 1); put("dbFuel", "fuelCost");
     put("dbPayD", "driverPay"); put("dbPayC", "conductorPay"); put("dbPayK", "checkerPay");
     [1, 2, 3, 4, 5].forEach(i => put("dbS" + i, "s" + i)); put("dbOdo", "odo");
-    EXP_CATS.forEach(([k]) => put("dbx_" + k, "ex_" + k));
+    const list = dbExp.filter(x => x.name.trim() || num(x.amt)).map(x => ({ name: x.name.trim() || "Other", amt: Math.round(num(x.amt)), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: x.def } : {}) }));
+    list.forEach(x => { const c = RS_CAT.find(([re]) => re.test(x.name))?.[1] || "misc"; t["ex_" + c] = num(t["ex_" + c]) + x.amt; });
+    if (list.length) t.expList = list; if (dbExpDef) t.expDef = dbExpDef;
     t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
     if (t.litres && !t.dieselRate) err("dbRate", "Enter the diesel rate.");
     if (t.dieselRate && (t.dieselRate < 50 || t.dieselRate > 200)) err("dbRate", "Enter the rate per litre, e.g. 93.07.");
