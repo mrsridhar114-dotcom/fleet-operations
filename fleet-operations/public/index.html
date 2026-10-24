@@ -673,6 +673,7 @@ a.btn { text-decoration: none; display: inline-block; }
 .dbcard .field .hint { font-size: 11px; }
 .dbcard .field input.sgl { font-family: var(--mono); font-size: 15px; text-align: right; }
 .dbtot input { font-family: var(--mono); font-weight: 700; text-align: right; } .dbtot input[readonly] { background: transparent; border-color: transparent; color: var(--accent); }
+.hint.warn { color: var(--warn); font-weight: 600; }
 .dbtot span { font-size: 11px; color: var(--muted); font-weight: 600; }
 .dbtot span.warn { color: var(--warn); }
 .dbsec { font-size: 12px; font-weight: 600; margin: 0 0 6px; }
@@ -1908,6 +1909,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
               </div>
               <p class="dbsec">Route expenses <span class="hint" style="font-weight:400" id="dbExpHint"></span></p>
               <div class="dbx" id="dbChips"></div>
+              <div class="dbgrid c4"><div class="field"><label for="dbExpAll">Total expense (₹)</label><input id="dbExpAll" type="number" inputmode="numeric" min="0"><span class="hint" id="dbExpAllHint">Only if just the day's total is known</span></div></div>
             </div>
             <div class="dbgrid" style="grid-template-columns:minmax(0,1fr)"><div class="field"><label for="dbRemarks">Remarks</label><input id="dbRemarks" autocomplete="off" maxlength="200"></div></div>
             <div class="dbfoot">
@@ -5409,7 +5411,7 @@ function renderExpenseSplit(M) {
   const t = M.tot, total = t.exp;
   if (!total) { $("tExpense").innerHTML = `<tbody><tr><td class="sub" style="padding:14px">No expenses entered this month.</td></tr></tbody>`; return; }
   const heads = [["Diesel", t.fuel], ["Driver pay", t.pd], ["Conductor pay", t.pc], ["Checker pay", t.pk],
-    ...EXP_CATS.map(([k, l]) => [l, t.cat[k]]), ["Other, not itemised", t.unItem]].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+    ...EXP_CATS.map(([k, l]) => [l, t.cat[k]]), ["Other, not split", t.unItem]].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
   const max = Math.max(...heads.map(h => h[1]));
   $("tExpense").innerHTML = `<thead><tr><th>Head</th><th class="n">Amount</th><th>Share</th><th class="n">Per km</th><th class="n" title="Per full day (5 singles)">Per day run</th></tr></thead>
     <tbody>${heads.map(([l, v]) => `<tr><td class="nm">${l}</td><td class="n">${nf(v)}</td><td><span class="sharebar" style="width:${Math.max(2, Math.round(v / max * 56))}px"></span><span class="num" style="font-size:12px">${nf(v / total * 100, 1)}%</span></td><td class="n">${M.km ? nf(v / M.km, 2) : "—"}</td><td class="n">${M.days ? nf(v / M.days) : "—"}</td></tr>`).join("")}</tbody>
@@ -7075,7 +7077,11 @@ const rsSys = () => { const r = padiFor(rsCol(), rsRules()); return Object.fromE
 const rsPadi = k => rsh.padiEd[k] ? num(rsh.padi[k]) : rsSys()[k];
 const rsPadiTot = () => RS_ROLES.reduce((a, [k]) => a + rsPadi(k), 0);
 const rsOther = () => rsh.exp.reduce((a, x) => a + num(x.amt), 0);
-const rsExpTot = () => num(rsh.dsl.amount) + rsPadiTot() + rsOther();
+// Total expenses: the parts entered (diesel, padi, route expenses); when only the day's total is told, what the parts
+// don't cover sits as Other, not split, until the split is entered.
+const rsParts = () => num(rsh.dsl.amount) + rsPadiTot() + rsOther();
+const rsUnsplit = () => Math.max(0, num(rsh.expTot) - rsParts());
+const rsExpTot = () => rsParts() + rsUnsplit();
 const rsCrewName = k => { const v = rsh.crew[k] || ""; if (v.startsWith("id:")) return ((k === "driver" ? drivers : conductors).find(x => x.id === v.slice(3))?.name) || ""; return v.startsWith("name:") ? v.slice(5) : ""; };
 const rsPadiChanged = d => RS_ROLES.filter(([k]) => d.padiSys && num(d.padi?.[k]) !== num(d.padiSys[k]));
 
@@ -7106,14 +7112,14 @@ function rsLoad() {
       startKm: prev ?? "", endKm: t.odo ?? "" };
     rsh.edit = platformWrite && canTrips; }
   if (d) {
-    Object.assign(rsh, { notRun: !!d.notRun, idle: d.idleReason || "", start: d.start || "", s: [1, 2, 3, 4, 5].map(i => d["s" + i] != null ? String(d["s" + i]) : ""), colTot: d.colTotal != null ? String(d.colTotal) : "",
+    Object.assign(rsh, { notRun: !!d.notRun, idle: d.idleReason || "", start: d.start || "", s: [1, 2, 3, 4, 5].map(i => d["s" + i] != null ? String(d["s" + i]) : ""), colTot: d.colTotal != null ? String(d.colTotal) : "", expTot: d.expTotal != null ? String(d.expTotal) : "",
       crew: Object.fromEntries(RS_ROLES.map(([k]) => [k, crewValue(k, d)])), padi: Object.fromEntries(RS_ROLES.map(([k]) => [k, String(d.padi?.[k] ?? "")])),
       padiEd: Object.fromEntries(RS_ROLES.map(([k]) => [k, !!d.padiEd?.[k]])), dsl: { litres: String(d.dsl?.litres ?? ""), amount: String(d.dsl?.amount ?? ""), pay: d.dsl?.pay || "Fuel card", place: d.dsl?.place || "" },
       exp: (d.exp || []).filter(x => !x.off).map(x => ({ name: x.name, amt: String(x.amt ?? ""), own: !!x.own, ...(x.def != null ? { def: num(x.def) } : {}) })), expDef: d.expDef || null, startKm: String(d.startKm ?? ""), endKm: String(d.endKm ?? ""), remarks: d.remarks || "", status: d.status || "draft" });
   } else {
     const last = lastOf(rsh.bus), me = rsMe(), start = plannedFor(rsh.bus, rsh.date) || (last?.start ? rsOpposite(last.start, ends) : "") || ends[0] || "";
     const prev = rsPrevKm(rsh.bus, rsh.date);
-    Object.assign(rsh, { notRun: false, idle: "", start, s: ["", "", "", "", ""], colTot: "",
+    Object.assign(rsh, { notRun: false, idle: "", start, s: ["", "", "", "", ""], colTot: "", expTot: "",
       crew: { driver: crewValue("driver", last), conductor: me ? "id:" + me.id : crewValue("conductor", last), checker: crewValue("checker", last) },
       padi: { driver: "", conductor: "", checker: "" }, padiEd: { driver: false, conductor: false, checker: false },
       dsl: { litres: "", amount: "", pay: "Fuel card", place: rsOpposite(start, ends) }, exp: rsList(start), expDef: rsDefOf(rsList(start)), startKm: prev != null ? String(prev) : "", endKm: "", remarks: "", status: "draft" });
@@ -7165,7 +7171,7 @@ function rsPast() {
 function rsMoneyHtml() {
   const c = rsCol(), e = rsExpTot(), b = c - e;
   return `<div class="tpmoney"><span class="bwm"><span>Total collection</span><b>${rs(c)}</b></span>` +
-    `<span class="bwm"><span>Total expenses<br><small class="rshow">Diesel ${rs(num(rsh.dsl.amount))} · Padi ${rs(rsPadiTot())} · Other ${rs(rsOther())}</small></span><b>${rs(e)}</b></span>` +
+    `<span class="bwm"><span>Total expenses<br><small class="rshow">Diesel ${rs(num(rsh.dsl.amount))} · Padi ${rs(rsPadiTot())} · Route ${rs(rsOther())}${rsUnsplit() ? ` · Other, not split ${rs(rsUnsplit())}` : ""}</small>${num(rsh.expTot) && rsParts() > num(rsh.expTot) ? `<small class="rswarnt">The expenses entered add up to ${rs(rsParts())}, more than the total ${rs(num(rsh.expTot))}.</small>` : ""}</span><b>${rs(e)}</b></span>` +
     `<span class="bwm net${b < 0 ? " neg" : ""}"><span><b style="font-size:19px">Balance</b></span><b>${b < 0 ? "− " : ""}${rs(Math.abs(b))}</b></span></div>`;
 }
 function rsPageHtml() {
@@ -7178,6 +7184,8 @@ function rsPageHtml() {
     (ch.length ? `<div class="bhappr rswarn"><b>⚠ Padi changed by the conductor</b>${ch.map(([k, l]) => `<span>${l}: ${rs(num(d.padi[k]))} entered · system gave ${rs(num(d.padiSys[k]))} (${num(d.padi[k]) > num(d.padiSys[k]) ? "+" : "−"}${rs(Math.abs(num(d.padi[k]) - num(d.padiSys[k])))})</span>`).join("")}</div>` : "") +
     (rsh.admin && d && rsExpChanges(d).length ? `<div class="bhappr rswarn"><b>⚠ Route expenses changed by the conductor</b>${rsExpChanges(d).map(c => `<span>${esc(c)}</span>`).join("")}</div>` : "") +
     (rsh.admin && d && !d.notRun && (totalOnly(d) || colTotalDiff(d)) ? `<div class="bhappr rswarn"><b>${totalOnly(d) ? "Only the day's total so far" : "⚠ Trips differ from the total entered earlier"}</b><span>${totalOnly(d) ? `Total collection ${rs(num(d.colTotal))}. The trip-wise collection is not filled yet.` : `Trips add up to ${rs(singlesSum(d))} · total entered ${rs(num(d.colTotal))} (${colTotalDiff(d) > 0 ? "+" : "−"}${rs(Math.abs(colTotalDiff(d)))})`}</span></div>` : "") +
+    (rsh.admin && d && !d.notRun && num(d.expTotal) ? (() => { const parts = num(d.expense) - Math.max(0, num(d.expTotal) - (num(d.dsl?.amount) + RS_ROLES.reduce((a, [k]) => a + num(d.padi?.[k]), 0) + (d.exp || []).filter(x => !x.off).reduce((a, x) => a + num(x.amt), 0))), un = num(d.expense) - parts;
+      return un ? `<div class="bhappr rswarn"><b>Expenses not fully split</b><span>Total expenses ${rs(num(d.expTotal))} told · ${rs(un)} sits as Other, not split. It can be approved like this.</span></div>` : ""; })() : "") +
     (office ? `<div class="bhappr"><b>The office already entered this day</b><span>Approving puts this sheet in its place.</span></div>` : "") +
     (rsh.edit && !rsh.admin ? `<div class="tptip"><b>Type each amount.</b> It saves by itself. You can finish it later.</div>` : "") +
     rsSec("1", "Did the bus run today?", `<div class="bwseg c2"><button type="button" data-rs="ran" aria-pressed="${!rsh.notRun}"${rsh.edit ? "" : " disabled"}>✅ Bus ran</button><button type="button" data-rs="idle" aria-pressed="${rsh.notRun}"${rsh.edit ? "" : " disabled"}>⛔ Did not run</button></div>` +
@@ -7198,7 +7206,7 @@ function rsPageHtml() {
         (rsh.start && rsh.dsl.place && rsOpposite(rsh.start, rsh.ends).toLowerCase() === placeName(rsh.dsl.place).toLowerCase() && rsh.edit ? `<p class="bwnote" style="margin:4px 0 6px">Place is ${esc(rsh.dsl.place)} because the bus starts from ${esc(placeName(rsh.start))}. Change it if needed.</p>` : "") +
         "") +
       rsSec("5", "Route expenses", rsExpHtml(), rsh.start ? `default from ${esc(placeName(rsh.start))}` : "") +
-      rsSec("6", "Today's money", `<div id="rsMoney">${rsMoneyHtml()}</div>`) +
+      rsSec("6", "Today's money", `<div class="tprow rstot"><span class="tpl"><b>Total expenses</b><small class="rshow">Only if just the total is known</small></span>${rsMoneyIn("exptot", rsh.expTot, "Total expenses")}</div><div id="rsMoney">${rsMoneyHtml()}</div>`) +
       rsSec("7", "Km meter", `<div class="tprow"><span class="tpl">Start km<br><small class="rshow">From the last day's end</small></span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="startKm" value="${esc(rsh.startKm)}" aria-label="Start km"${ro}><b>km</b></span></div>` +
         `<div class="tprow"><span class="tpl">End km</span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="endKm" value="${esc(rsh.endKm)}" placeholder="At night" aria-label="End km"${ro}><b>km</b></span></div>` +
         `<div class="bwnote tprun" id="rsRun">${rsKmHtml()}</div>`)) +
@@ -7262,6 +7270,7 @@ function rsInput(e) {
   const v = e.target.value;
   if (k.startsWith("s:")) rsh.s[+k.slice(2)] = v;
   else if (k === "coltot") { if (rsSum()) return; rsh.colTot = v; }
+  else if (k === "exptot") rsh.expTot = v;
   else if (k.startsWith("padi:")) { const r = k.slice(5); rsh.padi[r] = v; rsh.padiEd[r] = true; }
   else if (k.startsWith("crew:")) { rsh.crew[k.slice(5)] = v; rsRefresh(); if ($("rsCrew")) $("rsCrew").innerHTML = rsCrewHtml(); }
   else if (k.startsWith("dsl:")) rsh.dsl[k.slice(4)] = v;
@@ -7303,6 +7312,7 @@ function rsBuild(status) {
   else {
     rsh.s.forEach((v, i) => { if (v !== "") out["s" + (i + 1)] = Math.round(num(v)); });
     if (num(rsh.colTot)) out.colTotal = Math.round(num(rsh.colTot));
+    if (num(rsh.expTot)) out.expTotal = Math.round(num(rsh.expTot));
     RS_ROLES.forEach(([k]) => { const v = rsh.crew[k]; if (v.startsWith("id:")) { out[k + "Id"] = v.slice(3); out[k + "Name"] = nm(k); } else if (v) out[k + "Name"] = nm(k); });
     const sys = rsSys(); out.padiSys = sys; out.padi = Object.fromEntries(RS_ROLES.map(([k]) => [k, rsPadi(k)])); out.padiEd = { ...rsh.padiEd };
     out.dsl = { litres: Math.round(num(rsh.dsl.litres) * 100) / 100, amount: Math.round(num(rsh.dsl.amount)), pay: rsh.dsl.pay, place: rsh.dsl.place.trim() };
@@ -7351,7 +7361,10 @@ async function rsApprove() {
     t.driverPay = s.padi.driver; t.conductorPay = s.padi.conductor; if (s.padi.checker) t.checkerPay = s.padi.checker;
     s.exp = s.exp.filter(x => !x.off);
     s.exp.forEach(x => { const c = RS_CAT.find(([re]) => re.test(x.name))?.[1] || "misc"; t["ex_" + c] = num(t["ex_" + c]) + x.amt; });
-    t.expList = s.exp; if (s.expDef) t.expDef = s.expDef; t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
+    t.expList = s.exp; if (s.expDef) t.expDef = s.expDef;
+    // What the told total expense doesn't cover stays as Other, not split.
+    if (s.expTotal) t.expTotal = s.expTotal;
+    t.otherExp = itemised(t) + Math.max(0, num(s.expTotal) - (num(t.fuelCost) + tripPay(t) + itemised(t))); if (!t.otherExp) delete t.otherExp;
     if (s.endKm) t.odo = s.endKm;
     t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
   }
@@ -7695,7 +7708,7 @@ function renderDayBook() {
 let dbExp = [], dbExpDef = null;
 function dbExpFrom(t) {
   if (t?.expList) return { list: t.expList.filter(x => !x.off).map(x => ({ name: x.name, amt: String(x.amt ?? ""), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: num(x.def) } : {}) })), def: t.expDef || null };
-  if (t) return { list: EXP_CATS.filter(([k]) => num(t["ex_" + k])).map(([k, l]) => ({ name: l, amt: String(num(t["ex_" + k])), own: true })).concat(unItemised(t) ? [{ name: "Other", amt: String(unItemised(t)), own: true }] : []), def: null };
+  if (t) return { list: EXP_CATS.filter(([k]) => num(t["ex_" + k])).map(([k, l]) => ({ name: l, amt: String(num(t["ex_" + k])), own: true })).concat(unItemised(t) && !t.expTotal ? [{ name: "Other", amt: String(unItemised(t)), own: true }] : []), def: null };
   return null;
 }
 function dbExpDefault(start) { dbExp = rsList(start); dbExpDef = rsDefOf(dbExp); }
@@ -7727,6 +7740,7 @@ function fillDayForm() {
   const src = t || last;
   $("dbDriver").value = crewValue("driver", src); $("dbConductor").value = crewValue("conductor", src); $("dbChecker").value = crewValue("checker", src);
   Object.entries(DB_FIELDS).forEach(([id, k]) => $(id).value = t?.[k] ?? "");
+  $("dbExpAll").value = t?.expTotal ?? "";
   if (!t && last) $("dbRate").value = last.dieselRate ?? "";
   // Padi comes from the padi rules on the day's collection; a saved amount that differs counts as typed by hand.
   dbColTold = t?.colTotal != null ? String(t.colTotal) : "";
@@ -7768,7 +7782,10 @@ function dbCalc() {
   $("dbPadiHint").textContent = DB_PAY.some(([id]) => dbPayTouched[id]) ? "Pay changed by hand. Clear a box to use the padi rules." : col ? "Pay worked out from the padi rules." : "Pay is worked out from the collection.";
   const other = dbExp.reduce((a, x) => a + num(x.amt), 0);
   if ($("dbExpTot")) $("dbExpTot").textContent = rs(other);
-  const exp = num($("dbFuel").value) + num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value) + other, bal = col - exp;
+  const parts = num($("dbFuel").value) + num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value) + other, told = num($("dbExpAll").value);
+  const unsplit = Math.max(0, told - parts), exp = parts + unsplit, bal = col - exp;
+  $("dbExpAllHint").textContent = !told ? "Only if just the day's total is known" : unsplit ? `${rs(unsplit)} sits as Other, not split` : parts > told ? `Entered expenses add up to ${rs(parts)}, more than this` : "Fully split ✓";
+  $("dbExpAllHint").className = told && (unsplit || parts > told) ? "hint warn" : "hint";
   const prev = prevOdoFor(dbBus, opDate), odo = num($("dbOdo").value), km = odo && prev != null ? odo - prev : null;
   $("dbOdoHint").textContent = prev != null ? `Last reading ${nf(prev)}${km > 0 ? ` · ${nf(km)} km today` : ""}` : "No earlier reading";
   const diff = sum && num(dbColTold) ? sum - num(dbColTold) : 0;
@@ -7860,7 +7877,9 @@ $("dbForm").addEventListener("submit", async e => {
     const list = dbExp.filter(x => x.name.trim() || num(x.amt)).map(x => ({ name: x.name.trim() || "Other", amt: Math.round(num(x.amt)), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: x.def } : {}) }));
     list.forEach(x => { const c = RS_CAT.find(([re]) => re.test(x.name))?.[1] || "misc"; t["ex_" + c] = num(t["ex_" + c]) + x.amt; });
     if (list.length) t.expList = list; if (dbExpDef) t.expDef = dbExpDef;
-    t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
+    put("dbExpAll", "expTotal");
+    // What the told total expense doesn't cover stays as Other, not split.
+    t.otherExp = itemised(t) + Math.max(0, num(t.expTotal) - (num(t.fuelCost) + tripPay(t) + itemised(t))); if (!t.otherExp) delete t.otherExp;
     if (t.litres && !t.dieselRate) err("dbRate", "Enter the diesel rate.");
     if (t.dieselRate && (t.dieselRate < 50 || t.dieselRate > 200)) err("dbRate", "Enter the rate per litre, e.g. 93.07.");
     if (t.litres > 600) err("dbLitres", "That's more than a bus tank holds.");
