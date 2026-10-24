@@ -7092,7 +7092,8 @@ const rsPadiChanged = d => RS_ROLES.filter(([k]) => d.padiSys && num(d.padi?.[k]
 function rsOpen(bus, date, admin = false) {
   rsBus = bus; rsDate = date; opDate = date; subscribeDay();
   const d = rsDoc(bus, date);
-  const edit = platformWrite && (admin ? canTrips && d?.status !== "approved" : canRsUpd && (!d || d.status === "draft" || d.status === "rejected"));
+  // The office can always correct a day, approved or not; a conductor only until he sends it.
+  const edit = platformWrite && (canTrips || canRsUpd && (!d || d.status === "draft" || d.status === "rejected"));
   rsh = { bus, date, admin, edit, ready: false, timer: null, q: Promise.resolve(), saved: !!d };
   if (!$("rsw")) {
     document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="rsw" role="dialog" aria-modal="true" aria-labelledby="rsTitle" hidden></div>');
@@ -7184,6 +7185,7 @@ function rsPageHtml() {
   const office = rsh.admin && d && trips.concat(winTrips()).some(t => t.id === rsId(rsh.bus, rsh.date) && !t.fromSheet);
   const ends = rsh.ends.length === 2 ? rsh.ends : [];
   return (rsh.status === "rejected" && d?.rejectReason ? `<div class="bhappr"><b>Sent back by the office</b><span>${esc(d.rejectReason)}</span><span class="rshow">Correct it and send again.</span></div>` : "") +
+    (rsh.edit && canTrips && rsh.status === "approved" ? `<div class="bhappr"><b>✓ Approved · in the trip sheet</b><span>You can still correct it. Changes are kept when you tap Save to trip sheet.</span></div>` : "") +
     (!rsh.edit && !rsh.admin && rsh.status !== "draft" ? `<div class="bhlock"><b>${rsh.status === "approved" ? "✓ Approved by the office" : "Sent to the office"}</b><span>${rsh.status === "approved" ? "This day is in the trip sheet." : "Waiting for approval. Ask the office if something needs changing."}</span></div>` : "") +
     (ch.length ? `<div class="bhappr rswarn"><b>⚠ Padi changed by the conductor</b>${ch.map(([k, l]) => `<span>${l}: ${rs(num(d.padi[k]))} entered · system gave ${rs(num(d.padiSys[k]))} (${num(d.padi[k]) > num(d.padiSys[k]) ? "+" : "−"}${rs(Math.abs(num(d.padi[k]) - num(d.padiSys[k])))})</span>`).join("")}</div>` : "") +
     (rsh.admin && d && rsExpChanges(d).length ? `<div class="bhappr rswarn"><b>⚠ Route expenses changed by the conductor</b>${rsExpChanges(d).map(c => `<span>${esc(c)}</span>`).join("")}</div>` : "") +
@@ -7252,7 +7254,7 @@ function rsRender(top) {
     `<div class="bwb tws tpage" id="rsBody">${rsPageHtml()}</div>` +
     (rsh.admin && rsh.askWhy ? `<footer class="bwf"><label class="bwf1"><span>Why is it sent back? The conductor will see this.</span><textarea id="rsWhy" rows="2" maxlength="200"></textarea></label><span class="bwerr" id="rsWhyErr"></span><div class="bw2" style="margin-top:8px"><button type="button" class="bwalt" data-rs="rejectno">Cancel</button><button type="button" class="bwgo" data-rs="rejectgo">Send back</button></div></footer>` :
      rsh.admin ? (rsh.edit && d?.status === "submitted" ? `<footer class="bwf two"><button type="button" class="bwalt" data-rs="reject">Send back</button><button type="button" class="bwgo" data-rs="approve"${rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Approve"}</button></footer>` : "")
-      : rsh.edit && canTrips ? `<footer class="bwf"><div class="twspent"><span class="tpst ok" id="rsSt">${rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
+      : rsh.edit && canTrips ? `<footer class="bwf"><div class="twspent"><span class="tpst ${rsh.dirty ? "bad" : "ok"}" id="rsSt">${rsh.dirty ? "Not saved yet" : rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
         `<button type="button" class="bwgo" data-rs="approve"${miss.length || rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Save to trip sheet"}</button>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>`
       : rsh.edit ? `<footer class="bwf"><div class="twspent"><span class="tpst ok" id="rsSt">${rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
         `<button type="button" class="bwgo" data-rs="send"${miss.length || rsh.saving ? " disabled" : ""}>${rsh.saving ? "Sending…" : "Send to office"} ${BW_ICON.next}</button>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>` : "") +
@@ -7290,7 +7292,10 @@ function rsInput(e) {
 function rsClick(e) {
   const b = e.target.closest("button"); if (!b || b.disabled || !rsh) return;
   const a = b.dataset.rs;
-  if (a === "back" || a === "close") { rsClose(); return; }
+  if (a === "back" || a === "close") {
+    if (rsh.dirty && rsh.edit && canTrips) { askYesNo("Save the changes to the trip sheet?", { yes: "Save", no: "Don't save" }).then(ok => { if (!rsh) return; if (ok) rsApprove(); else { rsh.dirty = false; rsClose(); } }); return; }
+    rsClose(); return;
+  }
   if (!rsh.edit) return;
   if (a === "ran" || a === "idle") { rsh.notRun = a === "idle"; rsRender(); rsSoon(); return; }
   if (a === "why") { rsh.idle = b.dataset.v; rsRender(); rsSoon(); return; }
@@ -7318,7 +7323,12 @@ function rsClick(e) {
   if (a === "rejectno") { rsh.askWhy = false; rsRender(); return; }
   if (a === "rejectgo") { const why = $("rsWhy").value.trim(); if (!why) { $("rsWhyErr").textContent = "Type why it is sent back."; $("rsWhy").focus(); return; } rsSave("rejected", why); }
 }
-function rsSoon() { clearTimeout(rsh.timer); if ($("rsSt")) { $("rsSt").textContent = "Saving…"; $("rsSt").className = "tpst"; } rsh.timer = setTimeout(() => rsQueue(() => rsSave()), 900); }
+// An approved day is in the trip sheet, so its changes wait for Save to trip sheet instead of saving by themselves.
+function rsSoon() {
+  clearTimeout(rsh.timer);
+  if (rsh.status === "approved") { rsh.dirty = true; if ($("rsSt")) { $("rsSt").textContent = "Not saved yet"; $("rsSt").className = "tpst bad"; } return; }
+  if ($("rsSt")) { $("rsSt").textContent = "Saving…"; $("rsSt").className = "tpst"; } rsh.timer = setTimeout(() => rsQueue(() => rsSave()), 900);
+}
 function rsQueue(job) { rsh.q = rsh.q.then(job).catch(() => {}); return rsh.q; }
 // What is stored: the sheet as typed, the system padi at the time (so the office can see a change), and the totals.
 function rsBuild(status) {
@@ -7343,7 +7353,7 @@ function rsBuild(status) {
   return out;
 }
 async function rsSave(status, why) {
-  if (!rsh?.edit || !rsh.ready) return;
+  if (!rsh?.edit || !rsh.ready || (!status && rsh.status === "approved")) return;
   const cur = rsDoc(rsh.bus, rsh.date), st = status || (cur?.status === "rejected" ? "rejected" : "draft");
   if (st === "submitted" && rsMissing().length) return;
   const doc = rsBuild(st);
