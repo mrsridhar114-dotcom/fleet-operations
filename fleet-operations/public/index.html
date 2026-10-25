@@ -88,6 +88,7 @@ nav.paths { padding: 14px 10px 20px; display: flex; flex-direction: column; gap:
   .navscrim[hidden] { display: none; }
 }
 /* Route bus day sheet and monthly entry: the menu panel folds away for room; ☰ Menu opens it over the page. */
+body.navless { margin: 0; }
 body.navless .app { display: block; min-height: 0; }
 body.navless .topbar { display: flex; align-items: center; gap: 12px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--side-bg); color: var(--side-ink); padding: 10px 16px; }
 body.navless .topbar .mark { font-family: var(--display); font-weight: 700; font-size: 20px; }
@@ -101,6 +102,20 @@ body.navless .twrap { max-width: none; }
 /* On a computer the day sheet fills the window: header and Save buttons always in view, nothing to scroll in a normal day. */
 @media (min-width: 1000px) {
   #view-tday { padding-block: 10px; height: calc(100dvh - var(--tbh, 56px)); box-sizing: border-box; }
+  /* Like the spare bus trip sheet: no app bar, the sheet fills the window under its own dark title bar. */
+  body.dsfull .topbar { display: none; }
+  body.dsfull #view-tday { padding: 0; height: 100dvh; }
+  body.dsfull #view-tday .dsheet { border: 0; border-radius: 0; }
+  body.dsfull #view-tday .dshead { background: var(--side-bg); color: var(--side-ink); border-bottom: 0; padding: 7px 16px; align-items: center; min-height: 48px; }
+  body.dsfull #view-tday .dshead h1 { font: 700 22px/1.1 var(--display); color: var(--side-ink); }
+  body.dsfull #view-tday .dshead .vsub, body.dsfull #view-tday .dshead .k { color: var(--side-muted); }
+  body.dsfull #view-tday .dshead .dsf { gap: 2px; }
+  body.dsfull #view-tday .dshead .navbtn { background: transparent; color: var(--side-ink); border-color: var(--side-line); }
+  body.dsfull #view-tday .dshead .seg span { background: transparent; color: var(--side-ink); border-color: var(--side-line); }
+  body.dsfull #view-tday .dshead .seg input:checked + span { background: var(--accent); border-color: var(--accent); color: #fff; }
+  body.dsfull #view-tday .dshead .ro-tag { color: var(--side-muted); border-color: var(--side-line); }
+  body.dsfull #dbClose { background: transparent; color: var(--side-ink); border-color: var(--side-line); }
+  body.dsfull #dbClose:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
   #view-tday #dbWrap { height: 100%; display: flex; flex-direction: column; gap: 8px; }
   #view-tday .dsheet { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   #view-tday .dsbody { flex: 1; min-height: 0; overflow: hidden; grid-template-rows: minmax(0, 1fr); }
@@ -3438,6 +3453,7 @@ function showView() {
   if (want === "trexp" && view !== "trexp") { rxOpen = ""; rxAdding = false; }
   view = (want === "tguide" && acc.bookings === "none" && acc.tripsheets === "none") || acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
+  if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
   ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "tguide", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
   const navKey = want === "tguide" ? "guide" : want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
@@ -7811,7 +7827,7 @@ function renderDayBook() {
   subscribeDay();
   $("dbDate").value = opDate; $("dbDate").max = todayISO(); $("dbNextDay").disabled = opDate >= todayISO();
   const rb = routeBuses();
-  $("dbNone").hidden = !!rb.length; $("dbWrap").hidden = !rb.length;
+  $("dbNone").hidden = !!rb.length; $("dbWrap").hidden = !rb.length; document.body.classList.toggle("dsfull", view === "tday" && !!rb.length);
   if (!rb.length) return;
   const ready = dayReady();
   if (!rb.some(b => b.id === dbBus)) dbBus = (ready && rb.find(b => !entryOf(b.id)) || rb[0]).id;
