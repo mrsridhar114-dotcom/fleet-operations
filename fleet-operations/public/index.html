@@ -7921,6 +7921,11 @@ function nextPending() {
 }
 const dbOneBus = () => routeBuses().length === 1;
 function syncDbSaveLabel() { if (dbReviewSheet) { $("dbSave").textContent = "✓ Approve and add to trip sheet"; return; } $("dbSave").textContent = dbOneBus() ? (opDate < todayISO() ? "Save, next day →" : "Save") : nextPending() ? "Save, next bus →" : "Save"; }
+// What the save message says about singles: the singles actually typed, and any part of a typed total not split into singles.
+function dbSinglesText(t) {
+  const n = [1, 2, 3, 4, 5].filter(i => num(t["s" + i]) > 0).length, sum = [1, 2, 3, 4, 5].reduce((a, i) => a + num(t["s" + i]), 0), rest = num(t.colTotal) ? num(t.colTotal) - sum : 0;
+  return rest > 0 ? (n ? `${n} single${n === 1 ? "" : "s"} + ${rs(rest)} not split` : "total only, singles later") : `${n} of ${SINGLES_PER_DAY} singles`;
+}
 function dbCalc() {
   if ($("dbModeIdle").checked) { $("dbCalc").innerHTML = `<span>Marked as not run · counts as 0 singles</span>`; return; }
   const rate = num($("dbRate").value), lit = num($("dbLitres").value);
@@ -8072,7 +8077,7 @@ $("dbForm").addEventListener("submit", async e => {
     await dayTripSave(t);
     if (rv) await opsSave("routeSheets", { ...rv, status: "approved", approvedOn: new Date().toISOString(), approvedByName: whoAmI() });
     const b = vehicles.find(v => v.id === bus);
-    toast(rv ? `${plateOf(b)} · ${fmtShort(date)} approved and added to the trip sheet` : t.notRun ? `${plateOf(b)} marked as not run` : `${plateOf(b)} saved · ${singlesRun(t)} of 5 singles · balance ${rs(t.balance)}`);
+    toast(rv ? `${plateOf(b)} · ${fmtShort(date)} approved and added to the trip sheet` : t.notRun ? `${plateOf(b)} marked as not run` : `${plateOf(b)} saved · ${dbSinglesText(t)} · balance ${rs(t.balance)}`);
     dbDirty = false; $("dbDirty").hidden = true;
     const target = dbPending; dbPending = null;
     if (target) { applyDbTarget(target); return; }
