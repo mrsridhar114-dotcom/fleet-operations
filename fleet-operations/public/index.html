@@ -390,9 +390,17 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .ttabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); border-color: var(--line); }
 .ttabs button .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-left: 6px; vertical-align: 2px; }
 .ttabs button.year { margin-left: auto; }
-.tsum { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tsumwrap { display: flex; flex-direction: column; gap: 12px; }
+.tsum { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.tscards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tscard, .tscrew { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.tscard h3, .tscrew h3 { margin: 0 0 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.tsl { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 14px; } .tsl:first-of-type { border-top: 0; }
+.tsl b { font-family: var(--mono); font-variant-numeric: tabular-nums; } .tsl.pos b { color: var(--ok); } .tsl.neg b { color: var(--danger); } .tsl.pos, .tsl.neg { font-weight: 700; }
+.tscrew .ctable .neg { color: var(--danger); } .tscrew tr.tsgrp td { background: var(--bg); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+@media (max-width: 900px) { .tscards { grid-template-columns: minmax(0, 1fr); } }
 .tsum .stat { border-bottom: 1px solid var(--line); }
-@media (max-width: 720px) { .tsum { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1100px) { .tsum { grid-template-columns: repeat(3, minmax(0, 1fr)); } } @media (max-width: 720px) { .tsum { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .tsum .stat .v { font-size: 26px; }
 .tkm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 13px; color: var(--muted); }
 .tkm b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
@@ -1903,7 +1911,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div id="tBody">
         <nav class="ttabs" id="tTabs" role="tablist" aria-label="Month"></nav>
         <div id="tMonthView">
-          <section class="summary tsum" id="tSummary" aria-label="Month summary"></section>
+          <section class="tsumwrap" id="tSummary" aria-label="Month summary"></section>
           <div class="tentry" id="tEntryBar"></div>
           <div class="tkm" id="tRoute"></div>
           <div class="tkm" id="tKm"></div>
@@ -5297,7 +5305,6 @@ const EXP_CATS = [["toll", "Toll / FASTag"], ["stand", "Bus stand fees"], ["comm
 const IDLE_REASONS = ["Maintenance / service", "Breakdown", "Accident", "No driver or conductor", "Permit / RTO issue", "Strike / bandh", "Festival / holiday", "Weather", "Other"];
 const itemised = t => EXP_CATS.reduce((a, [k]) => a + num(t["ex_" + k]), 0);
 const unItemised = t => Math.max(0, num(t.otherExp) - itemised(t));
-const perKm = (v, km) => km ? `₹${nf(v / km, 2)}` : "—";
 
 function subscribeTrips() {
   const key = `${tBusId}|${tFyStart}`;
@@ -5576,19 +5583,27 @@ function renderTrips() {
   const M = monthStats(ym), list = M.list, tot = M.tot, bal = M.bal, days = M.days, km = M.km, open = M.open;
   const stat = (k, v, sub = "", color = "") => `<div class="stat"><div class="k">${k}</div><div class="v"${color ? ` style="color:${color}"` : ""}>${v}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</div>`;
   const idleNote = [M.idle.length ? `${M.idle.length} not run` : "", M.noEntry ? `${M.noEntry} not entered` : ""].filter(Boolean).join(" · ");
+  // Month summary: key figures, then money, kilometres and crew pay cards, then the month by driver and by conductor.
+  const per = v => days ? v / days : 0, crewPay = tot.pd + tot.pc + tot.pk, line = (k, v, cls = "") => `<div class="tsl${cls ? " " + cls : ""}"><span>${k}</span><b>${v}</b></div>`;
+  const low = M.rates.length ? Math.min(...M.rates) : null, high = M.rates.length ? Math.max(...M.rates) : null;
   $("tSummary").innerHTML =
-    stat("Days run", `${fmtDays(days)}<span class="sub" style="font-size:13px;font-weight:400"> / ${daysIn(ym)}</span>`, `${nf(M.singles)} of ${nf(daysIn(ym) * SINGLES_PER_DAY)} singles${M.shortDays ? ` · ${M.shortDays} short day${M.shortDays === 1 ? "" : "s"}` : ""}`) +
-    stat("Utilisation", M.elapsed ? `${utilPct(M.singles, M.elapsed)}%` : "—", M.elapsed ? `${nf(M.singles)} of ${nf(M.elapsed * SINGLES_PER_DAY)} singles so far${idleNote ? ` · ${idleNote}` : ""}` : "Month not started", M.elapsed && utilPct(M.singles, M.elapsed) < 85 ? "var(--warn)" : "") +
-    stat("Collection", rs(tot.col), days ? `${rs(tot.col / days)} a full day` : "") +
-    stat("Expense", rs(tot.exp), days ? `${rs(tot.exp / days)} a full day` : "") +
-    stat("Balance", rs(bal), days ? `${rs(bal / days)} a full day` : "", bal < 0 ? "var(--danger)" : "var(--ok)") +
-    stat("EPKM", perKm(tot.col, km), "Earnings per km") +
-    stat("CPKM", perKm(tot.exp, km), "Cost per km") +
-    stat("Profit per km", perKm(bal, km), km ? `${nf(bal / tot.col * 100, 1)}% of collection` : "", bal < 0 ? "var(--danger)" : "") +
-    stat("Kilometres", km != null ? nf(km) : "—", km != null && days ? `${nf(km / days)} a full day` : "") +
-    stat("Mileage", km && tot.lit ? `${nf(km / tot.lit, 2)} km/L` : "—", tot.lit ? `${nf(tot.lit)} L used` : "") +
-    stat("Diesel", rs(tot.fuel), M.rates.length ? `₹${nf(Math.min(...M.rates), 2)} – ₹${nf(Math.max(...M.rates), 2)} a litre` : "") +
-    stat("Crew pay", rs(tot.pd + tot.pc + tot.pk), `Driver ${rs(tot.pd)} · Conductor ${rs(tot.pc)} · Checker ${rs(tot.pk)}`);
+    `<div class="summary tsum">` +
+      stat("Days run", `${fmtDays(days)}<span class="sub" style="font-size:13px;font-weight:400"> / ${daysIn(ym)}</span>`, `${nf(M.singles)} of ${nf(daysIn(ym) * SINGLES_PER_DAY)} singles${idleNote ? ` · ${idleNote}` : ""}`) +
+      stat("Total balance", rs(bal), "", bal < 0 ? "var(--danger)" : "var(--ok)") +
+      stat("Avg col / day", days ? rs(per(tot.col)) : "—") +
+      stat("Avg bal / day", days ? rs(per(bal)) : "—", "", bal < 0 ? "var(--danger)" : "") +
+      stat("Total diesel (price)", rs(tot.fuel)) +
+      stat("Avg diesel / day", days ? rs(per(tot.fuel)) : "—") +
+      stat("Avg salary / day", days ? rs(per(crewPay)) : "—", "Driver, conductor and checker") +
+      stat("Total fuel (ltrs)", `${nf(tot.lit, tot.lit % 1 ? 1 : 0)}<span class="sub" style="font-size:13px;font-weight:400"> L</span>`) +
+      stat("Low fuel price", low != null ? `₹${nf(low, 2)}` : "—", "a litre") +
+      stat("High fuel price", high != null ? `₹${nf(high, 2)}` : "—", "a litre") +
+    `</div><div class="tscards">` +
+      `<section class="tscard"><h3>Money</h3>${line("Total collection", rs(tot.col))}${line("Total expense", rs(tot.exp))}${line("Total balance", rs(bal), bal < 0 ? "neg" : "pos")}</section>` +
+      `<section class="tscard"><h3>Kilometres</h3>${line("Kilometer starting", open.km != null ? nf(open.km) : "—")}${line("Kilometer ending", M.lastOdo ? nf(M.lastOdo) : "—")}${line("Total kilometers", km != null ? nf(km) : "—")}${line("Per day average kms", km != null && days ? nf(km / days) : "—")}${km && tot.lit ? `<p class="hint" style="margin:4px 0 0">Mileage ${nf(km / tot.lit, 2)} km/L</p>` : ""}</section>` +
+      `<section class="tscard"><h3>Salary</h3>${line("Driver salary", rs(tot.pd))}${line("Conductor salary", rs(tot.pc))}${line("Checker salary", rs(tot.pk))}${line("Total", rs(crewPay), "pos")}</section>` +
+    `</div>` + meCrewTable(M);
+
 
   const missing = []; for (let d = 1; d <= daysIn(ym); d++) { const dt = `${ym}-${pad2(d)}`; if (dt <= today && !list.some(x => x.date === dt)) missing.push(dt); }
   const nTot = list.filter(totalOnly).length;
@@ -5656,6 +5671,19 @@ function monthStats(ym) {
     rates: ranList.map(t => num(t.dieselRate)).filter(Boolean) };
 }
 
+const perKm = (v, km) => km ? `₹${nf(v / km, 2)}` : "—";
+// The month by person: each driver and each conductor with the days they worked and what those days brought in.
+function meCrewTable(M) {
+  const ran = M.list.filter(t => !t.notRun);
+  if (!ran.length) return "";
+  const nameOf = (kind, t) => { const id = t[kind + "Id"], list = kind === "driver" ? drivers : conductors; return (id && list.find(p => p.id === id)?.name) || t[kind + "Name"] || "Not recorded"; };
+  const group = kind => { const g = new Map(); ran.forEach(t => { const n = nameOf(kind, t), x = g.get(n) || { n, days: 0, dsl: 0, col: 0, exp: 0 }; x.days += singlesRun(t) / SINGLES_PER_DAY; x.dsl += num(t.fuelCost); x.col += tripCollection(t); x.exp += tripExpense(t); g.set(n, x); }); return [...g.values()].sort((a, b) => b.days - a.days || a.n.localeCompare(b.n)); };
+  const row = x => { const bal = x.col - x.exp, d = x.days || 0, avg = v => d ? nf(v / d) : "—";
+    return `<tr><td>${esc(x.n)}</td><td class="n">${fmtDays(d)}</td><td class="n">${nf(x.dsl)}</td><td class="n">${avg(x.dsl)}</td><td class="n">${nf(x.col)}</td><td class="n">${nf(x.exp)}</td><td class="n${bal < 0 ? " neg" : ""}">${nf(bal)}</td><td class="n${bal < 0 ? " neg" : ""}">${avg(bal)}</td><td class="n">${avg(x.col)}</td></tr>`; };
+  const part = (kind, label) => `<tr class="tsgrp"><td colspan="9">${label}</td></tr>` + group(kind).map(row).join("");
+  return `<section class="tscrew"><h3>By driver and conductor</h3><div class="tscroll"><table class="ctable"><thead><tr><th>Name</th><th class="n">No. of days</th><th class="n">Diesel</th><th class="n">Avg diesel / day</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Avg / day</th><th class="n">Avg col / day</th></tr></thead><tbody>` +
+    part("driver", "Drivers") + part("conductor", "Conductors") + `</tbody></table></div><p class="hint" style="margin:6px 0 0">Days count 5 singles as one day. Avg / day is the balance per day.</p></section>`;
+}
 function renderMileage(ym, M) {
   const pts = Object.entries(M.kmBy).map(([date, k]) => { const t = M.list.find(x => x.date === date); return { d: +date.slice(8, 10), v: t?.litres ? k / t.litres : null, date, k, l: t?.litres }; }).filter(p => p.v);
   const avg = M.km && M.tot.lit ? M.km / M.tot.lit : null;
