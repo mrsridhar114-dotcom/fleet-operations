@@ -952,7 +952,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 @media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } .uptpl { flex-direction: column; align-items: stretch; } }
 /* Route expenses and padi calculation */
 .rxlist { display: grid; grid-template-columns: minmax(0, 640px); gap: 14px; align-items: start; }
-table.rxtbl { table-layout: fixed; } table.rxtbl td { padding-top: 9px; padding-bottom: 9px; }
+table.rxtbl { table-layout: fixed; } table.rxtbl tr[data-rxrow] { cursor: pointer; } table.rxtbl tr[data-rxrow]:hover td { background: var(--accent-soft); } table.rxtbl td { padding-top: 9px; padding-bottom: 9px; }
 table.rxtbl th:nth-child(1) { width: 30%; } table.rxtbl th:nth-child(2) { width: 14%; } table.rxtbl th:nth-child(3) { width: 15%; } table.rxtbl th:nth-child(4) { width: 20%; } table.rxtbl th:nth-child(5) { width: 21%; }
 table.rxtbl .m { text-align: center; font-variant-numeric: tabular-nums; } table.rxtbl th.n, table.rxtbl td.n { padding-right: 18px; }
 table.rxtbl td.nm, table.rxtbl td.lc { overflow: hidden; text-overflow: ellipsis; } table.rxtbl td.lc span { display: block; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
@@ -1137,6 +1137,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .padibtn { display: inline-grid; place-items: center; width: 28px; height: 28px; margin-left: 8px; vertical-align: middle; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--accent); cursor: pointer; padding: 0; }
 .padibtn:hover { border-color: var(--accent); background: var(--accent-soft); }
 .dsh.dshx { display: flex; align-items: center; flex-wrap: wrap; } .dsh.dshx .padibtn { margin-left: auto; }
+.padipop select.rxsel { width: 100%; margin-top: 8px; font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
 .duepop.padipop { width: min(360px, calc(100vw - 24px)); }
 .padipop .pptab { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
 .padipop .pptab td { padding: 6px 0; border-top: 1px solid var(--line); vertical-align: top; }
@@ -1995,7 +1996,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                     <span class="hint">Amount is litres × rate unless you change it.</span>
                   </section>
                   <section class="dscard">
-                    <div class="dbxhead"><h3 class="dsh">Route expenses <small id="dbExpHint"></small></h3>
+                    <div class="dbxhead"><h3 class="dsh">Route expenses <small id="dbExpHint"></small><button type="button" class="padibtn" id="dbRxPop" aria-label="Route expenses list from the master" title="Route expenses list from the master"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button></h3>
                       <div class="seg" role="radiogroup" aria-label="Route expenses"><label><input type="radio" name="dbExpMode" id="dbXOther" value="other"><span>Rest as Other</span></label><label><input type="radio" name="dbExpMode" id="dbXList" value="list"><span id="dbXListL">Route list</span></label></div></div>
                     <div class="dbx" id="dbChips"></div>
                   </section>
@@ -5767,7 +5768,7 @@ function renderRxp() {
   $("rxPlaces").innerHTML = rxKnownPlaces().map(p => `<option value="${esc(p)}">`).join("");
   const tot = x => (x.items || []).reduce((a, i) => a + num(i.amount), 0);
   $("rxTbl").innerHTML = list.length ? `<thead><tr><th>Starting place</th><th class="m">No. of expenses</th><th class="n">Expenses total</th><th>Last changed</th><th></th></tr></thead><tbody>` +
-    list.map(x => `<tr><td class="nm">${esc(x.place)}</td><td class="m">${(x.items || []).length}</td><td class="n">${rs(tot(x))}</td><td class="lc">${x.updatedOn ? `${fmtDate(x.updatedOn)}${x.updatedByName ? `<span>${esc(x.updatedByName)}</span>` : ""}` : "—"}</td><td class="c"><span class="rxacts"><button class="btn" type="button" data-rxh="${x.id}" title="Change history">${HIST_SVG}<span>History</span></button><button class="btn" type="button" data-rxo="${x.id}">${can ? "Edit" : "View"}</button></span></td></tr>`).join("") + `</tbody>`
+    list.map(x => `<tr data-rxrow="${x.id}" title="${can ? "Open to edit" : "Open to view"}"><td class="nm">${esc(x.place)}</td><td class="m">${(x.items || []).length}</td><td class="n">${rs(tot(x))}</td><td class="lc">${x.updatedOn ? `${fmtDate(x.updatedOn)}${x.updatedByName ? `<span>${esc(x.updatedByName)}</span>` : ""}` : "—"}</td><td class="c"><span class="rxacts"><button class="btn" type="button" data-rxh="${x.id}" title="Change history">${HIST_SVG}<span>History</span></button><button class="btn" type="button" data-rxo="${x.id}">${can ? "Edit" : "View"}</button></span></td></tr>`).join("") + `</tbody>`
     : `<tbody><tr><td class="sub" style="white-space:normal">No starting places yet.${can ? " Use + Add new expense to set up the first one." : ""}</td></tr></tbody>`;
   if (!rxOpen || document.activeElement?.closest?.("#rxList") || rxPress) return;  // don't redraw under someone typing or tapping
   // A new expense typed but not yet added stays in its boxes when the list is redrawn.
@@ -5804,7 +5805,9 @@ $("rxNewSave").onclick = async () => {
 function rxOpenId(id) { const x = ops.routeExpenses.find(r => r.id === id); if (!x) return; rxOpen = id; rxSnap = { id, place: x.place, items: (x.items || []).map(i => ({ ...i })) }; renderRxp(); scrollTo(0, 0); }
 $("rxTbl").addEventListener("click", e => {
   const o = e.target.closest("[data-rxo]"); if (o) { rxOpenId(o.dataset.rxo); return; }
-  const h = e.target.closest("[data-rxh]"); if (h) rxHistOpen(h.dataset.rxh);
+  const h = e.target.closest("[data-rxh]"); if (h) { rxHistOpen(h.dataset.rxh); return; }
+  // A click anywhere else on the line opens it too, the same as Edit / View.
+  const r = e.target.closest("tr[data-rxrow]"); if (r) rxOpenId(r.dataset.rxrow);
 });
 // Change history of one starting place.
 function rxHistOpen(id) {
@@ -7351,7 +7354,7 @@ function rsPageHtml() {
         `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="40" data-k="dsl:place" value="${esc(rsh.dsl.place)}" placeholder="Where" aria-label="Diesel place"${ro}></span></label><span></span></div>` +
         (rsh.start && rsh.dsl.place && rsOpposite(rsh.start, rsh.ends).toLowerCase() === placeName(rsh.dsl.place).toLowerCase() && rsh.edit ? `<p class="bwnote" style="margin:4px 0 6px">Place is ${esc(rsh.dsl.place)} because the bus starts from ${esc(placeName(rsh.start))}. Change it if needed.</p>` : "") +
         "") +
-      rsSec("5", "Route expenses", rsExpHtml(), rsh.start ? `default from ${esc(placeName(rsh.start))}` : "") +
+      rsSec("5", `Route expenses<button type="button" class="padibtn" data-rxpop="rs" aria-label="Route expenses list from the master" title="Route expenses list from the master"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button>`, rsExpHtml(), rsh.start ? `default from ${esc(placeName(rsh.start))}` : "") +
       rsSec("6", "Today's money", `<div class="tprow rstot"><span class="tpl"><b>Total expenses</b><small class="rshow">Only if just the total is known</small></span>${rsMoneyIn("exptot", rsh.expTot, "Total expenses")}</div><div id="rsMoney">${rsMoneyHtml()}</div>`) +
       rsSec("7", "Km meter", `<div class="tprow"><span class="tpl">Start km<br><small class="rshow">From the last day's end</small></span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="startKm" value="${esc(rsh.startKm)}" aria-label="Start km"${ro}><b>km</b></span></div>` +
         `<div class="tprow"><span class="tpl">End km</span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="endKm" value="${esc(rsh.endKm)}" placeholder="At night" aria-label="End km"${ro}><b>km</b></span></div>` +
@@ -11380,6 +11383,65 @@ $("dbPadiPop").addEventListener("click", e => {
   openPadiPop(e.currentTarget, { plate: plateOf(vehicles.find(v => v.id === dbBus)), date: opDate, col: num(dbColTold) || sum, checker: !!$("dbChecker").value,
     crew: { driver: sel("dbDriver"), conductor: sel("dbConductor"), checker: sel("dbChecker") },
     entered: { driver: $("dbPayD").value === "" ? null : $("dbPayD").value, conductor: $("dbPayC").value === "" ? null : $("dbPayC").value, checker: $("dbPayK").value === "" ? null : $("dbPayK").value } });
+});
+
+/* ================= Route expenses list pop-up on the trip sheets =================
+   The default list of a starting place from the Route expenses master, with Save as image and Share. */
+function rxPopInfo(place) {
+  const m = rsMaster(place), items = (m?.items || []).filter(i => i.name).map(i => ({ name: i.name, amt: num(i.amount) }));
+  return { place: m?.place || placeName(place) || "", m, items, total: items.reduce((a, i) => a + i.amt, 0), on: m?.updatedOn || "", by: m?.updatedByName || "" };
+}
+function openRxPop(btn, start, plate, date) {
+  const open = document.querySelector(".rxpop"); closeDuePop(); if (open) return;
+  const pop = document.createElement("div"), places = [...ops.routeExpenses].sort((a, b) => String(a.place).localeCompare(String(b.place)));
+  let x = rxPopInfo(start);
+  pop.className = "duepop padipop rxpop"; pop.setAttribute("role", "dialog");
+  const body = () => `<h4>Route expenses list${plate ? ` · ${esc(plate)}` : ""}</h4>` +
+    (places.length ? `<select class="rxsel" aria-label="Starting place">${x.m ? "" : `<option value="">${esc(x.place || "Choose a starting place")}</option>`}${places.map(m => `<option value="${esc(m.id)}"${x.m?.id === m.id ? " selected" : ""}>Starting from ${esc(m.place)}</option>`).join("")}</select>` : "") +
+    (x.m ? (x.items.length ? `<table class="pptab">${x.items.map(i => `<tr><td>${esc(i.name)}</td><td class="n">${rs(i.amt)}</td></tr>`).join("")}<tr class="tot"><td>Total</td><td class="n">${rs(x.total)}</td></tr></table>` : `<p class="dnote">No expenses in this list yet.</p>`) +
+      `<p class="dnote">From the Route expenses master${x.on ? ` · last changed ${fmtDate(String(x.on).slice(0, 10))}${x.by ? ` by ${esc(x.by)}` : ""}` : ""}.</p>`
+      : `<p class="dnote">${x.place ? `There is no list for ${esc(x.place)} in the Route expenses master.` : "Enter where the bus started, or choose a place above."}</p>`) + popActsHtml();
+  const file = async () => { const d = new Date(), p2 = n => String(n).padStart(2, "0"); return [{ filename: `${(plate ? plateKey(plate).slice(-4) + "_" : "")}ROUTE-EXP_${x.place.replace(/[^A-Za-z0-9]+/g, "-")}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.jpg`, data: await rxJpg(x, plate, date) }]; };
+  const wire = () => {
+    const save = pop.querySelector(".duesave"), sh = pop.querySelector(".dshare"); save.lastChild.textContent = "Save as image"; save.disabled = !x.m; if (sh) sh.disabled = !x.m;
+    pop.querySelector(".rxsel")?.addEventListener("change", e => { const m = places.find(r => r.id === e.target.value); if (m) { x = rxPopInfo(m.place); pop.innerHTML = body(); wire(); } });
+    save.onclick = async ev => {
+      ev.stopPropagation(); let downloads = null;
+      try { downloads = await auDownloads(); } catch { downloads = null; }
+      if (!downloads) { toast("Saving files isn't available in this view."); return; }
+      save.disabled = true;
+      try { try { await document.fonts?.ready; } catch {} await downloads.save((await file())[0]); toast("Saved as a JPG image. Open it to print or share."); closeDuePop(); }
+      catch (er) { toast(er?.code === "declined" ? "Image not saved." : er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't save the image. Try again."); }
+      finally { if (save.isConnected) save.disabled = false; }
+    };
+    if (sh) sh.onclick = ev => { ev.stopPropagation(); popShare(ev.currentTarget, file, `Route expenses · ${x.place}`); };
+  };
+  pop.innerHTML = body(); wire(); placePop(pop, btn);
+}
+async function rxJpg(x, plate, date) {
+  const W = 1080, PADX = 64, F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  const H = 330 + Math.max(1, x.items.length) * 80 + 90 + 150;
+  const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H); g.textBaseline = "middle";
+  g.fillStyle = "#18212b"; g.fillRect(0, 0, W, 150);
+  g.fillStyle = "#ffffff"; g.font = `700 46px ${F}`; g.fillText("VBS", PADX, 62);
+  g.fillStyle = "#c9d3dc"; g.font = `500 30px ${F}`; g.fillText("Route expenses list", PADX, 108);
+  g.textAlign = "right"; g.fillText(plate || fmtDate(todayISO()), W - PADX, 108); g.textAlign = "left";
+  g.fillStyle = "#18212b"; g.font = `700 50px ${F}`; g.fillText(`Starting from ${x.place}`, PADX, 215);
+  let y = 270; const line = () => { g.strokeStyle = "#e6e9ee"; g.lineWidth = 2; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke(); };
+  line();
+  if (!x.items.length) { g.fillStyle = "#5c6977"; g.font = `400 30px ${F}`; g.fillText("No expenses in this list yet.", PADX, y + 40); y += 80; }
+  x.items.forEach(i => { g.fillStyle = "#18212b"; g.font = `500 34px ${F}`; g.fillText(i.name, PADX, y + 40); g.textAlign = "right"; g.font = `700 36px ${MONO}`; g.fillText(rs(i.amt), W - PADX, y + 40); g.textAlign = "left"; y += 80; line(); });
+  g.fillStyle = "#1e7a3c"; g.font = `700 36px ${F}`; g.fillText("Total", PADX, y + 45); g.textAlign = "right"; g.font = `700 40px ${MONO}`; g.fillText(rs(x.total), W - PADX, y + 45); g.textAlign = "left";
+  g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`;
+  g.fillText(`From the Route expenses master${x.on ? `  ·  last changed ${fmtDate(String(x.on).slice(0, 10))}${x.by ? " by " + x.by : ""}` : ""}`, PADX, H - 90);
+  g.fillText(`Printed by ${whoAmI()}  ·  ${fmtDate(todayISO())}`, PADX, H - 50);
+  return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
+}
+$("dbRxPop").addEventListener("click", e => { e.stopPropagation(); openRxPop(e.currentTarget, $("dbStart").value.trim() || $("dbStart").dataset.prev || "", plateOf(vehicles.find(v => v.id === dbBus)), opDate); });
+document.addEventListener("click", e => {
+  const b = e.target.closest('[data-rxpop="rs"]'); if (!b || !rsh) return;
+  e.stopPropagation(); e.preventDefault(); openRxPop(b, rsh.start || "", plateOf(vehicles.find(v => v.id === rsh.bus)), rsh.date);
 });
 // Phone trip sheet.
 document.addEventListener("click", e => {
