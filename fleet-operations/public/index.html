@@ -743,6 +743,10 @@ a.btn { text-decoration: none; display: inline-block; }
 .dsheet input[type=number], .dsheet select, .dscard .field input { font: inherit; font-size: 14px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); min-width: 0; box-sizing: border-box; width: 100%; }
 .dsheet input[type=number] { font-family: var(--mono); text-align: right; }
 .dssgl { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px 6px; } .dssgl label { font-size: 12px; font-weight: 600; text-align: center; } .dssgl input { padding-inline: 4px !important; }
+.dsbrk { display: flex; flex-direction: column; gap: 1px; border-top: 1px solid var(--line); padding-top: 5px; }
+.dsbrk div { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); } .dsbrk b { font-family: var(--mono); font-weight: 600; color: var(--ink); } .dsbrk .ns { color: var(--warn); } .dsbrk .ns b { color: var(--warn); }
+/* A total box that shows the sum by itself (grey) until a figure is typed in it. */
+.dsheet input.auto { color: var(--muted) !important; font-weight: 600 !important; }
 .dsrow.dbtot { border-top: 1px solid var(--line); padding-top: 6px; } .dsrow.dbtot label { font-size: 15px; } .dsrow.dbtot input { font-weight: 700; color: var(--accent); }
 .dscrew { display: grid; grid-template-columns: 74px minmax(0, 1fr) 84px; align-items: center; gap: 2px 8px; } .dscrew label { font-size: 12px; font-weight: 600; }
 .dscrew .hint, .dscrew .err { grid-column: 1 / -1; } .dscrew .hint:empty, .dscrew .err:empty { display: none; }
@@ -1996,10 +2000,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                   <section class="dscard">
                     <h3 class="dsh">Day money</h3>
                     <div class="dsmoney"><span>Total collection</span><b id="dbMCol">₹0</b></div>
-                    <div class="dsrow wide"><label for="dbExpAll">Total expense <span class="hint">(only if just the total is known)</span></label><input id="dbExpAll" type="number" inputmode="numeric" min="0"></div>
+                    <div class="dsbrk" id="dbMBrk"></div>
+                    <div class="dsrow wide dbtot"><label for="dbExpAll">Total expense</label><input id="dbExpAll" type="number" inputmode="numeric" min="0" aria-describedby="dbExpAllHint"></div>
                     <span class="hint" id="dbExpAllHint"></span>
-                    <span class="hint" id="dbMBrk"></span>
-                    <div class="dsmoney" style="border-top:1px solid var(--line);padding-top:8px"><span>Total expense</span><b id="dbMExp">₹0</b></div>
                     <div class="dsmoney big"><span>Balance</span><b id="dbMBal">₹0</b></div>
                   </section>
                 </div>
@@ -7804,7 +7807,7 @@ function renderHub() {
 
 /* ---------- route bus daily entry ---------- */
 // dbColTold: the total typed in the Total box (some singles may not be known); dbPayTouched: pay typed by hand, not from the padi rules.
-let dbColTold = "", dbPayTouched = {};
+let dbColTold = "", dbExpTold = "", dbPayTouched = {};
 let dbBus = "", dbDirty = false, dbFuelTouched = false, dbFilledKey = "", dbPending = null;
 const busWin = id => winTrips().filter(t => t.vehicleId === id);
 const entryOf = id => winTrips().find(t => t.vehicleId === id && t.date === opDate);
@@ -7886,7 +7889,7 @@ function fillDayForm() {
   const src = t || last;
   $("dbDriver").value = crewValue("driver", src); $("dbConductor").value = crewValue("conductor", src); $("dbChecker").value = crewValue("checker", src);
   Object.entries(DB_FIELDS).forEach(([id, k]) => $(id).value = blank0(t?.[k]));
-  $("dbExpAll").value = blank0(t?.expTotal);
+  dbExpTold = num(t?.expTotal) ? String(t.expTotal) : "";
   if (!t && last) $("dbRate").value = blank0(last.dieselRate);
   // Padi comes from the padi rules on the day's collection; a saved amount that differs counts as typed by hand.
   dbColTold = t?.colTotal != null ? String(t.colTotal) : "";
@@ -7924,7 +7927,7 @@ function dbCalc() {
   if (!dbFuelTouched) $("dbFuel").value = rate && lit ? Math.round(rate * lit) : "";
   const sg = [1, 2, 3, 4, 5].filter(i => num($("dbS" + i).value) > 0).length;
   const sum = [1, 2, 3, 4, 5].reduce((a, i) => a + num($("dbS" + i).value), 0), col = num(dbColTold) || sum;
-  const tot = $("dbColTot"); tot.placeholder = sum || ""; if (document.activeElement !== tot) tot.value = dbColTold;
+  const tot = $("dbColTot"); if (document.activeElement !== tot) tot.value = dbColTold || (sum || ""); tot.classList.toggle("auto", !dbColTold);
   const sys = dbPadiSys(col, !!$("dbChecker").value);
   DB_PAY.forEach(([id, k]) => { if (!dbPayTouched[id]) $(id).value = col ? sys[k] || "" : ""; });
   $("dbPadiHint").textContent = DB_PAY.some(([id]) => dbPayTouched[id]) ? "Padi changed by hand. Clear a box to use the padi rules." : col ? "" : "Padi is worked out from the collection.";
@@ -7934,16 +7937,19 @@ function dbCalc() {
     $(h).className = dbPayTouched[id] && col ? "hint warn" : "hint"; });
   const other = dbExp.reduce((a, x) => a + num(x.amt), 0);
   if ($("dbExpTot")) $("dbExpTot").textContent = rs(other);
-  const parts = num($("dbFuel").value) + num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value) + other, told = num($("dbExpAll").value);
+  const parts = num($("dbFuel").value) + num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value) + other, told = num(dbExpTold);
   const unsplit = Math.max(0, told - parts), exp = parts + unsplit, bal = col - exp;
-  if ($("dbOthAmt")) { $("dbOthAmt").value = unsplit || 0; $("dbOthNote").textContent = told ? "The rest of the Total expense" : "Type the Total expense below"; }
-  $("dbExpAllHint").textContent = !told ? "" : unsplit ? `${rs(unsplit)} sits as Other, not split` : parts > told ? `Entered expenses add up to ${rs(parts)}, more than this` : "Fully split ✓";
+  // One Total expense box: it adds up the expenses entered (grey) unless the conductor told only the total and it is typed here.
+  const xa = $("dbExpAll"); if (document.activeElement !== xa) xa.value = told ? dbExpTold : (parts || ""); xa.classList.toggle("auto", !told);
+  if ($("dbOthAmt")) { $("dbOthAmt").value = unsplit || 0; $("dbOthNote").textContent = told ? "The rest of the Total expense" : "Only when a Total expense is typed in Day money"; }
+  $("dbExpAllHint").textContent = !told ? "Adds up the expenses above. Know only the total? Type it here." : unsplit ? `Typed total · expenses entered come to ${rs(parts)}, so ${rs(unsplit)} is kept as Other, not split. Clear the box to use the sum.` : parts > told ? `Typed total · the expenses entered come to ${rs(parts)}, more than this. Clear the box to use the sum.` : "Typed total · matches the expenses entered ✓";
   $("dbExpAllHint").className = told && (unsplit || parts > told) ? "hint warn" : "hint";
   const prev = prevOdoFor(dbBus, opDate), odo = num($("dbOdo").value), km = odo && prev != null ? odo - prev : null;
   $("dbOdoStart").textContent = prev != null ? nf(prev) : "—";
   $("dbOdoHint").textContent = prev == null ? "No earlier reading" : km > 0 ? `${nf(km)} km run${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}` : "Start is the last day's end reading.";
-  $("dbMCol").textContent = rs(col); $("dbMExp").textContent = rs(exp); $("dbMBal").textContent = `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`; $("dbMBal").parentElement.classList.toggle("neg", bal < 0);
-  $("dbMBrk").textContent = [`Diesel ${rs(num($("dbFuel").value))}`, `Padi ${rs(num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value))}`, other ? `Route ${rs(other)}` : "", unsplit ? `Other ${rs(unsplit)}` : ""].filter(Boolean).join(" · ");
+  $("dbMCol").textContent = rs(col); $("dbMBal").textContent = `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`; $("dbMBal").parentElement.classList.toggle("neg", bal < 0);
+  $("dbMBrk").innerHTML = [["Diesel", num($("dbFuel").value)], ["Padi", num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value)], ["Route expenses", other], ["Other, not split", unsplit, "ns"]]
+    .filter(([, v, c]) => !c || v).map(([l, v, c]) => `<div${c ? ` class="${c}"` : ""}><span>${l}</span><b>${rs(v)}</b></div>`).join("");
   const diff = num(dbColTold) ? num(dbColTold) - sum : 0;
   $("dbSg").textContent = !diff ? `${sg} of ${SINGLES_PER_DAY} singles` : diff < 0 ? `Singles are ${rs(-diff)} more than the total` : sum ? `${rs(diff)} not split into singles` : "Total only · singles later";
   $("dbSg").className = diff || sg < SINGLES_PER_DAY ? "hint warn" : "hint";
@@ -7997,8 +8003,12 @@ $("dbForm").addEventListener("input", e => { const id = e.target.id; if (id === 
   dbDirty = true; $("dbSaved").textContent = "";
   if (id === "dbFuel") dbFuelTouched = $("dbFuel").value !== "";
   if (id === "dbColTot") dbColTold = e.target.value;
+  if (id === "dbExpAll") dbExpTold = e.target.value;
   if (DB_PAY.some(([p]) => p === id)) dbPayTouched[id] = e.target.value !== "";
   dbCalc(); });
+// Tapping a grey total empties it (the sum stays as a grey hint), so typing starts fresh; leaving it empty brings the sum back.
+$("dbForm").addEventListener("focusin", e => { const i = e.target; if (i.id === "dbColTot" || i.id === "dbExpAll") { if (i.classList.contains("auto")) { i.placeholder = i.value; i.value = ""; } } });
+$("dbForm").addEventListener("focusout", e => { const i = e.target; if (i.id === "dbColTot" || i.id === "dbExpAll") { i.placeholder = ""; setTimeout(dbCalc, 0); } });
 $("dbForm").addEventListener("change", e => { if (e.target.name === "dbMode") { dbDirty = true; syncDbMode(); dbCalc(); } });
 $("dbForm").addEventListener("keydown", e => {
   if (e.key !== "Enter" || e.target.tagName === "BUTTON") return;
@@ -8042,7 +8052,7 @@ $("dbForm").addEventListener("submit", async e => {
     const list = dbExp.filter(x => x.name.trim() || num(x.amt)).map(x => ({ name: x.name.trim() || "Other", amt: Math.round(num(x.amt)), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: x.def } : {}) }));
     list.forEach(x => { const c = RS_CAT.find(([re]) => re.test(x.name))?.[1] || "misc"; t["ex_" + c] = num(t["ex_" + c]) + x.amt; });
     if (list.length) t.expList = list; if (dbExpDef) t.expDef = dbExpDef;
-    put("dbExpAll", "expTotal");
+    if (num(dbExpTold)) t.expTotal = Math.round(num(dbExpTold));
     // What the told total expense doesn't cover stays as Other, not split.
     t.otherExp = itemised(t) + Math.max(0, num(t.expTotal) - (num(t.fuelCost) + tripPay(t) + itemised(t))); if (!t.otherExp) delete t.otherExp;
     if (t.litres && !t.dieselRate) err("dbRate", "Enter the diesel rate.");
