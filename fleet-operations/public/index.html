@@ -368,6 +368,31 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .tscroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 table.ttable, table.ctable { border-collapse: collapse; font-size: 13px; width: 100%; }
 table.ttable { min-width: 1900px; }
+table.metable { border-collapse: collapse; width: 1494px; font-size: 12px; table-layout: fixed; }
+.metable th { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 6px 3px; background: var(--bg); border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; }
+.metable tr.grp th { text-align: center; color: var(--accent); border-bottom: 0; padding-bottom: 0; }
+.metable th.n, .metable td.n { text-align: right; }
+.metable td { padding: 2px 3px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; vertical-align: middle; }
+.metable .sticky { position: sticky; left: 0; background: var(--surface); z-index: 1; box-shadow: 1px 0 0 var(--line); } .metable th.sticky { background: var(--bg); }
+.mein { box-sizing: border-box; width: 100%; height: 26px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); font: 500 12px var(--mono); text-align: right; padding: 0 4px; color: var(--ink); min-width: 0; }
+.mein.t { font-family: var(--body); text-align: left; } .mein::-webkit-inner-spin-button, .mein::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } .mein[type=number] { -moz-appearance: textfield; } select.mein { padding: 0 2px; }
+.mein.auto { background: transparent; border-color: transparent; color: var(--muted); } .mein.auto:focus { border-color: var(--line); background: var(--bg); }
+.mein.tot { font-weight: 700; color: var(--accent); } .mein.tot.part { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); } .mein.tot.over { color: var(--danger); background: var(--danger-soft); }
+.mein:disabled { opacity: .8; }
+.metable tr.empty td:not(.sticky) .mein { background: var(--surface); } .metable tr.chg td { background: color-mix(in srgb, var(--warn-soft) 55%, var(--surface)); }
+.metable tr.idle td { background: var(--bg); color: var(--muted); } .metable tr.future td { color: var(--muted); height: 22px; }
+.metable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); padding: 7px 3px; font-family: var(--mono); font-size: 12px; } .metable tfoot td.sticky { background: var(--bg); font-family: var(--body); }
+.metable .neg { color: var(--danger); } .mec { font-family: var(--mono); } .mebal { font-weight: 700; color: var(--ok); }
+.medate { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; } .medate .dot, .mesave .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); display: inline-block; }
+.melock { display: block; text-align: right; font-family: var(--mono); color: var(--muted); padding-right: 4px; }
+.metable .open { box-sizing: border-box; height: 24px; padding: 0 6px; border: 1.5px solid var(--accent); border-radius: 5px; background: var(--surface); color: var(--accent); font: 600 11px var(--body); cursor: pointer; white-space: nowrap; } .metable .open:hover { background: var(--accent); color: var(--accent-ink); }
+.mesave { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin-top: 10px; box-shadow: 0 -4px 16px rgba(0, 0, 0, .06); } .mesave[hidden] { display: none; }
+.mecalg { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; } .mecalg .dow { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; }
+.mecd { min-height: 86px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 7px 9px; display: flex; flex-direction: column; align-items: stretch; gap: 2px; font: inherit; font-size: 12px; text-align: left; cursor: pointer; color: var(--ink); }
+.mecd .d { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; } .mecd .d small { font-weight: 500; font-size: 11px; color: var(--muted); } .mecd .c { font-family: var(--mono); } .mecd .b { font-family: var(--mono); color: var(--ok); font-size: 11px; } .mecd .l { font-size: 11px; font-weight: 600; }
+.mecd.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); } .mecd.part, .mecd.review { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); } .mecd.part .l, .mecd.review .l { color: var(--warn); }
+.mecd.idle { background: var(--bg); color: var(--muted); } .mecd.todo { border: 1.5px dashed color-mix(in srgb, var(--danger) 70%, var(--line)); } .mecd.todo .l { color: var(--danger); } .mecd.future { opacity: .45; cursor: default; }
+.mecd:hover:not(:disabled) { outline: 2px solid var(--accent); }
 table.ttable th, table.ctable th { font-family: var(--mono); font-weight: 600; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 8px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; background: var(--bg); }
 table.ttable td, table.ctable td { padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: middle; }
 table.ttable th.n, table.ttable td.n, table.ctable th.n, table.ctable td.n { text-align: right; font-variant-numeric: tabular-nums; }
@@ -424,8 +449,6 @@ table.ttable tr.short td.sticky { box-shadow: inset 4px 0 0 var(--warn), 1px 0 0
 table.ttable tr.loss td.sticky { box-shadow: inset 4px 0 0 var(--danger), 1px 0 0 var(--line); }
 table.ttable tr.short td.sticky, table.ttable tr.loss td.sticky { padding-left: 14px; }
 table.ttable tr.short.loss td.sticky { box-shadow: inset 4px 0 0 var(--warn), inset 8px 0 0 var(--danger), 1px 0 0 var(--line); }
-.tlegend { margin-left: auto; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; font-size: 12px; color: var(--muted); }
-.tlegend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; border: 1px solid var(--line); }
 table.ttable td.plan { color: var(--muted); font-style: italic; }
 table.ttable tr.idle td .pill { margin-right: 8px; }
 .tcrew { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
@@ -442,16 +465,9 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .tcalc div:last-child { border-right: 0; }
 .tcalc .k { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .tcalc .v { font-family: var(--display); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; }
-#tfDrawer { width: min(1000px, 100%); }
-.tfhead { align-items: center; }
-.tfnav { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
-.tfnav h2 { font-size: 22px; }
 .navbtn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 22px; line-height: 1; display: grid; place-items: center; flex: none; }
 .navbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .navbtn:disabled { opacity: .35; cursor: not-allowed; }
-#tfJump { font: inherit; font-size: 13px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
-.tdirty { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 20px; background: var(--warn-soft); color: var(--warn); font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--line); }
-.tdirty .btn { padding: 5px 10px; font-size: 13px; }
 .tfgrid { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 18px; align-items: start; }
 .tfmain { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .tfside { position: sticky; top: 0; display: flex; flex-direction: column; gap: 12px; }
@@ -461,22 +477,14 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .tfside .tcalc div { border-right: 0; padding: 6px 0; border-bottom: 1px solid var(--line); }
 .tfside .tcalc > div:nth-last-child(-n+2) { border-bottom: 0; }
 .tfside .tcalc .v { font-size: 19px; }
-.tprev { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; font-size: 13px; }
-.tprev dt { color: var(--muted); } .tprev dd { margin: 0; text-align: right; font-family: var(--mono); font-size: 12px; font-weight: 600; }
-.tkeys p { margin: 4px 0; font-size: 12px; color: var(--muted); }
-kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--bg); color: var(--ink); }
-@media (max-width: 820px) { .tfgrid { grid-template-columns: minmax(0, 1fr); } .tfside { position: static; order: -1; } .tkeys, #tPrevCard { display: none; } }
-#tfDrawer footer { flex-wrap: wrap; }
+@media (max-width: 820px) { .tfgrid { grid-template-columns: minmax(0, 1fr); } .tfside { position: static; order: -1; } }
 .tentry { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
-.dcell { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 128px; }
-.dact { display: inline-flex; gap: 4px; }
 .rbtn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 5px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
 .rbtn.add { border-color: var(--accent); color: var(--accent); }
 .rbtn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 table.ttable tbody tr[data-tdate]:not([data-tdate=""]) { cursor: pointer; }
 table.ttable tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 table.ttable tbody tr:focus-visible td.sticky { background: var(--accent-soft); }
-#tfDrawer footer { align-items: center; }
 .fthumb { width: 56px; height: 42px; object-fit: contain; border-radius: 5px; border: 1px solid var(--line); background: var(--bg); }
 .vphoto { margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .vphoto img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: contain; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
@@ -651,55 +659,70 @@ a.btn { text-decoration: none; display: inline-block; }
 .otodo .orow .what { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; }
 .otodo .orow .btn { padding: 5px 12px; font-size: 13px; }
 .otodo .none { color: var(--muted); font-size: 14px; padding: 8px 0; margin: 0; }
-.dbook { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
-.dblist { display: flex; flex-direction: column; gap: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
+.dsheet { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.dshead { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px 18px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.dshead h1 { font-size: 24px; } .dstitle { min-width: 0; } .dstitle .vsub { margin-top: 3px; }
+.dsf { display: flex; flex-direction: column; gap: 4px; }
+#dbClose { border: 1.5px solid color-mix(in srgb, var(--danger) 60%, var(--line)); color: var(--danger); background: var(--surface); font-weight: 700; font-size: 14px; padding: 7px 12px; border-radius: 6px; } #dbClose:hover { background: var(--danger); color: #fff; } .dsf .k { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.dsf input#dbStart { font: inherit; font-size: 15px; font-weight: 600; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); width: 150px; }
+.dsf .plate { font-size: 15px; padding: 3px 8px; } .dsf input#dbDate { font: inherit; font-weight: 600; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+.dsbody { display: grid; grid-template-columns: 180px minmax(0, 1fr); background: var(--bg); } .dsbody.one { grid-template-columns: minmax(0, 1fr); }
+.dblist { display: flex; flex-direction: column; gap: 3px; background: var(--surface); border-right: 1px solid var(--line); padding: 10px 8px; }
 .dbl-h { font-size: 12px; color: var(--muted); margin: 4px 8px 6px; font-weight: 600; }
-.dbitem { display: flex; justify-content: space-between; align-items: center; gap: 8px; border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 8px 10px; font: inherit; font-size: 13px; color: var(--ink); text-align: left; cursor: pointer; }
+.dbitem { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 8px 10px; font: inherit; font-size: 13px; color: var(--ink); text-align: left; cursor: pointer; }
 .dbitem:hover { background: var(--bg); }
 .dbitem.on { background: var(--accent-soft); border-color: var(--accent); }
 .dbitem .num { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
 .dbitem .st { font-size: 11px; font-weight: 600; white-space: nowrap; color: var(--muted); }
 .dbitem .st.ok { color: var(--ok); } .dbitem .st.todo { color: var(--warn); } .dbitem .st.neg { color: var(--danger); }
-.dbcard { padding: 16px 18px; }
-.dbhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 12px; }
-.dbhead h2 { font-family: var(--display); font-size: 26px; margin: 0; line-height: 1; }
-.dbnote { font-size: 12px; color: var(--muted); margin: -4px 0 12px; }
-.dbgrid { display: grid; gap: 10px; margin-bottom: 12px; }
-.dbgrid.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.dbgrid.c6 { grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(90px, .9fr); align-items: end; }
-.dbcard .field { gap: 4px; }
-.dbcard .field input, .dbcard .field select { padding: 7px 9px; }
-.dbcard .field label, .dbcard .field .lbl { font-size: 12px; }
-.dbcard .field .hint { font-size: 11px; }
-.dbcard .field input.sgl { font-family: var(--mono); font-size: 15px; text-align: right; }
-.dbtot input { font-family: var(--mono); font-weight: 700; text-align: right; }
+.dsmain { padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.dscols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: start; } .dscols[hidden] { display: none; }
+.dscol { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.dscard { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.dsh { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0; }
+.dsh small { font-family: var(--body); font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--muted); font-weight: 500; }
+.dsrow { display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 8px; } .dsrow label { font-size: 13px; font-weight: 600; }
+.dsrow.wide { grid-template-columns: minmax(0, 1fr) 120px; } .dsrow.wide label { font-weight: 500; }
+.dsheet input[type=number], .dsheet select, .dscard .field input { font: inherit; font-size: 14px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); min-width: 0; box-sizing: border-box; width: 100%; }
+.dsheet input[type=number] { font-family: var(--mono); text-align: right; }
+.dsrow.dbtot { border-top: 1px solid var(--line); padding-top: 6px; } .dsrow.dbtot label { font-size: 15px; } .dsrow.dbtot input { font-weight: 700; color: var(--accent); }
+.dscrew { display: grid; grid-template-columns: minmax(0, 1fr) 84px; align-items: center; gap: 2px 8px; } .dscrew label { font-size: 12px; font-weight: 600; grid-column: 1 / -1; }
+.dscrew .hint, .dscrew .err { grid-column: 1 / -1; } .dscrew .hint:empty, .dscrew .err:empty { display: none; }
+.dbgrid { display: grid; gap: 10px; } .dbgrid.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dbgrid.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.dscard .field { gap: 4px; } .dscard .field label, .dscard .field .lbl { font-size: 12px; } .dscard .field .hint { font-size: 11px; }
+.dskm { font-family: var(--mono); font-size: 15px; padding: 5px 0; }
+.dsmoney { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; } .dsmoney b { font-family: var(--mono); }
+.dsmoney.big { font-size: 18px; font-weight: 700; color: var(--ok); } .dsmoney.big b { font-size: 20px; } .dsmoney.big.neg { color: var(--danger); }
+.dbreview { display: flex; flex-direction: column; gap: 10px; }
+.dbreview .alerts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.dbreview .al { background: var(--warn-soft); border-radius: 8px; padding: 10px 12px; font-size: 13px; display: flex; flex-direction: column; gap: 3px; } .dbreview .al b { color: var(--warn); } .dbreview .al.ok { background: var(--ok-soft); } .dbreview .al.ok b { color: var(--ok); }
+.dbreview .rvbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; background: var(--warn-soft); border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+.dbreview .rvbar input { font: inherit; font-size: 14px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; min-width: 240px; flex: 1; }
 .hint.warn { color: var(--warn); font-weight: 600; }
-.dbtot span { font-size: 11px; color: var(--muted); font-weight: 600; }
-.dbtot span.warn { color: var(--warn); }
-.dbsec { font-size: 12px; font-weight: 600; margin: 0 0 6px; }
-.dbxhead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; } .dbxhead .seg span { padding: 4px 10px; font-size: 12px; }
-.dbx { display: grid; gap: 6px; margin-bottom: 12px; max-width: 560px; }
-.dbxrow { display: grid; grid-template-columns: minmax(0, 1fr) 120px 32px; gap: 6px; align-items: center; }
+.dbxhead { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; } .dbxhead .seg span { padding: 4px 10px; font-size: 12px; }
+.dbx { display: grid; gap: 6px; }
+.dbxrow { display: grid; grid-template-columns: minmax(0, 1fr) 104px 28px; gap: 6px; align-items: center; }
 .dbxrow input { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; min-width: 0; box-sizing: border-box; }
 .dbxrow input.n { text-align: right; font-family: var(--mono); } .dbxrow .nm { font-size: 13px; font-weight: 600; } .dbxrow small { display: block; font-size: 11px; font-weight: 600; color: var(--warn); }
 .dbxrow .rxdel { width: 32px; height: 30px; } .dbxacts { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; } .dbxacts .btn { padding: 5px 12px; font-size: 13px; }
-.dbxtot { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; border-top: 1px solid var(--line); padding-top: 6px; max-width: 520px; }
-.dbfoot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; }
+.dbxtot { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; border-top: 1px solid var(--line); padding-top: 6px; }
+.dbfoot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding: 12px 18px; background: var(--surface); }
 .dbcalc { font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .dbcalc b { font-family: var(--mono); }
 .dbcalc .warn { color: var(--warn); font-weight: 600; } .dbcalc .neg { color: var(--danger); } .dbcalc .pos { color: var(--ok); }
 .dbdirty { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; margin-bottom: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; font-weight: 600; border-radius: 6px; }
 .dbdirty .btn { padding: 5px 10px; font-size: 13px; }
 .dbloading { color: var(--muted); font-size: 14px; padding: 30px 0; text-align: center; }
+.dbnote { font-size: 12px; color: var(--muted); margin: 0; } .dbnote:empty { display: none; }
 .datenav { display: flex; align-items: flex-end; gap: 6px; }
 .datenav .navbtn { height: 34px; }
+@media (max-width: 1180px) { .dscols { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 860px) {
-  .dbook { grid-template-columns: minmax(0, 1fr); }
-  .dblist { position: static; flex-direction: row; overflow-x: auto; max-height: none; }
-  .dbl-h { display: none; }
-  .dbitem { flex-direction: column; align-items: flex-start; gap: 2px; flex: none; }
+  .dsbody { grid-template-columns: minmax(0, 1fr); }
+  .dblist { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  .dbl-h { display: none; } .dbitem { flex: none; }
+  .dscols { grid-template-columns: minmax(0, 1fr); }
 }
-@media (max-width: 700px) { .dbgrid.c4 { grid-template-columns: 1fr 1fr; } .dbgrid.c6 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 table.ttable.otable { min-width: 1750px; }
 table.ttable tr.grp td { background: var(--bg); font-size: 12px; padding: 8px; border-bottom: 1px solid var(--line); }
 table.ttable tr.grp td .grpin { position: sticky; left: 8px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; max-width: calc(100vw - 80px); }
@@ -1775,14 +1798,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <section class="wrap twrap" id="view-trips" hidden>
       <header class="top">
         <div>
-          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><a href="#trips">Trip sheet</a><span class="slash">/</span><span>Route bus monthly sheet</span></nav>
-          <h1>Route bus · monthly sheet<span class="ro-tag" id="tRoTag" hidden>View only</span></h1>
-          <p class="sync">Every day of the month for one bus, by financial year (April to March). Use Daily entry to enter all buses for a day.</p>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><a href="#trips">Trip sheet</a><span class="slash">/</span><span>Route bus monthly entry</span></nav>
+          <h1>Route bus · monthly entry<span class="ro-tag" id="tRoTag" hidden>View only</span></h1>
+          <p class="sync">Every day of the month for one bus, typed straight into the table. Open day ↗ opens the full day sheet of that day.</p>
         </div>
         <div class="tcontrols">
-          <div class="hf"><label for="tBus">Bus</label><select id="tBus"></select></div>
+          <div class="hf" id="tBusF"><label for="tBus">Bus</label><select id="tBus"></select></div>
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
-          <a class="btn primary" href="#trips-day">Daily entry</a>
+          <a class="btn primary" href="#trips-day">Day sheet</a>
         </div>
       </header>
       <div class="ro-banner" id="tRoBanner" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>You have view-only access to the trip sheet.</span></div>
@@ -1794,20 +1817,16 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="tentry" id="tEntryBar"></div>
           <div class="tkm" id="tRoute"></div>
           <div class="tkm" id="tKm"></div>
-          <div class="tscroll">
-            <table class="ttable">
-              <thead><tr>
-                <th class="sticky">Date <span class="vh">and action</span></th><th>Starting</th><th>Driver</th><th>Conductor</th><th>Checker</th>
-                <th class="n">Diesel rate</th><th class="n">Litres</th><th class="n">Diesel ₹</th>
-                <th class="n">Driver pay</th><th class="n">Conductor pay</th><th class="n">Checker pay</th>
-                <th class="n">S1</th><th class="n">S2</th><th class="n">S3</th><th class="n">S4</th><th class="n">S5</th><th class="n" title="Singles run out of 5">Singles</th>
-                <th class="n">Collection</th><th class="n">Other exp.</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Running balance</th>
-                <th class="n">Odometer</th><th class="n">Km run</th><th class="n">Km / L</th><th class="n" title="Earnings per km">EPKM</th><th>Remarks</th>
-              </tr></thead>
+          <div class="tscroll metwrap" id="tTableWrap">
+            <table class="metable">
+              <colgroup><col style="width:64px"><col style="width:74px"><col style="width:116px"><col style="width:116px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:68px"><col style="width:48px"><col style="width:54px"><col style="width:60px"><col style="width:52px"><col style="width:52px"><col style="width:52px"><col style="width:60px"><col style="width:64px"><col style="width:58px"><col style="width:66px"><col style="width:72px"><col style="width:44px"><col style="width:84px"></colgroup>
+              <thead id="tHead"></thead>
               <tbody id="tRows"></tbody>
               <tfoot id="tFoot"></tfoot>
             </table>
           </div>
+          <div class="mecal" id="tCal" hidden></div>
+          <div class="mesave" id="tSaveBar" hidden><span class="dot" aria-hidden="true"></span><b id="tSaveN"></b><span class="hint">Type straight into the table. Grey boxes are worked out (rate copied down, diesel = litres × rate, padi from the rules) and can be overtyped. Open day ↗ shows the full day sheet.</span><span style="flex:1"></span><button class="btn" type="button" id="tUndo">Undo changes</button><button class="btn primary" type="button" id="tSaveAll">Save</button></div>
           <div class="tpanels">
             <section class="panel"><div class="sechead"><h2 class="sec">Diesel mileage by day</h2><p id="tMileNote"></p></div><div class="tchart" id="tMileage"></div></section>
             <section class="panel"><div class="sechead"><h2 class="sec">Where the money went</h2><p>Share of the month's expense</p></div><div class="tscroll" style="border:0"><table class="ctable" id="tExpense"></table></div></section>
@@ -1849,84 +1868,101 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <p class="sync">Fill in the day's sheet at night and send it to the office. It saves by itself as you type.</p></div></header>
       <div id="rsHome"></div>
     </section>
-    <!-- ================= Route bus daily entry ================= -->
+    <!-- ================= Route bus day sheet (computer) ================= -->
     <section class="wrap twrap" id="view-tday" hidden>
-      <header class="top">
-        <div>
-          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><a href="#trips">Trip sheet</a><span class="slash">/</span><span>Route bus daily entry</span></nav>
-          <h1>Route bus · daily entry<span class="ro-tag" id="dbRoTag" hidden>View only</span></h1>
-          <p class="sync">All route buses for one day. Save moves you to the next bus still to be entered.</p>
-        </div>
-        <div class="tcontrols">
-          <div class="datenav">
-            <button class="navbtn" type="button" id="dbPrevDay" aria-label="Previous day" title="Previous day">‹</button>
-            <div class="hf"><label for="dbDate">Day</label><input type="date" id="dbDate"></div>
-            <button class="navbtn" type="button" id="dbNextDay" aria-label="Next day" title="Next day">›</button>
-          </div>
-          <a class="btn" href="#trips-route">Monthly sheet</a>
-        </div>
-      </header>
+      <nav class="crumbs" aria-label="Breadcrumb" style="margin-bottom:10px"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><a href="#trips">Trip sheet</a><span class="slash">/</span><a href="#trips-route">Route bus monthly entry</a><span class="slash">/</span><span>Day sheet</span></nav>
       <div class="empty panel" id="dbNone" hidden><strong>No route buses yet</strong>Add a vehicle with class Bus and operation type Route under Masters › Vehicle.</div>
-      <div class="dbook" id="dbWrap">
-        <nav class="dblist" id="dbList" aria-label="Route buses"></nav>
-        <section class="panel dbcard">
-          <div class="dbdirty" id="dbDirty" hidden><span>You have unsaved changes for this bus.</span><button class="btn primary" type="button" id="dbDirtySave">Save and go</button><button class="btn" type="button" id="dbDirtyDiscard">Discard</button><button class="icon" type="button" id="dbDirtyStay">Stay</button></div>
-          <div class="dbloading" id="dbLoading" hidden>Loading this day's entries…</div>
-          <form id="dbForm" novalidate>
-            <div class="dbhead">
-              <div><h2 id="dbTitle">Bus</h2><div class="vsub" id="dbSub"></div></div>
-              <div class="seg" role="radiogroup" aria-label="Did the bus run">
-                <label><input type="radio" name="dbMode" id="dbModeRan" value="ran"><span>Ran</span></label>
-                <label><input type="radio" name="dbMode" id="dbModeIdle" value="idle"><span>Did not run</span></label>
+      <div id="dbWrap">
+        <div class="dbdirty" id="dbDirty" hidden><span>You have unsaved changes for this bus.</span><button class="btn primary" type="button" id="dbDirtySave">Save and go</button><button class="btn" type="button" id="dbDirtyDiscard">Discard</button><button class="icon" type="button" id="dbDirtyStay">Stay</button></div>
+        <div class="dbloading panel" id="dbLoading" hidden>Loading this day's entries…</div>
+        <form id="dbForm" class="dsheet" novalidate>
+          <div class="dshead">
+            <div class="dstitle"><h1>Day sheet<span class="ro-tag" id="dbRoTag" hidden>View only</span></h1><div class="vsub" id="dbSub"></div></div>
+            <div class="dsf"><span class="k">Bus</span><span class="plate psv" id="dbTitle">Bus</span></div>
+            <div class="dsf"><span class="k">Day</span><div class="datenav"><button class="navbtn" type="button" id="dbPrevDay" aria-label="Previous day" title="Previous day">‹</button><input type="date" id="dbDate" aria-label="Day"><button class="navbtn" type="button" id="dbNextDay" aria-label="Next day" title="Next day">›</button></div></div>
+            <div class="dsf"><label class="k" for="dbStart">Started from</label><input id="dbStart" list="dbStarts" autocomplete="off" maxlength="40"><datalist id="dbStarts"></datalist><span class="err" id="e-dbStart"></span></div>
+            <div class="dsf"><span class="k">Ran or not</span><div class="seg" role="radiogroup" aria-label="Did the bus run">
+              <label><input type="radio" name="dbMode" id="dbModeRan" value="ran"><span>Ran</span></label>
+              <label><input type="radio" name="dbMode" id="dbModeIdle" value="idle"><span>Did not run</span></label></div></div>
+            <span style="flex:1"></span>
+            <button class="icon" type="button" id="dbClose" aria-label="Close">Close ✕</button>
+          </div>
+          <div class="dsbody" id="dbBody">
+            <nav class="dblist" id="dbList" aria-label="Route buses"></nav>
+            <div class="dsmain">
+              <p class="dbnote" id="dbNote"></p>
+              <div class="dbreview" id="dbReview" hidden></div>
+              <div id="dbIdleFields" hidden>
+                <section class="dscard"><h3 class="dsh">Did not run</h3><div class="field" style="max-width:360px"><label for="dbIdleReason">Why the bus did not run</label><select id="dbIdleReason"></select><span class="err" id="e-dbIdleReason"></span></div></section>
               </div>
+              <div id="dbRanFields" class="dscols">
+                <div class="dscol">
+                  <section class="dscard">
+                    <h3 class="dsh">Collection <small>· by single, or just the total</small></h3>
+                    <div class="dsrow"><label for="dbS1">S1</label><input class="sgl" id="dbS1" type="number" inputmode="numeric" min="0"></div>
+                    <div class="dsrow"><label for="dbS2">S2</label><input class="sgl" id="dbS2" type="number" inputmode="numeric" min="0"></div>
+                    <div class="dsrow"><label for="dbS3">S3</label><input class="sgl" id="dbS3" type="number" inputmode="numeric" min="0"></div>
+                    <div class="dsrow"><label for="dbS4">S4</label><input class="sgl" id="dbS4" type="number" inputmode="numeric" min="0"></div>
+                    <div class="dsrow"><label for="dbS5">S5</label><input class="sgl" id="dbS5" type="number" inputmode="numeric" min="0"></div>
+                    <div class="dsrow dbtot"><label for="dbColTot">Total</label><input id="dbColTot" type="number" inputmode="numeric" min="0"></div>
+                    <span class="hint" id="dbSg">0 of 5 singles</span>
+                  </section>
+                  <section class="dscard">
+                    <h3 class="dsh">Crew and padi <small>· padi from the padi rules</small></h3>
+                    <div class="dscrew"><label for="dbDriver">Driver</label><select id="dbDriver"></select><input id="dbPayD" type="number" inputmode="numeric" min="0" aria-label="Driver padi (₹)"><span class="err" id="e-dbDriver"></span><span class="hint" id="dbHowD"></span></div>
+                    <div class="dscrew"><label for="dbConductor">Conductor</label><select id="dbConductor"></select><input id="dbPayC" type="number" inputmode="numeric" min="0" aria-label="Conductor padi (₹)"><span class="err" id="e-dbConductor"></span><span class="hint" id="dbHowC"></span></div>
+                    <div class="dscrew"><label for="dbChecker">Checker</label><select id="dbChecker"></select><input id="dbPayK" type="number" inputmode="numeric" min="0" aria-label="Checker padi (₹)"><span class="hint" id="dbHowK"></span></div>
+                    <p class="hint" id="dbPadiHint" style="margin:0"></p>
+                  </section>
+                </div>
+                <div class="dscol">
+                  <section class="dscard">
+                    <h3 class="dsh">Diesel</h3>
+                    <div class="dbgrid c3">
+                      <div class="field"><label for="dbLitres">Litres</label><input id="dbLitres" type="number" inputmode="decimal" min="0" step="0.1"><span class="err" id="e-dbLitres"></span></div>
+                      <div class="field"><label for="dbRate">Rate (₹/L)</label><input id="dbRate" type="number" inputmode="decimal" min="0" step="0.01"><span class="err" id="e-dbRate"></span></div>
+                      <div class="field"><label for="dbFuel">Amount (₹)</label><input id="dbFuel" type="number" inputmode="numeric" min="0"></div>
+                    </div>
+                    <span class="hint">Amount is litres × rate unless you change it.</span>
+                  </section>
+                  <section class="dscard">
+                    <div class="dbxhead"><h3 class="dsh">Route expenses <small id="dbExpHint"></small></h3>
+                      <div class="seg" role="radiogroup" aria-label="Route expenses"><label><input type="radio" name="dbExpMode" id="dbXOther" value="other"><span>Rest as Other</span></label><label><input type="radio" name="dbExpMode" id="dbXList" value="list"><span id="dbXListL">Route list</span></label></div></div>
+                    <div class="dbx" id="dbChips"></div>
+                  </section>
+                </div>
+                <div class="dscol">
+                  <section class="dscard">
+                    <h3 class="dsh">Km meter</h3>
+                    <div class="dbgrid c2">
+                      <div class="field"><span class="lbl">Start km</span><b class="dskm" id="dbOdoStart">—</b></div>
+                      <div class="field"><label for="dbOdo">End km</label><input id="dbOdo" type="number" inputmode="numeric" min="0"><span class="err" id="e-dbOdo"></span></div>
+                    </div>
+                    <span class="hint" id="dbOdoHint"></span>
+                  </section>
+                  <section class="dscard">
+                    <h3 class="dsh">Day money</h3>
+                    <div class="dsmoney"><span>Total collection</span><b id="dbMCol">₹0</b></div>
+                    <div class="dsrow wide"><label for="dbExpAll">Total expense <span class="hint">(only if just the total is known)</span></label><input id="dbExpAll" type="number" inputmode="numeric" min="0"></div>
+                    <span class="hint" id="dbExpAllHint"></span>
+                    <span class="hint" id="dbMBrk"></span>
+                    <div class="dsmoney" style="border-top:1px solid var(--line);padding-top:8px"><span>Total expense</span><b id="dbMExp">₹0</b></div>
+                    <div class="dsmoney big"><span>Balance</span><b id="dbMBal">₹0</b></div>
+                  </section>
+                </div>
+              </div>
+              <section class="dscard"><div class="field"><label for="dbRemarks">Remarks</label><input id="dbRemarks" autocomplete="off" maxlength="200"></div></section>
             </div>
-            <p class="dbnote" id="dbNote"></p>
-            <div id="dbIdleFields" hidden>
-              <div class="dbgrid c4"><div class="field" style="grid-column:span 2"><label for="dbIdleReason">Why the bus did not run</label><select id="dbIdleReason"></select><span class="err" id="e-dbIdleReason"></span></div></div>
-            </div>
-            <div id="dbRanFields">
-              <div class="dbgrid c4">
-                <div class="field"><label for="dbStart">Starting point</label><input id="dbStart" list="dbStarts" autocomplete="off" maxlength="40"><datalist id="dbStarts"></datalist><span class="err" id="e-dbStart"></span></div>
-                <div class="field"><label for="dbDriver">Driver</label><select id="dbDriver"></select><span class="err" id="e-dbDriver"></span></div>
-                <div class="field"><label for="dbConductor">Conductor</label><select id="dbConductor"></select><span class="err" id="e-dbConductor"></span></div>
-                <div class="field"><label for="dbChecker">Checker</label><select id="dbChecker"></select></div>
-              </div>
-              <p class="dbsec">Collection by single (₹) <span class="hint" style="font-weight:400">· or just the total, if the singles are not known yet</span></p>
-              <div class="dbgrid c6">
-                <div class="field"><label for="dbS1">S1</label><input class="sgl" id="dbS1" type="number" inputmode="numeric" min="0"></div>
-                <div class="field"><label for="dbS2">S2</label><input class="sgl" id="dbS2" type="number" inputmode="numeric" min="0"></div>
-                <div class="field"><label for="dbS3">S3</label><input class="sgl" id="dbS3" type="number" inputmode="numeric" min="0"></div>
-                <div class="field"><label for="dbS4">S4</label><input class="sgl" id="dbS4" type="number" inputmode="numeric" min="0"></div>
-                <div class="field"><label for="dbS5">S5</label><input class="sgl" id="dbS5" type="number" inputmode="numeric" min="0"></div>
-                <div class="field dbtot"><label for="dbColTot">Total (₹)</label><input id="dbColTot" type="number" inputmode="numeric" min="0"><span id="dbSg">0 of 5 singles</span></div>
-              </div>
-              <div class="dbgrid c4">
-                <div class="field"><label for="dbOdo">Odometer (km)</label><input id="dbOdo" type="number" inputmode="numeric" min="0"><span class="hint" id="dbOdoHint"></span><span class="err" id="e-dbOdo"></span></div>
-                <div class="field"><label for="dbLitres">Diesel litres</label><input id="dbLitres" type="number" inputmode="decimal" min="0" step="0.1"><span class="err" id="e-dbLitres"></span></div>
-                <div class="field"><label for="dbRate">Diesel rate (₹/L)</label><input id="dbRate" type="number" inputmode="decimal" min="0" step="0.01"><span class="err" id="e-dbRate"></span></div>
-                <div class="field"><label for="dbFuel">Diesel cost (₹)</label><input id="dbFuel" type="number" inputmode="numeric" min="0"><span class="hint">Rate × litres unless changed</span></div>
-              </div>
-              <div class="dbgrid c4">
-                <div class="field"><label for="dbPayD">Driver pay (₹)</label><input id="dbPayD" type="number" inputmode="numeric" min="0"></div>
-                <div class="field"><label for="dbPayC">Conductor pay (₹)</label><input id="dbPayC" type="number" inputmode="numeric" min="0"></div>
-                <div class="field"><label for="dbPayK">Checker pay (₹)</label><input id="dbPayK" type="number" inputmode="numeric" min="0"></div>
-                <p class="hint" id="dbPadiHint" style="align-self:center;margin:0"></p>
-              </div>
-              <div class="dbxhead"><p class="dbsec" style="margin:0">Route expenses <span class="hint" style="font-weight:400" id="dbExpHint"></span></p>
-                <div class="seg" role="radiogroup" aria-label="Route expenses"><label><input type="radio" name="dbExpMode" id="dbXOther" value="other"><span>Rest as Other</span></label><label><input type="radio" name="dbExpMode" id="dbXList" value="list"><span id="dbXListL">Route list</span></label></div></div>
-              <div class="dbx" id="dbChips"></div>
-              <div class="dbgrid c4"><div class="field"><label for="dbExpAll">Total expense (₹)</label><input id="dbExpAll" type="number" inputmode="numeric" min="0"><span class="hint" id="dbExpAllHint">Only if just the day's total is known</span></div></div>
-            </div>
-            <div class="dbgrid" style="grid-template-columns:minmax(0,1fr)"><div class="field"><label for="dbRemarks">Remarks</label><input id="dbRemarks" autocomplete="off" maxlength="200"></div></div>
-            <div class="dbfoot">
-              <div class="dbcalc" id="dbCalc" aria-live="polite"></div>
-              <span style="flex:1"></span>
-              <span class="hint" id="dbSaved" aria-live="polite"></span>
-              <button class="btn danger" type="button" id="dbDelete" hidden>Delete entry</button>
-              <button class="btn primary" type="submit" id="dbSave">Save, next bus ↵</button>
-            </div>
-          </form>
-        </section>
+          </div>
+          <div class="dbfoot">
+            <button class="btn danger" type="button" id="dbDelete" hidden>Delete entry</button>
+            <div class="dbcalc" id="dbCalc" aria-live="polite"></div>
+            <span style="flex:1"></span>
+            <span class="hint" id="dbSaved" aria-live="polite"></span>
+            <button class="btn" type="button" id="dbSaveStay">Save</button>
+            <button class="btn primary" type="submit" id="dbSave">Save, next bus →</button>
+          </div>
+        </form>
       </div>
     </section>
 
@@ -2693,100 +2729,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   <footer>
     <div class="fdel" id="cvDelWrap"><button class="btn dline" type="button" id="cvDelBtn">Delete</button><span class="delq" id="cvDelQ" hidden><span>Delete this conductor? This can't be undone.</span><button class="btn" type="button" id="cvDelNo">Keep</button><button class="btn danger" type="button" id="cvDelYes">Delete</button></span></div>
     <button class="btn primary" type="button" id="cvEdit">Edit conductor</button>
-  </footer>
-</aside>
-<aside class="drawer" id="tfDrawer" role="dialog" aria-modal="true" aria-labelledby="tfTitle" hidden>
-  <header class="tfhead">
-    <div class="tfnav">
-      <button class="navbtn" type="button" id="tfPrev" aria-label="Previous day" title="Previous day (Alt + ←)">‹</button>
-      <div style="min-width:0"><h2 id="tfTitle">Trip</h2><div class="vsub" id="tfSub"></div></div>
-      <button class="navbtn" type="button" id="tfNext" aria-label="Next day" title="Next day (Alt + →)">›</button>
-      <input type="date" id="tfJump" aria-label="Go to date" title="Go to date">
-    </div>
-    <button class="icon" type="button" id="tfClose" aria-label="Close">Close ✕</button>
-  </header>
-  <div class="tdirty" id="tDirty" hidden><span>You have unsaved changes for this day.</span><button class="btn primary" type="button" id="tDirtySave">Save and go</button><button class="btn" type="button" id="tDirtyDiscard">Discard changes</button><button class="icon" type="button" id="tDirtyStay">Stay</button></div>
-  <form id="tForm" novalidate><div class="tfgrid"><div class="tfmain">
-    <div class="field"><span class="lbl">Did the bus run?</span><div class="seg" role="radiogroup" aria-label="Did the bus run">
-      <label><input type="radio" name="tMode" id="tModeRan" value="ran"><span>Ran</span></label>
-      <label><input type="radio" name="tMode" id="tModeIdle" value="idle"><span>Did not run</span></label>
-    </div></div>
-    <div id="tIdleFields" hidden>
-      <fieldset class="docs">
-        <legend>Why the bus did not run</legend>
-        <div class="field"><label for="tIdleReason">Reason</label><select id="tIdleReason"></select><span class="err" id="e-tIdleReason"></span></div>
-      </fieldset>
-    </div>
-    <div id="tRanFields" style="display:flex;flex-direction:column;gap:16px">
-    <fieldset class="docs">
-      <legend>Trip &amp; crew</legend>
-      <div class="field"><label for="tStart">Starting point</label><input id="tStart" list="tStarts" autocomplete="off" maxlength="40" placeholder="e.g. Vellore"><datalist id="tStarts"></datalist><span class="hint" id="tStartHint"></span><span class="err" id="e-tStart"></span></div>
-      <div class="field"><label for="tDriver">Driver</label><select id="tDriver"></select><span class="err" id="e-tDriver"></span></div>
-      <div class="two">
-        <div class="field"><label for="tConductor">Conductor</label><select id="tConductor"></select><span class="err" id="e-tConductor"></span></div>
-        <div class="field"><label for="tChecker">Checker</label><select id="tChecker"></select></div>
-      </div>
-    </fieldset>
-    <fieldset class="docs">
-      <legend>Diesel</legend>
-      <div class="three">
-        <div class="field"><label for="tRate">Rate (₹/litre)</label><input id="tRate" type="number" inputmode="decimal" step="0.01" min="0"><span class="err" id="e-tRate"></span></div>
-        <div class="field"><label for="tLitres">Litres</label><input id="tLitres" type="number" inputmode="decimal" step="0.1" min="0"><span class="err" id="e-tLitres"></span></div>
-        <div class="field"><label for="tFuel">Diesel cost (₹)</label><input id="tFuel" type="number" inputmode="numeric" min="0"><span class="hint" id="tFuelHint">Rate × litres, change it to the bill amount if different.</span></div>
-      </div>
-    </fieldset>
-    <fieldset class="docs">
-      <legend>Crew pay for the day (₹)</legend>
-      <div class="three">
-        <div class="field"><label for="tPayD">Driver</label><input id="tPayD" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tPayC">Conductor</label><input id="tPayC" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tPayK">Checker</label><input id="tPayK" type="number" inputmode="numeric" min="0"></div>
-      </div>
-    </fieldset>
-    <fieldset class="docs">
-      <legend>Collection by single trip (₹)</legend>
-      <div class="five">
-        <div class="field"><label for="tS1">S1</label><input id="tS1" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tS2">S2</label><input id="tS2" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tS3">S3</label><input id="tS3" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tS4">S4</label><input id="tS4" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tS5">S5</label><input id="tS5" type="number" inputmode="numeric" min="0"></div>
-      </div>
-    </fieldset>
-    <fieldset class="docs">
-      <legend>Other expenses (₹)</legend>
-      <div class="four">
-        <div class="field"><label for="tx_toll">Toll / FASTag</label><input id="tx_toll" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tx_stand">Bus stand fees</label><input id="tx_stand" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tx_commission">Commission</label><input id="tx_commission" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tx_cleaning">Cleaning & washing</label><input id="tx_cleaning" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tx_police">Police / check post</label><input id="tx_police" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tx_food">Food allowance</label><input id="tx_food" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tx_repairs">Repairs on route</label><input id="tx_repairs" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="tx_misc">Other</label><input id="tx_misc" type="number" inputmode="numeric" min="0"></div>
-      </div>
-      <span class="hint" id="tExpHint"></span>
-    </fieldset>
-    <fieldset class="docs">
-      <legend>Kilometres</legend>
-      <div class="field" style="max-width:20em"><label for="tOdo">Odometer at day end (km)</label><input id="tOdo" type="number" inputmode="numeric" min="0"><span class="hint" id="tOdoHint"></span><span class="err" id="e-tOdo"></span></div>
-    </fieldset>
-    </div>
-    <div class="field"><label for="tRemarks">Remarks</label><input id="tRemarks" autocomplete="off" maxlength="200" placeholder="e.g. Fitted with diesel saving device"></div>
-    </div>
-    <aside class="tfside" aria-label="Day summary">
-      <div class="tfcard"><h3>This day</h3><div class="tcalc" id="tCalc" aria-live="polite"></div></div>
-      <div class="tfcard" id="tPrevCard"><h3 id="tPrevTitle">Previous day</h3><dl class="tprev" id="tPrev"></dl></div>
-      <div class="tfcard tkeys"><h3>Keyboard</h3><p><kbd>Enter</kbd> next field</p><p><kbd>Ctrl</kbd> + <kbd>Enter</kbd> save &amp; next day</p><p><kbd>Alt</kbd> + <kbd>←</kbd> / <kbd>→</kbd> previous / next day</p></div>
-    </aside>
-  </div></form>
-  <footer>
-    <button class="btn danger" type="button" id="tfDelete" hidden>Delete entry</button>
-    <span style="flex:1"></span>
-    <span class="hint" id="tfSaved" aria-live="polite"></span>
-    <button class="btn" type="button" id="tfCancel">Close</button>
-    <button class="btn" type="submit" form="tForm" id="tfSave">Save</button>
-    <button class="btn primary" type="submit" form="tForm" id="tfSaveNext" data-next="1">Save &amp; next day ›</button>
   </footer>
 </aside>
 <aside class="drawer" id="bkDrawer" role="dialog" aria-modal="true" aria-labelledby="bkTitle" hidden>
@@ -4422,11 +4364,11 @@ $("form").addEventListener("submit", async e => {
 $("addBtn").onclick = () => openDrawer(null);
 $("closeBtn").onclick = $("cancelBtn").onclick = closeDrawer;
 // One handler for every panel: the history panel sits on top and closes on its own first.
-$("scrim").onclick = () => { if (!$("hDrawer").hidden) { closeHDrawer(); return; } if (!$("flDrawer").hidden && !$("bkDrawer").hidden) { closeFlDrawer(); return; } closeDrawer(); closeUDrawer(); closeVDrawer(); closeDfDrawer(); closeDvDrawer(); closeCfDrawer(); closeCvDrawer(); if (!$("tfDrawer").hidden) $("tfClose").click(); closeBkDrawer(); closeLgDrawer(); closeFlDrawer(); };
+$("scrim").onclick = () => { if (!$("hDrawer").hidden) { closeHDrawer(); return; } if (!$("flDrawer").hidden && !$("bkDrawer").hidden) { closeFlDrawer(); return; } closeDrawer(); closeUDrawer(); closeVDrawer(); closeDfDrawer(); closeDvDrawer(); closeCfDrawer(); closeCvDrawer(); closeBkDrawer(); closeLgDrawer(); closeFlDrawer(); };
 $("menuBtn").onclick = openNav; $("navScrim").onclick = closeNav;
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
-  const order = [["hDrawer", closeHDrawer], ["flDrawer", closeFlDrawer], ["tfDrawer", () => $("tfClose").click()], ["bkDrawer", closeBkDrawer], ["lgDrawer", closeLgDrawer], ["drawer", closeDrawer], ["dfDrawer", closeDfDrawer], ["cfDrawer", closeCfDrawer], ["vDrawer", closeVDrawer], ["dvDrawer", closeDvDrawer], ["cvDrawer", closeCvDrawer], ["uDrawer", closeUDrawer]];
+  const order = [["hDrawer", closeHDrawer], ["flDrawer", closeFlDrawer], ["bkDrawer", closeBkDrawer], ["lgDrawer", closeLgDrawer], ["drawer", closeDrawer], ["dfDrawer", closeDfDrawer], ["cfDrawer", closeCfDrawer], ["vDrawer", closeVDrawer], ["dvDrawer", closeDvDrawer], ["cvDrawer", closeCvDrawer], ["uDrawer", closeUDrawer]];
   const open = order.find(([id]) => !$(id).hidden);
   if (open) open[1](); else closeNav();
 });
@@ -4679,7 +4621,7 @@ async function dUpload(k, file) {
 const D_FIELDS = ["dName", "dRelType", "dRelation", "dDob", "dDoj", "dMobile", "dDlNo", "dState", "dFirstIssue", "dIssue", "dValNT", "dValTR"];
 function dClearErrors() { D_FIELDS.forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
 function dErr(k, m) { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); }
-function anyDrawerOpen() { return ["drawer", "vDrawer", "uDrawer", "hDrawer", "dfDrawer", "dvDrawer", "cfDrawer", "cvDrawer", "tfDrawer", "bkDrawer", "lgDrawer", "flDrawer"].some(id => !$(id).hidden); }
+function anyDrawerOpen() { return ["drawer", "vDrawer", "uDrawer", "hDrawer", "dfDrawer", "dvDrawer", "cfDrawer", "cvDrawer", "bkDrawer", "lgDrawer", "flDrawer"].some(id => !$(id).hidden); }
 function openDfDrawer(d) {
   dEditingId = d?.id || null; dPending = {}; dStateTouched = !!d?.state;
   $("dfTitle").textContent = d ? "Edit driver" : "Add driver";
@@ -5115,7 +5057,7 @@ async function saveRoute(a, b) {
   loadLocalTrips(); renderTrips();
 }
 let trips = [], tripMonths = [], tripsLocal = [], tripMonthsLocal = [], canTrips = true, canBookings = true, canBookReq = true, canTsUpd = true, canRsUpd = true, canFuel = true, canCloseTrips = true;
-let tBusId = "", tFyStart = 0, tMonthIdx = 0, tEditDate = "", tFuelTouched = false, tSubKey = "";
+let tBusId = "", tFyStart = 0, tMonthIdx = 0, tSubKey = "";
 const TLS = "fleet-trips.v1", TMLS = "fleet-tripmonths.v1";
 const MONTHS = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -5178,19 +5120,6 @@ function loadLocalTrips() {
   trips = tripsLocal.filter(t => t.vehicleId === tBusId); tripMonths = tripMonthsLocal.filter(m => m.vehicleId === tBusId);
   tripYears = tripYearsLocal.filter(y => y.vehicleId === tBusId);
 }
-async function saveTrip(t) {
-  const { id, ...body } = t;
-  if (tripsRef) return tripsRef.doc(id).set(body);
-  const i = tripsLocal.findIndex(x => x.id === id); i >= 0 ? tripsLocal[i] = t : tripsLocal.push(t);
-  try { localStorage.setItem(TLS, JSON.stringify(tripsLocal)); } catch {}
-  loadLocalTrips(); renderTrips();
-}
-async function deleteTrip(id) {
-  if (tripsRef) return tripsRef.doc(id).delete();
-  tripsLocal = tripsLocal.filter(x => x.id !== id);
-  try { localStorage.setItem(TLS, JSON.stringify(tripsLocal)); } catch {}
-  loadLocalTrips(); renderTrips();
-}
 async function saveOpeningKm(ym, km) {
   const doc = { id: `${tBusId}_${ym}`, vehicleId: tBusId, month: ym, openingKm: km };
   if (tripMonthsRef) { const { id, ...body } = doc; return tripMonthsRef.doc(id).set(body); }
@@ -5225,17 +5154,13 @@ function buildTripSheet() {
   $("tFy").addEventListener("change", () => { tFyStart = +$("tFy").value; tSubKey = ""; trips = []; subscribeTrips(); loadLocalTrips(); renderTrips(); });
   $("tTabs").addEventListener("click", e => { const b = e.target.closest("button[data-m]"); if (!b) return; tMonthIdx = +b.dataset.m; renderTrips(); });
   $("tYear").addEventListener("click", e => { const r = e.target.closest("tr[data-m]"); if (!r) return; tMonthIdx = +r.dataset.m; renderTrips(); });
-  // Any click on a row opens that day; the Not run button opens it straight in "did not run" mode.
-  $("tRows").addEventListener("click", e => {
-    const b = e.target.closest("button[data-tdate]"); if (b) { openTfDrawer(b.dataset.tdate, b.dataset.tmode); return; }
-    const r = e.target.closest("tr[data-tdate]"); if (r && r.dataset.tdate) openTfDrawer(r.dataset.tdate);
-  });
-  $("tRows").addEventListener("keydown", e => {
-    const r = e.target.closest("tr[data-tdate]"); if (!r) return;
-    if (e.key === "Enter" && e.target === r && r.dataset.tdate) { e.preventDefault(); openTfDrawer(r.dataset.tdate); }
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") { const n = e.key === "ArrowDown" ? r.nextElementSibling : r.previousElementSibling; if (n?.tabIndex >= 0) { e.preventDefault(); n.focus(); } }
-  });
-  $("tEntryBar").addEventListener("click", e => { const b = e.target.closest("button[data-tdate]"); if (b) openTfDrawer(b.dataset.tdate); });
+  $("tRows").addEventListener("input", meInput);
+  $("tRows").addEventListener("keydown", meKey);
+  $("tRows").addEventListener("focusout", () => setTimeout(() => { if (meWaiting && !$("tRows").contains(document.activeElement)) { meWaiting = false; renderTrips(); } }, 0));
+  $("tBody").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) meOpenDay(o.dataset.open); });
+  $("tEntryBar").addEventListener("change", e => { if (e.target.name === "tView") { tView = e.target.value; try { localStorage.setItem("fleet-tview", tView); } catch {} renderTrips(); } });
+  $("tUndo").onclick = () => askYesNo(`Undo the changes to ${meChangedKeys().length} day${meChangedKeys().length === 1 ? "" : "s"}?`, { yes: "Undo changes", no: "Keep them", danger: true }).then(ok => { if (ok) { meDraft = {}; renderTrips(); } });
+  $("tSaveAll").onclick = () => meSaveAll();
   $("tRoute").addEventListener("click", async e => {
     const b = e.target.closest("button[data-route]"); if (!b) return;
     if (b.dataset.route === "edit") { $("tRoute").dataset.editing = "1"; renderTrips(); setTimeout(() => $("tRouteA")?.focus(), 20); return; }
@@ -5258,6 +5183,162 @@ function buildTripSheet() {
   });
 }
 
+/* ---------- monthly entry: one row per day, typed straight into the table ----------
+   meDraft["bus|date"] = { f: {field: text}, touched: {field: true} } holds what was typed until Save. Fields: start, drv, cond,
+   s1–s5, tot (the day's total when the singles are not all known), lit, rate, dsl, pd, pc, pk (padi), route, exp (total expense), odo.
+   Grey boxes (rate, diesel amount, padi) are worked out until typed over. */
+let meDraft = {}, meWaiting = false, tView = (() => { try { return localStorage.getItem("fleet-tview") || "table"; } catch { return "table"; } })();
+const ME_NUM = ["s1", "s2", "s3", "s4", "s5", "tot", "lit", "rate", "dsl", "pd", "pc", "pk", "route", "exp", "odo"], ME_AUTO = ["rate", "dsl", "pd", "pc", "pk"];
+const meKey0 = date => `${tBusId}|${date}`;
+// The route expenses of a day as one number, and whether it can be typed here (a list of several is changed in the day sheet).
+const meRouteOf = t => { if (!t) return 0; const un = Math.max(0, num(t.expTotal) - (num(t.fuelCost) + tripPay(t) + itemised(t))); return Math.max(0, num(t.otherExp) - un); };
+const meRouteLocked = t => (t?.expList || []).filter(x => !x.off).length > 1 || (!t?.expList && EXP_CATS.filter(([k]) => num(t?.["ex_" + k])).length > 1);
+function meFrom(t, date) {
+  const v = x => x == null || x === "" ? "" : String(x);
+  if (!t) return { start: plannedStart(date), drv: "", cond: "", s1: "", s2: "", s3: "", s4: "", s5: "", tot: "", lit: "", rate: "", dsl: "", pd: "", pc: "", pk: "", route: "", exp: "", odo: "" };
+  return { start: startShown(t, date), drv: crewValue("driver", t), cond: crewValue("conductor", t), s1: v(t.s1), s2: v(t.s2), s3: v(t.s3), s4: v(t.s4), s5: v(t.s5), tot: v(t.colTotal),
+    lit: v(t.litres), rate: v(t.dieselRate), dsl: v(t.fuelCost), pd: v(t.driverPay), pc: v(t.conductorPay), pk: v(t.checkerPay), route: v(meRouteOf(t) || ""), exp: v(t.expTotal), odo: v(t.odo) };
+}
+// Every day of the month with what it shows now: the saved day, with anything typed on top.
+function meDays(ym) {
+  const list = monthTrips(ym), out = []; let prevOdo = openingKm(ym).km, prevRate = 0, prevCrew = null;
+  const before = trips.filter(t => t.date < ym + "-01" && !t.notRun).sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (before) { prevRate = num(before.dieselRate); prevCrew = before; }
+  for (let d = 1; d <= daysIn(ym); d++) {
+    const date = `${ym}-${pad2(d)}`, t = list.find(x => x.date === date), dr = meDraft[meKey0(date)], base = meFrom(t, date);
+    if (!t && prevCrew) { base.drv = crewValue("driver", prevCrew); base.cond = crewValue("conductor", prevCrew); }  // a new day starts with the last crew
+    const f = { ...base, ...(dr?.f || {}) };
+    // A saved amount that differs from the worked-out one counts as typed by hand, and is kept.
+    const savedSys = t && !t.notRun ? dbPadiSys(tripCollection(t), !!crewValue("checker", t)) : null;
+    const touched = { ...(t && num(t.fuelCost) && num(t.fuelCost) !== Math.round(num(t.litres) * num(t.dieselRate)) ? { dsl: true } : {}),
+      ...(savedSys ? Object.fromEntries([["pd", "driverPay", "driver"], ["pc", "conductorPay", "conductor"], ["pk", "checkerPay", "checker"]].filter(([, k, r]) => t[k] != null && num(t[k]) !== savedSys[r]).map(([x]) => [x, true])) : {}), ...(dr?.touched || {}) };
+    const sum = [1, 2, 3, 4, 5].reduce((a, i) => a + num(f["s" + i]), 0), col = num(f.tot) || sum;
+    const has = !!t || ME_NUM.some(k => !ME_AUTO.includes(k) && num(f[k]));
+    const rate = num(f.rate) || prevRate, lit = num(f.lit);
+    const auto = { rate: f.rate || (lit ? String(prevRate || "") : ""), dsl: touched.dsl ? f.dsl : lit && rate ? String(Math.round(lit * rate)) : "" };
+    const checker = !!crewValue("checker", t), sys = col ? dbPadiSys(col, checker) : { driver: 0, conductor: 0, checker: 0 };
+    [["pd", "driver"], ["pc", "conductor"], ["pk", "checker"]].forEach(([k, r]) => { auto[k] = touched[k] ? f[k] : col && sys[r] ? String(sys[r]) : ""; });
+    const dsl = num(auto.dsl), pay = num(auto.pd) + num(auto.pc) + num(auto.pk), route = num(f.route), told = num(f.exp);
+    const parts = dsl + pay + route, unsplit = Math.max(0, told - parts), exp = parts + unsplit;
+    const odo = num(f.odo), run = odo && prevOdo != null ? odo - prevOdo : null;
+    const changed = !!dr && Object.keys(dr.f).some(k => String(dr.f[k]) !== String(base[k] ?? ""));
+    out.push({ date, d, t, f, auto, touched, has, sum, col, exp, unsplit, bal: col - exp, odo, run, changed, idle: !!t?.notRun, future: date > todayISO(), routeLocked: meRouteLocked(t), notSplit: num(f.tot) ? num(f.tot) - sum : 0 });
+    if (odo) prevOdo = odo;
+    if (rate && (t || dr)) prevRate = rate;
+    if (t && !t.notRun) prevCrew = t;
+  }
+  return out;
+}
+function meCrewOpts(kind, val) {
+  const list = (kind === "driver" ? drivers : conductors).filter(p => p.status !== "Inactive" || "id:" + p.id === val);
+  const opts = list.map(p => [`id:${p.id}`, p.name]); if (val && !opts.some(o => o[0] === val)) opts.unshift([val, val.startsWith("name:") ? val.slice(5) : "—"]);
+  return `<option value="">—</option>` + opts.map(([v, n]) => `<option value="${esc(v)}"${v === val ? " selected" : ""}>${esc(n)}</option>`).join("");
+}
+function renderMonthEntry(ym, M) {
+  $("tTableWrap").hidden = tView !== "table"; $("tCal").hidden = tView !== "cal";
+  meSaveBar();
+  if (tView === "cal") { renderMeCal(ym); return; }
+  if ($("tRows").contains(document.activeElement)) { meWaiting = true; return; }  // don't redraw under someone typing
+  const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(r.auto[k] ?? r.f[k] ?? "")}" aria-label="${k}"${extra}${ro}>`;
+  $("tHead").innerHTML = `<tr class="grp"><th colspan="4"></th><th colspan="6">Collection</th><th colspan="3">Diesel</th><th colspan="3">Padi (rules)</th><th colspan="4">Expenses and balance</th><th colspan="2">Km</th><th></th></tr>` +
+    `<tr><th class="sticky">Day</th><th>Start</th><th>Driver</th><th>Conductor</th><th class="n">S1</th><th class="n">S2</th><th class="n">S3</th><th class="n">S4</th><th class="n">S5</th><th class="n">Total</th><th class="n">Litres</th><th class="n">Rate</th><th class="n">Amount</th><th class="n">Driver</th><th class="n">Cond.</th><th class="n">Checker</th><th class="n">Route</th><th class="n">Total exp.</th><th class="n">Other</th><th class="n">Balance</th><th class="n">Reading</th><th class="n">Run</th><th></th></tr>`;
+  $("tRows").innerHTML = days.map(r => {
+    const dw = DAYS[new Date(r.date + "T00:00:00").getDay()].slice(0, 3), open = r.future ? "" : `<button class="open" type="button" data-open="${r.date}" aria-label="Open the day sheet of ${fmtDate(r.date)}">Open day ↗</button>`;
+    const day = `<td class="sticky"><span class="medate">${r.changed ? '<span class="dot" title="Changed, not saved"></span>' : ""}<b>${pad2(r.d)}</b> ${dw}</span></td>`;
+    if (r.future) return `<tr class="future" data-date="${r.date}">${day}<td colspan="22"></td></tr>`;
+    if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td colspan="21"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td>${open}</td></tr>`;
+    const totCls = r.notSplit > 0 ? " part" : r.notSplit < 0 ? " over" : "";
+    return `<tr data-date="${r.date}" class="${r.has ? "" : "empty"}${r.changed ? " chg" : ""}">${day}` +
+      `<td>${inp(r, "start", " t")}</td><td><select class="mein t" data-k="drv" aria-label="Driver"${ro}>${meCrewOpts("driver", r.f.drv)}</select></td><td><select class="mein t" data-k="cond" aria-label="Conductor"${ro}>${meCrewOpts("conductor", r.f.cond)}</select></td>` +
+      [1, 2, 3, 4, 5].map(i => `<td>${inp(r, "s" + i)}</td>`).join("") + `<td>${inp(r, "tot", " tot" + totCls, ` placeholder="${r.sum || ""}" title="${r.notSplit > 0 ? `${rs(r.notSplit)} not split into singles` : r.notSplit < 0 ? `Singles are ${rs(-r.notSplit)} more than the total` : "Type the total when the singles are not all known"}"`)}</td>` +
+      `<td>${inp(r, "lit")}</td><td>${inp(r, "rate", r.touched.rate || r.f.rate ? "" : " auto")}</td><td>${inp(r, "dsl", r.touched.dsl ? "" : " auto")}</td>` +
+      `<td>${inp(r, "pd", r.touched.pd ? "" : " auto")}</td><td>${inp(r, "pc", r.touched.pc ? "" : " auto")}</td><td>${inp(r, "pk", r.touched.pk ? "" : " auto")}</td>` +
+      `<td>${r.routeLocked ? `<span class="melock" title="Several route expenses: change them in the day sheet">${nf(num(r.f.route))}</span>` : inp(r, "route")}</td><td>${inp(r, "exp")}</td>` +
+      `<td class="n mec" data-c="oth">${r.unsplit ? nf(r.unsplit) : "—"}</td><td class="n mec mebal${r.bal < 0 ? " neg" : ""}" data-c="bal">${r.has ? nf(r.bal) : ""}</td>` +
+      `<td>${inp(r, "odo")}</td><td class="n mec" data-c="run">${r.run > 0 ? nf(r.run) : "—"}</td><td>${open}</td></tr>`;
+  }).join("");
+  const ran = days.filter(r => r.has && !r.idle), sumK = k => ran.reduce((a, r) => a + num(r.auto[k] ?? r.f[k]), 0);
+  const totCol = ran.reduce((a, r) => a + r.col, 0), totExp = ran.reduce((a, r) => a + r.exp, 0), km = M.km;
+  $("tFoot").innerHTML = `<tr><td class="sticky">Total</td><td colspan="3">${ran.length} day${ran.length === 1 ? "" : "s"} · ${days.filter(r => r.idle).length} not run</td>${[1, 2, 3, 4, 5].map(i => `<td class="n">${nf(sumK("s" + i))}</td>`).join("")}<td class="n">${nf(totCol)}</td>` +
+    `<td class="n">${nf(sumK("lit"))}</td><td></td><td class="n">${nf(sumK("dsl"))}</td><td class="n">${nf(sumK("pd"))}</td><td class="n">${nf(sumK("pc"))}</td><td class="n">${nf(sumK("pk"))}</td><td class="n">${nf(sumK("route"))}</td><td></td>` +
+    `<td class="n">${nf(ran.reduce((a, r) => a + r.unsplit, 0))}</td><td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n">${km != null ? nf(km) : "—"}</td><td></td></tr>`;
+}
+// Typing updates the draft and the worked-out boxes of the month, without redrawing the box being typed in.
+function meInput(e) {
+  const el = e.target, k = el.dataset.k, tr = el.closest("tr[data-date]"); if (!k || !tr || !canTrips) return;
+  const key = meKey0(tr.dataset.date), dr = meDraft[key] ||= { f: {}, touched: {} };
+  dr.f[k] = el.value;
+  if (ME_AUTO.includes(k)) { if (el.value === "") delete dr.touched[k]; else dr.touched[k] = true; el.classList.toggle("auto", el.value === ""); }
+  meRefresh();
+}
+function meRefresh() {
+  const ym = monthYM(tFyStart, tMonthIdx), days = meDays(ym);
+  days.forEach(r => {
+    const tr = $("tRows").querySelector(`tr[data-date="${r.date}"]`); if (!tr || r.idle || r.future) return;
+    ME_AUTO.forEach(k => { const el = tr.querySelector(`[data-k="${k}"]`); if (el && el !== document.activeElement && !r.touched[k]) { el.value = r.auto[k] ?? ""; el.classList.toggle("auto", !(k === "rate" && r.f.rate)); } });
+    const tot = tr.querySelector('[data-k="tot"]'); if (tot) { tot.placeholder = r.sum || ""; tot.classList.toggle("part", r.notSplit > 0); tot.classList.toggle("over", r.notSplit < 0); }
+    const c = n => tr.querySelector(`[data-c="${n}"]`);
+    c("oth").textContent = r.unsplit ? nf(r.unsplit) : "—"; c("bal").textContent = r.has ? nf(r.bal) : ""; c("bal").classList.toggle("neg", r.bal < 0); c("run").textContent = r.run > 0 ? nf(r.run) : "—";
+    tr.classList.toggle("chg", r.changed); tr.classList.toggle("empty", !r.has);
+    const dt = tr.querySelector(".medate"), dot = dt.querySelector(".dot"); if (r.changed && !dot) dt.insertAdjacentHTML("afterbegin", '<span class="dot" title="Changed, not saved"></span>'); else if (!r.changed && dot) dot.remove();
+  });
+  meSaveBar();
+}
+const meChangedKeys = () => Object.keys(meDraft).filter(k => { const [bus, date] = k.split("|"), t = (bus === tBusId ? trips : []).find(x => x.date === date) || winTrips().find(x => x.vehicleId === bus && x.date === date), base = meFrom(t, date); return Object.keys(meDraft[k].f).some(f => String(meDraft[k].f[f]) !== String(base[f] ?? "")); });
+function meSaveBar() { const n = meChangedKeys().length; $("tSaveBar").hidden = !n || !canTrips; $("tSaveN").textContent = `${n} day${n === 1 ? "" : "s"} changed, not saved`; $("tSaveAll").textContent = `Save ${n} day${n === 1 ? "" : "s"}`; }
+// Enter moves down to the same box of the next day, like a spreadsheet.
+function meKey(e) {
+  if (e.key !== "Enter" && e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+  const el = e.target, k = el.dataset.k, tr = el.closest("tr"); if (!k || !tr || el.tagName === "SELECT" && e.key !== "Enter") return;
+  let n = e.key === "ArrowUp" ? tr.previousElementSibling : tr.nextElementSibling;
+  while (n && !n.querySelector(`[data-k="${k}"]`)) n = e.key === "ArrowUp" ? n.previousElementSibling : n.nextElementSibling;
+  if (n) { e.preventDefault(); const t = n.querySelector(`[data-k="${k}"]`); t.focus(); t.select?.(); }
+}
+// Saving: each changed day is the saved day with the typed values put in (or a new day).
+async function meSaveAll() {
+  if (!canTrips) return;
+  const keys = meChangedKeys(); if (!keys.length) return;
+  $("tSaveAll").disabled = true; let n = 0, failed = 0;
+  for (const key of keys) {
+    const [bus, date] = key.split("|"), ym = date.slice(0, 7);
+    const r = (bus === tBusId ? meDays(ym) : []).find(x => x.date === date); if (!r) continue;
+    const t = r.t ? { ...r.t } : { id: `${bus}_${date}`, vehicleId: bus, date }, f = r.f, a = r.auto;
+    const planned = plannedStart(date), start = placeName(f.start);
+    if (start && planned && start.toLowerCase() !== planned.toLowerCase()) { t.start = start; t.startFixed = true; } else { t.start = start || planned; delete t.startFixed; }
+    [["driver", f.drv], ["conductor", f.cond]].forEach(([kind, v]) => { delete t[kind + "Id"]; delete t[kind + "Name"]; if (!v) return;
+      if (v.startsWith("id:")) { const p = (kind === "driver" ? drivers : conductors).find(x => x.id === v.slice(3)); t[kind + "Id"] = v.slice(3); t[kind + "Name"] = p?.name || ""; } else t[kind + "Name"] = v.slice(5); });
+    const setN = (k, v, dec = 0) => { const x = num(v); if (v === "" || v == null || !x) delete t[k]; else t[k] = dec ? Math.round(x * 10 ** dec) / 10 ** dec : Math.round(x); };
+    [1, 2, 3, 4, 5].forEach(i => setN("s" + i, f["s" + i])); setN("colTotal", f.tot);
+    setN("litres", f.lit, 1); setN("dieselRate", num(f.lit) ? a.rate : f.rate, 2); setN("fuelCost", a.dsl);
+    setN("driverPay", a.pd); setN("conductorPay", a.pc); setN("checkerPay", a.pk); setN("expTotal", f.exp); setN("odo", f.odo);
+    if (!r.routeLocked && String(f.route) !== String(meFrom(r.t, date).route)) {
+      const nm = (r.t?.expList || []).find(x => !x.off)?.name || "Route expenses";
+      EXP_CATS.forEach(([k]) => delete t["ex_" + k]); delete t.expDef;
+      if (num(f.route)) { t.expList = [{ name: nm, amt: Math.round(num(f.route)), own: true }]; const c = RS_CAT.find(([re]) => re.test(nm))?.[1] || "misc"; t["ex_" + c] = Math.round(num(f.route)); } else delete t.expList;
+    }
+    t.otherExp = itemised(t) + Math.max(0, num(t.expTotal) - (num(t.fuelCost) + tripPay(t) + itemised(t))); if (!t.otherExp) delete t.otherExp;
+    t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
+    try { await dayTripSave(t); delete meDraft[key]; n++; } catch { failed++; }
+  }
+  $("tSaveAll").disabled = false; renderTrips();
+  toast(failed ? `${n} saved, ${failed} could not be saved. Check the connection and save again.` : `${n} day${n === 1 ? "" : "s"} saved`);
+}
+// Open day: the full day sheet; days typed here are saved first if wanted.
+async function meOpenDay(date) {
+  const n = meChangedKeys().length;
+  if (n && canTrips) { const ok = await askYesNo(`Save the ${n} changed day${n === 1 ? "" : "s"} first?`, { yes: "Save and open", no: "Open without saving" }); if (ok) await meSaveAll(); }
+  dbBus = tBusId; opDate = date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day";
+}
+// Calendar: each day of the month with its state; a click opens the day sheet.
+function renderMeCal(ym) {
+  const days = meDays(ym), first = (new Date(ym + "-01T00:00:00").getDay() + 6) % 7;
+  $("tCal").innerHTML = `<div class="mecalg">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => `<span class="dow">${d}</span>`).join("")}${"<span></span>".repeat(first)}` +
+    days.map(r => { const sh = rsDoc(tBusId, r.date), st = r.future ? "future" : r.idle ? "idle" : sh?.status === "submitted" ? "review" : !r.t ? "todo" : totalOnly(r.t) ? "part" : "ok";
+      const lbl = { future: "", idle: `Did not run${r.t?.idleReason ? ` · ${r.t.idleReason}` : ""}`, review: "Conductor sent · to approve", todo: "Not entered", part: "Total only", ok: "" }[st];
+      return `<button type="button" class="mecd ${st}" data-open="${r.date}"${r.future ? " disabled" : ""}><span class="d">${r.d}<small>${r.t?.start || plannedStart(r.date) || ""}</small></span>${r.t && !r.idle ? `<span class="c">${rs(tripCollection(r.t))}</span><span class="b">Bal ${rs(tripCollection(r.t) - tripExpense(r.t))}</span>` : ""}${lbl ? `<span class="l">${esc(lbl)}</span>` : ""}</button>`; }).join("") + `</div>` +
+    `<p class="hint" style="margin:8px 0 0">Click a day to open its day sheet.</p>`;
+}
+
 /* render */
 function renderTrips() {
   if (!$("tRows")) return;
@@ -5268,7 +5349,7 @@ function renderTrips() {
   $("tBus").value = keep;
   if (keep !== tBusId) { tBusId = keep; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); }
   loadLocalTrips();
-  $("tNoBus").hidden = !!buses.length; $("tBody").hidden = !buses.length;
+  $("tNoBus").hidden = !!buses.length; $("tBody").hidden = !buses.length; $("tBusF").hidden = buses.length === 1;
   if (!buses.length) return;
 
   const has = new Set(trips.map(t => t.date.slice(0, 7)));
@@ -5296,14 +5377,10 @@ function renderTrips() {
     stat("Diesel", rs(tot.fuel), M.rates.length ? `₹${nf(Math.min(...M.rates), 2)} – ₹${nf(Math.max(...M.rates), 2)} a litre` : "") +
     stat("Crew pay", rs(tot.pd + tot.pc + tot.pk), `Driver ${rs(tot.pd)} · Conductor ${rs(tot.pc)} · Checker ${rs(tot.pk)}`);
 
-  // Quick entry: jump to the first past day of this month with nothing entered, or today.
   const missing = []; for (let d = 1; d <= daysIn(ym); d++) { const dt = `${ym}-${pad2(d)}`; if (dt <= today && !list.some(x => x.date === dt)) missing.push(dt); }
-  const target = missing[0] || (today.startsWith(ym) && !list.some(x => x.date === today) ? today : "");
-  const nShort = list.filter(t => !t.notRun && singlesRun(t) < SINGLES_PER_DAY).length, nLoss = list.filter(t => !t.notRun && tripCollection(t) - tripExpense(t) < 0).length;
-  const legend = `<span class="tlegend"><span><i style="background:var(--warn-soft);border-left:3px solid var(--warn)"></i>Under 5 singles${nShort ? ` (${nShort})` : ""}</span><span><i style="background:var(--danger-soft);border-left:3px solid var(--danger)"></i>Loss for the day${nLoss ? ` (${nLoss})` : ""}</span></span>`;
-  $("tEntryBar").innerHTML = canTrips && target
-    ? `<button class="btn primary" type="button" data-tdate="${target}">${target === today && !missing.length ? "+ Enter today's trip" : `+ Enter ${fmtDate(target)}`}</button><span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} this month still to enter.` : ""} Click any row to open that day.</span>${legend}`
-    : `<span class="hint">${list.length ? "All days up to today are entered. " : ""}Click any row to open that day.</span>${legend}`;
+  const nTot = list.filter(totalOnly).length;
+  $("tEntryBar").innerHTML = `<div class="seg" role="radiogroup" aria-label="View"><label><input type="radio" name="tView" value="table"${tView === "table" ? " checked" : ""}><span>Table</span></label><label><input type="radio" name="tView" value="cal"${tView === "cal" ? " checked" : ""}><span>Calendar</span></label></div>` +
+    `<span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} still to enter` : list.length ? "All days up to today are entered" : ""}${nTot ? ` · ${nTot} with the total only` : ""}</span>`;
   const R = routeFor(tFyStart), editingRoute = $("tRoute").dataset.editing === "1";
   $("tRoute").innerHTML = editingRoute
     ? `<label for="tRouteA">Starts on 1 April from</label><input id="tRouteA" value="${esc(R?.a || "")}" style="width:11em"><label for="tRouteB">alternating with</label><input id="tRouteB" value="${esc(R?.b || "")}" style="width:11em"><button class="btn" type="button" data-route="save" style="padding:4px 10px">Save</button><button class="icon" type="button" data-route="cancel">Cancel</button>`
@@ -5316,42 +5393,7 @@ function renderTrips() {
     ? `<label for="tKmInput">Opening km for ${MONTHS[tMonthIdx]}</label><input id="tKmInput" type="number" inputmode="numeric" min="0" value="${open.km ?? ""}"><button class="btn" type="button" data-km="save" style="padding:4px 10px">Save</button><button class="icon" type="button" data-km="cancel">Cancel</button>`
     : `<span>Opening km <b>${open.km != null ? nf(open.km) : "not set"}</b>${srcNote ? ` <span class="hint">(${srcNote})</span>` : ""}</span>${canTrips ? `<button class="icon" type="button" data-km="edit">${open.km != null ? "Change" : "Set opening km"}</button>` : ""}<span>Closing km <b>${M.lastOdo ? nf(M.lastOdo) : "—"}</b></span>`;
 
-  // daily rows
-  let run = 0;
-  const rows = [];
-  for (let d = 1; d <= daysIn(ym); d++) {
-    const date = `${ym}-${pad2(d)}`, t = list.find(x => x.date === date);
-    const dow = DAYS[new Date(date + "T00:00:00").getDay()];
-    const t0 = list.find(x => x.date === date), future = date > today;
-    const act = future ? "" : !t0 ? (canTrips ? `<span class="dact"><button class="rbtn add" type="button" data-tdate="${date}">+ Add</button><button class="rbtn" type="button" data-tdate="${date}" data-tmode="idle" title="Mark that the bus did not run">Not run</button></span>` : "")
-      : `<span class="dact"><button class="rbtn" type="button" data-tdate="${date}">${canTrips ? "Edit" : "View"}</button></span>`;
-    const dateCell = `<td class="sticky"><span class="dcell"><span><span class="num">${pad2(d)}</span><span class="dw">${dow.slice(0, 3)}</span></span>${act}</span></td>`;
-    const cls = date === today ? " today" : "";
-    if (!t) {
-      rows.push(`<tr data-tdate="${future ? "" : date}" tabindex="${future ? -1 : 0}" class="none${future ? " future" : ""}${cls}">${dateCell}<td class="plan">${esc(plannedStart(date))}</td><td colspan="25">${future ? "" : "No trip entered"}</td></tr>`);
-      continue;
-    }
-    if (t.notRun) {
-      rows.push(`<tr data-tdate="${date}" tabindex="0" class="idle${cls}">${dateCell}<td class="plan">${esc(plannedStart(date))}</td><td colspan="25"><span class="pill off">Did not run</span>${esc(t.idleReason || "")}${t.remarks ? ` · ${esc(t.remarks)}` : ""}</td></tr>`);
-      continue;
-    }
-    const col = tripCollection(t), exp = tripExpense(t), b = col - exp; run += b;
-    const kmRun = M.kmBy[date] ?? null;
-    const cell = v => v ? `<td class="n">${nf(v)}</td>` : `<td class="n"><span class="sub">—</span></td>`;
-    const singlesCell = t => { if (totalOnly(t)) return `<td class="n" title="${esc(colSplitText(t))}"><span class="pill d30" style="padding:0 6px">Total</span></td>`; const n = singlesRun(t); return `<td class="n" title="${n} of ${SINGLES_PER_DAY} singles · counts as ${fmtDays(n / SINGLES_PER_DAY)} day">${n < SINGLES_PER_DAY ? `<span class="pill d30" style="padding:0 6px">${n}/${SINGLES_PER_DAY}</span>` : `${n}/${SINGLES_PER_DAY}`}</td>`; };
-    const kmL = kmRun && t.litres ? nf(kmRun / t.litres, 2) : "—", epkm = kmRun ? nf(col / kmRun, 2) : "—";
-    const planned = plannedStart(date), shown = startShown(t, date), sgl = singlesRun(t);
-    const flags = [sgl < SINGLES_PER_DAY ? `Only ${sgl} of ${SINGLES_PER_DAY} singles run` : "", b < 0 ? `Loss of ₹${nf(-b)} for the day` : "", colSplitText(t)].filter(Boolean);
-    const hl = (b < 0 ? " loss" : "") + (sgl < SINGLES_PER_DAY ? " short" : "");
-    rows.push(`<tr data-tdate="${date}" tabindex="0" class="${cls}${hl}"${flags.length ? ` title="${flags.join(" · ")}"` : ""}>${dateCell}<td${t.startFixed && planned && shown !== planned ? ` title="Changed for this day. The plan was ${esc(planned)}."` : ""}>${esc(shown)}${t.startFixed && planned && shown !== planned ? ' <span class="pill d30" style="padding:0 5px">changed</span>' : ""}</td><td>${esc(crewName("driver", t))}</td><td>${esc(crewName("conductor", t))}</td><td>${esc(crewName("checker", t)) || '<span class="sub">—</span>'}</td>
-      <td class="n">${t.dieselRate ? nf(t.dieselRate, 2) : "—"}</td>${cell(t.litres)}${cell(t.fuelCost)}${cell(t.driverPay)}${cell(t.conductorPay)}${cell(t.checkerPay)}
-      ${[1, 2, 3, 4, 5].map(i => cell(t["s" + i])).join("")}${singlesCell(t)}<td class="n"><b>${nf(col)}</b></td>${cell(t.otherExp)}${cell(exp)}<td class="n ${b < 0 ? "neg" : "pos"}">${nf(b)}</td><td class="n">${nf(run)}</td>
-      ${cell(t.odo)}<td class="n">${kmRun != null ? nf(kmRun) : "—"}</td><td class="n">${kmL}</td><td class="n">${epkm}</td><td class="rm" title="${esc(t.remarks || "")}">${esc(t.remarks || "")}</td></tr>`);
-  }
-  $("tRows").innerHTML = rows.join("");
-  $("tFoot").innerHTML = list.length ? `<tr><td class="sticky">Total</td><td colspan="4">${fmtDays(days)} day${days === 1 ? "" : "s"} run · ${M.singles} singles</td><td></td><td class="n">${nf(tot.lit)}</td><td class="n">${nf(tot.fuel)}</td><td class="n">${nf(tot.pd)}</td><td class="n">${nf(tot.pc)}</td><td class="n">${nf(tot.pk)}</td>
-    ${[1, 2, 3, 4, 5].map(i => `<td class="n">${nf(tot["s" + i])}</td>`).join("")}<td class="n">${M.singles}</td><td class="n">${nf(tot.col)}</td><td class="n">${nf(tot.other)}</td><td class="n">${nf(tot.exp)}</td><td class="n">${nf(bal)}</td><td class="n">${nf(bal)}</td><td></td>
-    <td class="n">${km != null ? nf(km) : "—"}</td><td class="n">${km && tot.lit ? nf(km / tot.lit, 2) : "—"}</td><td class="n">${km ? nf(tot.col / km, 2) : "—"}</td><td></td></tr>` : "";
+  renderMonthEntry(ym, M);
 
   renderMileage(ym, M); renderExpenseSplit(M);
 
@@ -5459,203 +5501,8 @@ function crewOptions(kind, current, src = trips, vType = "", keep = []) {
   return list.map(p => `<option value="id:${p.id}">${esc(p.name)}</option>`).join("") +
     (legacy.length ? `<optgroup label="Not in ${kind === "driver" ? "Driver" : "Conductor"} records">${legacy.sort().map(n => `<option value="name:${esc(n)}">${esc(n)}</option>`).join("")}</optgroup>` : "");
 }
-function crewValue(kind, t) { return t?.[kind + "Id"] ? "id:" + t[kind + "Id"] : t?.[kind + "Name"] ? "name:" + t[kind + "Name"].toUpperCase() : ""; }
-const T_INPUTS = ["tStart", "tRate", "tLitres", "tFuel", "tPayD", "tPayC", "tPayK", "tS1", "tS2", "tS3", "tS4", "tS5", "tOdo", "tRemarks", "tIdleReason", "tModeRan", "tModeIdle", ...EXP_CATS.map(([k]) => "tx_" + k)];
-function syncTMode() {
-  const idle = $("tModeIdle").checked;
-  $("tIdleFields").hidden = !idle; $("tRanFields").hidden = idle;
-  $("tfSave").textContent = idle ? "Save as not run" : "Save";
-}
-function openTfDrawer(date, mode) {
-  tEditDate = date;
-  const t = trips.find(x => x.date === date), bus = vehicles.find(v => v.id === tBusId);
-  if (!$("tIdleReason").options.length) $("tIdleReason").innerHTML = `<option value="">Choose a reason</option>` + IDLE_REASONS.map(r => `<option>${r}</option>`).join("");
-  const idle = t ? !!t.notRun : mode === "idle";
-  $("tModeIdle").checked = idle; $("tModeRan").checked = !idle;
-  $("tIdleReason").value = t?.idleReason || "";
-  const dow = DAYS[new Date(date + "T00:00:00").getDay()];
-  $("tfTitle").textContent = `${t ? (canTrips ? "Edit trip" : "Trip") : "Add trip"} · ${dow}, ${fmtDate(date)}`;
-  $("tfSub").textContent = bus ? `${bus.plateNo || ""} · ${vName(bus)}` : "";
-  const starts = [...new Set(trips.map(x => x.start).filter(Boolean))];
-  $("tStarts").innerHTML = starts.map(x => `<option value="${esc(x)}">`).join("");
-  $("tDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, trips, bus?.type, [t?.driverId]);
-  $("tConductor").innerHTML = `<option value="">Choose the conductor</option>` + crewOptions("conductor");
-  $("tChecker").innerHTML = `<option value="">No checker</option>` + crewOptions("conductor");
-  $("tDriver").value = crewValue("driver", t); $("tConductor").value = crewValue("conductor", t); $("tChecker").value = crewValue("checker", t);
-  // a new day defaults to yesterday's crew, rate and the alternate starting point
-  const last = !t ? [...trips].filter(x => x.date < date).sort((a, b) => b.date.localeCompare(a.date))[0] : null;
-  const map = { tStart: "start", tRate: "dieselRate", tLitres: "litres", tFuel: "fuelCost", tPayD: "driverPay", tPayC: "conductorPay", tPayK: "checkerPay",
-    tS1: "s1", tS2: "s2", tS3: "s3", tS4: "s4", tS5: "s5", tOdo: "odo", tRemarks: "remarks" };
-  Object.entries(map).forEach(([id, k]) => $(id).value = t?.[k] ?? "");
-  EXP_CATS.forEach(([k]) => $("tx_" + k).value = t?.["ex_" + k] ?? "");
-  // A lump sum from before itemising goes into "Other" until someone splits it.
-  const lump = t ? unItemised(t) : 0;
-  if (lump) $("tx_misc").value = num(t.ex_misc) + lump;
-  $("tExpHint").textContent = lump ? `₹${nf(lump)} was entered as one amount and is shown under Other. Split it into the right heads if you know them.` : "";
-  if (last) { $("tDriver").value = crewValue("driver", last); $("tConductor").value = crewValue("conductor", last); $("tChecker").value = crewValue("checker", last); }
-  const planned = plannedStart(date);
-  $("tStart").value = startShown(t, date);
-  $("tStartHint").textContent = planned ? `Planned start ${planned}, from the route. Change it only if the bus started elsewhere this day.`
-    : date === `${fyOf(date)}-04-01` ? "This sets the route: every following day alternates from here." : "Set the route on the trip sheet to fill this in automatically.";
-  tFuelTouched = !!t && num(t.fuelCost) !== Math.round(num(t.dieselRate) * num(t.litres));
-  T_INPUTS.forEach(id => $(id).disabled = !canTrips);
-  ["tDriver", "tConductor", "tChecker"].forEach(id => $(id).disabled = !canTrips);
-  ["tStart", "tDriver", "tConductor", "tRate", "tLitres", "tOdo", "tIdleReason"].forEach(k => { $("e-" + k).textContent = ""; $(k).removeAttribute("aria-invalid"); });
-  $("tfSave").hidden = !canTrips; $("tfDelete").hidden = !(canTrips && t);
-  syncTMode();
-  $("tfDelete").textContent = "Delete entry"; delete $("tfDelete").dataset.confirm;
-  tCalc();
-  $("scrim").hidden = false; $("tfDrawer").hidden = false;
-  tDirty = false; tPendingNav = null; $("tDirty").hidden = true; $("tfSaved").textContent = "";
-  $("tfSaveNext").textContent = "Save & next day ›";
-  syncNav(); renderPrevDay();
-  setTimeout(() => { (!canTrips ? $("tfClose") : $("tModeIdle").checked ? $("tIdleReason") : t ? $("tS1") : $("tRate")).focus({ preventScroll: true }); $("tForm").scrollTop = 0; }, 30);
-}
-function closeTfDrawer() { $("tfDrawer").hidden = true; tEditDate = ""; tDirty = false; $("tDirty").hidden = true; if (!anyDrawerOpen()) $("scrim").hidden = true; }
-// Day-to-day navigation inside the entry screen
-let tDirty = false, tPendingNav = null, tAfterSave = "close";
 const shiftDay = (iso, n) => { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
-const fyFirst = () => `${tFyStart}-04-01`, fyLast = () => { const l = `${tFyStart + 1}-03-31`, t = todayISO(); return l < t ? l : t; };
-function goToDay(date) {
-  if (!date || date < fyFirst() || date > fyLast()) return;
-  if (tDirty && canTrips) { tPendingNav = date; $("tDirty").hidden = false; $("tDirtySave").focus(); return; }
-  const idx = MONTHS.findIndex((_, i) => monthYM(tFyStart, i) === date.slice(0, 7));
-  if (idx >= 0 && idx !== tMonthIdx) { tMonthIdx = idx; renderTrips(); }
-  openTfDrawer(date);
-}
-function syncNav() {
-  $("tfPrev").disabled = tEditDate <= fyFirst(); $("tfNext").disabled = tEditDate >= fyLast();
-  $("tfJump").min = fyFirst(); $("tfJump").max = fyLast(); $("tfJump").value = tEditDate;
-  $("tfSaveNext").hidden = !canTrips || tEditDate >= fyLast();
-}
-function renderPrevDay() {
-  const p = [...trips].filter(x => x.date < tEditDate && !x.notRun).sort((a, b) => b.date.localeCompare(a.date))[0];
-  if (!p) { $("tPrevCard").hidden = true; return; }
-  $("tPrevCard").hidden = false; $("tPrevTitle").textContent = `Previous trip · ${fmtDate(p.date)}`;
-  const row = (k, v) => `<dt>${k}</dt><dd>${v}</dd>`;
-  $("tPrev").innerHTML = row("Starting", esc(startShown(p, p.date))) + row("Driver", esc(crewName("driver", p))) + row("Conductor", esc(crewName("conductor", p))) +
-    row("Litres", p.litres ? nf(p.litres) : "—") + row("Collection", nf(tripCollection(p))) + row("Balance", nf(tripCollection(p) - tripExpense(p))) + row("Odometer", p.odo ? nf(p.odo) : "—");
-}
-function tCalc() {
-  const rate = num($("tRate").value), lit = num($("tLitres").value);
-  if (!tFuelTouched) $("tFuel").value = rate && lit ? Math.round(rate * lit) : "";
-  const fuel = num($("tFuel").value), pay = num($("tPayD").value) + num($("tPayC").value) + num($("tPayK").value);
-  const other = EXP_CATS.reduce((a, [k]) => a + num($("tx_" + k).value), 0);
-  const sg = [1, 2, 3, 4, 5].filter(i => num($("tS" + i).value) > 0).length;
-  const col = [1, 2, 3, 4, 5].reduce((a, i) => a + num($("tS" + i).value), 0), exp = fuel + pay + other, bal = col - exp;
-  const prev = tEditDate ? prevOdo(tEditDate) : null, odo = num($("tOdo").value);
-  $("tOdoHint").textContent = prev != null ? `Previous reading ${nf(prev)} km` : "No previous reading. Set the month's opening km on the trip sheet.";
-  const kmRun = odo && prev != null ? odo - prev : null;
-  $("tCalc").innerHTML = `<div><div class="k">Collection</div><div class="v">${rs(col)}</div></div><div><div class="k">Expense</div><div class="v">${rs(exp)}</div></div>
-    <div><div class="k">Balance</div><div class="v" style="color:${bal < 0 ? "var(--danger)" : "var(--ok)"}">${rs(bal)}</div></div><div><div class="k">Other exp.</div><div class="v">${rs(other)}</div></div>
-    <div><div class="k">Km run</div><div class="v">${kmRun != null ? nf(kmRun) : "—"}</div></div><div><div class="k">Km / L</div><div class="v">${kmRun && lit ? nf(kmRun / lit, 2) : "—"}</div></div>
-    <div><div class="k">EPKM</div><div class="v">${kmRun ? "₹" + nf(col / kmRun, 2) : "—"}</div></div><div><div class="k">CPKM</div><div class="v">${kmRun ? "₹" + nf(exp / kmRun, 2) : "—"}</div></div>
-    <div><div class="k">Singles run</div><div class="v"${sg < SINGLES_PER_DAY ? ' style="color:var(--warn)"' : ""}>${sg} of ${SINGLES_PER_DAY}</div></div><div><div class="k">Counts as</div><div class="v">${fmtDays(sg / SINGLES_PER_DAY)} day</div></div>`;
-}
-$("tForm").addEventListener("input", e => { tDirty = true; if (e.target.id === "tFuel") tFuelTouched = $("tFuel").value !== ""; tCalc(); });
-// Enter moves to the next field like a spreadsheet; Ctrl+Enter saves and opens the next day.
-$("tForm").addEventListener("keydown", e => {
-  if (e.key !== "Enter" || e.target.tagName === "TEXTAREA" || e.target.tagName === "BUTTON") return;
-  e.preventDefault();
-  if (e.ctrlKey || e.metaKey) { tAfterSave = $("tfSaveNext").hidden ? "close" : "next"; $("tForm").requestSubmit(); return; }
-  const fields = [...$("tForm").querySelectorAll("input:not([type=radio]):not([type=hidden]), select")].filter(el => !el.disabled && el.offsetParent !== null);
-  const i = fields.indexOf(e.target);
-  if (i >= 0 && i < fields.length - 1) { fields[i + 1].focus(); fields[i + 1].select?.(); }
-  else if (canTrips) { tAfterSave = $("tfSaveNext").hidden ? "close" : "next"; $("tForm").requestSubmit(); }
-});
-$("tfDrawer").addEventListener("keydown", e => {
-  if (!e.altKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
-  e.preventDefault(); goToDay(shiftDay(tEditDate, e.key === "ArrowLeft" ? -1 : 1));
-});
-$("tfPrev").onclick = () => goToDay(shiftDay(tEditDate, -1));
-$("tfNext").onclick = () => goToDay(shiftDay(tEditDate, 1));
-$("tfJump").addEventListener("change", () => goToDay($("tfJump").value));
-$("tDirtyDiscard").onclick = () => { tDirty = false; $("tDirty").hidden = true; resetDirtyBar(); if (tCloseIntent) { tCloseIntent = false; closeTfDrawer(); return; } const d = tPendingNav; tPendingNav = null; goToDay(d); };
-function resetDirtyBar() { $("tDirty").querySelector("span").textContent = "You have unsaved changes for this day."; $("tDirtySave").textContent = "Save and go"; $("tDirtyDiscard").textContent = "Discard changes"; }
-$("tDirtyStay").onclick = () => { tPendingNav = null; tCloseIntent = false; resetDirtyBar(); $("tDirty").hidden = true; };
-$("tDirtySave").onclick = () => { tAfterSave = tCloseIntent ? "close" : "goto"; tCloseIntent = false; resetDirtyBar(); $("tForm").requestSubmit(); };
-$("tfSave").addEventListener("click", () => { tAfterSave = "stay"; });
-$("tfSaveNext").addEventListener("click", () => { tAfterSave = "next"; });
-$("tForm").addEventListener("change", e => { if (e.target.name === "tMode") syncTMode(); });
-$("tForm").addEventListener("submit", async e => {
-  e.preventDefault(); if (!canTrips) return;
-  ["tStart", "tDriver", "tConductor", "tRate", "tLitres", "tOdo", "tIdleReason"].forEach(k => { $("e-" + k).textContent = ""; $(k).removeAttribute("aria-invalid"); });
-  if ($("tModeIdle").checked) {
-    const reason = $("tIdleReason").value;
-    if (!reason) { $("e-tIdleReason").textContent = "Choose why the bus did not run."; $("tIdleReason").setAttribute("aria-invalid", "true"); $("tIdleReason").focus(); return; }
-    const t = { id: `${tBusId}_${tEditDate}`, vehicleId: tBusId, date: tEditDate, notRun: true, idleReason: reason };
-    const rem = $("tRemarks").value.trim(); if (rem) t.remarks = rem;
-    $("tfSave").disabled = true;
-    try { await saveTrip(t); afterTripSave(`Marked as not run · ${reason}`); }
-    catch { toast("Couldn't save. Check your connection and try again."); }
-    finally { $("tfSave").disabled = false; }
-    return;
-  }
-  const err = (k, m) => { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); ok = false; };
-  let ok = true;
-  const t = { id: `${tBusId}_${tEditDate}`, vehicleId: tBusId, date: tEditDate };
-  const start = $("tStart").value.trim().replace(/\s+/g, " "); if (!start) err("tStart", "Enter where the bus started."); else t.start = start.replace(/\b\w/g, c => c.toUpperCase());
-  const planned = plannedStart(tEditDate), isAnchor = tEditDate === `${fyOf(tEditDate)}-04-01`;
-  // 1 April sets the route; any other day that differs from the plan is kept as a one-day change.
-  if (t.start && planned && !isAnchor && t.start.toLowerCase() !== planned.toLowerCase()) t.startFixed = true;
-  const setCrew = (kind, sel, required) => {
-    const v = $(sel).value;
-    if (!v) { if (required) err(sel, `Choose the ${kind}.`); return; }
-    if (v.startsWith("id:")) { const id = v.slice(3), p = (kind === "driver" ? drivers : conductors).find(x => x.id === id); t[kind + "Id"] = id; t[kind + "Name"] = p?.name || ""; }
-    else t[kind + "Name"] = v.slice(5);
-  };
-  setCrew("driver", "tDriver", true); setCrew("conductor", "tConductor", true); setCrew("checker", "tChecker", false);
-  if (t.conductorName && t.checkerName && crewValue("conductor", t) === crewValue("checker", t)) { $("e-tConductor").textContent = "The conductor and checker must be different people."; ok = false; }
-  const put = (id, key, dec = 0) => { const raw = $(id).value; if (raw === "") return; const n = Number(raw); if (Number.isFinite(n) && n >= 0) t[key] = dec ? Math.round(n * 10 ** dec) / 10 ** dec : Math.round(n); };
-  put("tRate", "dieselRate", 2); put("tLitres", "litres", 1); put("tFuel", "fuelCost");
-  put("tPayD", "driverPay"); put("tPayC", "conductorPay"); put("tPayK", "checkerPay");
-  [1, 2, 3, 4, 5].forEach(i => put("tS" + i, "s" + i)); put("tOdo", "odo");
-  EXP_CATS.forEach(([k]) => put("tx_" + k, "ex_" + k));
-  t.otherExp = itemised(t); if (!t.otherExp) delete t.otherExp;
-  // The itemised route expenses stay with the day while their heads are not changed here.
-  const was = [...winTrips(), ...trips].find(x => x.id === t.id);
-  if (was?.expList && EXP_CATS.every(([k]) => num(was["ex_" + k]) === num(t["ex_" + k]))) { t.expList = was.expList; if (was.expDef) t.expDef = was.expDef; }
-  if (t.litres && !t.dieselRate) err("tRate", "Enter the diesel rate.");
-  if (t.dieselRate && (t.dieselRate < 50 || t.dieselRate > 200)) err("tRate", "Enter the rate per litre, e.g. 93.07.");
-  if (t.litres > 600) err("tLitres", "That's more than a bus tank holds. Check the litres.");
-  const prev = prevOdo(tEditDate);
-  if (t.odo && prev != null && t.odo <= prev) err("tOdo", `The reading must be more than the previous one (${nf(prev)} km).`);
-  if (t.odo && prev != null && t.odo - prev > 1500) err("tOdo", `That's ${nf(t.odo - prev)} km in a day. Check the reading.`);
-  const rem = $("tRemarks").value.trim(); if (rem) t.remarks = rem;
-  t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
-  if (!ok) { document.querySelector('#tForm [aria-invalid="true"]')?.focus(); return; }
-  const isNew = !trips.some(x => x.date === tEditDate);
-  $("tfSave").disabled = true;
-  try {
-    await saveTrip(t);
-    if (isAnchor && t.start) {
-      const r = routeFor(fyOf(tEditDate)), other = r && r.a && r.b ? (t.start === r.a ? r.b : r.a) : (r?.b || "");
-      if (r?.src === "set" && t.start !== r.a && other) await saveRoute(t.start, other);
-    }
-    afterTripSave(`${fmtDate(tEditDate)} ${isNew ? "saved" : "updated"} · balance ${rs(t.balance)}`);
-  }
-  catch (er) { toast(er?.code === "quota_exceeded" ? "Storage is full." : "Couldn't save. Check your connection and try again."); }
-  finally { $("tfSave").disabled = false; }
-});
-function afterTripSave(msg) {
-  tDirty = false; $("tDirty").hidden = true;
-  const mode = tAfterSave; tAfterSave = "stay";
-  if (mode === "next" && tEditDate < fyLast()) { toast(msg); goToDay(shiftDay(tEditDate, 1)); return; }
-  if (mode === "goto" && tPendingNav) { const d = tPendingNav; tPendingNav = null; toast(msg); goToDay(d); return; }
-  if (mode === "close") { closeTfDrawer(); toast(msg); return; }
-  // "Save" keeps the day open so it can be checked; reopen to refresh the Delete button and previous-day card.
-  const d = tEditDate; openTfDrawer(d); $("tfSaved").textContent = "Saved ✓"; toast(msg);
-}
-$("tfDelete").onclick = async () => {
-  const b = $("tfDelete");
-  if (!b.dataset.confirm) { b.dataset.confirm = "1"; b.textContent = "Click again to delete"; return; }
-  try { await deleteTrip(`${tBusId}_${tEditDate}`); closeTfDrawer(); toast("Trip deleted"); } catch { toast("Couldn't delete. Try again."); }
-};
-$("tfClose").onclick = $("tfCancel").onclick = () => {
-  if (tDirty && canTrips) { tPendingNav = null; $("tDirty").hidden = false; $("tDirty").querySelector("span").textContent = "You have unsaved changes. Close without saving?"; $("tDirtySave").textContent = "Save and close"; $("tDirtyDiscard").textContent = "Close without saving"; tCloseIntent = true; return; }
-  closeTfDrawer();
-};
-let tCloseIntent = false;
+function crewValue(kind, t) { return t?.[kind + "Id"] ? "id:" + t[kind + "Id"] : t?.[kind + "Name"] ? "name:" + t[kind + "Name"].toUpperCase() : ""; }
 
 let tt; function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2600); }
 
@@ -6415,7 +6262,7 @@ function renderUpload() {
   $("upMonth").max = todayISO().slice(0, 7);
   const res = S.rows, list = res?.rows || [];
   if (S.done) { const d = S.done, u = K.route ? "day" : "trip";
-    $("upOut").innerHTML = `<div class="upok"><b>${d.n} new ${u}${d.n === 1 ? "" : "s"} added, ${d.u} updated</b> in ${esc(d.bus)}${d.mon ? ` for ${esc(d.mon)}` : ""}${d.failed ? `, ${d.failed} could not be saved${d.why ? ` (${esc(d.why)})` : ""}. Upload the same file again: rows already saved show as No change` : ""}. ${K.route ? "They are in the route trip sheet (Daily entry and Monthly sheet)." : "They are in the Booking planner and in Reports."}</div>`; return; }
+    $("upOut").innerHTML = `<div class="upok"><b>${d.n} new ${u}${d.n === 1 ? "" : "s"} added, ${d.u} updated</b> in ${esc(d.bus)}${d.mon ? ` for ${esc(d.mon)}` : ""}${d.failed ? `, ${d.failed} could not be saved${d.why ? ` (${esc(d.why)})` : ""}. Upload the same file again: rows already saved show as No change` : ""}. ${K.route ? "They are in the route trip sheet (Day sheet and Monthly entry)." : "They are in the Booking planner and in Reports."}</div>`; return; }
   if (!res) { $("upOut").innerHTML = ""; return; }
   if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
   if (res.loading) { $("upOut").innerHTML = `<p class="sub" style="margin:0">Loading the days already in the app for this month…</p>`; return; }
@@ -6576,7 +6423,7 @@ function renderApprovals() {
 // deleted anywhere in the app is logged once in "auditLog" with who, when, which module and what. Change-history
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
-const AU_PAGE = { trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Day entry", tspare: "Booking planner",
+const AU_PAGE = { trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Route bus day sheet", tspare: "Booking planner",
   ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", tfuel: "Fuel log", trexp: "Route expenses", tpadi: "Padi calculation", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
@@ -7463,9 +7310,9 @@ async function rsSave(status, why) {
 }
 // Approve: the day goes into the route trip sheet in the same form as an office entry, then the sheet is marked approved.
 const RS_CAT = [[/toll|fastag/i, "toll"], [/stand/i, "stand"], [/commission/i, "commission"], [/clean|wash/i, "cleaning"], [/police|check/i, "police"], [/food|tea|water|meal/i, "food"], [/repair|mechanic|puncture/i, "repairs"]];
-async function rsApprove() {
-  if (!canTrips || rsh.saving || (!rsh.admin && rsMissing().length)) return;
-  const s = rsBuild("approved"), base = { id: s.id, vehicleId: s.vehicleId, date: s.date, fromSheet: true };
+// A conductor's day sheet as a trip sheet day (the same form as an office entry).
+function rsTripFrom(s0) {
+  const s = { ...s0, dsl: s0.dsl || {}, padi: s0.padi || {}, exp: s0.exp || [] }, base = { id: s.id, vehicleId: s.vehicleId, date: s.date, fromSheet: true };
   let t;
   if (s.notRun) t = { ...base, notRun: true, idleReason: s.idleReason };
   else {
@@ -7487,6 +7334,11 @@ async function rsApprove() {
     t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
   }
   if (s.remarks) t.remarks = s.remarks;
+  return t;
+}
+async function rsApprove() {
+  if (!canTrips || rsh.saving || (!rsh.admin && rsMissing().length)) return;
+  const s = rsBuild("approved"), t = rsTripFrom(s);
   rsh.saving = true; rsRender();
   try {
     await dayTripSave(t);
@@ -7527,7 +7379,8 @@ function rsWaitHtml() {
 }
 document.addEventListener("click", e => {
   const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) { rsOpen(rsBus, o.dataset.rsopen); return; }
-  const a = e.target.closest("[data-rsappr]"); if (a) { const x = ops.routeSheets.find(y => y.id === a.dataset.rsappr); if (x) rsOpen(x.vehicleId, x.date, true); }
+  const a = e.target.closest("[data-rsappr]"); if (a) { const x = ops.routeSheets.find(y => y.id === a.dataset.rsappr); if (!x) return;
+    if (bwIsPhone()) rsOpen(x.vehicleId, x.date, true); else { dbBus = x.vehicleId; opDate = x.date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; } }
 });
 document.addEventListener("change", e => { if (e.target.id === "rsBusSel") { rsBus = e.target.value; renderRsList(); } });
 
@@ -7767,7 +7620,7 @@ function renderHub() {
     <article class="ocard main"><div class="oc-top">${ICONS.route}<div><h3>Route bus</h3><div class="oc-kind">Daily · 5 singles a day</div></div></div>
       <div class="oc-big">${ready ? rb.length - pend.length : "…"}<small>/ ${rb.length}</small></div><p class="oc-cap">entered for ${day}</p>
       <div>${!rb.length ? '<span class="pill off">No route buses</span>' : !ready ? "" : pend.length ? `<span class="pill d30">${pend.length} still to enter</span>` : '<span class="pill ok">All entered</span>'}</div>
-      <div class="oc-act">${bwIsPhone() ? `<a class="btn primary" href="#route-sheet">Fill trip sheet</a>` : `<a class="btn primary" href="#trips-day">Daily entry</a>`}<a class="btn" href="#trips-route">Monthly sheet</a></div></article>
+      <div class="oc-act">${bwIsPhone() ? `<a class="btn primary" href="#route-sheet">Fill trip sheet</a>` : `<a class="btn primary" href="#trips-day">Day sheet</a>`}<a class="btn" href="#trips-route">Monthly entry</a></div></article>
     <article class="ocard soon"><div class="oc-top">${ICONS.omni}<div><h3>Omni bus</h3><div class="oc-kind">Format to be added</div></div></div>
       <p class="oc-cap" style="margin-top:12px">Share your Omni bus sheet and it will get its own format here.</p></article>
     <article class="ocard"><div class="oc-top">${ICONS.truck}<div><h3>Trucks</h3><div class="oc-kind">Per load, grouped into round trips</div></div></div>
@@ -7810,11 +7663,13 @@ function renderDayBook() {
   if (!rb.length) return;
   const ready = dayReady();
   if (!rb.some(b => b.id === dbBus)) dbBus = (ready && rb.find(b => !entryOf(b.id)) || rb[0]).id;
+  // With only one route bus there is nothing to choose: the bus list is left out.
+  const one = rb.length === 1; $("dbBody").classList.toggle("one", one); $("dbList").hidden = one;
   const done = rb.filter(b => entryOf(b.id)).length;
   $("dbList").innerHTML = `<p class="dbl-h">${ready ? `${done} of ${rb.length} entered` : "Loading…"}</p>` + rb.map(b => {
-    const t = ready ? entryOf(b.id) : null, bal = t && !t.notRun ? tripCollection(t) - tripExpense(t) : 0;
-    const st = !ready ? "" : !t ? '<span class="st todo">To enter</span>' : t.notRun ? '<span class="st">Not run</span>'
-      : `<span class="st ${bal < 0 ? "neg" : "ok"}">✓ ${rs(bal)}</span>`;
+    const t = ready ? entryOf(b.id) : null, bal = t && !t.notRun ? tripCollection(t) - tripExpense(t) : 0, sh = rsDoc(b.id, opDate);
+    const st = !ready ? "" : sh?.status === "submitted" ? '<span class="st todo">Conductor sent · review</span>' : !t ? `<span class="st todo">${sh && sh.status !== "approved" ? "Conductor filling" : "To enter"}</span>` : t.notRun ? `<span class="st">Did not run${t.idleReason ? ` · ${esc(t.idleReason)}` : ""}</span>`
+      : totalOnly(t) ? `<span class="st todo">Total only · ${rs(bal)}</span>` : `<span class="st ${bal < 0 ? "neg" : "ok"}">✓ Saved · ${rs(bal)}</span>`;
     return `<button type="button" class="dbitem${b.id === dbBus ? " on" : ""}" data-bus="${b.id}"${b.id === dbBus ? ' aria-current="true"' : ""}><span class="num">${esc(plateOf(b))}</span>${st}</button>`;
   }).join("");
   $("dbLoading").hidden = ready; $("dbForm").hidden = !ready;
@@ -7845,11 +7700,15 @@ function renderDbExp() {
     (dbExp.length ? `<div class="dbxtot"><span>Route expenses</span><span id="dbExpTot">${rs(dbExp.reduce((a, x) => a + num(x.amt), 0))}</span></div>` : "") +
     (canTrips ? `<div class="dbxacts"><button class="btn" type="button" data-xadd>+ Add expense</button>${changed && has ? `<button class="rsreset" type="button" data-xreset>Bring back the default list of ${esc(placeName(start))}</button>` : ""}</div>` : "");
 }
+// A conductor's sheet waiting for approval opens in the day sheet with its values, for the office to check, correct and approve.
+let dbReviewSheet = null;
 function fillDayForm() {
   dbFilledKey = `${dbBus}|${opDate}`;
-  const bus = vehicles.find(v => v.id === dbBus), t = entryOf(dbBus), last = t ? null : lastOf(dbBus), bw = busWin(dbBus);
+  const sheet = rsDoc(dbBus, opDate); dbReviewSheet = canTrips && sheet?.status === "submitted" ? sheet : null;
+  const t0 = entryOf(dbBus), t = dbReviewSheet ? rsTripFrom(dbReviewSheet) : t0;
+  const bus = vehicles.find(v => v.id === dbBus), last = t ? null : lastOf(dbBus), bw = busWin(dbBus);
   $("dbTitle").textContent = plateOf(bus);
-  $("dbSub").textContent = `${vName(bus)} · ${DAYS[new Date(opDate + "T00:00:00").getDay()]}, ${fmtDate(opDate)}`;
+  $("dbSub").textContent = `${DAYS[new Date(opDate + "T00:00:00").getDay()]} · ${dbReviewSheet ? "Conductor sent · to approve" : t ? t.notRun ? "Did not run" : totalOnly(t) ? "Saved · total only, singles to come" : "Saved" : "Not entered yet"}`;
   if (!$("dbIdleReason").options.length) $("dbIdleReason").innerHTML = `<option value="">Choose a reason</option>` + IDLE_REASONS.map(r => `<option>${r}</option>`).join("");
   const idle = !!t?.notRun;
   $("dbModeIdle").checked = idle; $("dbModeRan").checked = !idle; $("dbIdleReason").value = t?.idleReason || "";
@@ -7869,10 +7728,11 @@ function fillDayForm() {
   const planned = plannedFor(dbBus, opDate);
   $("dbStart").value = t ? (t.startFixed ? t.start : planned || t.start || "") : planned;
   const was = dbExpFrom(t); if (was) { dbExp = was.list; dbExpDef = was.def; } else { dbExp = []; dbExpDef = null; } renderDbExp();
-  $("dbNote").textContent = t ? `Saved entry. Change anything and save to update it.` : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
+  renderDbReview(t0);
+  $("dbNote").textContent = dbReviewSheet ? "" : t ? `Saved entry. Change anything and save to update it.` : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
   dbFuelTouched = !!t && num(t.fuelCost) !== Math.round(num(t.dieselRate) * num(t.litres));
-  $("dbForm").querySelectorAll("input, select").forEach(el => el.disabled = !canTrips);
-  $("dbSave").hidden = !canTrips; $("dbDelete").hidden = !(canTrips && t);
+  $("dbForm").querySelectorAll("input, select").forEach(el => { if (el.id !== "dbDate") el.disabled = !canTrips; });
+  $("dbSave").hidden = !canTrips; $("dbSaveStay").hidden = !canTrips || !!dbReviewSheet; $("dbDelete").hidden = !(canTrips && t0);
   $("dbDelete").textContent = "Delete entry"; delete $("dbDelete").dataset.confirm;
   $("dbForm").querySelectorAll(".err").forEach(e => e.textContent = ""); $("dbForm").querySelectorAll("[aria-invalid]").forEach(e => e.removeAttribute("aria-invalid"));
   dbDirty = false; $("dbDirty").hidden = true; $("dbSaved").textContent = "";
@@ -7889,7 +7749,8 @@ function nextPending() {
   const rb = routeBuses(), i = rb.findIndex(b => b.id === dbBus);
   return [...rb.slice(i + 1), ...rb.slice(0, Math.max(0, i))].find(b => !entryOf(b.id));
 }
-function syncDbSaveLabel() { $("dbSave").textContent = nextPending() ? "Save, next bus ↵" : "Save ↵"; }
+const dbOneBus = () => routeBuses().length === 1;
+function syncDbSaveLabel() { if (dbReviewSheet) { $("dbSave").textContent = "✓ Approve and add to trip sheet"; return; } $("dbSave").textContent = dbOneBus() ? (opDate < todayISO() ? "Save, next day →" : "Save ↵") : nextPending() ? "Save, next bus →" : "Save ↵"; }
 function dbCalc() {
   if ($("dbModeIdle").checked) { $("dbCalc").innerHTML = `<span>Marked as not run · counts as 0 singles</span>`; return; }
   const rate = num($("dbRate").value), lit = num($("dbLitres").value);
@@ -7899,19 +7760,26 @@ function dbCalc() {
   const tot = $("dbColTot"); tot.placeholder = sum || ""; if (document.activeElement !== tot) tot.value = dbColTold;
   const sys = dbPadiSys(col, !!$("dbChecker").value);
   DB_PAY.forEach(([id, k]) => { if (!dbPayTouched[id]) $(id).value = col ? sys[k] || "" : ""; });
-  $("dbPadiHint").textContent = DB_PAY.some(([id]) => dbPayTouched[id]) ? "Pay changed by hand. Clear a box to use the padi rules." : col ? "Pay worked out from the padi rules." : "Pay is worked out from the collection.";
+  $("dbPadiHint").textContent = DB_PAY.some(([id]) => dbPayTouched[id]) ? "Padi changed by hand. Clear a box to use the padi rules." : col ? "" : "Padi is worked out from the collection.";
+  const how = padiFor(col, rsRules()), howText = k => how?.[k]?.parts?.map(p => `${nf(p.pct, Number.isInteger(p.pct) ? 0 : 1)}% of ${rs(p.base)}`).join(" + ") || "";
+  [["dbHowD", "dbPayD", "driver"], ["dbHowC", "dbPayC", "conductor"], ["dbHowK", "dbPayK", "checker"]].forEach(([h, id, k]) => {
+    $(h).textContent = !col || (k === "checker" && !$("dbChecker").value) ? "" : dbPayTouched[id] ? `Changed · rules give ${rs(sys[k])}` : howText(k);
+    $(h).className = dbPayTouched[id] && col ? "hint warn" : "hint"; });
   const other = dbExp.reduce((a, x) => a + num(x.amt), 0);
   if ($("dbExpTot")) $("dbExpTot").textContent = rs(other);
   const parts = num($("dbFuel").value) + num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value) + other, told = num($("dbExpAll").value);
   const unsplit = Math.max(0, told - parts), exp = parts + unsplit, bal = col - exp;
   if ($("dbOthAmt")) { $("dbOthAmt").value = unsplit || 0; $("dbOthNote").textContent = told ? "The rest of the Total expense" : "Type the Total expense below"; }
-  $("dbExpAllHint").textContent = !told ? "Only if just the day's total is known" : unsplit ? `${rs(unsplit)} sits as Other, not split` : parts > told ? `Entered expenses add up to ${rs(parts)}, more than this` : "Fully split ✓";
+  $("dbExpAllHint").textContent = !told ? "" : unsplit ? `${rs(unsplit)} sits as Other, not split` : parts > told ? `Entered expenses add up to ${rs(parts)}, more than this` : "Fully split ✓";
   $("dbExpAllHint").className = told && (unsplit || parts > told) ? "hint warn" : "hint";
   const prev = prevOdoFor(dbBus, opDate), odo = num($("dbOdo").value), km = odo && prev != null ? odo - prev : null;
-  $("dbOdoHint").textContent = prev != null ? `Last reading ${nf(prev)}${km > 0 ? ` · ${nf(km)} km today` : ""}` : "No earlier reading";
+  $("dbOdoStart").textContent = prev != null ? nf(prev) : "—";
+  $("dbOdoHint").textContent = prev == null ? "No earlier reading" : km > 0 ? `${nf(km)} km run${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}` : "Start is the last day's end reading.";
+  $("dbMCol").textContent = rs(col); $("dbMExp").textContent = rs(exp); $("dbMBal").textContent = `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`; $("dbMBal").parentElement.classList.toggle("neg", bal < 0);
+  $("dbMBrk").textContent = [`Diesel ${rs(num($("dbFuel").value))}`, `Padi ${rs(num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value))}`, other ? `Route ${rs(other)}` : "", unsplit ? `Other ${rs(unsplit)}` : ""].filter(Boolean).join(" · ");
   const diff = num(dbColTold) ? num(dbColTold) - sum : 0;
   $("dbSg").textContent = !diff ? `${sg} of ${SINGLES_PER_DAY} singles` : diff < 0 ? `Singles are ${rs(-diff)} more than the total` : sum ? `${rs(diff)} not split into singles` : "Total only · singles later";
-  $("dbSg").className = diff || sg < SINGLES_PER_DAY ? "warn" : "";
+  $("dbSg").className = diff || sg < SINGLES_PER_DAY ? "hint warn" : "hint";
   $("dbCalc").innerHTML = `<span class="${sg < SINGLES_PER_DAY || diff ? "warn" : ""}">${diff > 0 ? (sum ? `${sg} singles + ${rs(diff)} not split` : "Total only") : `${sg} of ${SINGLES_PER_DAY} singles`}</span><span>Collection <b>${rs(col)}</b></span><span>Expense <b>${rs(exp)}</b></span><span>Balance <b class="${bal < 0 ? "neg" : "pos"}">${rs(bal)}</b></span>${km > 0 ? `<span>${nf(km)} km${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}</span>` : ""}`;
 }
 function dbGo(target) {
@@ -7955,8 +7823,8 @@ document.getElementsByName("dbExpMode").forEach(r => r.addEventListener("change"
   else { dbExp = dbExp.filter(x => x.own); dbExpDef = null; }
   dbDirty = true; renderDbExp(); dbCalc();
 }));
-$("dbForm").addEventListener("input", e => { dbDirty = true; $("dbSaved").textContent = "";
-  const id = e.target.id;
+$("dbForm").addEventListener("input", e => { const id = e.target.id; if (id === "dbDate") return;
+  dbDirty = true; $("dbSaved").textContent = "";
   if (id === "dbFuel") dbFuelTouched = $("dbFuel").value !== "";
   if (id === "dbColTot") dbColTold = e.target.value;
   if (DB_PAY.some(([p]) => p === id)) dbPayTouched[id] = e.target.value !== "";
@@ -8019,19 +7887,48 @@ $("dbForm").addEventListener("submit", async e => {
   if (!ok) { $("dbDirty").hidden = true; dbPending = null; $("dbForm").querySelector('[aria-invalid="true"]')?.focus(); return; }
   $("dbSave").disabled = true;
   try {
+    const rv = dbReviewSheet && dbReviewSheet.vehicleId === bus && dbReviewSheet.date === date ? dbReviewSheet : null;
+    if (rv) t.fromSheet = true;
     await dayTripSave(t);
+    if (rv) await opsSave("routeSheets", { ...rv, status: "approved", approvedOn: new Date().toISOString(), approvedByName: whoAmI() });
     const b = vehicles.find(v => v.id === bus);
-    toast(t.notRun ? `${plateOf(b)} marked as not run` : `${plateOf(b)} saved · ${singlesRun(t)} of 5 singles · balance ${rs(t.balance)}`);
+    toast(rv ? `${plateOf(b)} · ${fmtShort(date)} approved and added to the trip sheet` : t.notRun ? `${plateOf(b)} marked as not run` : `${plateOf(b)} saved · ${singlesRun(t)} of 5 singles · balance ${rs(t.balance)}`);
     dbDirty = false; $("dbDirty").hidden = true;
-    const target = dbPending; dbPending = null;
+    const target = dbPending, stay = dbStay; dbPending = null; dbStay = false;
     if (target) { applyDbTarget(target); return; }
-    const nxt = nextPending();
+    if (!stay && dbOneBus() && date < todayISO()) { applyDbTarget({ date: shiftDay(date, 1), bus: bus }); return; }
+    const nxt = !stay && !dbOneBus() && nextPending();
     if (nxt) { applyDbTarget({ bus: nxt.id }); return; }
+    if (stay) { dbFilledKey = ""; renderDayBook(); $("dbSaved").textContent = "Saved ✓"; return; }
     dbFilledKey = ""; renderDayBook(); $("dbSaved").textContent = "Saved ✓";
     toast(`All route buses are entered for ${fmtDate(date)}`);
   } catch { toast("Couldn't save. Check your connection and try again."); }
   finally { $("dbSave").disabled = false; }
 });
+function renderDbReview(t0) {
+  const d = dbReviewSheet, el = $("dbReview"); el.hidden = !d; if (!d) { el.innerHTML = ""; return; }
+  const al = (ok, head, lines) => `<div class="al${ok ? " ok" : ""}"><b>${head}</b>${lines.map(x => `<span>${esc(x)}</span>`).join("")}</div>`;
+  const pad = rsPadiChanged(d).map(([k, l]) => `${l}: ${rs(num(d.padi[k]))} entered · rules give ${rs(num(d.padiSys[k]))}`), ex = rsExpChanges(d), cs = colSplitText(d);
+  el.innerHTML = `<div class="rvbar"><span><b>Sent by ${esc(d.byName || "the conductor")}</b>${d.submittedOn ? ` · ${fmtStamp(d.submittedOn)}` : ""}. Check it, correct any box, then approve.</span>` +
+    `<input id="dbRvWhy" maxlength="200" placeholder="Reason, if sending back" aria-label="Reason for sending back"><button class="btn danger" type="button" id="dbRvBack">Send back to conductor</button></div>` +
+    (d.notRun ? `<div class="alerts">${al(true, "Did not run", [d.idleReason || "No reason given"])}</div>` :
+    `<div class="alerts">${pad.length ? al(false, "⚠ Padi changed by the conductor", pad) : al(true, "✓ Padi as the rules", [])}` +
+      `${ex.length ? al(false, "⚠ Route expenses changed", ex) : ""}${cs ? al(false, "⚠ Collection", [cs]) : al(true, "✓ Collection split into trips", [])}` +
+      `${t0 && !t0.fromSheet ? al(false, "The office already entered this day", ["Approving puts this sheet in its place."]) : ""}</div>`);
+}
+$("dbReview").addEventListener("click", async e => {
+  if (e.target.id !== "dbRvBack" || !dbReviewSheet) return;
+  const why = $("dbRvWhy").value.trim(); if (!why) { toast("Type why it is sent back. The conductor will see it."); $("dbRvWhy").focus(); return; }
+  try { await opsSave("routeSheets", { ...dbReviewSheet, status: "rejected", rejectReason: why, rejectedByName: whoAmI(), rejectedOn: todayISO() }); toast("Sent back to the conductor"); dbFilledKey = ""; dbDirty = false; renderDayBook(); }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+});
+let dbStay = false;
+$("dbSaveStay").onclick = () => { dbStay = true; $("dbForm").requestSubmit(); };
+// Close goes back to the monthly entry of the same bus and month.
+$("dbClose").onclick = () => {
+  const go = () => { dbDirty = false; $("dbDirty").hidden = true; tBusId = dbBus; tFyStart = fyOf(opDate); if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
+  if (dbDirty && canTrips) askYesNo("You have unsaved changes for this day. Close without saving?", { yes: "Close without saving", no: "Stay", danger: true }).then(ok => ok && go()); else go();
+};
 $("dbDelete").onclick = async () => {
   const b = $("dbDelete");
   if (!b.dataset.confirm) { b.dataset.confirm = "1"; b.textContent = "Click again to delete"; return; }
