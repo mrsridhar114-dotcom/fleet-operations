@@ -1571,16 +1571,24 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsreset { border: 0; background: none; color: var(--accent); font: 600 14px var(--body); text-decoration: underline; padding: 6px 0; cursor: pointer; }
 .rsmiss { margin: 6px 0 0; font-size: 13px; color: var(--warn); text-align: center; }
 .bhappr.rswarn { background: var(--warn-soft); }
-.rshome { display: flex; flex-direction: column; gap: 12px; } .rsbus { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .rsbus .plate { font-size: 18px; }
+.rshome { margin: 0 0 10px; } .rsbus { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .rsbus .plate { font-size: 18px; }
 .rsbus select { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); padding: 0 8px; }
-.rstoday { max-width: 520px; } .rstst { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .rsdays { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+#view-trsheet .rstop { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; } .rstop h1 { margin: 0; font-size: 20px; } .rsacts { display: flex; gap: 6px; flex: none; } .rsacts .btn { padding: 6px 10px; min-height: 0; font-size: 14px; }
+.rsmsum .sec { font-size: 17px; }
+.rsmsum .sec { margin-bottom: 8px; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+@media (min-width: 701px) { .rsmg { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.rsmt { border: 1px solid var(--line); border-radius: 8px; padding: 5px 7px; background: var(--surface); min-width: 0; } .rsmt i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rsmt b { font-size: 14px; white-space: nowrap; } .rsmt.neg b { color: var(--danger); } .rsmt.pos b { color: var(--ok); }
+.rsdays .rsday { flex-direction: column; align-items: stretch; gap: 4px; min-height: 0; padding: 8px 10px; }
+.rsdays .rsday > .rsdh { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 8px; } .rsdays .rsday { text-align: left; } .rsdh b { font-size: 15px; } .rsdh .bstage { font-size: 12px; }
+.rsdg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px 8px; } .rsdc { display: flex; gap: 2px 14px; flex-wrap: wrap; }
+.rsdg > span, .rsdc > span { font-size: 13px; font-weight: 600; min-width: 0; } .rsdg i, .rsdc i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; } .rsdc > span { display: flex; gap: 4px; align-items: baseline; } .rsdc i { display: inline; }
 .bstage.todo { background: var(--surface); color: var(--danger); border: 1px dashed var(--danger); } .bstage.idle { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); }
 .rsday.loss { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); }
 .rsday.part { background: color-mix(in srgb, #f2c200 22%, var(--surface)); border-color: color-mix(in srgb, #d9a900 50%, var(--line)); }
 .rsday .neg, .rshist .neg { color: var(--danger); font-weight: 600; } .rschg, .rsday small.rschg { color: var(--warn); font-weight: 600; }
 .rshist { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; color: var(--muted); padding: 8px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 10px; }
-.rsmonth { align-self: flex-start; }
 .rsday { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 58px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .rsday > span:first-child { display: flex; flex-direction: column; gap: 2px; } .rsday b { font-size: 16px; } .rsday small { color: var(--muted); font-size: 13px; }
 .tpcheer { margin: 8px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ink); font: 600 15px var(--body); }
@@ -1961,10 +1969,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 
     <!-- ================= Route bus trip sheet on the phone (conductors) ================= -->
     <section class="wrap twrap" id="view-trsheet" hidden>
-      <header class="top"><div>
-        <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><span>Route trip sheet</span></nav>
-        <h1>Route trip sheet</h1>
-        <p class="sync">Fill in the day's sheet at night and send it to the office. It saves by itself as you type.</p></div></header>
+      <header class="top rstop"><h1>Route trip sheet</h1>
+        <div class="rsacts"><a class="btn" href="#trips-route" id="rsMonthBtn" hidden>Monthly view ›</a><a class="btn mclose" href="#home" id="rsCloseBtn" aria-label="Close">Close ✕</a></div></header>
       <div id="rsHome"></div>
     </section>
     <!-- ================= Route bus day sheet (computer) ================= -->
@@ -7640,22 +7646,48 @@ function rsDayState(bus, day) {
   if (x) return { ...base, cls: "draft", label: "Saved on phone, not sent", sub: "" };
   return { ...base, cls: "todo", label: "Not entered", sub: "" };
 }
-// The conductor's page: today's sheet for his bus, and his last days.
+// Kilometres for a day: its closing reading less the last reading before it.
+function rsDayKm(bus, day, T) {
+  if (!T?.odo) return null;
+  const prev = winTrips().filter(y => y.vehicleId === bus && y.date < day && y.odo).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const k = prev ? T.odo - prev.odo : null; return k > 0 && k < 2000 ? k : null;
+}
+// The month so far for the bus, as small tiles (the office's view of the phone page).
+function rsMonthHtml(bus) {
+  const ym = todayISO().slice(0, 7), all = winTrips().filter(t => t.vehicleId === bus).sort((a, b) => a.date.localeCompare(b.date));
+  const ran = all.filter(t => t.date.startsWith(ym) && !t.notRun);
+  const T = ran.reduce((a, t) => { a.col += tripCollection(t); a.exp += tripExpense(t); a.fuel += num(t.fuelCost); a.lit += num(t.litres); a.pay += num(t.driverPay) + num(t.conductorPay) + num(t.checkerPay); a.sg += singlesRun(t); return a; }, { col: 0, exp: 0, fuel: 0, lit: 0, pay: 0, sg: 0 });
+  const days = T.sg / SINGLES_PER_DAY, bal = T.col - T.exp, per = v => days ? rs(v / days) : "—";
+  const rates = ran.map(t => num(t.dieselRate)).filter(Boolean), open = (tBusId === bus ? openingKm(ym).km : null) ?? [...all].reverse().find(t => t.date < ym && t.odo)?.odo, last = [...ran].reverse().find(t => t.odo)?.odo;
+  const km = open && last ? last - open : null;
+  const tile = (k, v, cls = "") => `<div class="rsmt${cls ? " " + cls : ""}"><i>${k}</i><b>${v}</b></div>`;
+  return `<section class="panel rsmsum"><h2 class="sec">${new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })} so far</h2><div class="rsmg">` +
+    tile("Days run", `${fmtDays(days)} / ${daysIn(ym)}`) + tile("Total collection", rs(T.col)) + tile("Total expense", rs(T.exp)) +
+    tile("Total balance", `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`, bal < 0 ? "neg" : "pos") + tile("Avg col / day", per(T.col)) + tile("Avg bal / day", per(bal), bal < 0 ? "neg" : "") +
+    tile("Diesel (₹)", rs(T.fuel)) + tile("Avg diesel/day", per(T.fuel)) + tile("Avg salary/day", per(T.pay)) +
+    tile("Fuel (ltrs)", `${nf(T.lit, T.lit % 1 ? 1 : 0)} L`) + tile("Low fuel price", rates.length ? `₹${nf(Math.min(...rates), 2)}` : "—") + tile("High fuel price", rates.length ? `₹${nf(Math.max(...rates), 2)}` : "—") +
+    tile("Total kms", km != null ? nf(km) : "—") + tile("Mileage", km && T.lit ? `${nf(km / T.lit, 2)} km/L` : "—") + tile("Per day kms", km != null && days ? nf(km / days) : "—") +
+    `</div></section>`;
+}
+// The conductor's page: his bus and his last days (today included); the office also sees the month so far.
 function renderRsList() {
   const rb = routeBuses(), bus = rsMyBus(); rsBus = bus;
+  $("rsMonthBtn").hidden = !canTrips; $("rsMonthBtn").dataset.rsmonth = bus || ""; $("rsCloseBtn").href = canTrips ? "#trips" : "#home";
   if (rsh && !rsh.ready) { rsLoad(); if (rsh.ready) rsRender(); }
   if (!rb.length) { $("rsHome").innerHTML = `<div class="empty panel"><strong>No route buses yet</strong>Ask the office to add the route buses.</div>`; return; }
-  const v = vehicles.find(x => x.id === bus), today = todayISO(), d = rsDoc(bus, today), mine = canTrips ? ops.routeSheets : ops.routeSheets.filter(x => x.vehicleId === bus || x.by === myUserId);
-  const chip = S => `<span class="bstage ${S.cls}">${S.label}</span>`, S0 = rsDayState(bus, today);
+  const v = vehicles.find(x => x.id === bus), today = todayISO();
+  const chip = S => `<span class="bstage ${S.cls}">${S.label}</span>`;
   const days = [...Array(7)].map((_, i) => shiftDay(today, -i));
-  $("rsHome").innerHTML = `<section class="panel rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
-    `<button type="button" class="bwgo rstoday" data-rsopen="${today}">${d?.status === "submitted" || d?.status === "approved" ? "Open today's trip sheet" : d ? "Continue today's trip sheet" : "Fill today's trip sheet"} ${BW_ICON.next}</button>` +
-    `<div class="rstst">${chip(S0)}${S0.sub ? `<span class="rshow">${esc(S0.sub)}</span>` : ""}</div>` +
-    (canTrips ? `<a class="btn rsmonth" href="#trips-route" data-rsmonth="${bus}">Monthly view ›</a>` : "") + `</section>` +
+  $("rsHome").innerHTML = `<div class="rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
+    `</div>` + (canTrips ? rsMonthHtml(bus) : "") +
     `<section class="panel"><h2 class="sec">Last 7 days · ${esc(plateOf(v))}</h2><div class="rsdays">` +
-    days.map(day => { const S = rsDayState(bus, day);
-      return `<button type="button" class="rsday${S.tone ? " " + S.tone : ""}" data-rsopen="${day}"><span><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>` +
-        `${S.money ? `<small>Collection ${rs(S.col)} · Balance <span class="${S.bal < 0 ? "neg" : ""}">${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}</span></small>` : ""}${S.sub ? `<small>${esc(S.sub)}</small>` : ""}${S.changed ? `<small class="rschg">Changed by office after approval</small>` : ""}</span>${chip(S)}</button>`; }).join("") +
+    days.map(day => { const S = rsDayState(bus, day), T = S.t || (S.x && rsTripFrom(S.x)), km = rsDayKm(bus, day, T), lit = num(T?.litres);
+      const f = (k, v, cls = "") => `<span${cls ? ` class="${cls}"` : ""}><i>${k}</i>${v}</span>`;
+      return `<button type="button" class="rsday${S.tone ? " " + S.tone : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${chip(S)}</span>` +
+        (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Balance", `${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}`, S.bal < 0 ? "neg" : "")}` +
+          `${f("Kms", km != null ? nf(km) : "—")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
+          `<span class="rsdc">${f("Driver", esc(crewName("driver", T) || "—"))}${f("Conductor", esc(crewName("conductor", T) || "—"))}</span>` : "") +
+        `${S.sub || S.changed ? `<small>${esc(S.sub)}${S.changed ? `${S.sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
     `</div></section>` +
     (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
 }
