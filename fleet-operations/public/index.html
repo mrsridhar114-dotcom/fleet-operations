@@ -5276,7 +5276,7 @@ const routeBuses = () => vehicles.filter(v => v.type === "Bus" && v.opType === "
   .sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo)));
 const crewName = (kind, t) => {
   const id = t[kind + "Id"], list = kind === "driver" ? drivers : conductors;
-  return (id && list.find(x => x.id === id)?.name) || t[kind + "Name"] || "";
+  return (id && list.find(x => x.id === id)?.name) || crewMaster(kind, t[kind + "Name"])?.name || t[kind + "Name"] || "";
 };
 // Collection: the day's total when it is typed (colTotal; some or all singles may not be known yet), else the singles added up.
 const singlesSum = t => num(t.s1) + num(t.s2) + num(t.s3) + num(t.s4) + num(t.s5);
@@ -5716,13 +5716,25 @@ const vClassesOf = d => String(d?.vClass || "").split(",").map(x => x.trim()).fi
 const drivesClass = (d, vType) => !vType || !vClassesOf(d).length || vClassesOf(d).includes(vType);
 function crewOptions(kind, current, src = trips, vType = "", keep = []) {
   const list = (kind === "driver" ? drivers : conductors).filter(p => (p.status !== "Inactive" || p.id === current?.id) && (kind !== "driver" || keep.includes(p.id) || drivesClass(p, vType)));
-  const legacy = [...new Set(src.filter(t => !t[kind + "Id"] && t[kind + "Name"]).map(t => t[kind + "Name"].toUpperCase()))];
-  if (kind === "conductor") src.filter(t => !t.checkerId && t.checkerName).forEach(t => legacy.includes(t.checkerName.toUpperCase()) || legacy.push(t.checkerName.toUpperCase()));
+  const legacy = [...new Set(src.filter(t => !t[kind + "Id"] && t[kind + "Name"] && !crewMaster(kind, t[kind + "Name"])).map(t => t[kind + "Name"].toUpperCase()))];
+  if (kind === "conductor") src.filter(t => !t.checkerId && t.checkerName && !crewMaster("checker", t.checkerName)).forEach(t => legacy.includes(t.checkerName.toUpperCase()) || legacy.push(t.checkerName.toUpperCase()));
   return list.map(p => `<option value="id:${p.id}">${esc(p.name)}</option>`).join("") +
     (legacy.length ? `<optgroup label="Not in ${kind === "driver" ? "Driver" : "Conductor"} records">${legacy.sort().map(n => `<option value="name:${esc(n)}">${esc(n)}</option>`).join("")}</optgroup>` : "");
 }
 const shiftDay = (iso, n) => { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
-function crewValue(kind, t) { return t?.[kind + "Id"] ? "id:" + t[kind + "Id"] : t?.[kind + "Name"] ? "name:" + t[kind + "Name"].toUpperCase() : ""; }
+// A name typed or uploaded before the person was added to the Driver / Conductor master is the same person once the
+// master has that name: it is matched here, so lists show the person once and saving links the day to the record.
+const crewNorm = n => String(n || "").toUpperCase().replace(/[^A-Z0-9]+/g, " ").trim();
+function crewMaster(kind, name) {
+  const n = crewNorm(name); if (!n) return null;
+  const list = kind === "driver" ? drivers : conductors, hits = list.filter(p => crewNorm(p.name) === n);
+  return hits.find(p => (p.status || "Active") !== "Inactive") || hits[0] || null;
+}
+function crewValue(kind, t) {
+  if (t?.[kind + "Id"]) return "id:" + t[kind + "Id"];
+  if (!t?.[kind + "Name"]) return "";
+  const p = crewMaster(kind, t[kind + "Name"]); return p ? "id:" + p.id : "name:" + t[kind + "Name"].toUpperCase();
+}
 
 let tt; function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2600); }
 
@@ -8967,7 +8979,7 @@ function twOpen(b, backTo) {
     files: (b.attachments || []).map(f => ({ ...f })), saving: false, backTo: backTo || "",
     spl: splNum(b.splPermit),
     extras: bkExtras(b).map(x => ({ kind: EXTRA_KINDS.includes(x.kind) ? x.kind : "Other", amt: String(x.amt), note: x.note || "" })),
-    drvId: b.driverId || "", drvName: b.driverId ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName, cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
+    drvId: b.driverId || crewMaster("driver", b.driverName)?.id || "", drvName: b.driverId || crewMaster("driver", b.driverName) ? "" : (b.driverName || ""), drvOther: !b.driverId && !!b.driverName && !crewMaster("driver", b.driverName), cleaner: b.cleanerName || "", noCleaner: !!b.noCleaner, clnOther: false,
     rows: dslLinked(b.id).map(f => ({ id: f.id, litres: f.litres != null ? String(f.litres) : "", amount: f.amount != null ? String(f.amount) : "", pay: f.pay || "Cash", place: f.bunk || "", file: f.file || null })), legacy: dslLegacyOf(b) };
   if (!tw.rows.length && edit) tw.rows.push(twNewRow());
   // Other expenses: one row each for Pooja, Mechanic and Other (older trip sheets with several items are added up per kind).
@@ -9624,8 +9636,8 @@ function openBooking(id, preset, full) {
   $("bkDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, ops.bookings, "Bus", [b?.driverId]);
   $("bkDriver").value = b ? crewValue("driver", b) : "";
   $("bkBookedBy").innerHTML = `<option value="">Choose the driver</option>` + drivers.filter(d => (d.status !== "Inactive" && vCatsOf(d).includes("Spare bus")) || d.id === b?.bookedById).map(d => `<option value="id:${d.id}">${esc(d.name)}</option>`).join("") +
-    (b?.bookedByName && !b.bookedById ? `<option value="name:${esc(b.bookedByName)}">${esc(b.bookedByName)}</option>` : "");
-  $("bkBookedBy").value = b?.bookedById ? "id:" + b.bookedById : b?.bookedByName ? "name:" + b.bookedByName : "";
+    (b?.bookedByName && !b.bookedById && !crewMaster("driver", b.bookedByName) ? `<option value="name:${esc(b.bookedByName)}">${esc(b.bookedByName)}</option>` : "");
+  $("bkBookedBy").value = b?.bookedById ? "id:" + b.bookedById : b?.bookedByName ? (crewMaster("driver", b.bookedByName) ? "id:" + crewMaster("driver", b.bookedByName).id : "name:" + b.bookedByName) : "";
   bkFiles = (b?.attachments || []).map(f => ({ ...f })); bkOtherList = (b?.otherList || []).map(x => ({ ...x })); bkOthFill(); bkMsgEdited = { party: false, drv: false };
   $("bkExtras").innerHTML = bkExtras(b || {}).map(bkExRowHtml).join(""); $("bkSpl").value = splNum(b?.splPermit); bkDa = null; clearTimeout(bkDaTimer);
   $("bkMsgParty").value = $("bkMsgDrv").value = "";
