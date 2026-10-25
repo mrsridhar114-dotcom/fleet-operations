@@ -860,7 +860,9 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .upform { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; align-items: end; } .upchk { grid-column: 1 / -1; font-size: 14px; }
 .uptpl { grid-column: 1 / -1; display: flex; gap: 12px; align-items: center; } .uptpl .btn { flex: none; white-space: nowrap; }
 .upsum { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; } .upsum b { font-size: 17px; }
-.uptable tr.bad td { background: var(--danger-soft); } .uptable tr.skip td { color: var(--muted); } .uptable td { vertical-align: top; }
+.uptable tr.bad td { background: var(--danger-soft); } .uptable tr.chg td { background: var(--warn-soft); } .uptable tr.off td { opacity: .5; }
+.updiff { margin: 4px 0 0; padding-left: 16px; font-size: 12px; } .updiff s { color: var(--muted); } .upall { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+.uptable td:first-child input { width: 16px; height: 16px; } .uptable tr.skip td { color: var(--muted); } .uptable td { vertical-align: top; }
 .upok { padding: 12px 14px; border-radius: 8px; background: var(--ok-soft); color: var(--ink); }
 @media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } .uptpl { flex-direction: column; align-items: stretch; } }
 /* Route expenses and padi calculation */
@@ -2175,7 +2177,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div>
           <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Utility</span><span class="slash">/</span><span>Data upload</span></nav>
           <h1>Data upload</h1>
-          <p class="sync">Bring records kept in Excel into the app. Every row is shown first, as it will be saved; nothing is saved until you press Import. Rows already in the app are skipped, so the same file can be uploaded again safely.</p>
+          <p class="sync">Bring records kept in Excel into the app. Every row is shown first: new rows, and rows already in the app with each changed value (old → new). Untick any row you don't want, then press Upload; nothing is saved before that. Uploading the same file again changes nothing.</p>
         </div>
       </header>
       <section class="panel upform">
@@ -6139,7 +6141,7 @@ function upSpareRows(rows, vehicleId, paid, file) {
     if (from && !row.problems.length) {
       // A cancelled row is matched only with cancelled bookings, and never blocks the dates.
       const same = mine.find(o => o.from === from && (o.status === "cancelled") === (sk === "cancelled")), clash = !same && sk !== "cancelled" && taken.find(o => o.from <= to && from <= bkEnd(o));
-      if (same) row.skip = `already in the app (booking ${same.no || ""})`;
+      if (same) { row.have = same; Object.assign(row, upSpareDiff(same, b, sk)); }
       else if (clash) row.skip = `overlaps booking ${clash.no || ""} (${fmtShort(clash.from)} – ${fmtShort(bkEnd(clash))})`;
     }
     out.push(row);
@@ -6239,26 +6241,26 @@ function upRouteRows(rows, bus, ym, file, ctx = {}) {
     const rem = upText(cell(r, "remarks")); if (rem && !/^#/.test(rem)) t.remarks = rem.slice(0, 200);
     row.t = t;
     const have = (ctx.have || winTrips()).find(x => x.id === t.id || (x.vehicleId === bus && x.date === date));
-    if (have) row.skip = `already in the app${have.importedFrom ? " (imported)" : ""}`;
+    if (have) { row.have = have; Object.assign(row, upRouteDiff(have, t)); }
     out.push(row);
   });
   return { rows: out, ym, endOdo: prevOdo, wrongMonth: dated >= 3 && wrongDay > dated / 2 };
 }
 function upRouteTable(res) {
-  const list = res.rows, ready = list.filter(x => x.t && !x.problems.length && !x.skip), skip = list.filter(x => x.skip), empty = list.filter(x => x.empty), bad = list.filter(x => x.problems.length);
-  const tot = k => ready.reduce((a, x) => a + num(x.t[k]), 0);
+  const list = res.rows, C = upCounts(list), sel = upSelected(list), rec = x => x.merged || x.t;
+  const tot = k => sel.reduce((a, x) => a + num(rec(x)[k]), 0);
   const mon = res.year ? res.label : new Date(res.ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-  return `<div class="upsum"><span><b>${ready.length}</b> day${ready.length === 1 ? "" : "s"} ready to import</span><span><b>${skip.length}</b> already in the app</span><span><b>${empty.length}</b> empty (left out)</span><span><b>${bad.length}</b> with a problem</span>` +
+  return `<div class="upsum"><span><b>${C.new}</b> new day${C.new === 1 ? "" : "s"}</span><span><b>${C.change}</b> with changes</span><span><b>${C.same}</b> no change</span><span><b>${C.empty}</b> empty (left out)</span><span><b>${C.bad}</b> with a problem</span>` +
     `<span>Collection <b>${rs(tot("collection"))}</b></span><span>Expenses <b>${rs(tot("expense"))}</b></span><span>Balance <b>${rs(tot("collection") - tot("expense"))}</b></span></div>` +
     (res.year ? (res.months.some(m => m.wrong) ? `<p class="err" style="margin:0">The day names don't match ${mon} in: ${res.months.filter(m => m.wrong).map(m => esc(m.name)).join(", ")}. Check that the right financial year is chosen.</p>` : `<p class="sub" style="margin:0">Financial year: <b>${mon}</b>. Days with nothing entered are left out.</p>`) + upRouteYearSummary(res)
       : res.wrongMonth ? `<p class="err" style="margin:0">The day names in the sheet don't match ${mon}. Check that the right month is chosen.</p>` : `<p class="sub" style="margin:0">Month: <b>${mon}</b>. Days with nothing entered are left out.</p>`) +
-    `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Row</th><th>Day</th><th>Starting</th><th>Crew</th><th class="n">Collection</th><th class="n">Diesel</th><th class="n">Pay</th><th class="n">Other</th><th class="n">Balance</th><th class="n">Km reading</th><th>Upload</th></tr></thead><tbody>` +
-    list.map(x => { const t = x.t;
-      return `<tr class="${x.problems.length ? "bad" : x.skip || x.empty ? "skip" : ""}"><td class="num">${x.line}</td><td class="num" style="white-space:nowrap">${x.date ? `${DAYS[new Date(x.date + "T00:00:00").getDay()].slice(0, 3)} ${fmtShort(x.date)}` : "?"}</td>` +
+    `<div class="tscroll"><table class="ctable uptable"><thead><tr><th></th><th>Row</th><th>Day</th><th>Starting</th><th>Crew</th><th class="n">Collection</th><th class="n">Diesel</th><th class="n">Pay</th><th class="n">Other</th><th class="n">Balance</th><th class="n">Km reading</th><th>Upload</th></tr></thead><tbody>` +
+    list.map(x => { const t = x.merged || x.t, k = upKindOf(x), [box, what] = upCell(x);
+      return `<tr class="${k === "problem" ? "bad" : ["skip", "empty", "same"].includes(k) ? "skip" : k === "change" ? "chg" : ""}${upPick(x) && x.sel === false ? " off" : ""}"><td>${box}</td><td class="num">${x.line}${x.sheet ? `<br><span class="sub">${esc(x.sheet)}</span>` : ""}</td><td class="num" style="white-space:nowrap">${x.date ? `${DAYS[new Date(x.date + "T00:00:00").getDay()].slice(0, 3)} ${fmtShort(x.date)}` : "?"}</td>` +
         `<td>${esc(t?.start || "—")}</td><td>${esc(x.crew || "—")}</td><td class="n">${t ? nf(t.collection) : ""}</td><td class="n">${t?.fuelCost ? nf(t.fuelCost) : t ? "—" : ""}</td><td class="n">${t ? nf(tripPay(t)) : ""}</td><td class="n">${t?.otherExp ? nf(t.otherExp) : t ? "—" : ""}</td>` +
         `<td class="n">${t ? nf(t.balance) : ""}</td><td class="n">${t?.odo ? nf(t.odo) : t ? "—" : ""}</td>` +
-        `<td>${x.problems.length ? `<span class="pill expired">Problem</span> ${esc(x.problems.join("; "))}` : x.empty ? `<span class="pill off">Empty</span>` : x.skip ? `<span class="pill off">Skipped</span> ${esc(x.skip)}` : `<span class="pill ok">Ready</span>`}${x.notes.length ? ` <span class="sub">${esc(x.notes.join("; "))}</span>` : ""}</td></tr>`; }).join("") + `</tbody></table></div>` +
-    `<div class="rxbtns"><span class="sub" style="flex:1">Each day goes into the route trip sheet of the bus, the same as an entry in Daily entry. Days already in the app are not changed.</span><button class="btn primary" type="button" id="upGo"${!ready.length || upState.busy ? " disabled" : ""}>${upState.busy ? "Importing…" : `Import ${ready.length} day${ready.length === 1 ? "" : "s"}`}</button></div>`;
+        `<td>${what}</td></tr>`; }).join("") + `</tbody></table></div>` +
+    upGoBar(list, "day", "New days go into the route trip sheet of the bus. Days already in the app take the changed values shown; a value left empty in the sheet keeps what the app has. Untick a row to leave it out.");
 }
 // The office sheet as a template: the chosen month's days, the starting place of each day and the weekday filled in.
 function upRouteTemplate(bus, ym, sheetOnly = false) {
@@ -6323,10 +6325,79 @@ async function upRouteYearRows(sheets, bus, fy, file) {
 }
 function upRouteYearSummary(res) {
   const line = m => { if (m.error) return `<tr class="bad"><td>${esc(m.name)}</td><td colspan="7">${esc(m.error)}</td></tr>`;
-    const r = m.rows, ready = r.filter(x => x.t && !x.problems.length && !x.skip), t = k => ready.reduce((a, x) => a + num(x.t[k]), 0);
-    return `<tr${!ready.length ? ' class="skip"' : ""}><td>${esc(m.name)}${m.wrong ? ` <span class="pill expired">Day names don't match</span>` : ""}</td><td class="n">${ready.length}</td><td class="n">${r.filter(x => x.skip).length}</td><td class="n">${r.filter(x => x.empty).length}</td><td class="n">${r.filter(x => x.problems.length).length}</td><td class="n">${nf(t("collection"))}</td><td class="n">${nf(t("expense"))}</td><td class="n">${nf(t("collection") - t("expense"))}</td></tr>`; };
-  return `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Sheet</th><th class="n">Ready</th><th class="n">In the app</th><th class="n">Empty</th><th class="n">Problem</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th></tr></thead><tbody>${res.months.map(line).join("")}</tbody></table></div>` +
+    const r = m.rows, C = upCounts(r), sel = upSelected(r), t = k => sel.reduce((a, x) => a + num((x.merged || x.t)[k]), 0);
+    return `<tr${!C.new && !C.change ? ' class="skip"' : ""}><td>${esc(m.name)}${m.wrong ? ` <span class="pill expired">Day names don't match</span>` : ""}</td><td class="n">${C.new}</td><td class="n">${C.change}</td><td class="n">${C.same}</td><td class="n">${C.empty}</td><td class="n">${C.bad}</td><td class="n">${nf(t("collection"))}</td><td class="n">${nf(t("expense"))}</td><td class="n">${nf(t("collection") - t("expense"))}</td></tr>`; };
+  return `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Sheet</th><th class="n">New</th><th class="n">Changes</th><th class="n">No change</th><th class="n">Empty</th><th class="n">Problem</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th></tr></thead><tbody>${res.months.map(line).join("")}</tbody></table></div>` +
     (res.other.length ? `<p class="sub" style="margin:0">Not a month, left out: ${res.other.map(esc).join(", ")}.</p>` : "");
+}
+
+/* ---- comparing a row with the record already in the app ----
+   Only values the sheet has are compared; a value the sheet leaves empty keeps what the app has.
+   Each row gets changes [{ label, from, to }] and merged: the app's record with the sheet's values put in. */
+const upFmt = v => v == null || v === "" ? "—" : typeof v === "number" ? nf(v, Number.isInteger(v) ? 0 : 2) : String(v);
+const UP_ROUTE_F = [["dieselRate", "Diesel rate"], ["litres", "Litres"], ["fuelCost", "Diesel ₹"], ["driverPay", "Driver pay"], ["conductorPay", "Conductor pay"], ["checkerPay", "Checker pay"],
+  ["s1", "S1"], ["s2", "S2"], ["s3", "S3"], ["s4", "S4"], ["s5", "S5"], ["odo", "Km reading"]];
+function upRouteDiff(have, t) {
+  const ch = [], m = { ...have }, money = new Set();
+  if (have.notRun) { ch.push({ label: "Day", from: "Did not run", to: "Ran" }); delete m.notRun; delete m.idleReason; }
+  if (t.start && placeName(t.start).toLowerCase() !== placeName(have.start).toLowerCase()) { ch.push({ label: "Starting", from: have.start || "—", to: t.start }); m.start = t.start; delete m.startFixed; }
+  ["driver", "conductor", "checker"].forEach(k => {
+    if (!t[k + "Name"] || crewValue(k, t) === crewValue(k, have)) return;
+    ch.push({ label: k[0].toUpperCase() + k.slice(1), from: crewName(k, have) || "—", to: crewName(k, t) });
+    delete m[k + "Id"]; if (t[k + "Id"]) m[k + "Id"] = t[k + "Id"]; m[k + "Name"] = t[k + "Name"];
+  });
+  UP_ROUTE_F.forEach(([k, l]) => { if (t[k] == null || num(t[k]) === num(have[k])) return; ch.push({ label: l, from: upFmt(have[k]), to: upFmt(t[k]) }); m[k] = t[k]; money.add(k); });
+  if (have.colTotal && [1, 2, 3, 4, 5].some(i => t["s" + i])) { ch.push({ label: "Total typed", from: upFmt(have.colTotal), to: "— (singles from the sheet)" }); delete m.colTotal; }
+  if (t.otherExp != null && num(t.otherExp) !== num(have.otherExp)) {
+    ch.push({ label: "Other expenses", from: upFmt(have.otherExp), to: upFmt(t.otherExp) }); money.add("otherExp");
+    // Less than the itemised heads: the sheet's figure replaces them as one Other amount.
+    if (num(t.otherExp) < itemised(have)) { EXP_CATS.forEach(([k]) => delete m["ex_" + k]); delete m.expList; delete m.expDef; m.ex_misc = t.otherExp; }
+    m.otherExp = t.otherExp;
+  }
+  if (t.remarks && t.remarks !== (have.remarks || "")) { ch.push({ label: "Remarks", from: have.remarks || "—", to: t.remarks }); m.remarks = t.remarks; }
+  if (money.size) delete m.expTotal;
+  Object.assign(m, { importedFrom: t.importedFrom, importedOn: t.importedOn });
+  m.collection = tripCollection(m); m.expense = tripExpense(m); m.balance = m.collection - m.expense;
+  return { changes: ch, merged: m };
+}
+const UP_SPARE_F = [["to", "To date", "date"], ["days", "Days"], ["places", "Places"], ["rent", "Total rent"], ["padiPaid", "Driver padi"], ["cleanerPadi", "Cleaner padi"], ["permit", "Permit"], ["toll", "Toll"],
+  ["litres", "Litres"], ["fuelCost", "Diesel"], ["otherExp", "Other expenses"], ["startKm", "Start km"], ["endKm", "End km"], ["remarks", "Remarks"]];
+function upSpareDiff(o, b, sk) {
+  const ch = [], m = { ...o }, stage = x => x.closedOn ? "closed" : x.status, want = sk === "closed" ? "closed" : b.status;
+  if (stage(o) !== want) { ch.push({ label: "Status", from: stageText(o), to: want === "closed" ? "Closed" : BK_STAGES[want] || want }); if (want !== "closed") m.status = b.status; else m.status = "completed"; }
+  if (want === "closed" || want === "completed") { if (o.tsStatus !== "approved") Object.assign(m, { tsStatus: "approved", tsApprovedOn: todayISO(), tsApprovedByName: whoAmI() }); }
+  UP_SPARE_F.forEach(([k, l, kind]) => {
+    const nv = b[k], ov = o[k];
+    if (nv == null || nv === "" || (typeof nv === "number" ? num(nv) === num(ov) : String(nv) === String(ov ?? ""))) return;
+    ch.push({ label: l, from: kind === "date" ? (ov ? fmtShort(ov) : "—") : upFmt(ov), to: kind === "date" ? fmtShort(nv) : upFmt(nv) }); m[k] = nv;
+    if (k === "otherExp") delete m.otherList;
+  });
+  if (b.driverName && crewValue("driver", b) !== crewValue("driver", o)) { ch.push({ label: "Driver", from: crewName("driver", o) || "—", to: crewName("driver", b) }); delete m.driverId; if (b.driverId) m.driverId = b.driverId; m.driverName = b.driverName; }
+  if (b.cleanerName && b.cleanerName !== (o.cleanerName || "").toUpperCase()) { ch.push({ label: "Cleaner", from: o.cleanerName || "—", to: b.cleanerName }); m.cleanerName = b.cleanerName; }
+  const c = bkCalc(m); Object.assign(m, { due: c.due, received: c.received, balance: c.balance, expense: c.exp, profit: c.profit, updatedFromFile: b.importedFrom, updatedFromFileOn: todayISO() });
+  const out = { changes: ch, merged: m, close: want === "closed" && !o.closedOn, c };
+  // A closed trip is final: nothing changes until an admin reopens it.
+  if (ch.length && o.closedOn) out.problems = [`closed in the app (booking ${o.no || ""}); reopen it first to take these changes`];
+  return out;
+}
+// What a row is: "problem", "skip" (clashes with another booking), "empty", "same" (in the app, nothing changed), "change" or "new".
+const upKindOf = x => x.problems.length ? "problem" : x.skip ? "skip" : x.empty ? "empty" : x.have ? (x.changes?.length ? "change" : "same") : "new";
+const upPick = x => ["new", "change"].includes(upKindOf(x));
+const upSelected = list => list.filter(x => upPick(x) && x.sel !== false);
+function upCell(x) {
+  const k = upKindOf(x), box = upPick(x) ? `<input type="checkbox" data-upi="${x.i}"${x.sel !== false ? " checked" : ""} aria-label="Upload row ${x.line}">` : "";
+  return [box, (k === "problem" ? `<span class="pill expired">Problem</span> ${esc(x.problems.join("; "))}`
+    : k === "skip" ? `<span class="pill off">Skipped</span> ${esc(x.skip)}`
+    : k === "empty" ? `<span class="pill off">Empty</span>`
+    : k === "same" ? `<span class="pill off">No change</span> <span class="sub">already in the app</span>`
+    : k === "change" ? `<span class="pill d30">${x.changes.length} change${x.changes.length === 1 ? "" : "s"}</span><ul class="updiff">${x.changes.map(c => `<li>${esc(c.label)}: <s>${esc(c.from)}</s> → <b>${esc(c.to)}</b></li>`).join("")}</ul>`
+    : `<span class="pill ok">New</span>`) + (x.notes.length ? ` <span class="sub">${esc(x.notes.join("; "))}</span>` : "")];
+}
+function upCounts(list) { const k = list.map(upKindOf), n = t => k.filter(x => x === t).length; return { new: n("new"), change: n("change"), same: n("same"), skip: n("skip"), empty: n("empty"), bad: n("problem") }; }
+function upGoBar(list, unit, note) {
+  const sel = upSelected(list), nn = sel.filter(x => !x.have).length, nc = sel.length - nn, all = list.filter(upPick);
+  return `<div class="rxbtns"><label class="upall"><input type="checkbox" id="upAll"${all.length && sel.length === all.length ? " checked" : ""}${all.length ? "" : " disabled"}> Select all</label><span class="sub" style="flex:1">${note}</span>` +
+    `<button class="btn primary" type="button" id="upGo"${!sel.length || upState.busy ? " disabled" : ""}>${upState.busy ? "Uploading…" : `Upload ${sel.length} selected${sel.length ? ` (${nn} new, ${nc} change${nc === 1 ? "" : "s"})` : ""}`}</button></div>`;
 }
 
 // ---- screen
@@ -6343,22 +6414,23 @@ function renderUpload() {
   if (!$("upFy").options.length) { const y = fyOf(todayISO()); $("upFy").innerHTML = `<option value="">Choose</option>` + [0, 1, 2, 3, 4, 5].map(i => `<option value="${y - i}">FY ${fyLabel(y - i)}</option>`).join(""); }
   $("upMonth").max = todayISO().slice(0, 7);
   const res = S.rows, list = res?.rows || [];
-  if (S.done && K.route) { $("upOut").innerHTML = `<div class="upok"><b>${S.done.n} day${S.done.n === 1 ? "" : "s"} imported</b> into ${esc(S.done.bus)} for ${esc(S.done.mon)}${S.done.failed ? `, ${S.done.failed} could not be saved${S.done.why ? ` (${esc(S.done.why)})` : ""}. Upload the same file again: days already in the app are skipped` : ""}. They are in the route trip sheet (Daily entry and Monthly sheet).</div>`; return; }
-  if (S.done) { $("upOut").innerHTML = `<div class="upok"><b>${S.done.n} trip${S.done.n === 1 ? "" : "s"} imported</b> into ${esc(S.done.bus)}${S.done.failed ? `, ${S.done.failed} could not be saved${S.done.why ? ` (${esc(S.done.why)})` : ""}. Check the connection and upload the same file again: rows already in the app are skipped` : ""}. They are in the Booking planner and in Reports.</div>`; return; }
+  if (S.done) { const d = S.done, u = K.route ? "day" : "trip";
+    $("upOut").innerHTML = `<div class="upok"><b>${d.n} new ${u}${d.n === 1 ? "" : "s"} added, ${d.u} updated</b> in ${esc(d.bus)}${d.mon ? ` for ${esc(d.mon)}` : ""}${d.failed ? `, ${d.failed} could not be saved${d.why ? ` (${esc(d.why)})` : ""}. Upload the same file again: rows already saved show as No change` : ""}. ${K.route ? "They are in the route trip sheet (Daily entry and Monthly sheet)." : "They are in the Booking planner and in Reports."}</div>`; return; }
   if (!res) { $("upOut").innerHTML = ""; return; }
   if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
   if (res.loading) { $("upOut").innerHTML = `<p class="sub" style="margin:0">Loading the days already in the app for this month…</p>`; return; }
+  list.forEach((x, i) => x.i = i);
   if (K.route) { $("upOut").innerHTML = upRouteTable(res); return; }
-  const ready = list.filter(x => !x.problems.length && !x.skip), skip = list.filter(x => x.skip), bad = list.filter(x => x.problems.length);
-  const tot = k => ready.filter(x => x.st !== "Cancelled").reduce((a, x) => a + num(x.c[k]), 0);
-  $("upOut").innerHTML = `<div class="upsum"><span><b>${ready.length}</b> ready to import</span><span><b>${skip.length}</b> already in the app</span><span><b>${bad.length}</b> with a problem</span>` +
+  const C = upCounts(list), sel = upSelected(list);
+  const tot = k => sel.filter(x => x.st !== "Cancelled").reduce((a, x) => a + num(x.c[k]), 0);
+  $("upOut").innerHTML = `<div class="upsum"><span><b>${C.new}</b> new</span><span><b>${C.change}</b> with changes</span><span><b>${C.same}</b> no change</span><span><b>${C.skip}</b> clash with another booking</span><span><b>${C.bad}</b> with a problem</span>` +
     `<span>Collection <b>${rs(tot("due"))}</b></span><span>Expenses <b>${rs(tot("exp"))}</b></span></div>` +
     (res.swap ? `<p class="sub" style="margin:0">Excel had read some dates as month/day (for example 8 May as 5 August). They have been put back to day/month using the Days column: please check the dates below.</p>` : "") +
-    `<div class="tscroll"><table class="ctable uptable"><thead><tr><th>Row</th><th>Dates</th><th class="n">Days</th><th>Places</th><th>Driver</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th><th class="n">Km</th><th>Trip status</th><th>Upload</th></tr></thead><tbody>` +
-    list.map(x => `<tr class="${x.problems.length ? "bad" : x.skip ? "skip" : ""}"><td class="num">${x.line}</td><td class="num" style="white-space:nowrap">${x.from ? fmtShort(x.from) : "?"}${x.to && x.to !== x.from ? ` – ${fmtShort(x.to)}` : ""}</td><td class="n">${fmtDays(num(x.days))}</td>` +
+    `<div class="tscroll"><table class="ctable uptable"><thead><tr><th></th><th>Row</th><th>Dates</th><th class="n">Days</th><th>Places</th><th>Driver</th><th class="n">Collection</th><th class="n">Expenses</th><th class="n">Balance</th><th class="n">Km</th><th>Trip status</th><th>Upload</th></tr></thead><tbody>` +
+    list.map(x => { const k = upKindOf(x), [box, what] = upCell(x); return `<tr class="${k === "problem" ? "bad" : ["skip", "same"].includes(k) ? "skip" : k === "change" ? "chg" : ""}${upPick(x) && x.sel === false ? " off" : ""}"><td>${box}</td><td class="num">${x.line}</td><td class="num" style="white-space:nowrap">${x.from ? fmtShort(x.from) : "?"}${x.to && x.to !== x.from ? ` – ${fmtShort(x.to)}` : ""}</td><td class="n">${fmtDays(num(x.days))}</td>` +
       `<td>${esc(x.b.places || "—")}</td><td>${esc(x.driverNote)}</td><td class="n">${nf(x.c.due)}</td><td class="n">${nf(x.c.exp)}</td><td class="n">${nf(x.c.due - x.c.exp)}</td><td class="n">${x.c.km ? nf(x.c.km) : "—"}</td><td>${x.st ? `${x.st === "Closed" ? "🔒 " : ""}${esc(x.st)}` : "—"}</td>` +
-      `<td>${x.problems.length ? `<span class="pill expired">Problem</span> ${esc(x.problems.join("; "))}` : x.skip ? `<span class="pill off">Skipped</span> ${esc(x.skip)}` : `<span class="pill ok">Ready</span>${x.notes.length ? ` <span class="sub">${esc(x.notes.join("; "))}</span>` : ""}`}</td></tr>`).join("") + `</tbody></table></div>` +
-    `<div class="rxbtns"><span class="sub" style="flex:1">Completed and Closed trips are saved with the trip sheet approved; Closed trips are locked (an admin must reopen them to change anything). Booked and On trip leave the trip sheet open. "Fully paid" applies only to Completed and Closed trips.</span><button class="btn primary" type="button" id="upGo"${!ready.length || S.busy ? " disabled" : ""}>${S.busy ? "Importing…" : `Import ${ready.length} trip${ready.length === 1 ? "" : "s"}`}</button></div>`;
+      `<td>${what}</td></tr>`; }).join("") + `</tbody></table></div>` +
+    upGoBar(list, "trip", "Bookings already in the app (same bus and start date) take the changed values shown; a value left empty in the sheet keeps what the app has. Closed trips are locked: an admin must reopen them first. \"Fully paid\" applies only to new Completed and Closed trips. Untick a row to leave it out.");
 }
 async function upLoad() {
   const f = $("upFile").files?.[0]; upState.done = null;
@@ -6400,25 +6472,42 @@ $("upFile").addEventListener("change", () => {
 });
 ["upBus", "upPaid", "upMonth", "upFy"].forEach(id => $(id).addEventListener("change", upLoad));
 $("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; $("upBus").value = ""; renderUpload(); upLoad(); });
+$("upOut").addEventListener("change", e => {
+  const list = upState.rows?.rows; if (!list) return;
+  if (e.target.id === "upAll") list.filter(upPick).forEach(x => x.sel = e.target.checked);
+  else if (e.target.dataset.upi != null) list[+e.target.dataset.upi].sel = e.target.checked;
+  else return;
+  const y = scrollY; renderUpload(); scrollTo(0, y);
+});
 $("upOut").addEventListener("click", async e => {
   if (e.target.id !== "upGo" || upState.busy || acc.users !== "edit") return;
-  if (UP_KINDS[upState.kind].route) {
-    const res0 = upState.rows, ready = res0.rows.filter(x => x.t && !x.problems.length && !x.skip), ym = res0.ym; upState.busy = true; renderUpload();
-    let n = 0, failed = 0, why = "";
-    for (const x of ready) { try { await dayTripSave(x.t); n++; } catch (e) { failed++; why ||= e?.message || ""; } }
-    upState.busy = false; upState.done = { n, failed, why, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)), mon: res0.year ? res0.label : new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
-    $("upFile").value = ""; upState.rows = null; renderUpload(); toast(`${n} day${n === 1 ? "" : "s"} imported`); return;
+  const route = UP_KINDS[upState.kind].route, res0 = upState.rows, sel = upSelected(res0.rows), nn = sel.filter(x => !x.have).length, nc = sel.length - nn, unit = route ? "day" : "trip";
+  if (!sel.length) return;
+  if (!await askYesNo(`Upload ${sel.length} ${unit}${sel.length === 1 ? "" : "s"}?\n${nn} new ${unit}${nn === 1 ? "" : "s"} will be added${nc ? ` and ${nc} ${unit}${nc === 1 ? "" : "s"} already in the app will take the changes shown` : ""}.`, { yes: "Upload" })) return;
+  upState.busy = true; renderUpload();
+  let n = 0, u = 0, failed = 0, why = "";
+  if (route) {
+    for (const x of sel) { try { await dayTripSave(x.have ? x.merged : x.t); x.have ? u++ : n++; } catch (e) { failed++; why ||= e?.message || ""; } }
+    upState.busy = false; upState.done = { n, u, failed, why, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)), mon: res0.year ? res0.label : new Date(res0.ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
+    $("upFile").value = ""; upState.rows = null; renderUpload(); toast(`${n} added · ${u} updated`); return;
   }
-  const ready = upState.rows.rows.filter(x => !x.problems.length && !x.skip); upState.busy = true; renderUpload();
-  let n = 0, failed = 0, why = "";
-  for (const x of ready) {
-    const b = { ...x.b, no: nextBkNo() };
-    try { await opsSave("bookings", b); if (!ops.bookings.some(o => o.id === b.id)) ops.bookings.push(b); n++;
-      await addBHistory(bookingChanges(null, b, `Imported from Excel (${upState.file}, row ${x.line})`)).catch(() => {}); }
-    catch (e) { failed++; why ||= e?.message || ""; }
+  for (const x of sel) {
+    try {
+      if (x.have) {
+        await opsSave("bookings", x.merged);
+        // Closing changes nothing else, so it is saved on its own after the changes.
+        if (x.close) await opsSave("bookings", { ...x.merged, closedOn: todayISO(), closedByName: whoAmI() });
+        await addBHistory(bookingChanges(x.have, x.close ? { ...x.merged, closedOn: todayISO() } : x.merged, `Updated from Excel (${upState.file}, row ${x.line})`)).catch(() => {});
+        u++;
+      } else {
+        const b = { ...x.b, no: nextBkNo() };
+        await opsSave("bookings", b); if (!ops.bookings.some(o => o.id === b.id)) ops.bookings.push(b); n++;
+        await addBHistory(bookingChanges(null, b, `Imported from Excel (${upState.file}, row ${x.line})`)).catch(() => {});
+      }
+    } catch (e) { failed++; why ||= e?.message || ""; }
   }
-  upState.busy = false; upState.done = { n, failed, why, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)) };
-  $("upFile").value = ""; upState.rows = null; renderUpload(); toast(`${n} trip${n === 1 ? "" : "s"} imported`);
+  upState.busy = false; upState.done = { n, u, failed, why, bus: plateOf(vehicles.find(v => v.id === $("upBus").value)) };
+  $("upFile").value = ""; upState.rows = null; renderUpload(); toast(`${n} added · ${u} updated`);
 });
 
 async function dayTripSave(t) {
