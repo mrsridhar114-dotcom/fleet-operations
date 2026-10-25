@@ -399,8 +399,9 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .tscroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 table.ttable, table.ctable { border-collapse: collapse; font-size: 13px; width: 100%; }
 table.ttable { min-width: 1900px; }
-table.metable { border-collapse: collapse; width: 1494px; font-size: 12px; table-layout: fixed; }
+table.metable { border-collapse: collapse; width: 1620px; font-size: 12px; table-layout: fixed; }
 .metable th { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 6px 3px; background: var(--bg); border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; }
+.metable tr:not(.grp) th { white-space: normal; line-height: 1.2; vertical-align: bottom; }
 .metable tr.grp th { text-align: center; color: var(--accent); border-bottom: 0; padding-bottom: 0; }
 .metable th.n, .metable td.n { text-align: right; }
 .metable td { padding: 2px 3px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; vertical-align: middle; }
@@ -408,12 +409,12 @@ table.metable { border-collapse: collapse; width: 1494px; font-size: 12px; table
 .mein { box-sizing: border-box; width: 100%; height: 26px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); font: 500 12px var(--mono); text-align: right; padding: 0 4px; color: var(--ink); min-width: 0; }
 .mein.t { font-family: var(--body); text-align: left; } .mein::-webkit-inner-spin-button, .mein::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } .mein[type=number] { -moz-appearance: textfield; } select.mein { padding: 0 2px; }
 .mein.auto { background: transparent; border-color: transparent; color: var(--muted); } .mein.auto:focus { border-color: var(--line); background: var(--bg); }
-.mein.tot { font-weight: 700; color: var(--accent); } .mein.tot.part { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); } .mein.tot.over { color: var(--danger); background: var(--danger-soft); }
+.mein.tot { font-weight: 700; color: var(--accent); } .mein.expt { font-weight: 700; } .mein.tot.part { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); } .mein.tot.over { color: var(--danger); background: var(--danger-soft); }
 .mein:disabled { opacity: .8; }
 .metable tr.empty td:not(.sticky) .mein { background: var(--surface); } .metable tr.chg td { background: color-mix(in srgb, var(--warn-soft) 55%, var(--surface)); }
 .metable tr.idle td { background: var(--bg); color: var(--muted); } .metable tr.future td { color: var(--muted); height: 22px; }
 .metable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); padding: 7px 3px; font-family: var(--mono); font-size: 12px; } .metable tfoot td.sticky { background: var(--bg); font-family: var(--body); }
-.metable .neg { color: var(--danger); } .mec { font-family: var(--mono); } .mebal { font-weight: 700; color: var(--ok); }
+.metable .neg { color: var(--danger); } .metable td.medw { color: var(--muted); font-size: 11px; } .metable .mecum { font-weight: 600; } .mec { font-family: var(--mono); } .mebal { font-weight: 700; color: var(--ok); }
 .medate { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; } .medate .dot, .mesave .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); display: inline-block; }
 .melock { display: block; text-align: right; font-family: var(--mono); color: var(--muted); padding-right: 4px; }
 .metable .open { box-sizing: border-box; height: 24px; padding: 0 6px; border: 1.5px solid var(--accent); border-radius: 5px; background: var(--surface); color: var(--accent); font: 600 11px var(--body); cursor: pointer; white-space: nowrap; } .metable .open:hover { background: var(--accent); color: var(--accent-ink); }
@@ -1895,7 +1896,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="tkm" id="tKm"></div>
           <div class="tscroll metwrap" id="tTableWrap">
             <table class="metable">
-              <colgroup><col style="width:64px"><col style="width:74px"><col style="width:116px"><col style="width:116px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:68px"><col style="width:48px"><col style="width:54px"><col style="width:60px"><col style="width:52px"><col style="width:52px"><col style="width:52px"><col style="width:60px"><col style="width:64px"><col style="width:58px"><col style="width:66px"><col style="width:72px"><col style="width:44px"><col style="width:84px"></colgroup>
+              <colgroup><col style="width:44px"><col style="width:96px"><col style="width:40px"><col style="width:124px"><col style="width:124px"><col style="width:116px"><col style="width:58px"><col style="width:58px"><col style="width:64px"><col style="width:56px"><col style="width:56px"><col style="width:56px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:68px"><col style="width:68px"><col style="width:64px"><col style="width:78px"><col style="width:76px"><col style="width:84px"></colgroup>
               <thead id="tHead"></thead>
               <tbody id="tRows"></tbody>
               <tfoot id="tFoot"></tfoot>
@@ -5381,8 +5382,8 @@ const meRouteOf = t => { if (!t) return 0; const un = Math.max(0, num(t.expTotal
 const meRouteLocked = t => (t?.expList || []).filter(x => !x.off).length > 1 || (!t?.expList && EXP_CATS.filter(([k]) => num(t?.["ex_" + k])).length > 1);
 function meFrom(t, date) {
   const v = x => x == null || x === "" ? "" : String(x);
-  if (!t) return { start: plannedStart(date), drv: "", cond: "", s1: "", s2: "", s3: "", s4: "", s5: "", tot: "", lit: "", rate: "", dsl: "", pd: "", pc: "", pk: "", route: "", exp: "", odo: "" };
-  return { start: startShown(t, date), drv: crewValue("driver", t), cond: crewValue("conductor", t), s1: v(t.s1), s2: v(t.s2), s3: v(t.s3), s4: v(t.s4), s5: v(t.s5), tot: v(t.colTotal),
+  if (!t) return { start: plannedStart(date), drv: "", cond: "", chk: "", s1: "", s2: "", s3: "", s4: "", s5: "", tot: "", lit: "", rate: "", dsl: "", pd: "", pc: "", pk: "", route: "", exp: "", odo: "" };
+  return { start: startShown(t, date), drv: crewValue("driver", t), cond: crewValue("conductor", t), chk: crewValue("checker", t), s1: v(t.s1), s2: v(t.s2), s3: v(t.s3), s4: v(t.s4), s5: v(t.s5), tot: v(t.colTotal),
     lit: v(t.litres), rate: v(t.dieselRate), dsl: v(t.fuelCost), pd: v(t.driverPay), pc: v(t.conductorPay), pk: v(t.checkerPay), route: v(meRouteOf(t) || ""), exp: v(t.expTotal), odo: v(t.odo) };
 }
 // Every day of the month with what it shows now: the saved day, with anything typed on top.
@@ -5392,7 +5393,7 @@ function meDays(ym) {
   if (before) { prevRate = num(before.dieselRate); prevCrew = before; }
   for (let d = 1; d <= daysIn(ym); d++) {
     const date = `${ym}-${pad2(d)}`, t = list.find(x => x.date === date), dr = meDraft[meKey0(date)], base = meFrom(t, date);
-    if (!t && prevCrew) { base.drv = crewValue("driver", prevCrew); base.cond = crewValue("conductor", prevCrew); }  // a new day starts with the last crew
+    if (!t && prevCrew) { base.drv = crewValue("driver", prevCrew); base.cond = crewValue("conductor", prevCrew); base.chk = crewValue("checker", prevCrew); }  // a new day starts with the last crew
     const f = { ...base, ...(dr?.f || {}) };
     // A saved amount that differs from the worked-out one counts as typed by hand, and is kept.
     const savedSys = t && !t.notRun ? dbPadiSys(tripCollection(t), !!crewValue("checker", t)) : null;
@@ -5402,13 +5403,13 @@ function meDays(ym) {
     const has = !!t || ME_NUM.some(k => !ME_AUTO.includes(k) && num(f[k]));
     const rate = num(f.rate) || prevRate, lit = num(f.lit);
     const auto = { rate: f.rate || (lit ? String(prevRate || "") : ""), dsl: touched.dsl ? f.dsl : lit && rate ? String(Math.round(lit * rate)) : "" };
-    const checker = !!crewValue("checker", t), sys = col ? dbPadiSys(col, checker) : { driver: 0, conductor: 0, checker: 0 };
+    const checker = !!f.chk, sys = col ? dbPadiSys(col, checker) : { driver: 0, conductor: 0, checker: 0 };
     [["pd", "driver"], ["pc", "conductor"], ["pk", "checker"]].forEach(([k, r]) => { auto[k] = touched[k] ? f[k] : col && sys[r] ? String(sys[r]) : ""; });
     const dsl = num(auto.dsl), pay = num(auto.pd) + num(auto.pc) + num(auto.pk), route = num(f.route), told = num(f.exp);
     const parts = dsl + pay + route, unsplit = Math.max(0, told - parts), exp = parts + unsplit;
     const odo = num(f.odo), run = odo && prevOdo != null ? odo - prevOdo : null;
     const changed = !!dr && Object.keys(dr.f).some(k => String(dr.f[k]) !== String(base[k] ?? ""));
-    out.push({ date, d, t, f, auto, touched, has, sum, col, exp, unsplit, bal: col - exp, odo, run, changed, idle: !!t?.notRun, future: date > todayISO(), routeLocked: meRouteLocked(t), notSplit: num(f.tot) ? num(f.tot) - sum : 0 });
+    out.push({ date, d, t, f, auto, touched, has, sum, col, exp, parts, dsl, pay, route, unsplit, bal: col - exp, odo, run, changed, idle: !!t?.notRun, future: date > todayISO(), routeLocked: meRouteLocked(t), notSplit: num(f.tot) ? num(f.tot) - sum : 0 });
     if (odo) prevOdo = odo;
     if (rate && (t || dr)) prevRate = rate;
     if (t && !t.notRun) prevCrew = t;
@@ -5426,28 +5427,32 @@ function renderMonthEntry(ym, M) {
   if (tView === "cal") { renderMeCal(ym); return; }
   if ($("tRows").contains(document.activeElement)) { meWaiting = true; return; }  // don't redraw under someone typing
   const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(k === "start" ? r.auto[k] ?? r.f[k] ?? "" : blank0(r.auto[k] ?? r.f[k]))}" aria-label="${k}"${extra}${ro}>`;
-  $("tHead").innerHTML = `<tr class="grp"><th colspan="4"></th><th colspan="6">Collection</th><th colspan="3">Diesel</th><th colspan="3">Padi (rules)</th><th colspan="4">Expenses and balance</th><th colspan="2">Km</th><th></th></tr>` +
-    `<tr><th class="sticky">Day</th><th>Start</th><th>Driver</th><th>Conductor</th><th class="n">S1</th><th class="n">S2</th><th class="n">S3</th><th class="n">S4</th><th class="n">S5</th><th class="n">Total</th><th class="n">Litres</th><th class="n">Rate</th><th class="n">Amount</th><th class="n">Driver</th><th class="n">Cond.</th><th class="n">Checker</th><th class="n">Route</th><th class="n">Total exp.</th><th class="n">Other</th><th class="n">Balance</th><th class="n">Reading</th><th class="n">Run</th><th></th></tr>`;
+  // Columns in the order of the office sheet: Date, Starting, Day, crew, diesel, padi, S1–S5, Collection, Expense, Balance, Total Balance, KMS.
+  $("tHead").innerHTML = `<tr class="grp"><th colspan="6"></th><th colspan="3">Diesel</th><th colspan="3">Padi</th><th colspan="6">Collection</th><th colspan="3">Money</th><th></th><th></th></tr>` +
+    `<tr><th class="sticky">Date</th><th>Starting</th><th>Day</th><th>Driver</th><th>Conductor</th><th>Checker</th><th class="n">Diesel rate</th><th class="n">No. litre</th><th class="n">Fuel price</th><th class="n">Driver</th><th class="n">Cond.</th><th class="n">Checker</th><th class="n">S1</th><th class="n">S2</th><th class="n">S3</th><th class="n">S4</th><th class="n">S5</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Total bal.</th><th class="n">KMS</th><th></th></tr>`;
+  let cum = 0;
   $("tRows").innerHTML = days.map(r => {
     const dw = DAYS[new Date(r.date + "T00:00:00").getDay()].slice(0, 3), open = r.future ? "" : `<button class="open" type="button" data-open="${r.date}" aria-label="Open the day sheet of ${fmtDate(r.date)}">Open day ↗</button>`;
-    const day = `<td class="sticky"><span class="medate">${r.changed ? '<span class="dot" title="Changed, not saved"></span>' : ""}<b>${pad2(r.d)}</b> ${dw}</span></td>`;
-    if (r.future) return `<tr class="future" data-date="${r.date}">${day}<td colspan="22"></td></tr>`;
-    if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td colspan="21"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td>${open}</td></tr>`;
-    const totCls = r.notSplit > 0 ? " part" : r.notSplit < 0 ? " over" : "";
+    const day = `<td class="sticky"><span class="medate">${r.changed ? '<span class="dot" title="Changed, not saved"></span>' : ""}<b>${pad2(r.d)}</b></span></td>`;
+    if (r.future) return `<tr class="future" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="20"></td></tr>`;
+    if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="17"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td class="n mec mecum" data-c="cum">${nf(cum)}</td><td></td><td>${open}</td></tr>`;
+    if (r.has) cum += r.bal;
+    const totCls = r.notSplit > 0 ? " part" : r.notSplit < 0 ? " over" : "", sel = (k, kind, l) => `<select class="mein t" data-k="${k}" aria-label="${l}"${ro}>${meCrewOpts(kind, r.f[k])}</select>`;
     return `<tr data-date="${r.date}" class="${r.has ? "" : "empty"}${r.changed ? " chg" : ""}">${day}` +
-      `<td>${inp(r, "start", " t")}</td><td><select class="mein t" data-k="drv" aria-label="Driver"${ro}>${meCrewOpts("driver", r.f.drv)}</select></td><td><select class="mein t" data-k="cond" aria-label="Conductor"${ro}>${meCrewOpts("conductor", r.f.cond)}</select></td>` +
-      [1, 2, 3, 4, 5].map(i => `<td>${inp(r, "s" + i)}</td>`).join("") + `<td>${inp(r, "tot", " tot" + totCls, ` placeholder="${r.sum || ""}" title="${r.notSplit > 0 ? `${rs(r.notSplit)} not split into singles` : r.notSplit < 0 ? `Singles are ${rs(-r.notSplit)} more than the total` : "Type the total when the singles are not all known"}"`)}</td>` +
-      `<td>${inp(r, "lit")}</td><td>${inp(r, "rate", r.touched.rate || r.f.rate ? "" : " auto")}</td><td>${inp(r, "dsl", r.touched.dsl ? "" : " auto")}</td>` +
+      `<td>${inp(r, "start", " t")}</td><td class="medw">${dw}</td><td>${sel("drv", "driver", "Driver")}</td><td>${sel("cond", "conductor", "Conductor")}</td><td>${sel("chk", "conductor", "Checker")}</td>` +
+      `<td>${inp(r, "rate", r.touched.rate || r.f.rate ? "" : " auto")}</td><td>${inp(r, "lit")}</td><td>${inp(r, "dsl", r.touched.dsl ? "" : " auto")}</td>` +
       `<td>${inp(r, "pd", r.touched.pd ? "" : " auto")}</td><td>${inp(r, "pc", r.touched.pc ? "" : " auto")}</td><td>${inp(r, "pk", r.touched.pk ? "" : " auto")}</td>` +
-      `<td>${r.routeLocked ? `<span class="melock" title="Several route expenses: change them in the day sheet">${nf(num(r.f.route))}</span>` : inp(r, "route")}</td><td>${inp(r, "exp")}</td>` +
-      `<td class="n mec" data-c="oth">${r.unsplit ? nf(r.unsplit) : "—"}</td><td class="n mec mebal${r.bal < 0 ? " neg" : ""}" data-c="bal">${r.has ? nf(r.bal) : ""}</td>` +
-      `<td>${inp(r, "odo")}</td><td class="n mec" data-c="run">${r.run > 0 ? nf(r.run) : "—"}</td><td>${open}</td></tr>`;
+      [1, 2, 3, 4, 5].map(i => `<td>${inp(r, "s" + i)}</td>`).join("") + `<td>${inp(r, "tot", " tot" + totCls, ` placeholder="${r.sum || ""}" title="${r.notSplit > 0 ? `${rs(r.notSplit)} not split into singles` : r.notSplit < 0 ? `Singles are ${rs(-r.notSplit)} more than the total` : "Adds up S1–S5; type the total when the singles are not all known"}"`)}</td>` +
+      `<td>${inp(r, "exp", " expt", ` placeholder="${r.parts || ""}" title="${meExpTitle(r)}"`)}</td>` +
+      `<td class="n mec mebal${r.bal < 0 ? " neg" : ""}" data-c="bal">${r.has ? nf(r.bal) : ""}</td><td class="n mec mecum${cum < 0 ? " neg" : ""}" data-c="cum">${r.has ? nf(cum) : ""}</td>` +
+      `<td>${inp(r, "odo", "", ` title="${r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day"}"`)}</td><td>${open}</td></tr>`;
   }).join("");
   const ran = days.filter(r => r.has && !r.idle), sumK = k => ran.reduce((a, r) => a + num(r.auto[k] ?? r.f[k]), 0);
   const totCol = ran.reduce((a, r) => a + r.col, 0), totExp = ran.reduce((a, r) => a + r.exp, 0), km = M.km;
-  $("tFoot").innerHTML = `<tr><td class="sticky">Total</td><td colspan="3">${ran.length} day${ran.length === 1 ? "" : "s"} · ${days.filter(r => r.idle).length} not run</td>${[1, 2, 3, 4, 5].map(i => `<td class="n">${nf(sumK("s" + i))}</td>`).join("")}<td class="n">${nf(totCol)}</td>` +
-    `<td class="n">${nf(sumK("lit"))}</td><td></td><td class="n">${nf(sumK("dsl"))}</td><td class="n">${nf(sumK("pd"))}</td><td class="n">${nf(sumK("pc"))}</td><td class="n">${nf(sumK("pk"))}</td><td class="n">${nf(sumK("route"))}</td><td></td>` +
-    `<td class="n">${nf(ran.reduce((a, r) => a + r.unsplit, 0))}</td><td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n">${km != null ? nf(km) : "—"}</td><td></td></tr>`;
+  $("tFoot").innerHTML = `<tr><td class="sticky">Total</td><td colspan="5">${ran.length} day${ran.length === 1 ? "" : "s"} · ${days.filter(r => r.idle).length} not run</td>` +
+    `<td></td><td class="n">${nf(sumK("lit"))}</td><td class="n">${nf(sumK("dsl"))}</td><td class="n">${nf(sumK("pd"))}</td><td class="n">${nf(sumK("pc"))}</td><td class="n">${nf(sumK("pk"))}</td>` +
+    `${[1, 2, 3, 4, 5].map(i => `<td class="n">${nf(sumK("s" + i))}</td>`).join("")}<td class="n">${nf(totCol)}</td><td class="n">${nf(totExp)}</td>` +
+    `<td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n" title="Km run this month">${km != null ? nf(km) + " km" : "—"}</td><td></td></tr>`;
 }
 // Typing updates the draft and the worked-out boxes of the month, without redrawing the box being typed in.
 function meInput(e) {
@@ -5457,15 +5462,21 @@ function meInput(e) {
   if (ME_AUTO.includes(k)) { if (el.value === "") delete dr.touched[k]; else dr.touched[k] = true; el.classList.toggle("auto", el.value === ""); }
   meRefresh();
 }
+// What the Expense box adds up to: diesel, padi and route expenses, and what a typed total leaves unsplit.
+const meExpTitle = r => `Diesel ${rs(r.dsl)} + padi ${rs(r.pay)}${r.route ? ` + route ${rs(r.route)}` : ""}${r.unsplit ? ` + ${rs(r.unsplit)} not split` : ""}. Type the day's total expense if only that is known.`;
 function meRefresh() {
-  const ym = monthYM(tFyStart, tMonthIdx), days = meDays(ym);
+  const ym = monthYM(tFyStart, tMonthIdx), days = meDays(ym); let cum = 0;
   days.forEach(r => {
-    const tr = $("tRows").querySelector(`tr[data-date="${r.date}"]`); if (!tr || r.idle || r.future) return;
+    const tr = $("tRows").querySelector(`tr[data-date="${r.date}"]`); if (!tr || r.future) return;
+    if (r.idle) { const cc = tr.querySelector('[data-c="cum"]'); if (cc) cc.textContent = nf(cum); return; }
     ME_AUTO.forEach(k => { const el = tr.querySelector(`[data-k="${k}"]`); if (el && el !== document.activeElement && !r.touched[k]) { el.value = blank0(r.auto[k]); el.classList.toggle("auto", !(k === "rate" && r.f.rate)); } });
     const tot = tr.querySelector('[data-k="tot"]'); if (tot) { tot.placeholder = r.sum || ""; tot.classList.toggle("part", r.notSplit > 0); tot.classList.toggle("over", r.notSplit < 0); }
+    const ex = tr.querySelector('[data-k="exp"]'); if (ex) { ex.placeholder = r.parts || ""; ex.title = meExpTitle(r); }
+    const od = tr.querySelector('[data-k="odo"]'); if (od) od.title = r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day";
     const c = n => tr.querySelector(`[data-c="${n}"]`);
-    c("oth").textContent = r.unsplit ? nf(r.unsplit) : "—"; c("bal").textContent = r.has ? nf(r.bal) : ""; c("bal").classList.toggle("neg", r.bal < 0); c("run").textContent = r.run > 0 ? nf(r.run) : "—";
+    c("bal").textContent = r.has ? nf(r.bal) : ""; c("bal").classList.toggle("neg", r.bal < 0);
     tr.classList.toggle("chg", r.changed); tr.classList.toggle("empty", !r.has);
+    if (r.has) cum += r.bal; const cc = tr.querySelector('[data-c="cum"]'); if (cc) { cc.textContent = r.has || r.idle ? nf(cum) : ""; cc.classList.toggle("neg", cum < 0); }
     const dt = tr.querySelector(".medate"), dot = dt.querySelector(".dot"); if (r.changed && !dot) dt.insertAdjacentHTML("afterbegin", '<span class="dot" title="Changed, not saved"></span>'); else if (!r.changed && dot) dot.remove();
   });
   meSaveBar();
@@ -5491,7 +5502,7 @@ async function meSaveAll() {
     const t = r.t ? { ...r.t } : { id: `${bus}_${date}`, vehicleId: bus, date }, f = r.f, a = r.auto;
     const planned = plannedStart(date), start = placeName(f.start);
     if (start && planned && start.toLowerCase() !== planned.toLowerCase()) { t.start = start; t.startFixed = true; } else { t.start = start || planned; delete t.startFixed; }
-    [["driver", f.drv], ["conductor", f.cond]].forEach(([kind, v]) => { delete t[kind + "Id"]; delete t[kind + "Name"]; if (!v) return;
+    [["driver", f.drv], ["conductor", f.cond], ["checker", f.chk]].forEach(([kind, v]) => { delete t[kind + "Id"]; delete t[kind + "Name"]; if (!v) return;
       if (v.startsWith("id:")) { const p = (kind === "driver" ? drivers : conductors).find(x => x.id === v.slice(3)); t[kind + "Id"] = v.slice(3); t[kind + "Name"] = p?.name || ""; } else t[kind + "Name"] = v.slice(5); });
     const setN = (k, v, dec = 0) => { const x = num(v); if (v === "" || v == null || !x) delete t[k]; else t[k] = dec ? Math.round(x * 10 ** dec) / 10 ** dec : Math.round(x); };
     [1, 2, 3, 4, 5].forEach(i => setN("s" + i, f["s" + i])); setN("colTotal", f.tot);
