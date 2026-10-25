@@ -1575,6 +1575,12 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsbus select { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); padding: 0 8px; }
 .rstoday { max-width: 520px; } .rstst { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .rsdays { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.bstage.todo { background: var(--surface); color: var(--danger); border: 1px dashed var(--danger); } .bstage.idle { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); }
+.rsday.loss { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); }
+.rsday.part { background: color-mix(in srgb, #f2c200 22%, var(--surface)); border-color: color-mix(in srgb, #d9a900 50%, var(--line)); }
+.rsday .neg, .rshist .neg { color: var(--danger); font-weight: 600; } .rschg, .rsday small.rschg { color: var(--warn); font-weight: 600; }
+.rshist { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; color: var(--muted); padding: 8px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 10px; }
+.rsmonth { align-self: flex-start; }
 .rsday { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 58px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .rsday > span:first-child { display: flex; flex-direction: column; gap: 2px; } .rsday b { font-size: 16px; } .rsday small { color: var(--muted); font-size: 13px; }
 .tpcheer { margin: 8px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ink); font: 600 15px var(--body); }
@@ -1901,7 +1907,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
           <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
           <button class="btn" type="button" id="tPrint" title="Monthly sheet in Excel">Print</button>
-          <a class="btn primary" href="#trips-day">Day sheet</a>
+          <a class="btn primary" href="#trips-day" id="tDayLink">Day sheet</a>
           <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
         </div>
       </header>
@@ -5541,6 +5547,7 @@ async function meSaveAll() {
 async function meOpenDay(date) {
   const n = meChangedKeys().length;
   if (n && canTrips) { const ok = await askYesNo(`Save the ${n} changed day${n === 1 ? "" : "s"} first?`, { yes: "Save and open", no: "Open without saving" }); if (ok) await meSaveAll(); }
+  if (bwIsPhone()) { rsOpen(tBusId, date); return; }
   dbBus = tBusId; opDate = date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day";
 }
 // Calendar: each day of the month with its state; a click opens the day sheet.
@@ -5565,6 +5572,8 @@ function renderTrips() {
   loadLocalTrips();
   $("tNoBus").hidden = !!buses.length; $("tBody").hidden = !buses.length; $("tBusF").hidden = buses.length === 1;
   if (!buses.length) return;
+  // On a phone the day is filled in the phone trip sheet, so the button goes there.
+  $("tDayLink").textContent = bwIsPhone() ? "Trip sheet" : "Day sheet"; $("tDayLink").href = bwIsPhone() ? "#route-sheet" : "#trips-day";
 
   const has = new Set(trips.map(t => t.date.slice(0, 7)));
   $("tTabs").innerHTML = MONTHS.map((m, i) => { const ym = monthYM(tFyStart, i);
@@ -7437,12 +7446,23 @@ function rsColNote() {
 }
 // Nothing is required: the conductor sends whatever he knows and the office fills in the rest.
 function rsMissing() { return []; }
+// The day's story in one line: filled, sent, approved or sent back, and changed by the office later.
+function rsHistHtml() {
+  const S = rsDayState(rsh.bus, rsh.date), x = S.x, t = S.t, at = v => v ? fmtStamp(v) : "", steps = [];
+  if (x) steps.push(`Filled by ${esc(x.byName || "the conductor")}`);
+  if (x?.submittedOn) steps.push(`Sent ${at(x.submittedOn)}`);
+  if (x?.status === "rejected") steps.push(`<span class="neg">Sent back${x.rejectedByName ? ` by ${esc(x.rejectedByName)}` : ""}${x.rejectReason ? `: ${esc(x.rejectReason)}` : ""}</span>`);
+  if (x?.status === "approved") steps.push(`Approved${x.approvedByName ? ` by ${esc(x.approvedByName)}` : ""}${x.approvedOn ? ` ${at(x.approvedOn)}` : ""}`);
+  if (t && !t.fromSheet) steps.push("Entered by the office");
+  if (S.changed) steps.push(`<span class="rschg">Changed by office</span>`);
+  return `<div class="rshist"><span class="bstage ${S.cls}">${S.label}</span>${steps.length ? `<span>${steps.join(" → ")}</span>` : ""}</div>`;
+}
 function rsRender(top) {
   const el = $("rsw"), keep = !top && $("rsBody") ? $("rsBody").scrollTop : 0, v = vehicles.find(x => x.id === rsh.bus), d = rsDoc(rsh.bus, rsh.date);
   const day = new Date(rsh.date + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
   const bal = rsCol() - rsExpTot(), miss = rsh.ready ? rsMissing() : ["…"];
   el.innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="rsTitle">${rsh.admin ? "Office view" : "Trip sheet"} · ${esc(plateOf(v))}</b><span>${day}${rsh.start && !rsh.notRun ? ` · Starts from ${esc(placeName(rsh.start))}` : ""}${rsh.admin && d?.byName ? ` · sent by ${esc(d.byName)}` : ""}</span></div></header>` +
-    `<div class="bwb tws tpage" id="rsBody">${rsPageHtml()}</div>` +
+    `<div class="bwb tws tpage" id="rsBody">${rsHistHtml()}${rsPageHtml()}</div>` +
     (rsh.admin && rsh.askWhy ? `<footer class="bwf"><label class="bwf1"><span>Why is it sent back? The conductor will see this.</span><textarea id="rsWhy" rows="2" maxlength="200"></textarea></label><span class="bwerr" id="rsWhyErr"></span><div class="bw2" style="margin-top:8px"><button type="button" class="bwalt" data-rs="rejectno">Cancel</button><button type="button" class="bwgo" data-rs="rejectgo">Send back</button></div></footer>` :
      rsh.admin ? (rsh.edit && d?.status === "submitted" ? `<footer class="bwf two"><button type="button" class="bwalt" data-rs="reject">Send back</button><button type="button" class="bwgo" data-rs="approve"${rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Approve"}</button></footer>` : "")
       : rsh.edit && canTrips ? `<footer class="bwf"><div class="twspent"><span class="tpst ${rsh.dirty ? "bad" : "ok"}" id="rsSt">${rsh.dirty ? "Not saved yet" : rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
@@ -7605,20 +7625,37 @@ function rsClose() {
   if ($("rsw")) $("rsw").hidden = true; document.documentElement.classList.remove("bw-on"); rsh = null; renderOps(); ovClosed();
 }
 
+// One status for a day, read from the trip sheet itself (the record the office and the reports use), then the conductor's sheet.
+function rsDayState(bus, day) {
+  const x = rsDoc(bus, day), t = winTrips().find(y => y.vehicleId === bus && y.date === day), stamp = v => v ? fmtStamp(v) : "";
+  const col = t ? tripCollection(t) : num(x?.collection), bal = t ? tripCollection(t) - tripExpense(t) : num(x?.balance);
+  const sg = t && !t.notRun ? [1, 2, 3, 4, 5].filter(i => num(t["s" + i]) > 0).length : 0;
+  const changed = !!(t && x?.status === "approved" && !t.notRun && (Math.round(col) !== Math.round(num(x.collection)) || Math.round(bal) !== Math.round(num(x.balance))));
+  const base = { x, t, col, bal, changed, money: !!(t ? !t.notRun : x && !x.notRun), tone: t && !t.notRun ? (bal < 0 ? "loss" : sg > 0 && sg < SINGLES_PER_DAY && !(num(t.colTotal) > [1, 2, 3, 4, 5].reduce((a, i) => a + num(t["s" + i]), 0)) ? "part" : "") : "" };
+  if (x?.status === "submitted") return { ...base, cls: "pending", label: "Waiting for office", sub: `Sent${x.byName ? ` by ${x.byName}` : ""} ${stamp(x.submittedOn)}` };
+  if (t?.notRun) return { ...base, cls: "idle", label: "Did not run", sub: t.idleReason || "" };
+  if (t) return { ...base, cls: "completed", label: "✓ In trip sheet", sub: t.fromSheet && x ? `Sent by ${x.byName || "the conductor"}${x.approvedByName ? ` · approved by ${x.approvedByName}` : ""}` : "Entered by the office" };
+  if (x?.status === "rejected") return { ...base, cls: "rejected", label: "Sent back", sub: x.rejectReason || "" };
+  if (x?.notRun) return { ...base, cls: "draft", label: "Saved on phone, not sent", sub: "Did not run" };
+  if (x) return { ...base, cls: "draft", label: "Saved on phone, not sent", sub: "" };
+  return { ...base, cls: "todo", label: "Not entered", sub: "" };
+}
 // The conductor's page: today's sheet for his bus, and his last days.
 function renderRsList() {
   const rb = routeBuses(), bus = rsMyBus(); rsBus = bus;
   if (rsh && !rsh.ready) { rsLoad(); if (rsh.ready) rsRender(); }
   if (!rb.length) { $("rsHome").innerHTML = `<div class="empty panel"><strong>No route buses yet</strong>Ask the office to add the route buses.</div>`; return; }
   const v = vehicles.find(x => x.id === bus), today = todayISO(), d = rsDoc(bus, today), mine = canTrips ? ops.routeSheets : ops.routeSheets.filter(x => x.vehicleId === bus || x.by === myUserId);
-  const st = x => x ? `<span class="bstage ${{ draft: "draft", submitted: "pending", approved: "completed", rejected: "rejected" }[x.status] || ""}">${RS_ST[x.status] || ""}</span>` : `<span class="bstage draft">Not started</span>`;
+  const chip = S => `<span class="bstage ${S.cls}">${S.label}</span>`, S0 = rsDayState(bus, today);
   const days = [...Array(7)].map((_, i) => shiftDay(today, -i));
   $("rsHome").innerHTML = `<section class="panel rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
     `<button type="button" class="bwgo rstoday" data-rsopen="${today}">${d?.status === "submitted" || d?.status === "approved" ? "Open today's trip sheet" : d ? "Continue today's trip sheet" : "Fill today's trip sheet"} ${BW_ICON.next}</button>` +
-    `<div class="rstst">${st(d)}${d?.status === "rejected" && d.rejectReason ? `<span class="rshow">${esc(d.rejectReason)}</span>` : ""}</div></section>` +
+    `<div class="rstst">${chip(S0)}${S0.sub ? `<span class="rshow">${esc(S0.sub)}</span>` : ""}</div>` +
+    (canTrips ? `<a class="btn rsmonth" href="#trips-route" data-rsmonth="${bus}">Monthly view ›</a>` : "") + `</section>` +
     `<section class="panel"><h2 class="sec">Last 7 days · ${esc(plateOf(v))}</h2><div class="rsdays">` +
-    days.map(day => { const x = rsDoc(bus, day), t = winTrips().find(y => y.vehicleId === bus && y.date === day);
-      return `<button type="button" class="rsday" data-rsopen="${day}"><span><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${x && !x.notRun ? `<small>Collection ${rs(num(x.collection))} · Balance ${rs(num(x.balance))}</small>` : x?.notRun ? `<small>Did not run</small>` : t ? `<small>Entered by the office</small>` : ""}</span>${x ? st(x) : t ? `<span class="bstage completed">In trip sheet</span>` : st(null)}</button>`; }).join("") +
+    days.map(day => { const S = rsDayState(bus, day);
+      return `<button type="button" class="rsday${S.tone ? " " + S.tone : ""}" data-rsopen="${day}"><span><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>` +
+        `${S.money ? `<small>Collection ${rs(S.col)} · Balance <span class="${S.bal < 0 ? "neg" : ""}">${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}</span></small>` : ""}${S.sub ? `<small>${esc(S.sub)}</small>` : ""}${S.changed ? `<small class="rschg">Changed by office after approval</small>` : ""}</span>${chip(S)}</button>`; }).join("") +
     `</div></section>` +
     (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
 }
@@ -7633,6 +7670,7 @@ function rsWaitHtml() {
 }
 document.addEventListener("click", e => {
   const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) { rsOpen(rsBus, o.dataset.rsopen); return; }
+  const mo = e.target.closest("[data-rsmonth]"); if (mo) { tBusId = mo.dataset.rsmonth; tSubKey = ""; }
   const a = e.target.closest("[data-rsappr]"); if (a) { const x = ops.routeSheets.find(y => y.id === a.dataset.rsappr); if (!x) return;
     if (bwIsPhone()) rsOpen(x.vehicleId, x.date, true); else { dbBus = x.vehicleId; opDate = x.date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; } }
 });
