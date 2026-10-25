@@ -4709,7 +4709,8 @@ function dThumb(d) {
   const p = dFile(d, "photo");
   return p ? `<img class="lthumb dthumb" src="/_blob/${encodeURIComponent(p.id)}" alt="" loading="lazy">` : `<span class="lthumb dthumb none" title="No photo">${PERSON_SVG}</span>`;
 }
-const ageTag = dob => dob ? `<span class="agetag">${yearsBetween(dob, todayISO())} yrs</span>` : "";
+// Age and date of birth in one small pill beside the name, so the list rows stay the same height.
+const ageTag = dob => dob ? `<span class="agetag" title="Date of birth">${yearsBetween(dob, todayISO())} yrs · DOB ${fmtDate(dob)}</span>` : "";
 // Colours for dates on the list cards and printed images: red within a month (or expired), orange within 3 months, green after that.
 const listBand = n => n <= 30 ? "expired" : n <= 90 ? "d7" : "ok";
 function validityPill(iso, label) {
