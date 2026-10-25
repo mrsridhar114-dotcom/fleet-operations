@@ -382,6 +382,7 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 /* trip sheet */
 .twrap { max-width: 1400px; }
 .tcontrols { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+#tViewSeg span { padding: 9px 14px; font-size: 14px; } .btn.mclose { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); } .btn.mclose:hover { background: var(--danger); color: #fff; }
 .tcontrols .hf { min-width: 11em; }
 .ttabs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; border-bottom: 1px solid var(--line); }
 .ttabs button { flex: none; border: 1px solid transparent; border-bottom: 0; background: none; color: var(--muted); padding: 8px 12px; border-radius: 6px 6px 0 0; font-weight: 600; font-size: 13px; position: relative; top: 1px; }
@@ -399,9 +400,9 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .tscroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 table.ttable, table.ctable { border-collapse: collapse; font-size: 13px; width: 100%; }
 table.ttable { min-width: 1900px; }
-table.metable { border-collapse: collapse; width: 1620px; font-size: 12px; table-layout: fixed; }
+table.metable { border-collapse: collapse; width: 100%; min-width: 1180px; font-size: 11.5px; table-layout: fixed; }
 .metable th { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 6px 3px; background: var(--bg); border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; }
-.metable tr:not(.grp) th { white-space: normal; line-height: 1.2; vertical-align: bottom; }
+.metable tr:not(.grp) th { white-space: normal; line-height: 1.2; vertical-align: bottom; letter-spacing: .02em; }
 .metable tr.grp th { text-align: center; color: var(--accent); border-bottom: 0; padding-bottom: 0; }
 .metable th.n, .metable td.n { text-align: right; }
 .metable td { padding: 2px 3px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; vertical-align: middle; }
@@ -411,7 +412,9 @@ table.metable { border-collapse: collapse; width: 1620px; font-size: 12px; table
 .mein.auto { background: transparent; border-color: transparent; color: var(--muted); } .mein.auto:focus { border-color: var(--line); background: var(--bg); }
 .mein.tot { font-weight: 700; color: var(--accent); } .mein.expt { font-weight: 700; } .mein.tot.part { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); } .mein.tot.over { color: var(--danger); background: var(--danger-soft); }
 .mein:disabled { opacity: .8; }
-.metable tr.empty td:not(.sticky) .mein { background: var(--surface); } /* White table so the row colours stand out: white boxes on white rows, and see-through boxes on coloured rows. */
+.metable tr.empty td:not(.sticky) .mein { background: var(--surface); } @media (min-width: 1000px) { body.navless #view-trips { padding-inline: 14px; padding-top: 14px; } }
+.metable .mein { padding: 0 3px; } .metable select.mein { font-size: 11px; }
+/* White table so the row colours stand out: white boxes on white rows, and see-through boxes on coloured rows. */
 .metable th, .metable th.sticky, .metable tfoot td, .metable tfoot td.sticky { background: var(--surface); }
 .metable .mein { background: var(--surface); border-color: color-mix(in srgb, var(--muted) 35%, var(--line)); }
 .metable .mein.auto { background: transparent; border-color: transparent; }
@@ -708,6 +711,7 @@ a.btn { text-decoration: none; display: inline-block; }
 .ocards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
 .ocard { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ocard.main { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.ocard.oclink:hover { background: var(--accent-soft); } a.ocard .oc-go { margin-top: auto; padding-top: 10px; font-weight: 700; color: var(--accent); }
 .ocard.soon { background: var(--bg); }
 .ocard .oc-top { display: flex; align-items: center; gap: 10px; }
 .ocard .oc-top svg { width: 28px; height: 28px; color: var(--accent); flex: none; }
@@ -1884,14 +1888,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <section class="wrap twrap" id="view-trips" hidden>
       <header class="top">
         <div>
-          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><a href="#trips">Trip sheet</a><span class="slash">/</span><span>Route bus monthly entry</span></nav>
-          <h1>Route bus · monthly entry<span class="ro-tag" id="tRoTag" hidden>View only</span></h1>
-          <p class="sync">Every day of the month for one bus, typed straight into the table. Open day ↗ opens the full day sheet of that day.</p>
+          <h1>Route bus<span class="ro-tag" id="tRoTag" hidden>View only</span></h1>
         </div>
         <div class="tcontrols">
           <div class="hf" id="tBusF"><label for="tBus">Bus</label><select id="tBus"></select></div>
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
+          <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
           <a class="btn primary" href="#trips-day">Day sheet</a>
+          <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
         </div>
       </header>
       <div class="ro-banner" id="tRoBanner" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>You have view-only access to the trip sheet.</span></div>
@@ -1905,7 +1909,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="tkm" id="tKm"></div>
           <div class="tscroll metwrap" id="tTableWrap">
             <table class="metable">
-              <colgroup><col style="width:44px"><col style="width:96px"><col style="width:40px"><col style="width:124px"><col style="width:124px"><col style="width:116px"><col style="width:58px"><col style="width:58px"><col style="width:64px"><col style="width:56px"><col style="width:56px"><col style="width:56px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:58px"><col style="width:68px"><col style="width:68px"><col style="width:64px"><col style="width:78px"><col style="width:76px"><col style="width:84px"></colgroup>
+              <colgroup><col style="width:2.26%"><col style="width:5.57%"><col style="width:2.56%"><col style="width:7.53%"><col style="width:7.53%"><col style="width:6.78%"><col style="width:3.46%"><col style="width:3.31%"><col style="width:3.92%"><col style="width:3.61%"><col style="width:3.61%"><col style="width:3.61%"><col style="width:3.77%"><col style="width:3.77%"><col style="width:3.77%"><col style="width:3.77%"><col style="width:3.77%"><col style="width:4.97%"><col style="width:4.37%"><col style="width:4.22%"><col style="width:4.82%"><col style="width:4.82%"><col style="width:4.22%"></colgroup>
               <thead id="tHead"></thead>
               <tbody id="tRows"></tbody>
               <tfoot id="tFoot"></tfoot>
@@ -5354,7 +5358,7 @@ function buildTripSheet() {
   $("tRows").addEventListener("keydown", meKey);
   $("tRows").addEventListener("focusout", () => setTimeout(() => { if (meWaiting && !$("tRows").contains(document.activeElement)) { meWaiting = false; renderTrips(); } }, 0));
   $("tBody").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) meOpenDay(o.dataset.open); });
-  $("tEntryBar").addEventListener("change", e => { if (e.target.name === "tView") { tView = e.target.value; try { localStorage.setItem("fleet-tview", tView); } catch {} renderTrips(); } });
+  $("tViewSeg").addEventListener("change", e => { if (e.target.name === "tView") { tView = e.target.value; try { localStorage.setItem("fleet-tview", tView); } catch {} renderTrips(); } });
   $("tUndo").onclick = () => askYesNo(`Undo the changes to ${meChangedKeys().length} day${meChangedKeys().length === 1 ? "" : "s"}?`, { yes: "Undo changes", no: "Keep them", danger: true }).then(ok => { if (ok) { meDraft = {}; renderTrips(); } });
   $("tSaveAll").onclick = () => meSaveAll();
   $("tRoute").addEventListener("click", async e => {
@@ -5441,7 +5445,7 @@ function renderMonthEntry(ym, M) {
     `<tr><th class="sticky">Date</th><th>Starting</th><th>Day</th><th>Driver</th><th>Conductor</th><th>Checker</th><th class="n">Diesel rate</th><th class="n">No. litre</th><th class="n">Fuel price</th><th class="n">Driver</th><th class="n">Cond.</th><th class="n">Checker</th><th class="n">S1</th><th class="n">S2</th><th class="n">S3</th><th class="n">S4</th><th class="n">S5</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Total bal.</th><th class="n">KMS</th><th></th></tr>`;
   let cum = 0;
   $("tRows").innerHTML = days.map(r => {
-    const dw = DAYS[new Date(r.date + "T00:00:00").getDay()].slice(0, 3), open = r.future ? "" : `<button class="open" type="button" data-open="${r.date}" aria-label="Open the day sheet of ${fmtDate(r.date)}">Open day ↗</button>`;
+    const dw = DAYS[new Date(r.date + "T00:00:00").getDay()].slice(0, 3), open = r.future ? "" : `<button class="open" type="button" data-open="${r.date}" aria-label="Open the day sheet of ${fmtDate(r.date)}" title="Open the day sheet">Open ↗</button>`;
     const day = `<td class="sticky"><span class="medate">${r.changed ? '<span class="dot" title="Changed, not saved"></span>' : ""}<b>${pad2(r.d)}</b></span></td>`;
     if (r.future) return `<tr class="future" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="20"></td></tr>`;
     if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="17"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td class="n mec mecum" data-c="cum">${nf(cum)}</td><td></td><td>${open}</td></tr>`;
@@ -5588,7 +5592,8 @@ function renderTrips() {
 
   const missing = []; for (let d = 1; d <= daysIn(ym); d++) { const dt = `${ym}-${pad2(d)}`; if (dt <= today && !list.some(x => x.date === dt)) missing.push(dt); }
   const nTot = list.filter(totalOnly).length;
-  $("tEntryBar").innerHTML = `<div class="seg" role="radiogroup" aria-label="View"><label><input type="radio" name="tView" value="table"${tView === "table" ? " checked" : ""}><span>Table</span></label><label><input type="radio" name="tView" value="cal"${tView === "cal" ? " checked" : ""}><span>Calendar</span></label></div>` +
+  document.querySelectorAll('#tViewSeg input[name="tView"]').forEach(i => i.checked = i.value === tView);
+  $("tEntryBar").innerHTML =
     `<span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} still to enter` : list.length ? "All days up to today are entered" : ""}${nTot ? ` · ${nTot} with the total only` : ""}</span>` +
     (tView === "table" ? `<span class="melegend"><span><i style="background:color-mix(in srgb, var(--danger) 25%, var(--surface))"></i>Negative balance</span><span><i style="background:color-mix(in srgb, var(--hot) 28%, var(--surface))"></i>Ran only some singles</span><span><i style="background:color-mix(in srgb, var(--muted) 30%, var(--surface))"></i>Did not run</span><span><b style="color:var(--warn)">●</b> Changed, not saved</span></span>` : "");
   const R = routeFor(tFyStart), editingRoute = $("tRoute").dataset.editing === "1";
@@ -7849,10 +7854,10 @@ function renderHub() {
   const openR = roundsOf().filter(r => r.status !== "Closed");
   const day = fmtShort(opDate);
   $("oCards").innerHTML = `
-    <article class="ocard main"><div class="oc-top">${ICONS.route}<div><h3>Route bus</h3><div class="oc-kind">Daily · 5 singles a day</div></div></div>
+    <a class="ocard main oclink" href="${bwIsPhone() ? "#route-sheet" : "#trips-route"}" aria-label="Open Route bus"><div class="oc-top">${ICONS.route}<div><h3>Route bus</h3><div class="oc-kind">Daily · 5 singles a day</div></div></div>
       <div class="oc-big">${ready ? rb.length - pend.length : "…"}<small>/ ${rb.length}</small></div><p class="oc-cap">entered for ${day}</p>
       <div>${!rb.length ? '<span class="pill off">No route buses</span>' : !ready ? "" : pend.length ? `<span class="pill d30">${pend.length} still to enter</span>` : '<span class="pill ok">All entered</span>'}</div>
-      <div class="oc-act">${bwIsPhone() ? `<a class="btn primary" href="#route-sheet">Fill trip sheet</a>` : `<a class="btn primary" href="#trips-day">Day sheet</a>`}<a class="btn" href="#trips-route">Monthly entry</a></div></article>
+      <span class="oc-go">Open ›</span></a>
     <article class="ocard soon"><div class="oc-top">${ICONS.omni}<div><h3>Omni bus</h3><div class="oc-kind">Format to be added</div></div></div>
       <p class="oc-cap" style="margin-top:12px">Share your Omni bus sheet and it will get its own format here.</p></article>
     <article class="ocard"><div class="oc-top">${ICONS.truck}<div><h3>Trucks</h3><div class="oc-kind">Per load, grouped into round trips</div></div></div>
