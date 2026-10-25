@@ -88,7 +88,7 @@ nav.paths { padding: 14px 10px 20px; display: flex; flex-direction: column; gap:
   .navscrim[hidden] { display: none; }
 }
 /* Route bus day sheet and monthly entry: the menu panel folds away for room; ☰ Menu opens it over the page. */
-body.navless .app { display: block; }
+body.navless .app { display: block; min-height: 0; }
 body.navless .topbar { display: flex; align-items: center; gap: 12px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--side-bg); color: var(--side-ink); padding: 10px 16px; }
 body.navless .topbar .mark { font-family: var(--display); font-weight: 700; font-size: 20px; }
 body.navless .topbar button { background: none; border: 1px solid var(--side-line); color: var(--side-ink); border-radius: 6px; padding: 6px 10px; font-size: 14px; }
@@ -97,7 +97,20 @@ body.navless .side.open { transform: none; box-shadow: var(--shadow); }
 body.navless .navscrim { position: fixed; inset: 0; z-index: 29; background: rgba(10, 18, 26, .45); display: block; }
 body.navless .navscrim[hidden] { display: none; }
 body.navless .twrap { max-width: none; }
-#view-tday { padding-top: 16px; }
+#view-tday { padding-top: 12px; }
+/* On a computer the day sheet fills the window: header and Save buttons always in view, nothing to scroll in a normal day. */
+@media (min-width: 1000px) {
+  #view-tday { padding-block: 10px; height: calc(100dvh - var(--tbh, 56px)); box-sizing: border-box; }
+  #view-tday #dbWrap { height: 100%; display: flex; flex-direction: column; gap: 8px; }
+  #view-tday .dsheet { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #view-tday .dsbody { flex: 1; min-height: 0; overflow: hidden; grid-template-rows: minmax(0, 1fr); }
+  #view-tday .dsmain { overflow-y: auto; min-height: 0; padding: 10px; gap: 8px; }
+  #view-tday .dblist { overflow-y: auto; min-height: 0; }
+  #view-tday .dshead { padding: 8px 14px; }
+  #view-tday .dbfoot { padding: 8px 14px; }
+  #view-tday .dscard { padding: 8px 12px; gap: 5px; }
+  #view-tday .dscols { gap: 8px; }
+}
 @media (prefers-reduced-motion: reduce) { .side { transition: none; } }
 .main { min-width: 0; }
 .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: flex; flex-direction: column; gap: 20px; }
@@ -720,8 +733,9 @@ a.btn { text-decoration: none; display: inline-block; }
 .dsrow.wide { grid-template-columns: minmax(0, 1fr) 120px; } .dsrow.wide label { font-weight: 500; }
 .dsheet input[type=number], .dsheet select, .dscard .field input { font: inherit; font-size: 14px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); min-width: 0; box-sizing: border-box; width: 100%; }
 .dsheet input[type=number] { font-family: var(--mono); text-align: right; }
+.dssgl { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px 6px; } .dssgl label { font-size: 12px; font-weight: 600; text-align: center; } .dssgl input { padding-inline: 4px !important; -moz-appearance: textfield; } .dssgl input::-webkit-inner-spin-button, .dssgl input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .dsrow.dbtot { border-top: 1px solid var(--line); padding-top: 6px; } .dsrow.dbtot label { font-size: 15px; } .dsrow.dbtot input { font-weight: 700; color: var(--accent); }
-.dscrew { display: grid; grid-template-columns: minmax(0, 1fr) 84px; align-items: center; gap: 2px 8px; } .dscrew label { font-size: 12px; font-weight: 600; grid-column: 1 / -1; }
+.dscrew { display: grid; grid-template-columns: 74px minmax(0, 1fr) 84px; align-items: center; gap: 2px 8px; } .dscrew label { font-size: 12px; font-weight: 600; }
 .dscrew .hint, .dscrew .err { grid-column: 1 / -1; } .dscrew .hint:empty, .dscrew .err:empty { display: none; }
 .dbgrid { display: grid; gap: 10px; } .dbgrid.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dbgrid.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .dscard .field { gap: 4px; } .dscard .field label, .dscard .field .lbl { font-size: 12px; } .dscard .field .hint { font-size: 11px; }
@@ -1933,11 +1947,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                 <div class="dscol">
                   <section class="dscard">
                     <h3 class="dsh">Collection <small>· by single, or just the total</small></h3>
-                    <div class="dsrow"><label for="dbS1">S1</label><input class="sgl" id="dbS1" type="number" inputmode="numeric" min="0"></div>
-                    <div class="dsrow"><label for="dbS2">S2</label><input class="sgl" id="dbS2" type="number" inputmode="numeric" min="0"></div>
-                    <div class="dsrow"><label for="dbS3">S3</label><input class="sgl" id="dbS3" type="number" inputmode="numeric" min="0"></div>
-                    <div class="dsrow"><label for="dbS4">S4</label><input class="sgl" id="dbS4" type="number" inputmode="numeric" min="0"></div>
-                    <div class="dsrow"><label for="dbS5">S5</label><input class="sgl" id="dbS5" type="number" inputmode="numeric" min="0"></div>
+                    <div class="dssgl"><label for="dbS1">S1</label><label for="dbS2">S2</label><label for="dbS3">S3</label><label for="dbS4">S4</label><label for="dbS5">S5</label><input class="sgl" id="dbS1" type="number" inputmode="numeric" min="0"><input class="sgl" id="dbS2" type="number" inputmode="numeric" min="0"><input class="sgl" id="dbS3" type="number" inputmode="numeric" min="0"><input class="sgl" id="dbS4" type="number" inputmode="numeric" min="0"><input class="sgl" id="dbS5" type="number" inputmode="numeric" min="0"></div>
                     <div class="dsrow dbtot"><label for="dbColTot">Total</label><input id="dbColTot" type="number" inputmode="numeric" min="0"></div>
                     <span class="hint" id="dbSg">0 of 5 singles</span>
                   </section>
@@ -1964,6 +1974,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                       <div class="seg" role="radiogroup" aria-label="Route expenses"><label><input type="radio" name="dbExpMode" id="dbXOther" value="other"><span>Rest as Other</span></label><label><input type="radio" name="dbExpMode" id="dbXList" value="list"><span id="dbXListL">Route list</span></label></div></div>
                     <div class="dbx" id="dbChips"></div>
                   </section>
+                  <section class="dscard"><div class="field"><label for="dbRemarks">Remarks</label><input id="dbRemarks" autocomplete="off" maxlength="200"></div></section>
                 </div>
                 <div class="dscol">
                   <section class="dscard">
@@ -1985,7 +1996,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                   </section>
                 </div>
               </div>
-              <section class="dscard"><div class="field"><label for="dbRemarks">Remarks</label><input id="dbRemarks" autocomplete="off" maxlength="200"></div></section>
             </div>
           </div>
           <div class="dbfoot">
@@ -3428,6 +3438,7 @@ function showView() {
   if (want === "trexp" && view !== "trexp") { rxOpen = ""; rxAdding = false; }
   view = (want === "tguide" && acc.bookings === "none" && acc.tripsheets === "none") || acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
+  document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
   ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "tguide", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
   const navKey = want === "tguide" ? "guide" : want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
