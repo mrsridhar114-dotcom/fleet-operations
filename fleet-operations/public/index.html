@@ -713,11 +713,9 @@ a.btn { text-decoration: none; display: inline-block; }
 .otodo .orow .btn { padding: 5px 12px; font-size: 13px; }
 .otodo .none { color: var(--muted); font-size: 14px; padding: 8px 0; margin: 0; }
 .dsheet { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-/* Dark title bar of the day sheet, the same as the spare bus trip sheet. */
-.dsbar #dbClose { background: transparent; color: var(--side-ink); border: 1.5px solid var(--side-line); font-weight: 700; font-size: 14px; padding: 7px 12px; border-radius: 6px; flex: none; }
-.dsbar #dbClose:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
-.dsbar #dbTitle { font: inherit; color: inherit; }
-.dsbar .ro-tag { color: var(--side-muted); border-color: var(--side-line); vertical-align: 3px; }
+/* One light top section: title, day, start and ran or not, and Close (no separate dark bar). */
+.dstitle { min-width: 0; } .dstitle h1 { font-size: 22px; margin: 0; white-space: nowrap; } .dstitle .vsub { margin-top: 2px; }
+#dbClose { border: 1.5px solid color-mix(in srgb, var(--danger) 60%, var(--line)); color: var(--danger); background: var(--surface); font-weight: 700; font-size: 14px; padding: 7px 12px; border-radius: 6px; } #dbClose:hover { background: var(--danger); color: #fff; }
 .dshead { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px 18px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .dsf { display: flex; flex-direction: column; gap: 4px; }
 .dsf .k { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
@@ -1933,13 +1931,15 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="dbdirty" id="dbDirty" hidden><span>You have unsaved changes for this bus.</span><button class="btn primary" type="button" id="dbDirtySave">Save and go</button><button class="btn" type="button" id="dbDirtyDiscard">Discard</button><button class="icon" type="button" id="dbDirtyStay">Stay</button></div>
         <div class="dbloading panel" id="dbLoading" hidden>Loading this day's entries…</div>
         <form id="dbForm" class="dsheet" novalidate>
-          <header class="bwh dsbar"><div style="flex:1;min-width:0"><b>Day sheet · <span id="dbTitle">Bus</span><span class="ro-tag" id="dbRoTag" hidden>View only</span></b><span id="dbSub"></span></div><button class="icon" type="button" id="dbClose" aria-label="Close">Close ✕</button></header>
           <div class="dshead">
+            <div class="dstitle"><h1>Day sheet · <span id="dbTitle">Bus</span><span class="ro-tag" id="dbRoTag" hidden>View only</span></h1><div class="vsub" id="dbSub"></div></div>
             <div class="dsf"><span class="k">Day</span><div class="datenav"><button class="navbtn" type="button" id="dbPrevDay" aria-label="Previous day" title="Previous day">‹</button><input type="date" id="dbDate" aria-label="Day"><button class="navbtn" type="button" id="dbNextDay" aria-label="Next day" title="Next day">›</button></div></div>
             <div class="dsf"><label class="k" for="dbStart">Started from</label><input id="dbStart" list="dbStarts" autocomplete="off" maxlength="40"><datalist id="dbStarts"></datalist><span class="err" id="e-dbStart"></span></div>
             <div class="dsf"><span class="k">Ran or not</span><div class="seg" role="radiogroup" aria-label="Did the bus run">
               <label><input type="radio" name="dbMode" id="dbModeRan" value="ran"><span>Ran</span></label>
               <label><input type="radio" name="dbMode" id="dbModeIdle" value="idle"><span>Did not run</span></label></div></div>
+            <span style="flex:1"></span>
+            <button class="icon" type="button" id="dbClose" aria-label="Close">Close ✕</button>
           </div>
           <div class="dsbody" id="dbBody">
             <nav class="dblist" id="dbList" aria-label="Route buses"></nav>
