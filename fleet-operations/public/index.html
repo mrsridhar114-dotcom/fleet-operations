@@ -429,8 +429,8 @@ table.metable { border-collapse: collapse; width: 100%; min-width: 1180px; font-
 .metable tr.loss .mein, .metable tr.part .mein { background: color-mix(in srgb, var(--surface) 55%, transparent); } .metable tr.loss .mein.auto, .metable tr.part .mein.auto { background: transparent; }
 .metable tr.chg td.sticky { box-shadow: inset 4px 0 0 var(--warn), 1px 0 0 var(--line); }
 /* Whole-row colours: red = negative balance, amber = ran only some singles, grey = did not run. */
-.metable tr.loss td { background: color-mix(in srgb, var(--danger) 18%, var(--surface)); } .metable tr.loss td.sticky { box-shadow: inset 4px 0 0 var(--danger), 1px 0 0 var(--line); }
-.metable tr.part td { background: color-mix(in srgb, var(--hot) 20%, var(--surface)); } .metable tr.part td.sticky { box-shadow: inset 4px 0 0 var(--hot), 1px 0 0 var(--line); }
+.metable tr.loss td { background: color-mix(in srgb, var(--danger) 20%, var(--surface)); } .metable tr.loss td.sticky { box-shadow: inset 4px 0 0 var(--danger), 1px 0 0 var(--line); }
+.metable tr.part td { background: color-mix(in srgb, #f2c200 30%, var(--surface)); } .metable tr.part td.sticky { box-shadow: inset 4px 0 0 #d9a900, 1px 0 0 var(--line); }
 .metable tr.idle td { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); } .metable tr.idle td.sticky { box-shadow: inset 4px 0 0 var(--muted), 1px 0 0 var(--line); }
 .melegend { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-left: auto; } .melegend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; } .metable tr.future td { color: var(--muted); height: 22px; }
 .metable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); padding: 7px 3px; font-family: var(--mono); font-size: 12px; } .metable tfoot td.sticky { background: var(--bg); font-family: var(--body); }
@@ -5607,7 +5607,7 @@ function renderTrips() {
   document.querySelectorAll('#tViewSeg input[name="tView"]').forEach(i => i.checked = i.value === tView);
   $("tEntryBar").innerHTML =
     `<span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} still to enter` : list.length ? "All days up to today are entered" : ""}${nTot ? ` · ${nTot} with the total only` : ""}</span>` +
-    (tView === "table" ? `<span class="melegend"><span><i style="background:color-mix(in srgb, var(--danger) 25%, var(--surface))"></i>Negative balance</span><span><i style="background:color-mix(in srgb, var(--hot) 28%, var(--surface))"></i>Ran only some singles</span><span><i style="background:color-mix(in srgb, var(--muted) 30%, var(--surface))"></i>Did not run</span><span><b style="color:var(--warn)">●</b> Changed, not saved</span></span>` : "");
+    (tView === "table" ? `<span class="melegend"><span><i style="background:color-mix(in srgb, var(--danger) 35%, var(--surface))"></i>Negative balance</span><span><i style="background:color-mix(in srgb, #f2c200 45%, var(--surface))"></i>Ran only some singles</span><span><i style="background:color-mix(in srgb, var(--muted) 30%, var(--surface))"></i>Did not run</span><span><b style="color:var(--warn)">●</b> Changed, not saved</span></span>` : "");
   const R = routeFor(tFyStart), editingRoute = $("tRoute").dataset.editing === "1";
   $("tRoute").innerHTML = editingRoute
     ? `<label for="tRouteA">Starts on 1 April from</label><input id="tRouteA" value="${esc(R?.a || "")}" style="width:11em"><label for="tRouteB">alternating with</label><input id="tRouteB" value="${esc(R?.b || "")}" style="width:11em"><button class="btn" type="button" data-route="save" style="padding:4px 10px">Save</button><button class="icon" type="button" data-route="cancel">Cancel</button>`
