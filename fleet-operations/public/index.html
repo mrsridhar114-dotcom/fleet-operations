@@ -7280,7 +7280,7 @@ function rsSel(k) {
   const opts = list.map(p => [`id:${p.id}`, p.name]); if (v && !opts.some(o => o[0] === v)) opts.unshift([v, rsCrewName(k) || "—"]);
   return `<select class="rssel" data-k="crew:${k}" aria-label="${k}"${rsh.edit ? "" : " disabled"}>${k === "checker" ? `<option value="">No checker</option>` : v ? "" : `<option value="">Choose</option>`}${opts.map(([val, n]) => `<option value="${esc(val)}"${val === v ? " selected" : ""}>${esc(n)}${k === "conductor" && val === "id:" + (rsMe()?.id || "-") ? " (you)" : ""}</option>`).join("")}</select>`;
 }
-const rsMoneyIn = (key, val, label, extra = "") => `<span class="bwin tpin"${extra}><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${key === "coltot" && rsSum() ? rsSum() : 0}" aria-label="${label}"${rsh.edit ? "" : " readonly"}></span>`;
+const rsMoneyIn = (key, val, label, extra = "") => `<span class="bwin tpin"${extra}><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${key}" value="${esc(val)}" placeholder="${key === "coltot" && rsSum() ? rsSum() : ""}" aria-label="${label}"${rsh.edit ? "" : " readonly"}></span>`;
 const rsSec = (n, t, inner, sub = "") => `<section class="tpsec"><h3>${n ? `<span class="rsn">${n}</span> ` : ""}${t}${sub ? ` <span class="rssub">· ${sub}</span>` : ""}</h3>${inner}</section>`;
 function rsCrewHtml() {
   const sys = rsSys(), col = rsCol();
@@ -7328,7 +7328,7 @@ function rsPageHtml() {
   const office = rsh.admin && d && trips.concat(winTrips()).some(t => t.id === rsId(rsh.bus, rsh.date) && !t.fromSheet);
   const ends = rsh.ends.length === 2 ? rsh.ends : [];
   return (rsh.status === "rejected" && d?.rejectReason ? `<div class="bhappr"><b>Sent back by the office</b><span>${esc(d.rejectReason)}</span><span class="rshow">Correct it and send again.</span></div>` : "") +
-    (rsh.edit && canTrips && rsh.status === "approved" ? `<div class="bhappr"><b>✓ Approved · in the trip sheet</b><span>You can still correct it. Changes are kept when you tap Save to trip sheet.</span></div>` : "") +
+    (rsh.edit && canTrips && rsh.status === "approved" ? `<div class="bhappr"><b>✓ Approved · in the trip sheet</b><span>You can still correct it. Changes are kept when you tap Save.</span></div>` : "") +
     (!rsh.edit && !rsh.admin && rsh.status !== "draft" ? `<div class="bhlock"><b>${rsh.status === "approved" ? "✓ Approved by the office" : "Sent to the office"}</b><span>${rsh.status === "approved" ? "This day is in the trip sheet." : "Waiting for approval. Ask the office if something needs changing."}</span></div>` : "") +
     (ch.length ? `<div class="bhappr rswarn"><b>⚠ Padi changed by the conductor</b>${ch.map(([k, l]) => `<span>${l}: ${rs(num(d.padi[k]))} entered · system gave ${rs(num(d.padiSys[k]))} (${num(d.padi[k]) > num(d.padiSys[k]) ? "+" : "−"}${rs(Math.abs(num(d.padi[k]) - num(d.padiSys[k])))})</span>`).join("")}</div>` : "") +
     (rsh.admin && d && rsExpChanges(d).length ? `<div class="bhappr rswarn"><b>⚠ Route expenses changed by the conductor</b>${rsExpChanges(d).map(c => `<span>${esc(c)}</span>`).join("")}</div>` : "") +
@@ -7348,8 +7348,8 @@ function rsPageHtml() {
         `<p class="bwnote" id="rsColNote" style="margin:2px 0 4px">${rsColNote()}</p>`) +
       rsSec("3", `Crew and padi<button type="button" class="padibtn" data-padipop="rs" aria-label="How the padi is worked out" title="How the padi is worked out"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 6.5h8"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h3.5"/></svg></button>`, `<div id="rsCrew">${rsCrewHtml()}</div>`) +
       rsSec("4", "Diesel", `<div class="tpfc">` +
-        `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="dsl:litres" value="${esc(rsh.dsl.litres)}" placeholder="0" aria-label="Diesel litres"${ro}></span></label>` +
-        `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="dsl:amount" value="${esc(rsh.dsl.amount)}" placeholder="0" aria-label="Diesel amount"${ro}></span></label>` +
+        `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="dsl:litres" value="${esc(rsh.dsl.litres)}" aria-label="Diesel litres"${ro}></span></label>` +
+        `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="dsl:amount" value="${esc(rsh.dsl.amount)}" aria-label="Diesel amount"${ro}></span></label>` +
         `<label><span>Paid</span><select class="tpsel" data-k="dsl:pay" aria-label="Diesel paid by"${rsh.edit ? "" : " disabled"}>${[["Fuel card", "Card"], ["Cash", "Cash"]].map(([v, l]) => `<option value="${v}"${rsh.dsl.pay === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>` +
         `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="40" data-k="dsl:place" value="${esc(rsh.dsl.place)}" placeholder="Where" aria-label="Diesel place"${ro}></span></label><span></span></div>` +
         (rsh.start && rsh.dsl.place && rsOpposite(rsh.start, rsh.ends).toLowerCase() === placeName(rsh.dsl.place).toLowerCase() && rsh.edit ? `<p class="bwnote" style="margin:4px 0 6px">Place is ${esc(rsh.dsl.place)} because the bus starts from ${esc(placeName(rsh.start))}. Change it if needed.</p>` : "") +
@@ -7399,9 +7399,9 @@ function rsRender(top) {
     (rsh.admin && rsh.askWhy ? `<footer class="bwf"><label class="bwf1"><span>Why is it sent back? The conductor will see this.</span><textarea id="rsWhy" rows="2" maxlength="200"></textarea></label><span class="bwerr" id="rsWhyErr"></span><div class="bw2" style="margin-top:8px"><button type="button" class="bwalt" data-rs="rejectno">Cancel</button><button type="button" class="bwgo" data-rs="rejectgo">Send back</button></div></footer>` :
      rsh.admin ? (rsh.edit && d?.status === "submitted" ? `<footer class="bwf two"><button type="button" class="bwalt" data-rs="reject">Send back</button><button type="button" class="bwgo" data-rs="approve"${rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Approve"}</button></footer>` : "")
       : rsh.edit && canTrips ? `<footer class="bwf"><div class="twspent"><span class="tpst ${rsh.dirty ? "bad" : "ok"}" id="rsSt">${rsh.dirty ? "Not saved yet" : rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
-        `<button type="button" class="bwgo" data-rs="approve"${miss.length || rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Save to trip sheet"}</button>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>`
+        `<button type="button" class="bwgo" data-rs="approve"${miss.length || rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Save"}</button>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>`
       : rsh.edit ? `<footer class="bwf"><div class="twspent"><span class="tpst ok" id="rsSt">${rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
-        `<button type="button" class="bwgo" data-rs="send"${miss.length || rsh.saving ? " disabled" : ""}>${rsh.saving ? "Sending…" : "Send to office"} ${BW_ICON.next}</button>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>` : "") +
+        `<div class="bw2"><button type="button" class="bwalt" data-rs="save"${rsh.saving ? " disabled" : ""}>Save</button><button type="button" class="bwgo" data-rs="send"${miss.length || rsh.saving ? " disabled" : ""}>${rsh.saving ? "Sending…" : "Send to office"} ${BW_ICON.next}</button></div>${miss.length && rsh.ready ? `<p class="rsmiss" id="rsMiss">Still needed: ${miss.join(", ")}</p>` : `<p class="rsmiss" id="rsMiss" hidden></p>`}</footer>` : "") +
     navBar("rs", false);
   if (top) $("rsBody").scrollTop = 0; else if (keep) $("rsBody").scrollTop = keep;
 }
@@ -7463,12 +7463,14 @@ function rsClick(e) {
   if (a === "exreset") { askYesNo(`Bring back the default route expenses of ${placeName(rsh.start)}? Changes made here will be lost.`, { yes: "Bring back" }).then(ok => { if (!ok || !rsh) return; rsh.exp = rsList(rsh.start); rsh.expDef = rsDefOf(rsh.exp); rsRender(); rsSoon(); }); return; }
   if (a === "exdel") { rsh.exp.splice(+b.dataset.i, 1); rsRender(); rsSoon(); return; }
   if (a === "send") { rsSave("submitted"); return; }
+  // Save keeps the sheet on the phone without sending it (it also saves by itself while typing).
+  if (a === "save") { clearTimeout(rsh.timer); rsh.saved = false; rsQueue(async () => { await rsSave(); if (rsh?.saved) toast("Saved. Tap Send to office when the day is complete."); }); return; }
   if (a === "approve") { rsApprove(); return; }
   if (a === "reject") { rsh.askWhy = true; rsRender(); $("rsWhy")?.focus(); return; }
   if (a === "rejectno") { rsh.askWhy = false; rsRender(); return; }
   if (a === "rejectgo") { const why = $("rsWhy").value.trim(); if (!why) { $("rsWhyErr").textContent = "Type why it is sent back."; $("rsWhy").focus(); return; } rsSave("rejected", why); }
 }
-// An approved day is in the trip sheet, so its changes wait for Save to trip sheet instead of saving by themselves.
+// An approved day is in the trip sheet, so its changes wait for Save instead of saving by themselves.
 function rsSoon() {
   clearTimeout(rsh.timer);
   if (rsh.status === "approved") { rsh.dirty = true; if ($("rsSt")) { $("rsSt").textContent = "Not saved yet"; $("rsSt").className = "tpst bad"; } return; }
@@ -8901,7 +8903,7 @@ function twCollectHtml() {
   const b = twBk(), rd = tw.edit ? "" : " readonly";
   const row = (x, i) => `<div class="tpex">` +
     `<label><span>For</span><select class="tpsel" data-k="ex:${i}:kind" aria-label="Extra ${i + 1} is for"${tw.edit ? "" : " disabled"}>${EXTRA_KINDS.map(k => `<option${x.kind === k ? " selected" : ""}>${esc(k)}</option>`).join("")}</select></label>` +
-    `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="ex:${i}:amt" value="${esc(x.amt)}" placeholder="0" aria-label="Extra ${i + 1} amount"${rd}></span></label>` +
+    `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="ex:${i}:amt" value="${esc(x.amt)}" aria-label="Extra ${i + 1} amount"${rd}></span></label>` +
     (tw.edit ? `<button type="button" class="tpbin" data-exdel="${i}" aria-label="Remove extra ${i + 1}">${TW_BIN}</button>` : "<i></i>") +
     `<div class="tpnote"><input type="text" data-k="ex:${i}:note" maxlength="80" value="${esc(x.note || "")}" placeholder="Note, e.g. 150 km over" aria-label="Extra ${i + 1} note"${rd}></div></div>`;
   return `<div class="tprow"><span class="tpl">Rent</span><b class="tpamt">${rs(num(b?.rent))}</b></div>` +
@@ -8970,7 +8972,7 @@ function twCrewHtml() {
   if (tw.cleaner && !tw.clnOther && !cl.some(n => n.toUpperCase() === tw.cleaner.trim().toUpperCase())) cl.unshift(tw.cleaner.trim());
   const dv = tw.drvOther ? "__other" : tw.drvId, cv = tw.noCleaner ? "__none" : tw.clnOther ? "__other" : tw.cleaner.trim();
   const opt = (v, l, cur) => `<option value="${esc(v)}"${String(cur).toUpperCase() === String(v).toUpperCase() ? " selected" : ""}>${esc(l)}</option>`;
-  const padi = (k, l) => `<label class="tpcol tpp"><span>Padi</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${k}" value="${esc(tw[k])}" placeholder="0" aria-label="${l}"${rd}></span></label>`;
+  const padi = (k, l) => `<label class="tpcol tpp"><span>Padi</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="${k}" value="${esc(tw[k])}" aria-label="${l}"${rd}></span></label>`;
   const name = (k, v, l) => `<div class="tpnote"><input type="text" data-k="${k}" maxlength="60" value="${esc(v)}" placeholder="${l}" aria-label="${l}"${rd}></div>`;
   return `<div class="tpcrew"><label class="tpcol"><span>Driver</span><select class="tpsel" data-sel="drv" aria-label="Driver"${ro}>${opt("", "Choose", dv)}${twDrivers().map(d => opt(d.id, d.name, dv)).join("")}${opt("__other", "Other (type the name)", dv)}</select></label>${padi("padiPaid", "Driver padi")}</div>` +
     (tw.drvOther ? name("drvName", tw.drvName, "Driver name") : "") +
@@ -8987,8 +8989,8 @@ function twPageHtml() {
   const rd = tw.edit ? "" : " readonly", sec = (t, inner) => `<section class="tpsec"><h3>${t}</h3>${inner}</section>`;
   // One diesel fill on one line: litres, amount, how it was paid and where.
   const fill = (r, i) => `<div class="tpfc">` +
-    `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" placeholder="0" aria-label="Litres, fill ${i + 1}"${rd}></span></label>` +
-    `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" placeholder="0" aria-label="Amount, fill ${i + 1}"${rd}></span></label>` +
+    `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="fl:${i}:litres" value="${esc(r.litres)}" aria-label="Litres, fill ${i + 1}"${rd}></span></label>` +
+    `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="fl:${i}:amount" value="${esc(r.amount)}" aria-label="Amount, fill ${i + 1}"${rd}></span></label>` +
     `<label><span>Paid</span><select class="tpsel" data-k="fl:${i}:pay" aria-label="Paid by, fill ${i + 1}"${tw.edit ? "" : " disabled"}>${[["Fuel card", "Card"], ["Cash", "Cash"]].map(([v, l]) => `<option value="${v}"${(r.pay || "Cash") === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>` +
     `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="60" data-k="fl:${i}:place" value="${esc(r.place || "")}" placeholder="Where" aria-label="Place, fill ${i + 1}"${rd}></span></label>` +
     (tw.edit ? `<button type="button" class="tpbin" data-rowdel="${i}" aria-label="Remove diesel line ${i + 1}">${TW_BIN}</button>` : "") + `</div>`;
@@ -9348,7 +9350,7 @@ function bwDrvMoneyHtml(b) {
   const chk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
   const exp = x => `<button type="button" class="daexp" data-exp="${esc(x.key)}" aria-pressed="${!d.off.includes(x.key)}"${dis}><i>${chk}</i><span>${esc(x.label)}</span><b>${rs(x.amt)}</b></button>`;
   return `<header class="bwh"><div style="flex:1;min-width:0"><b id="bwTitle">Driver advance</b><span>Booking ${esc(b.no || "")} · ${esc(b.driverName || "No driver yet")}</span></div></header><div class="bwb tws" id="bwBody">` +
-    `<section class="tpsec"><h3>Advance</h3><div class="daadv"><span class="bwin main"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="da.amt" value="${esc(v.amt)}" placeholder="0" aria-label="Driver advance"${dis}></span>` +
+    `<section class="tpsec"><h3>Advance</h3><div class="daadv"><span class="bwin main"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="da.amt" value="${esc(v.amt)}" aria-label="Driver advance"${dis}></span>` +
       `<button type="button" class="datoll" data-bw="advtoll" aria-pressed="${v.toll}"${dis}><i>${chk}</i><span>Toll gate<small>${rs(num(b.toll))}</small></span></button></div>` +
       `<div class="darow"><span>Total advance</span><b id="daTot">${rs(d.total)}</b></div></section>` +
     (d.ext ? `<section class="tpsec"><h3>Extra from party (collected by the driver)</h3>` + bkExtras(b).map(x => `<div class="darow"><span>${esc(x.kind)}${x.note ? ` · ${esc(x.note)}` : ""}</span><b>${rs(Math.round(num(x.amt)))}</b></div>`).join("") +
