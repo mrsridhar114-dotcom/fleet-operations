@@ -411,10 +411,12 @@ table.metable { border-collapse: collapse; width: 1620px; font-size: 12px; table
 .mein.auto { background: transparent; border-color: transparent; color: var(--muted); } .mein.auto:focus { border-color: var(--line); background: var(--bg); }
 .mein.tot { font-weight: 700; color: var(--accent); } .mein.expt { font-weight: 700; } .mein.tot.part { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); } .mein.tot.over { color: var(--danger); background: var(--danger-soft); }
 .mein:disabled { opacity: .8; }
-.metable tr.empty td:not(.sticky) .mein { background: var(--surface); } .metable tr.chg td { background: color-mix(in srgb, var(--warn-soft) 55%, var(--surface)); }
-/* A day with a negative balance is shown in red. */
-.metable tr.loss td { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); } .metable tr.loss td.sticky { box-shadow: inset 3px 0 0 var(--danger), 1px 0 0 var(--line); }
-.metable tr.idle td { background: var(--bg); color: var(--muted); } .metable tr.future td { color: var(--muted); height: 22px; }
+.metable tr.empty td:not(.sticky) .mein { background: var(--surface); } .metable tr.chg td.sticky { box-shadow: inset 4px 0 0 var(--warn), 1px 0 0 var(--line); }
+/* Whole-row colours: red = negative balance, amber = ran only some singles, grey = did not run. */
+.metable tr.loss td { background: color-mix(in srgb, var(--danger) 13%, var(--surface)); } .metable tr.loss td.sticky { box-shadow: inset 4px 0 0 var(--danger), 1px 0 0 var(--line); }
+.metable tr.part td { background: color-mix(in srgb, var(--hot) 14%, var(--surface)); } .metable tr.part td.sticky { box-shadow: inset 4px 0 0 var(--hot), 1px 0 0 var(--line); }
+.metable tr.idle td { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); } .metable tr.idle td.sticky { box-shadow: inset 4px 0 0 var(--muted), 1px 0 0 var(--line); }
+.melegend { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-left: auto; } .melegend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; } .metable tr.future td { color: var(--muted); height: 22px; }
 .metable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); padding: 7px 3px; font-family: var(--mono); font-size: 12px; } .metable tfoot td.sticky { background: var(--bg); font-family: var(--body); }
 .metable .neg { color: var(--danger); } .metable td.medw { color: var(--muted); font-size: 11px; } .metable .mecum { font-weight: 600; } .mec { font-family: var(--mono); } .mebal { font-weight: 700; color: var(--ok); }
 .medate { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; } .medate .dot, .mesave .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); display: inline-block; }
@@ -5440,7 +5442,7 @@ function renderMonthEntry(ym, M) {
     if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="17"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td class="n mec mecum" data-c="cum">${nf(cum)}</td><td></td><td>${open}</td></tr>`;
     if (r.has) cum += r.bal;
     const totCls = r.notSplit > 0 ? " part" : r.notSplit < 0 ? " over" : "", sel = (k, kind, l) => `<select class="mein t" data-k="${k}" aria-label="${l}"${ro}>${meCrewOpts(kind, r.f[k])}</select>`;
-    return `<tr data-date="${r.date}" class="${r.has ? "" : "empty"}${r.changed ? " chg" : ""}${r.has && r.bal < 0 ? " loss" : ""}">${day}` +
+    return `<tr data-date="${r.date}" class="${r.has ? "" : "empty"}${r.changed ? " chg" : ""} ${meRowTone(r)}" title="${meRowTone(r) === "loss" ? "Balance is negative" : meRowTone(r) === "part" ? `Ran ${meSg(r)} of ${SINGLES_PER_DAY} singles` : ""}">${day}` +
       `<td>${inp(r, "start", " t")}</td><td class="medw">${dw}</td><td>${sel("drv", "driver", "Driver")}</td><td>${sel("cond", "conductor", "Conductor")}</td><td>${sel("chk", "conductor", "Checker")}</td>` +
       `<td>${inp(r, "rate", r.touched.rate || r.f.rate ? "" : " auto")}</td><td>${inp(r, "lit")}</td><td>${inp(r, "dsl", r.touched.dsl ? "" : " auto")}</td>` +
       `<td>${inp(r, "pd", r.touched.pd ? "" : " auto")}</td><td>${inp(r, "pc", r.touched.pc ? "" : " auto")}</td><td>${inp(r, "pk", r.touched.pk ? "" : " auto")}</td>` +
@@ -5464,6 +5466,9 @@ function meInput(e) {
   if (ME_AUTO.includes(k)) { if (el.value === "") delete dr.touched[k]; else dr.touched[k] = true; el.classList.toggle("auto", el.value === ""); }
   meRefresh();
 }
+// Row colour of a day: red when the balance is negative, amber when it ran only some of the 5 singles, grey when it did not run.
+const meSg = r => [1, 2, 3, 4, 5].filter(i => num(r.f["s" + i]) > 0).length;
+const meRowTone = r => r.idle ? "idle" : !r.has ? "" : r.bal < 0 ? "loss" : meSg(r) > 0 && meSg(r) < SINGLES_PER_DAY && !(r.notSplit > 0) ? "part" : "";
 // What the Expense box adds up to: diesel, padi and route expenses, and what a typed total leaves unsplit.
 const meExpTitle = r => `Diesel ${rs(r.dsl)} + padi ${rs(r.pay)}${r.route ? ` + route ${rs(r.route)}` : ""}${r.unsplit ? ` + ${rs(r.unsplit)} not split` : ""}. Type the day's total expense if only that is known.`;
 function meRefresh() {
@@ -5477,7 +5482,7 @@ function meRefresh() {
     const od = tr.querySelector('[data-k="odo"]'); if (od) od.title = r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day";
     const c = n => tr.querySelector(`[data-c="${n}"]`);
     c("bal").textContent = r.has ? nf(r.bal) : ""; c("bal").classList.toggle("neg", r.bal < 0);
-    tr.classList.toggle("chg", r.changed); tr.classList.toggle("empty", !r.has); tr.classList.toggle("loss", r.has && r.bal < 0);
+    tr.classList.toggle("chg", r.changed); tr.classList.toggle("empty", !r.has); const tone = meRowTone(r); tr.classList.toggle("loss", tone === "loss"); tr.classList.toggle("part", tone === "part"); tr.title = tone === "loss" ? "Balance is negative" : tone === "part" ? `Ran ${meSg(r)} of ${SINGLES_PER_DAY} singles` : "";
     if (r.has) cum += r.bal; const cc = tr.querySelector('[data-c="cum"]'); if (cc) { cc.textContent = r.has || r.idle ? nf(cum) : ""; cc.classList.toggle("neg", cum < 0); }
     const dt = tr.querySelector(".medate"), dot = dt.querySelector(".dot"); if (r.changed && !dot) dt.insertAdjacentHTML("afterbegin", '<span class="dot" title="Changed, not saved"></span>'); else if (!r.changed && dot) dot.remove();
   });
@@ -5579,7 +5584,8 @@ function renderTrips() {
   const missing = []; for (let d = 1; d <= daysIn(ym); d++) { const dt = `${ym}-${pad2(d)}`; if (dt <= today && !list.some(x => x.date === dt)) missing.push(dt); }
   const nTot = list.filter(totalOnly).length;
   $("tEntryBar").innerHTML = `<div class="seg" role="radiogroup" aria-label="View"><label><input type="radio" name="tView" value="table"${tView === "table" ? " checked" : ""}><span>Table</span></label><label><input type="radio" name="tView" value="cal"${tView === "cal" ? " checked" : ""}><span>Calendar</span></label></div>` +
-    `<span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} still to enter` : list.length ? "All days up to today are entered" : ""}${nTot ? ` · ${nTot} with the total only` : ""}</span>`;
+    `<span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} still to enter` : list.length ? "All days up to today are entered" : ""}${nTot ? ` · ${nTot} with the total only` : ""}</span>` +
+    (tView === "table" ? `<span class="melegend"><span><i style="background:color-mix(in srgb, var(--danger) 25%, var(--surface))"></i>Negative balance</span><span><i style="background:color-mix(in srgb, var(--hot) 28%, var(--surface))"></i>Ran only some singles</span><span><i style="background:color-mix(in srgb, var(--muted) 30%, var(--surface))"></i>Did not run</span><span><b style="color:var(--warn)">●</b> Changed, not saved</span></span>` : "");
   const R = routeFor(tFyStart), editingRoute = $("tRoute").dataset.editing === "1";
   $("tRoute").innerHTML = editingRoute
     ? `<label for="tRouteA">Starts on 1 April from</label><input id="tRouteA" value="${esc(R?.a || "")}" style="width:11em"><label for="tRouteB">alternating with</label><input id="tRouteB" value="${esc(R?.b || "")}" style="width:11em"><button class="btn" type="button" data-route="save" style="padding:4px 10px">Save</button><button class="icon" type="button" data-route="cancel">Cancel</button>`
