@@ -983,6 +983,7 @@ table.rxtbl td.c { text-align: right; } .rxacts { display: inline-flex; gap: 6px
 .pdband { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 700; font-size: 15px; } .pdband input { width: 130px; }
 .pdband .sp { flex: 1; }
 .pdgrid { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.pdsets { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 12px; } .pdres .pdset { font-weight: 700; color: var(--accent); }
 .pdrow { display: grid; grid-template-columns: minmax(200px, 1.4fr) repeat(var(--n), minmax(90px, 1fr)) 36px; gap: 8px; align-items: center; padding: 7px 10px; border-top: 1px solid var(--line); }
 .pdrow:first-child { border-top: 0; } .pdrow.hd { background: var(--bg); font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .pdrow .part { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap; min-width: 0; } .pdrow .part input { width: 110px; }
@@ -2255,6 +2256,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <section class="panel">
         <div class="sechead"><h2 class="sec">Rules</h2><p id="pdInfo"></p></div>
         <p class="sub" style="margin:6px 0 12px">A band is chosen by the day's total collection. Inside it, the collection is split into parts (first ₹15,000, ₹15,001 to ₹17,000, and so on) and each part is paid at its own percentage for each person; the padi is the sum of the parts.</p>
+        <div class="pdsets" id="pdSets"></div>
         <div class="pdrules" id="pdRules"></div>
         <span class="err" id="pdErr"></span>
         <div class="rxbtns" id="pdActs"><button class="btn" type="button" id="pdAddBand">+ Add band</button><span style="flex:1"></span><button class="btn" type="button" id="pdUndo">Undo changes</button><button class="btn primary" type="button" id="pdSave">Save rules</button></div>
@@ -5897,7 +5899,13 @@ const pdPct = (d, c) => ({ driver: d, conductor: c, checker: c });
 const PADI_START = { bands: [
   { upto: 19000, steps: [{ upto: "", pct: pdPct(5, 4.5) }] },
   { upto: "", steps: [{ upto: 15000, pct: pdPct(5, 4.5) }, { upto: "", pct: pdPct(6, 5.5) }] }] };
-let pdBands = null;
+// Two sets of rules: days with a checker on the bus, and days without one. Without a checker the driver and conductor
+// get 1% more on every part (the same bands and split); that set starts as a copy +1% and can then be changed on its own.
+const PD_SETS = [["with", "With checker"], ["no", "Without checker"]];
+const pdRolesOf = set => set === "no" ? PADI_ROLES.filter(([k]) => k !== "checker") : PADI_ROLES;
+const pdPlus1 = bands => pdCopy(bands).map(b => ({ ...b, steps: b.steps.map(x => ({ ...x, pct: { driver: num(x.pct?.driver) + 1, conductor: num(x.pct?.conductor) + 1, checker: 0 } })) }));
+let pdEd = null, pdSet = "with";
+const pdB = () => pdEd[pdSet];
 const pdCopy = o => JSON.parse(JSON.stringify(o));
 const pdOpen = v => v === "" || v == null;
 // Rules saved by the first version of this screen kept separate steps for each person; they are merged into one list of parts.
@@ -5908,7 +5916,13 @@ function pdNorm(b) {
   return { upto: b.upto, steps: [...cuts, ""].map(u => ({ upto: u, pct: Object.fromEntries(PADI_ROLES.map(([k]) => [k, at(k, pdOpen(u) ? Infinity : u)])) })) };
 }
 const pdDoc = () => ops.padiSlabs.find(x => x.id === "rules");
-const pdSaved = () => (pdDoc()?.bands || []).map(pdNorm);
+const pdSaved = (set = "with") => ((set === "no" ? pdDoc()?.bandsNo : pdDoc()?.bands) || []).map(pdNorm);
+// The rules for a day: with or without a checker. Until "without" is saved it is the "with" rules + 1% for driver and conductor.
+function pdRulesFor(checker) {
+  const w = pdSaved().length ? pdSaved() : PADI_START.bands;
+  if (checker) return w;
+  const no = pdSaved("no"); return no.length ? no : pdPlus1(w);
+}
 // The band for a day's collection, and each person's padi with how it was worked out.
 function padiFor(collection, bands = pdSaved()) {
   const c = Math.max(0, num(collection)), band = bands.find(b => pdOpen(b.upto) || c <= num(b.upto)); if (!band) return null;
@@ -5925,7 +5939,7 @@ function padiFor(collection, bands = pdSaved()) {
   });
   return out;
 }
-function pdCheck(bands) {
+function pdCheck(bands, roles = PADI_ROLES) {
   if (!bands.length) return "Add at least one band.";
   for (const [i, b] of bands.entries()) {
     const name = `Band ${i + 1}`;
@@ -5935,7 +5949,7 @@ function pdCheck(bands) {
     for (const [j, x] of b.steps.entries()) {
       if (pdOpen(x.upto) && j < b.steps.length - 1) return `${name}: only the last part can be "above".`;
       if (!pdOpen(x.upto) && (num(x.upto) <= 0 || (j && num(x.upto) <= num(b.steps[j - 1].upto)))) return `${name}, part ${j + 1}: the amount must be more than the part before it.`;
-      for (const [k, l] of PADI_ROLES) if (x.pct?.[k] === "" || x.pct?.[k] == null || num(x.pct[k]) < 0 || num(x.pct[k]) > 100) return `${name}, part ${j + 1}: enter the ${l.toLowerCase()}'s percentage (0 to 100).`;
+      for (const [k, l] of roles) if (x.pct?.[k] === "" || x.pct?.[k] == null || num(x.pct[k]) < 0 || num(x.pct[k]) > 100) return `${name}, part ${j + 1}: enter the ${l.toLowerCase()}'s percentage (0 to 100).`;
     }
     if (!pdOpen(b.steps.at(-1).upto)) return `${name}: the last part must cover the rest of the collection.`;
   }
@@ -5944,39 +5958,43 @@ function pdCheck(bands) {
 }
 function renderPadi() {
   const can = canTrips, d = pdDoc();
-  if (!pdBands) pdBands = pdCopy(d ? pdSaved() : PADI_START.bands);
+  if (!pdEd) { const w = pdCopy(d && pdSaved().length ? pdSaved() : PADI_START.bands); pdEd = { with: w, no: pdCopy(pdSaved("no").length ? pdSaved("no") : pdPlus1(w)) }; }
+  const pdBands = pdB(), roles = pdRolesOf(pdSet);
+  $("pdSets").innerHTML = `<div class="seg" role="radiogroup" aria-label="Which rules">${PD_SETS.map(([k, l]) => `<label><input type="radio" name="pdSet" value="${k}"${k === pdSet ? " checked" : ""}><span>${l}</span></label>`).join("")}</div>` +
+    `<span class="sub">${pdSet === "no" ? `Days when no checker is on the bus. Driver and conductor get 1% more than the With checker rules${d?.bandsNo?.length ? "" : " (worked out until these are saved)"}.` : "Days when a checker is on the bus."}</span>` +
+    (can && pdSet === "no" ? `<button class="pdlink" type="button" data-pda="plus1">Copy With checker rules + 1%</button>` : "");
   $("pdRoTag").hidden = can; $("pdActs").hidden = !can;
   $("pdInfo").textContent = d?.updatedOn ? `Last saved ${fmtDate(d.updatedOn)}${d.updatedByName ? ` by ${d.updatedByName}` : ""}` : "Not saved yet: these are the company's current rules; check them and save.";
   if (document.activeElement?.closest?.("#pdRules")) { pdTry(); return; }
   const ro = can ? "" : " readonly", inp = (path, v, ph = "", lbl = "") => `<input type="number" inputmode="decimal" min="0" step="any" data-pd="${path}" value="${esc(String(v ?? ""))}" placeholder="${ph}" aria-label="${lbl}"${ro}>`;
-  const n = PADI_ROLES.length;
+  const n = roles.length;
   $("pdRules").innerHTML = pdBands.map((b, i) => {
     const low = i ? num(pdBands[i - 1].upto) : 0, last = i === pdBands.length - 1;
     const head = last && pdOpen(b.upto) ? `<span>${i ? `When the collection is above ₹${nf(low)}` : "Any collection"}</span>` : `<span>When the collection is ${i ? `₹${nf(low + 1)} to` : "up to"} ₹</span>${inp(`${i}.upto`, b.upto, "", `Band ${i + 1} up to`)}`;
     const rows = b.steps.map((x, j) => {
       const from = j ? num(b.steps[j - 1].upto) : 0, rest = pdOpen(x.upto) && j === b.steps.length - 1;
       const part = rest ? (j ? `Above ₹${nf(from)}` : "The whole collection") : `${j ? `₹${nf(from + 1)} to` : "First"} ₹${inp(`${i}.s.${j}.upto`, x.upto, "amount", `Part ${j + 1} up to`)}`;
-      return `<div class="pdrow" style="--n:${n}"><span class="part">${part}</span>${PADI_ROLES.map(([k, l]) => `<span class="pc"><span class="r">${l} %</span>${inp(`${i}.s.${j}.${k}`, x.pct?.[k], "%", `${l} percentage, part ${j + 1}`)}<span class="pct">%</span></span>`).join("")}` +
+      return `<div class="pdrow" style="--n:${n}"><span class="part">${part}</span>${roles.map(([k, l]) => `<span class="pc"><span class="r">${l} %</span>${inp(`${i}.s.${j}.${k}`, x.pct?.[k], "%", `${l} percentage, part ${j + 1}`)}<span class="pct">%</span></span>`).join("")}` +
         `${can && b.steps.length > 1 ? `<button class="rxdel" type="button" data-pda="rmstep" data-i="${i}" data-j="${j}" aria-label="Remove this part">✕</button>` : "<span></span>"}</div>`;
     }).join("");
     return `<section class="pdrule panel" style="padding:12px"><div class="pdband">${head}<span class="sp"></span>${can && pdBands.length > 1 ? `<button class="icon del" type="button" data-pda="rmband" data-i="${i}">Remove band</button>` : ""}</div>` +
-      `<div class="pdgrid"><div class="pdrow hd" style="--n:${n}"><span>Part of the collection</span>${PADI_ROLES.map(([, l]) => `<span>${l} %</span>`).join("")}<span></span></div>${rows}</div>` +
+      `<div class="pdgrid"><div class="pdrow hd" style="--n:${n}"><span>Part of the collection</span>${roles.map(([, l]) => `<span>${l} %</span>`).join("")}<span></span></div>${rows}</div>` +
       (can ? `<button class="pdlink" type="button" data-pda="addstep" data-i="${i}">+ Split: add another part with its own %</button>` : "") + `</section>`;
   }).join("");
-  $("pdUndo").disabled = !!d && JSON.stringify(pdBands) === JSON.stringify(pdSaved());
+  $("pdUndo").disabled = !!d && JSON.stringify(pdEd.with) === JSON.stringify(pdSaved()) && (!pdSaved("no").length || JSON.stringify(pdEd.no) === JSON.stringify(pdSaved("no")));
   pdTry();
 }
 function pdTry() {
   const v = $("pdTry").value; if (v === "") { $("pdRes").innerHTML = `<span class="sub">Type a day's total collection to see each person's padi.</span>`; return; }
-  const r = padiFor(v, pdBands || []); if (!r) { $("pdRes").innerHTML = `<span class="sub">No band covers ${rs(num(v))}.</span>`; return; }
+  const r = padiFor(v, pdEd ? pdB() : []), roles = pdRolesOf(pdSet); if (!r) { $("pdRes").innerHTML = `<span class="sub">No band covers ${rs(num(v))}.</span>`; return; }
   const how = p => p.parts.map(x => `₹${nf(x.base)} × ${x.pct}%`).join(" + ") || "—";
-  $("pdRes").innerHTML = PADI_ROLES.map(([k, l]) => `<div><span>${l}</span><b>${rs(r[k].amt)}</b><span class="how">${how(r[k])}</span></div>`).join("") +
-    `<div><span>Total padi</span><b>${rs(PADI_ROLES.reduce((a, [k]) => a + r[k].amt, 0))}</b></div>`;
+  $("pdRes").innerHTML = `<div class="pdset">${PD_SETS.find(([k]) => k === pdSet)[1]}</div>` + roles.map(([k, l]) => `<div><span>${l}</span><b>${rs(r[k].amt)}</b><span class="how">${how(r[k])}</span></div>`).join("") +
+    `<div><span>Total padi</span><b>${rs(roles.reduce((a, [k]) => a + r[k].amt, 0))}</b></div>`;
 }
 $("pdTry").addEventListener("input", pdTry);
 $("pdRules").addEventListener("input", e => {
   const el = e.target, path = el.dataset.pd; if (!path) return;
-  const [i, a, j, f] = path.split("."), v = el.value === "" ? "" : num(el.value);
+  const [i, a, j, f] = path.split("."), v = el.value === "" ? "" : num(el.value), pdBands = pdB();
   if (a === "upto") pdBands[+i].upto = v; else if (f === "upto") pdBands[+i].steps[+j].upto = v; else pdBands[+i].steps[+j].pct[f] = v;
   $("pdErr").textContent = ""; $("pdUndo").disabled = false; pdTry();
 });
@@ -5985,7 +6003,7 @@ $("pdRules").addEventListener("focusout", () => setTimeout(() => { if (!document
 $("pdRules").addEventListener("click", e => {
   const b = e.target.closest("button[data-pda]"); if (!b) return;
   b.blur();  // the screen is only redrawn when nothing inside it has focus
-  const a = b.dataset.pda, band = pdBands[+b.dataset.i];
+  const a = b.dataset.pda, pdBands = pdB(), band = pdBands[+b.dataset.i];
   // A new part goes in just before "above": it starts where the part before ends and keeps the last part's percentages.
   if (a === "addstep") { const st = band.steps, prev = st.length > 1 ? num(st.at(-2).upto) : 0;
     st.splice(st.length - 1, 0, { upto: prev + 2000, pct: { ...st.at(-1).pct } });
@@ -5994,16 +6012,18 @@ $("pdRules").addEventListener("click", e => {
   if (a === "rmband") { pdBands.splice(+b.dataset.i, 1); pdBands.at(-1).upto = ""; }
   $("pdErr").textContent = ""; renderPadi();
 });
+$("pdSets").addEventListener("click", e => { if (e.target.closest('[data-pda="plus1"]')) { pdEd.no = pdPlus1(pdEd.with); $("pdErr").textContent = ""; $("pdUndo").disabled = false; renderPadi(); } });
+$("pdSets").addEventListener("change", e => { if (e.target.name === "pdSet") { pdSet = e.target.value; $("pdErr").textContent = ""; renderPadi(); } });
 $("pdAddBand").onclick = () => {
-  const last = pdBands.at(-1), prev = pdBands.length > 1 ? num(pdBands.at(-2).upto) : 0;
+  const pdBands = pdB(), last = pdBands.at(-1), prev = pdBands.length > 1 ? num(pdBands.at(-2).upto) : 0;
   last.upto = prev + 10000; pdBands.push({ upto: "", steps: pdCopy(last.steps) }); renderPadi();
   $("pdRules").querySelector(`[data-pd="${pdBands.length - 2}.upto"]`)?.focus();
 };
-$("pdUndo").onclick = () => { pdBands = null; $("pdErr").textContent = ""; renderPadi(); };
+$("pdUndo").onclick = () => { pdEd = null; $("pdErr").textContent = ""; renderPadi(); };
 $("pdSave").onclick = async () => {
-  const why = pdCheck(pdBands); if (why) { $("pdErr").textContent = why; return; }
+  for (const [k, l] of PD_SETS) { const why = pdCheck(pdEd[k], pdRolesOf(k)); if (why) { if (pdSet !== k) { pdSet = k; renderPadi(); } $("pdErr").textContent = `${l}: ${why}`; return; } }
   $("pdSave").disabled = true;
-  try { await opsSave("padiSlabs", { id: "rules", bands: pdCopy(pdBands), ...rxStamp() }); pdBands = null; document.activeElement?.blur(); renderPadi(); toast("Padi rules saved"); }
+  try { await opsSave("padiSlabs", { id: "rules", bands: pdCopy(pdEd.with), bandsNo: pdCopy(pdEd.no), ...rxStamp() }); pdEd = null; document.activeElement?.blur(); renderPadi(); toast("Padi rules saved"); }
   catch { toast("Couldn't save. Check your connection and try again."); }
   finally { $("pdSave").disabled = false; }
 };
@@ -7183,8 +7203,8 @@ const rsSum = () => rsh.s.reduce((a, v) => a + num(v), 0);
 const rsCol = () => num(rsh.colTot) || rsSum();
 const rsTrips = () => rsh.s.filter(v => num(v) > 0).length;
 // Padi rules: the saved ones, or the company's starting rules until they are saved.
-const rsRules = () => pdSaved().length ? pdSaved() : PADI_START.bands;
-const rsSys = () => { const r = padiFor(rsCol(), rsRules()); return Object.fromEntries(RS_ROLES.map(([k]) => [k, k === "checker" && !rsh.crew.checker ? 0 : r?.[k]?.amt || 0])); };
+const rsRules = (checker = true) => pdRulesFor(checker);
+const rsSys = () => { const r = padiFor(rsCol(), rsRules(!!rsh.crew.checker)); return Object.fromEntries(RS_ROLES.map(([k]) => [k, k === "checker" && !rsh.crew.checker ? 0 : r?.[k]?.amt || 0])); };
 const rsPadi = k => rsh.padiEd[k] ? num(rsh.padi[k]) : rsSys()[k];
 const rsPadiTot = () => RS_ROLES.reduce((a, [k]) => a + rsPadi(k), 0);
 const rsOther = () => rsh.exp.reduce((a, x) => a + num(x.amt), 0);
@@ -7256,7 +7276,7 @@ function rsCrewHtml() {
   }).join("") + (rsh.edit && RS_ROLES.some(([k]) => rsh.padiEd[k]) ? `<button type="button" class="bwlink rslink" data-rs="padireset">↺ Use system padi</button>` : "") +
     `<p class="bwnote" style="margin:4px 0 0">${rsh.edit && !rsh.admin ? "Same crew as yesterday. Change only if someone else came. " : ""}Padi is worked out by the system from the collection.</p>`;
 }
-function rsHow(k) { const r = padiFor(rsCol(), rsRules()); return r?.[k]?.parts?.map(p => `${nf(p.pct, Number.isInteger(p.pct) ? 0 : 1)}% of ${rs(p.base)}`).join(" + ") || ""; }
+function rsHow(k) { const r = padiFor(rsCol(), rsRules(!!rsh.crew.checker)); return r?.[k]?.parts?.map(p => `${nf(p.pct, Number.isInteger(p.pct) ? 0 : 1)}% of ${rs(p.base)}`).join(" + ") || ""; }
 function rsKmHtml() {
   const s = num(rsh.startKm), e = num(rsh.endKm), lit = num(rsh.dsl.litres);
   if (!(s && e > s)) return e && s && e <= s ? `<span class="bwerr">End km must be more than start km.</span>` : "";
@@ -7910,7 +7930,7 @@ function fillDayForm() {
   if (view === "tday" && canTrips) setTimeout(() => (idle ? $("dbIdleReason") : $("dbS1")).focus({ preventScroll: true }), 30);
 }
 const DB_PAY = [["dbPayD", "driver"], ["dbPayC", "conductor"], ["dbPayK", "checker"]];
-const dbPadiSys = (col, checker) => { const r = padiFor(col, rsRules()); return { driver: r?.driver?.amt || 0, conductor: r?.conductor?.amt || 0, checker: checker ? r?.checker?.amt || 0 : 0 }; };
+const dbPadiSys = (col, checker) => { const r = padiFor(col, rsRules(checker)); return { driver: r?.driver?.amt || 0, conductor: r?.conductor?.amt || 0, checker: checker ? r?.checker?.amt || 0 : 0 }; };
 function syncDbMode() {
   const idle = $("dbModeIdle").checked;
   $("dbIdleFields").hidden = !idle; $("dbRanFields").hidden = idle;
@@ -7936,7 +7956,7 @@ function dbCalc() {
   const sys = dbPadiSys(col, !!$("dbChecker").value);
   DB_PAY.forEach(([id, k]) => { if (!dbPayTouched[id]) $(id).value = col ? sys[k] || "" : ""; });
   $("dbPadiHint").textContent = DB_PAY.some(([id]) => dbPayTouched[id]) ? "Padi changed by hand. Clear a box to use the padi rules." : col ? "" : "Padi is worked out from the collection.";
-  const how = padiFor(col, rsRules()), howText = k => how?.[k]?.parts?.map(p => `${nf(p.pct, Number.isInteger(p.pct) ? 0 : 1)}% of ${rs(p.base)}`).join(" + ") || "";
+  const how = padiFor(col, rsRules(!!$("dbChecker").value)), howText = k => how?.[k]?.parts?.map(p => `${nf(p.pct, Number.isInteger(p.pct) ? 0 : 1)}% of ${rs(p.base)}`).join(" + ") || "";
   [["dbHowD", "dbPayD", "driver"], ["dbHowC", "dbPayC", "conductor"], ["dbHowK", "dbPayK", "checker"]].forEach(([h, id, k]) => {
     $(h).textContent = !col || (k === "checker" && !$("dbChecker").value) ? "" : dbPayTouched[id] ? `Changed · rules give ${rs(sys[k])}` : howText(k);
     $(h).className = dbPayTouched[id] && col ? "hint warn" : "hint"; });
