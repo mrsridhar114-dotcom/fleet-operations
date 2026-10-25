@@ -1581,6 +1581,10 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsmnav .btn:disabled { opacity: .3; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 @media (min-width: 701px) { .rsmg { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .rsmt { border: 1px solid var(--line); border-radius: 8px; padding: 5px 7px; background: var(--surface); min-width: 0; } .rsmt i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rsbal { text-align: center; margin: 2px 0 8px; } .rsbal i { display: block; font: 600 12px var(--body); color: var(--muted); font-style: normal; text-transform: uppercase; letter-spacing: .04em; }
+.rsbal b { font-size: 26px; color: #14532d; } .rsbal.neg b { color: #8b1a12; }
+:root[data-theme="dark"] .rsbal b { color: #8fe0a8; } :root[data-theme="dark"] .rsbal.neg b { color: #ff9b91; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rsbal b { color: #8fe0a8; } :root:not([data-theme="light"]) .rsbal.neg b { color: #ff9b91; } }
 .rsmt b { font-size: 14px; white-space: nowrap; } .rsmt.neg b { color: var(--danger); } .rsmt.pos b { color: var(--ok); }
 .rsdays .rsday { flex-direction: column; align-items: stretch; gap: 4px; min-height: 0; padding: 8px 10px; }
 .rsdays .rsday > .rsdh { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 8px; } .rsdays .rsday { text-align: left; } .rsdh b { font-size: 15px; } .rsdh .bstage { font-size: 12px; }
@@ -7676,16 +7680,16 @@ function rsMonthHtml(bus, ym, src) {
   const ran = all.filter(t => t.date.startsWith(ym) && !t.notRun);
   const T = ran.reduce((a, t) => { a.col += tripCollection(t); a.exp += tripExpense(t); a.fuel += num(t.fuelCost); a.lit += num(t.litres); a.pay += num(t.driverPay) + num(t.conductorPay) + num(t.checkerPay); a.sg += singlesRun(t); return a; }, { col: 0, exp: 0, fuel: 0, lit: 0, pay: 0, sg: 0 });
   const days = T.sg / SINGLES_PER_DAY, bal = T.col - T.exp, per = v => days ? rs(v / days) : "—";
-  const rates = ran.map(t => num(t.dieselRate)).filter(Boolean), open = (tBusId === bus ? openingKm(ym).km : null) ?? [...all].reverse().find(t => t.date < ym && t.odo)?.odo, last = [...ran].reverse().find(t => t.odo)?.odo;
+  const open = (tBusId === bus ? openingKm(ym).km : null) ?? [...all].reverse().find(t => t.date < ym && t.odo)?.odo, last = [...ran].reverse().find(t => t.odo)?.odo;
   const km = open && last ? last - open : null;
   const tile = (k, v, cls = "") => `<div class="rsmt${cls ? " " + cls : ""}"><i>${k}</i><b>${v}</b></div>`;
   return `<section class="panel rsmsum"><div class="rsmnav"><button type="button" class="btn" data-rsym="${prev}"${prev < known ? " disabled" : ""}>‹ ${short(prev)}</button>` +
-    `<h2 class="sec">${ymLabel(ym)}${ym === cur ? " <small>so far</small>" : ""}</h2><button type="button" class="btn" data-rsym="${next}"${next > cur ? " disabled" : ""}>${short(next)} ›</button></div><div class="rsmg">` +
+    `<h2 class="sec">${ymLabel(ym)}${ym === cur ? " <small>so far</small>" : ""}</h2><button type="button" class="btn" data-rsym="${next}"${next > cur ? " disabled" : ""}>${short(next)} ›</button></div>` +
+    `<div class="rsbal${bal < 0 ? " neg" : ""}"><i>Total balance</i><b>${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b></div><div class="rsmg">` +
     tile("Days run", `${fmtDays(days)} / ${daysIn(ym)}`) + tile("Total collection", rs(T.col)) + tile("Total expense", rs(T.exp)) +
-    tile("Total balance", `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`, bal < 0 ? "neg" : "pos") + tile("Avg col / day", per(T.col)) + tile("Avg bal / day", per(bal), bal < 0 ? "neg" : "") +
-    tile("Diesel (₹)", rs(T.fuel)) + tile("Avg diesel/day", per(T.fuel)) + tile("Avg salary/day", per(T.pay)) +
-    tile("Fuel (ltrs)", `${nf(T.lit, T.lit % 1 ? 1 : 0)} L`) + tile("Low fuel price", rates.length ? `₹${nf(Math.min(...rates), 2)}` : "—") + tile("High fuel price", rates.length ? `₹${nf(Math.max(...rates), 2)}` : "—") +
-    tile("Total kms", km != null ? nf(km) : "—") + tile("Mileage", km && T.lit ? `${nf(km / T.lit, 2)} km/L` : "—") + tile("Per day kms", km != null && days ? nf(km / days) : "—") +
+    tile("Avg col / day", per(T.col)) + tile("Avg bal / day", per(bal), bal < 0 ? "neg" : "") + tile("Diesel (₹)", rs(T.fuel)) +
+    tile("Avg diesel/day", per(T.fuel)) + tile("Fuel (ltrs)", `${nf(T.lit, T.lit % 1 ? 1 : 0)} L`) + tile("Total kms", km != null ? nf(km) : "—") +
+    tile("Mileage", km && T.lit ? `${nf(km / T.lit, 2)} km/L` : "—") + tile("Per day kms", km != null && days ? nf(km / days) : "—") + tile("Avg salary/day", per(T.pay)) +
     `</div></section>`;
 }
 // The phone trip sheet page: every day of the month for the bus, newest first. The office also sees the month's figures and can change month.
