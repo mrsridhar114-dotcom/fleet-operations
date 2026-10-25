@@ -87,6 +87,16 @@ nav.paths { padding: 14px 10px 20px; display: flex; flex-direction: column; gap:
   .navscrim { position: fixed; inset: 0; z-index: 29; background: rgba(10, 18, 26, .45); display: block; }
   .navscrim[hidden] { display: none; }
 }
+/* Route bus day sheet and monthly entry: the menu panel folds away for room; ☰ Menu opens it over the page. */
+body.navless .app { display: block; }
+body.navless .topbar { display: flex; align-items: center; gap: 12px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--side-bg); color: var(--side-ink); padding: 10px 16px; }
+body.navless .topbar .mark { font-family: var(--display); font-weight: 700; font-size: 20px; }
+body.navless .topbar button { background: none; border: 1px solid var(--side-line); color: var(--side-ink); border-radius: 6px; padding: 6px 10px; font-size: 14px; }
+body.navless .side { position: fixed; z-index: 30; left: 0; top: 0; bottom: 0; height: auto; max-height: 100dvh; align-self: stretch; overscroll-behavior: contain; width: min(280px, 85vw); transform: translateX(-100%); transition: transform .2s ease; }
+body.navless .side.open { transform: none; box-shadow: var(--shadow); }
+body.navless .navscrim { position: fixed; inset: 0; z-index: 29; background: rgba(10, 18, 26, .45); display: block; }
+body.navless .navscrim[hidden] { display: none; }
+body.navless .twrap { max-width: none; }
 @media (prefers-reduced-motion: reduce) { .side { transition: none; } }
 .main { min-width: 0; }
 .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: flex; flex-direction: column; gap: 20px; }
@@ -3393,6 +3403,7 @@ function showView() {
   if (want === "tday" && matchMedia("(max-width: 700px)").matches) want = "trsheet";
   if (want === "trexp" && view !== "trexp") { rxOpen = ""; rxAdding = false; }
   view = (want === "tguide" && acc.bookings === "none" && acc.tripsheets === "none") || acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
+  document.body.classList.toggle("navless", view === "tday" || view === "trips");
   ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "tguide", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
   const navKey = want === "tguide" ? "guide" : want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
