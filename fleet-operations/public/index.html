@@ -382,7 +382,7 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 /* trip sheet */
 .twrap { max-width: 1400px; }
 .tcontrols { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-#tViewSeg span { padding: 9px 14px; font-size: 14px; } .btn.mclose { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); } .btn.mclose:hover { background: var(--danger); color: #fff; }
+#tViewSeg span { padding: 9px 14px; font-size: 14px; } #tPrint { display: inline-flex; gap: 6px; align-items: center; } .btn.mclose { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); } .btn.mclose:hover { background: var(--danger); color: #fff; }
 .tcontrols .hf { min-width: 11em; }
 .ttabs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; border-bottom: 1px solid var(--line); }
 .ttabs button { flex: none; border: 1px solid transparent; border-bottom: 0; background: none; color: var(--muted); padding: 8px 12px; border-radius: 6px 6px 0 0; font-weight: 600; font-size: 13px; position: relative; top: 1px; }
@@ -1900,6 +1900,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf" id="tBusF"><label for="tBus">Bus</label><select id="tBus"></select></div>
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
           <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
+          <button class="btn" type="button" id="tPrint" title="Monthly sheet in Excel">Print</button>
           <a class="btn primary" href="#trips-day">Day sheet</a>
           <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
         </div>
@@ -11478,6 +11479,111 @@ $("dbRxPop").addEventListener("click", e => { e.stopPropagation(); openRxPop(e.c
 document.addEventListener("click", e => {
   const b = e.target.closest('[data-rxpop="rs"]'); if (!b || !rsh) return;
   e.stopPropagation(); e.preventDefault(); openRxPop(b, rsh.start || "", plateOf(vehicles.find(v => v.id === rsh.bus)), rsh.date);
+});
+
+/* ================= Route bus monthly sheet in Excel, in the office's own format =================
+   Title row, the month's figures (rows 2–5), the driver and conductor table with the kilometres beside it, then one row per day.
+   Totals and the driver / conductor figures are live formulas, so the sheet can still be corrected in Excel. */
+function meXlsx(ym) {
+  const { put, S, sheet, build } = XL, ws = sheet(new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "short", year: "numeric" }));
+  const M = monthStats(ym), tot = M.tot, ran = M.list.filter(t => !t.notRun), nDays = daysIn(ym);
+  const mName = new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long" });
+  const drv = [...new Set(ran.map(t => crewName("driver", t)).filter(Boolean))], con = [...new Set(ran.map(t => crewName("conductor", t)).filter(Boolean))];
+  const nameRows = Math.max(3, drv.length) + Math.max(3, con.length), head = Math.max(15, 7 + nameRows + 2), r0 = head + 1, rN = head + nDays;
+  const rg = c => `${c}${r0}:${c}${rN}`;
+  // Day rows
+  let cum = 0; const rows = [];
+  for (let d = 1; d <= nDays; d++) {
+    const date = `${ym}-${pad2(d)}`, t = M.list.find(x => x.date === date), r = head + d;
+    put(ws, "A" + r, d, S.int); put(ws, "B" + r, t ? startShown(t, date) : plannedStart(date) || "", S.text); put(ws, "C" + r, DAYS[new Date(date + "T00:00:00").getDay()], S.text);
+    if (!t) { rows.push(null); continue; }
+    if (t.notRun) { put(ws, "W" + r, `Did not run${t.idleReason ? " · " + t.idleReason : ""}${t.remarks ? " · " + t.remarks : ""}`, S.text); put(ws, "U" + r, cum, S.int, `${d === 1 ? "0" : "U" + (r - 1)}+T${r}`); rows.push(null); continue; }
+    const col = tripCollection(t), exp = tripExpense(t), bal = col - exp; cum += bal;
+    put(ws, "D" + r, crewName("driver", t), S.text); put(ws, "E" + r, crewName("conductor", t), S.text); put(ws, "F" + r, crewName("checker", t), S.text);
+    [["G", t.dieselRate, S.dec], ["H", t.litres, S.dec], ["I", t.fuelCost, S.int], ["J", t.driverPay, S.int], ["K", t.conductorPay, S.int], ["L", t.checkerPay, S.int],
+      ["M", t.s1, S.int], ["N", t.s2, S.int], ["O", t.s3, S.int], ["P", t.s4, S.int], ["Q", t.s5, S.int]].forEach(([c, v, st]) => { if (num(v)) put(ws, c + r, num(v), st); });
+    put(ws, "R" + r, col, S.int); put(ws, "S" + r, exp, S.int); put(ws, "T" + r, bal, S.int, `R${r}-S${r}`);
+    put(ws, "U" + r, cum, S.int, `${d === 1 ? "0" : "U" + (r - 1)}+T${r}`);
+    if (num(t.odo)) put(ws, "V" + r, num(t.odo), S.int);
+    if (t.remarks) put(ws, "W" + r, t.remarks, S.text);
+    rows.push(t);
+  }
+  for (let rr = r0; rr <= rN; rr++) for (let c = 0; c < 23; c++) if (!ws.rows[rr]?.[c]) put(ws, XL.col(c) + rr, "", S.text);  // every day row fully boxed
+  ["Date", "Starting", "Day", "Driver", "Conductor", "Checker", "Diesel Rate", "No. Litre", "Fuel Price", "Driver", "Conductor", "Checker", "S1", "S2", "S3", "S4", "S5", "Collection", "Expense", "Balance", "Total Balance", "KMS", "Remarks"]
+    .forEach((h, i) => put(ws, XL.col(i) + head, h, S.head));
+  // Title and the month's figures
+  put(ws, "A1", `${mName} - ${ym.slice(0, 4)}`, S.title); ws.merges.push("A1:W1");
+  const days = M.days, crewPay = tot.pd + tot.pc + tot.pk, low = M.rates.length ? Math.min(...M.rates) : 0, high = M.rates.length ? Math.max(...M.rates) : 0, bal = M.bal;
+  const lab = (ref, text, merge) => { put(ws, ref, text, S.label); if (merge) ws.merges.push(merge); };
+  lab("A2", "Days Run"); put(ws, "B2", Math.round(days * 100) / 100, S.dec);
+  lab("A3", "Total Balance"); put(ws, "B3", bal, S.sum, `N4`);
+  lab("A4", "Avg Col / Day"); put(ws, "B4", days ? Math.round(tot.col / days) : 0, S.sum, `IF(B2>0,ROUND(N2/B2,0),0)`);
+  lab("A5", "Avg Bal / Day"); put(ws, "B5", days ? Math.round(bal / days) : 0, S.sum, `IF(B2>0,ROUND(N4/B2,0),0)`);
+  lab("C2", "Total Diesel(Price)", "C2:D2"); put(ws, "E2", tot.fuel, S.sum, `SUM(${rg("I")})`);
+  lab("C3", "Avg Diesel / Day", "C3:D3"); put(ws, "E3", days ? Math.round(tot.fuel / days) : 0, S.sum, `IF(B2>0,ROUND(E2/B2,0),0)`);
+  lab("C4", "Avg Salary / Day", "C4:D4"); put(ws, "E4", days ? Math.round(crewPay / days) : 0, S.sum, `IF(B2>0,ROUND(T5/B2,0),0)`);
+  lab("F2", "Total Fuel(Ltrs)", "F2:G2"); put(ws, "H2", Math.round(tot.lit * 100) / 100, S.dec, `SUM(${rg("H")})`);
+  lab("F3", "Low Fuel Price", "F3:G3"); put(ws, "H3", low, S.dec, `IFERROR(SMALL(${rg("G")},1),0)`);
+  lab("F4", "High Fuel Price", "F4:G4"); put(ws, "H4", high, S.dec, `MAX(${rg("G")})`);
+  lab("J2", "Total Collection", "J2:M2"); put(ws, "N2", tot.col, S.sum, `SUM(${rg("R")})`); ws.merges.push("N2:O2");
+  lab("J3", "Total Expense", "J3:M3"); put(ws, "N3", tot.exp, S.sum, `SUM(${rg("S")})`); ws.merges.push("N3:O3");
+  lab("J4", "Total Balance", "J4:M4"); put(ws, "N4", bal, S.sum, `SUM(${rg("T")})`); ws.merges.push("N4:O4");
+  lab("Q2", "Driver Salary", "Q2:S2"); put(ws, "T2", tot.pd, S.sum, `ROUND(SUM(${rg("J")}),0)`);
+  lab("Q3", "Conductor Salary", "Q3:S3"); put(ws, "T3", tot.pc, S.sum, `ROUND(SUM(${rg("K")}),0)`);
+  lab("Q4", "Checker Salary", "Q4:S4"); put(ws, "T4", tot.pk, S.sum, `ROUND(SUM(${rg("L")}),0)`);
+  lab("Q5", "Total", "Q5:S5"); put(ws, "T5", crewPay, S.sum, "SUM(T2:T4)");
+  // Kilometres
+  lab("J6", "Kilometer Starting", "J6:M6"); put(ws, "N6", M.open.km ?? "", S.sum); ws.merges.push("N6:O6");
+  lab("J7", "Kilometer Ending", "J7:M7"); put(ws, "N7", M.lastOdo || 0, S.sum, `MAX(${rg("V")})`); ws.merges.push("N7:O7");
+  lab("J8", "Total Kilometers", "J8:M8"); put(ws, "N8", M.km ?? 0, S.sum, "IF(N6>0,N7-N6,0)"); ws.merges.push("N8:O8");
+  lab("J9", "Per Day Average Kms", "J9:M9"); put(ws, "N9", M.km && days ? Math.round(M.km / days) : 0, S.sum, "IF(B2>0,ROUND(N8/B2,0),0)"); ws.merges.push("N9:O9");
+  // Driver and conductor table (the template's formulas: days are the dates each person is on)
+  ["Name", "No.of Days", "Diesel", "Avg Diesel/Day", "Collection", "Expense", "Balance", "Avg / Day", "Avg Col/Day"].forEach((h, i) => put(ws, XL.col(i) + 6, h, S.head));
+  let r = 7;
+  const person = (name, c, kind) => {
+    const mine = ran.filter(t => crewName(kind, t) === name), n = mine.length, dsl = mine.reduce((a, t) => a + num(t.fuelCost), 0), col = mine.reduce((a, t) => a + tripCollection(t), 0), exp = mine.reduce((a, t) => a + tripExpense(t), 0);
+    put(ws, "A" + r, name, S.text);
+    put(ws, "B" + r, n, S.int, `COUNTIF(${rg(c)},A${r})`);
+    put(ws, "C" + r, dsl, S.int, `SUMIF(${rg(c)},A${r},${rg("I")})`);
+    put(ws, "D" + r, n ? Math.round(dsl / n) : 0, S.int, `IF(B${r}>0,ROUND(C${r}/B${r},0),0)`);
+    put(ws, "E" + r, col, S.int, `SUMIF(${rg(c)},A${r},${rg("R")})`);
+    put(ws, "F" + r, exp, S.int, `SUMIF(${rg(c)},A${r},${rg("S")})`);
+    put(ws, "G" + r, col - exp, S.int, `E${r}-F${r}`);
+    put(ws, "H" + r, n ? Math.ceil((col - exp) / n) : 0, S.int, `IF(B${r}>0,ROUNDUP(G${r}/B${r},0),0)`);
+    put(ws, "I" + r, n ? Math.ceil(col / n) : 0, S.int, `IF(B${r}>0,ROUNDUP(E${r}/B${r},0),0)`);
+    r++;
+  };
+  drv.forEach(n => person(n, "D", "driver")); r = 7 + Math.max(3, drv.length);
+  con.forEach(n => person(n, "E", "conductor"));
+  // Column widths as in the template
+  Object.assign(ws.widths, { A: 26, B: 14, C: 14, D: 18, E: 18, F: 14, G: 12, H: 12, I: 12, J: 12, K: 12, L: 12, M: 10, N: 12, O: 10, P: 10, Q: 10, R: 13, S: 12, T: 13, U: 14, V: 12, W: 24 });
+  ws.freeze = head;
+  return build([ws]);
+}
+function meXlsxName(ym) { const v = vehicles.find(x => x.id === tBusId), mon = new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "short" }); return `${plateKey(plateOf(v)).slice(-4) || "0000"}_ROUTE_${mon}-${ym.slice(0, 4)}.xlsx`; }
+$("tPrint").insertAdjacentHTML("afterbegin", ICON_PRINT);
+$("tPrint").addEventListener("click", e => {
+  e.stopPropagation();
+  const open = document.querySelector(".mxpop"); closeDuePop(); if (open) return;
+  if (tMonthIdx > 11) { toast("Choose a month first: the sheet is for one month."); return; }
+  const ym = monthYM(tFyStart, tMonthIdx), v = vehicles.find(x => x.id === tBusId), unsaved = meChangedKeys().length;
+  const mon = new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long", year: "numeric" }), pop = document.createElement("div");
+  pop.className = "duepop padipop mxpop"; pop.setAttribute("role", "dialog");
+  pop.innerHTML = `<h4>Monthly sheet · ${esc(plateOf(v))}</h4><p class="dnote"><b>${mon}</b> in the office Excel format: the month's figures, drivers and conductors, kilometres, and every day of the month.</p>` +
+    (unsaved ? `<p class="dnote" style="color:var(--warn)">${unsaved} changed day${unsaved === 1 ? " is" : "s are"} not saved yet and won't be in the file. Save first to include ${unsaved === 1 ? "it" : "them"}.</p>` : "") + popActsHtml();
+  const file = () => [{ filename: meXlsxName(ym), data: meXlsx(ym) }];
+  const save = pop.querySelector(".duesave"); save.lastChild.textContent = "Download Excel";
+  save.onclick = async ev => {
+    ev.stopPropagation(); let downloads = null;
+    try { downloads = await auDownloads(); } catch { downloads = null; }
+    if (!downloads) { toast("Saving files isn't available in this view."); return; }
+    save.disabled = true;
+    try { await downloads.save(file()[0]); toast("Excel file saved. Look in your Downloads folder."); closeDuePop(); }
+    catch (er) { toast(er?.code === "declined" ? "File not saved." : er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't make the Excel file. Try again."); }
+    finally { if (save.isConnected) save.disabled = false; }
+  };
+  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); popShare(ev.currentTarget, async () => file(), `Route bus · ${plateOf(v)} · ${mon}`); };
+  placePop(pop, e.currentTarget);
 });
 // Phone trip sheet.
 document.addEventListener("click", e => {
