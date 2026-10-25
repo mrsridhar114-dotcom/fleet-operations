@@ -50,6 +50,8 @@
 html, body { min-height: 100%; }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
 button { font: inherit; cursor: pointer; }
+/* Amounts are typed: no up/down arrows on number boxes. */
+input[type=number] { -moz-appearance: textfield; appearance: textfield; } input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* ---------- shell ---------- */
 .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
@@ -740,7 +742,7 @@ a.btn { text-decoration: none; display: inline-block; }
 .dsrow.wide { grid-template-columns: minmax(0, 1fr) 120px; } .dsrow.wide label { font-weight: 500; }
 .dsheet input[type=number], .dsheet select, .dscard .field input { font: inherit; font-size: 14px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); min-width: 0; box-sizing: border-box; width: 100%; }
 .dsheet input[type=number] { font-family: var(--mono); text-align: right; }
-.dssgl { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px 6px; } .dssgl label { font-size: 12px; font-weight: 600; text-align: center; } .dssgl input { padding-inline: 4px !important; -moz-appearance: textfield; } .dssgl input::-webkit-inner-spin-button, .dssgl input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.dssgl { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px 6px; } .dssgl label { font-size: 12px; font-weight: 600; text-align: center; } .dssgl input { padding-inline: 4px !important; }
 .dsrow.dbtot { border-top: 1px solid var(--line); padding-top: 6px; } .dsrow.dbtot label { font-size: 15px; } .dsrow.dbtot input { font-weight: 700; color: var(--accent); }
 .dscrew { display: grid; grid-template-columns: 74px minmax(0, 1fr) 84px; align-items: center; gap: 2px 8px; } .dscrew label { font-size: 12px; font-weight: 600; }
 .dscrew .hint, .dscrew .err { grid-column: 1 / -1; } .dscrew .hint:empty, .dscrew .err:empty { display: none; }
@@ -3188,6 +3190,8 @@ function normAccess(u) {
 }
 
 const $ = id => document.getElementById(id);
+// A stored 0 shows as an empty box, so the user types the amount straight away.
+const blank0 = v => v == null || v === "" || Number(v) === 0 ? "" : v;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const todayISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 const addDays = (iso, n) => { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d; };
@@ -4529,6 +4533,11 @@ document.addEventListener("keydown", e => {
   if (open) open[1](); else closeNav();
 });
 window.addEventListener("hashchange", route);
+document.addEventListener("focusin", e => {
+  const i = e.target; if (!(i instanceof HTMLInputElement) || i.readOnly || i.disabled || !(i.type === "number" || /^(numeric|decimal)$/.test(i.inputMode))) return;
+  if (/^0+(\.0+)?$/.test(i.value.trim())) { i.dataset.was0 = i.value; i.value = ""; }
+});
+document.addEventListener("focusout", e => { const i = e.target; if (i instanceof HTMLInputElement && i.dataset.was0 != null) { if (i.value === "") i.value = i.dataset.was0; delete i.dataset.was0; } });
 ["rq", "rWin", "rDoc", "rType"].forEach(id => $(id).addEventListener("input", renderDash));
 $("kpis").addEventListener("click", e => {
   const b = e.target.closest("button[data-win]"); if (!b) return;
@@ -5397,7 +5406,7 @@ function renderMonthEntry(ym, M) {
   meSaveBar();
   if (tView === "cal") { renderMeCal(ym); return; }
   if ($("tRows").contains(document.activeElement)) { meWaiting = true; return; }  // don't redraw under someone typing
-  const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(r.auto[k] ?? r.f[k] ?? "")}" aria-label="${k}"${extra}${ro}>`;
+  const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(k === "start" ? r.auto[k] ?? r.f[k] ?? "" : blank0(r.auto[k] ?? r.f[k]))}" aria-label="${k}"${extra}${ro}>`;
   $("tHead").innerHTML = `<tr class="grp"><th colspan="4"></th><th colspan="6">Collection</th><th colspan="3">Diesel</th><th colspan="3">Padi (rules)</th><th colspan="4">Expenses and balance</th><th colspan="2">Km</th><th></th></tr>` +
     `<tr><th class="sticky">Day</th><th>Start</th><th>Driver</th><th>Conductor</th><th class="n">S1</th><th class="n">S2</th><th class="n">S3</th><th class="n">S4</th><th class="n">S5</th><th class="n">Total</th><th class="n">Litres</th><th class="n">Rate</th><th class="n">Amount</th><th class="n">Driver</th><th class="n">Cond.</th><th class="n">Checker</th><th class="n">Route</th><th class="n">Total exp.</th><th class="n">Other</th><th class="n">Balance</th><th class="n">Reading</th><th class="n">Run</th><th></th></tr>`;
   $("tRows").innerHTML = days.map(r => {
@@ -5433,7 +5442,7 @@ function meRefresh() {
   const ym = monthYM(tFyStart, tMonthIdx), days = meDays(ym);
   days.forEach(r => {
     const tr = $("tRows").querySelector(`tr[data-date="${r.date}"]`); if (!tr || r.idle || r.future) return;
-    ME_AUTO.forEach(k => { const el = tr.querySelector(`[data-k="${k}"]`); if (el && el !== document.activeElement && !r.touched[k]) { el.value = r.auto[k] ?? ""; el.classList.toggle("auto", !(k === "rate" && r.f.rate)); } });
+    ME_AUTO.forEach(k => { const el = tr.querySelector(`[data-k="${k}"]`); if (el && el !== document.activeElement && !r.touched[k]) { el.value = blank0(r.auto[k]); el.classList.toggle("auto", !(k === "rate" && r.f.rate)); } });
     const tot = tr.querySelector('[data-k="tot"]'); if (tot) { tot.placeholder = r.sum || ""; tot.classList.toggle("part", r.notSplit > 0); tot.classList.toggle("over", r.notSplit < 0); }
     const c = n => tr.querySelector(`[data-c="${n}"]`);
     c("oth").textContent = r.unsplit ? nf(r.unsplit) : "—"; c("bal").textContent = r.has ? nf(r.bal) : ""; c("bal").classList.toggle("neg", r.bal < 0); c("run").textContent = r.run > 0 ? nf(r.run) : "—";
@@ -7213,9 +7222,9 @@ function rsLoad() {
     rsh.edit = platformWrite && canTrips; }
   if (d) {
     Object.assign(rsh, { notRun: !!d.notRun, idle: d.idleReason || "", start: d.start || "", s: [1, 2, 3, 4, 5].map(i => d["s" + i] != null ? String(d["s" + i]) : ""), colTot: d.colTotal != null ? String(d.colTotal) : "", expTot: d.expTotal != null ? String(d.expTotal) : "",
-      crew: Object.fromEntries(RS_ROLES.map(([k]) => [k, crewValue(k, d)])), padi: Object.fromEntries(RS_ROLES.map(([k]) => [k, String(d.padi?.[k] ?? "")])),
-      padiEd: Object.fromEntries(RS_ROLES.map(([k]) => [k, !!d.padiEd?.[k]])), dsl: { litres: String(d.dsl?.litres ?? ""), amount: String(d.dsl?.amount ?? ""), pay: d.dsl?.pay || "Fuel card", place: d.dsl?.place || "" },
-      exp: (d.exp || []).filter(x => !x.off).map(x => ({ name: x.name, amt: String(x.amt ?? ""), own: !!x.own, ...(x.def != null ? { def: num(x.def) } : {}) })), expDef: d.expDef || null, startKm: String(d.startKm ?? ""), endKm: String(d.endKm ?? ""), remarks: d.remarks || "", status: d.status || "draft" });
+      crew: Object.fromEntries(RS_ROLES.map(([k]) => [k, crewValue(k, d)])), padi: Object.fromEntries(RS_ROLES.map(([k]) => [k, String(blank0(d.padi?.[k]))])),
+      padiEd: Object.fromEntries(RS_ROLES.map(([k]) => [k, !!d.padiEd?.[k]])), dsl: { litres: String(blank0(d.dsl?.litres)), amount: String(blank0(d.dsl?.amount)), pay: d.dsl?.pay || "Fuel card", place: d.dsl?.place || "" },
+      exp: (d.exp || []).filter(x => !x.off).map(x => ({ name: x.name, amt: String(blank0(x.amt)), own: !!x.own, ...(x.def != null ? { def: num(x.def) } : {}) })), expDef: d.expDef || null, startKm: String(d.startKm ?? ""), endKm: String(d.endKm ?? ""), remarks: d.remarks || "", status: d.status || "draft" });
   } else {
     const last = lastOf(rsh.bus), me = rsMe(), start = plannedFor(rsh.bus, rsh.date) || (last?.start ? rsOpposite(last.start, ends) : "") || ends[0] || "";
     const prev = rsPrevKm(rsh.bus, rsh.date);
@@ -7838,7 +7847,7 @@ function renderDayBook() {
 // dbExp rows are { name, amt, own?, def? }; dbExpDef is the default list it started from (null for older entries).
 let dbExp = [], dbExpDef = null;
 function dbExpFrom(t) {
-  if (t?.expList) return { list: t.expList.filter(x => !x.off).map(x => ({ name: x.name, amt: String(x.amt ?? ""), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: num(x.def) } : {}) })), def: t.expDef || null };
+  if (t?.expList) return { list: t.expList.filter(x => !x.off).map(x => ({ name: x.name, amt: String(blank0(x.amt)), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: num(x.def) } : {}) })), def: t.expDef || null };
   if (t) return { list: EXP_CATS.filter(([k]) => num(t["ex_" + k])).map(([k, l]) => ({ name: l, amt: String(num(t["ex_" + k])), own: true })).concat(unItemised(t) && !t.expTotal ? [{ name: "Other", amt: String(unItemised(t)), own: true }] : []), def: null };
   return null;
 }
@@ -7870,15 +7879,15 @@ function fillDayForm() {
   if (!$("dbIdleReason").options.length) $("dbIdleReason").innerHTML = `<option value="">Choose a reason</option>` + IDLE_REASONS.map(r => `<option>${r}</option>`).join("");
   const idle = !!t?.notRun;
   $("dbModeIdle").checked = idle; $("dbModeRan").checked = !idle; $("dbIdleReason").value = t?.idleReason || "";
-  $("dbStarts").innerHTML = [...new Set(bw.map(x => x.start).filter(Boolean))].map(x => `<option value="${esc(x)}">`).join("");
+  $("dbStarts").innerHTML = [...new Set([plannedFor(dbBus, opDate), plannedFor(dbBus, shiftDay(opDate, 1)), ...ops.routeExpenses.map(x => placeName(x.place)), ...bw.map(x => x.start)].filter(Boolean).map(placeName))].map(x => `<option value="${esc(x)}">`).join("");
   $("dbDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, bw, bus?.type, [t?.driverId]);
   $("dbConductor").innerHTML = `<option value="">Choose the conductor</option>` + crewOptions("conductor", null, bw);
   $("dbChecker").innerHTML = `<option value="">No checker</option>` + crewOptions("conductor", null, bw);
   const src = t || last;
   $("dbDriver").value = crewValue("driver", src); $("dbConductor").value = crewValue("conductor", src); $("dbChecker").value = crewValue("checker", src);
-  Object.entries(DB_FIELDS).forEach(([id, k]) => $(id).value = t?.[k] ?? "");
-  $("dbExpAll").value = t?.expTotal ?? "";
-  if (!t && last) $("dbRate").value = last.dieselRate ?? "";
+  Object.entries(DB_FIELDS).forEach(([id, k]) => $(id).value = blank0(t?.[k]));
+  $("dbExpAll").value = blank0(t?.expTotal);
+  if (!t && last) $("dbRate").value = blank0(last.dieselRate);
   // Padi comes from the padi rules on the day's collection; a saved amount that differs counts as typed by hand.
   dbColTold = t?.colTotal != null ? String(t.colTotal) : "";
   const sys = t ? dbPadiSys(tripCollection(t), !!crewValue("checker", t)) : null;
@@ -7974,6 +7983,9 @@ $("dbChips").addEventListener("input", e => {
   else if (el.dataset.xn != null) dbExp[+el.dataset.xn].name = el.value;
 });
 // A new starting point brings its own list (when the list is used), unless the list was already changed.
+// Clicking the box empties it for a moment so the whole list of places shows; leaving it empty puts the place back.
+$("dbStart").addEventListener("focus", e => { const i = e.target; if (i.readOnly || i.disabled || !i.value) return; i.dataset.prev = i.value; i.placeholder = i.value; i.value = ""; });
+$("dbStart").addEventListener("blur", e => { const i = e.target; if (i.dataset.prev != null) { if (!i.value.trim()) i.value = i.dataset.prev; delete i.dataset.prev; i.placeholder = ""; } });
 $("dbStart").addEventListener("change", () => { if (dbExpDef && !rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length) dbExpDefault($("dbStart").value); renderDbExp(); dbCalc(); });
 document.getElementsByName("dbExpMode").forEach(r => r.addEventListener("change", () => {
   if (!canTrips) return;
