@@ -412,6 +412,8 @@ table.metable { border-collapse: collapse; width: 1620px; font-size: 12px; table
 .mein.tot { font-weight: 700; color: var(--accent); } .mein.expt { font-weight: 700; } .mein.tot.part { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 50%, var(--line)); } .mein.tot.over { color: var(--danger); background: var(--danger-soft); }
 .mein:disabled { opacity: .8; }
 .metable tr.empty td:not(.sticky) .mein { background: var(--surface); } .metable tr.chg td { background: color-mix(in srgb, var(--warn-soft) 55%, var(--surface)); }
+/* A day with a negative balance is shown in red. */
+.metable tr.loss td { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); } .metable tr.loss td.sticky { box-shadow: inset 3px 0 0 var(--danger), 1px 0 0 var(--line); }
 .metable tr.idle td { background: var(--bg); color: var(--muted); } .metable tr.future td { color: var(--muted); height: 22px; }
 .metable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); padding: 7px 3px; font-family: var(--mono); font-size: 12px; } .metable tfoot td.sticky { background: var(--bg); font-family: var(--body); }
 .metable .neg { color: var(--danger); } .metable td.medw { color: var(--muted); font-size: 11px; } .metable .mecum { font-weight: 600; } .mec { font-family: var(--mono); } .mebal { font-weight: 700; color: var(--ok); }
@@ -5438,7 +5440,7 @@ function renderMonthEntry(ym, M) {
     if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="17"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td class="n mec mecum" data-c="cum">${nf(cum)}</td><td></td><td>${open}</td></tr>`;
     if (r.has) cum += r.bal;
     const totCls = r.notSplit > 0 ? " part" : r.notSplit < 0 ? " over" : "", sel = (k, kind, l) => `<select class="mein t" data-k="${k}" aria-label="${l}"${ro}>${meCrewOpts(kind, r.f[k])}</select>`;
-    return `<tr data-date="${r.date}" class="${r.has ? "" : "empty"}${r.changed ? " chg" : ""}">${day}` +
+    return `<tr data-date="${r.date}" class="${r.has ? "" : "empty"}${r.changed ? " chg" : ""}${r.has && r.bal < 0 ? " loss" : ""}">${day}` +
       `<td>${inp(r, "start", " t")}</td><td class="medw">${dw}</td><td>${sel("drv", "driver", "Driver")}</td><td>${sel("cond", "conductor", "Conductor")}</td><td>${sel("chk", "conductor", "Checker")}</td>` +
       `<td>${inp(r, "rate", r.touched.rate || r.f.rate ? "" : " auto")}</td><td>${inp(r, "lit")}</td><td>${inp(r, "dsl", r.touched.dsl ? "" : " auto")}</td>` +
       `<td>${inp(r, "pd", r.touched.pd ? "" : " auto")}</td><td>${inp(r, "pc", r.touched.pc ? "" : " auto")}</td><td>${inp(r, "pk", r.touched.pk ? "" : " auto")}</td>` +
@@ -5475,7 +5477,7 @@ function meRefresh() {
     const od = tr.querySelector('[data-k="odo"]'); if (od) od.title = r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day";
     const c = n => tr.querySelector(`[data-c="${n}"]`);
     c("bal").textContent = r.has ? nf(r.bal) : ""; c("bal").classList.toggle("neg", r.bal < 0);
-    tr.classList.toggle("chg", r.changed); tr.classList.toggle("empty", !r.has);
+    tr.classList.toggle("chg", r.changed); tr.classList.toggle("empty", !r.has); tr.classList.toggle("loss", r.has && r.bal < 0);
     if (r.has) cum += r.bal; const cc = tr.querySelector('[data-c="cum"]'); if (cc) { cc.textContent = r.has || r.idle ? nf(cum) : ""; cc.classList.toggle("neg", cum < 0); }
     const dt = tr.querySelector(".medate"), dot = dt.querySelector(".dot"); if (r.changed && !dot) dt.insertAdjacentHTML("afterbegin", '<span class="dot" title="Changed, not saved"></span>'); else if (!r.changed && dot) dot.remove();
   });
