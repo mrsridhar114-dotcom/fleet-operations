@@ -1133,6 +1133,18 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .duepop .dlist li { justify-content: flex-start; align-items: center; }
 .duepop .dlist .fn .exppill { display: inline-block; margin: 3px 4px 0 0; font-size: 12px; padding: 1px 6px; }
 .duepop .dlist li.off { opacity: .55; } .duepop .dlist li.off label { cursor: default; }
+/* Padi calculation pop-up on the trip sheets */
+.padibtn { display: inline-grid; place-items: center; width: 28px; height: 28px; margin-left: 8px; vertical-align: middle; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--accent); cursor: pointer; padding: 0; }
+.padibtn:hover { border-color: var(--accent); background: var(--accent-soft); }
+.dsh.dshx { display: flex; align-items: center; flex-wrap: wrap; } .dsh.dshx .padibtn { margin-left: auto; }
+.duepop.padipop { width: min(360px, calc(100vw - 24px)); }
+.padipop .pptab { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.padipop .pptab td { padding: 6px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.padipop .pptab td.n { text-align: right; font-family: var(--mono); font-weight: 700; white-space: nowrap; padding-left: 8px; }
+.padipop .pptab .who { font-weight: 600; } .padipop .pptab .how { display: block; font-size: 12px; color: var(--muted); } .padipop .pptab .chg { display: block; font-size: 12px; color: var(--warn); }
+.padipop .pptab tr.tot td { font-weight: 700; border-top: 2px solid var(--line); }
+.padipop .pprule { margin-top: 10px; background: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 3px; }
+.padipop .pprule b { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .duepop .dnote { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
 .duepop .dall { display: flex; gap: 10px; align-items: center; font-weight: 600; padding: 2px 0 8px; border-bottom: 1px solid var(--line); cursor: pointer; } .duepop .dall input { width: 18px; height: 18px; }
 .duepop .dlist label { display: flex; gap: 10px; align-items: center; flex: 1; min-width: 0; cursor: pointer; }
@@ -1965,7 +1977,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                     <span class="hint" id="dbSg">0 of 5 singles</span>
                   </section>
                   <section class="dscard">
-                    <h3 class="dsh">Crew and padi <small>· padi from the padi rules</small></h3>
+                    <h3 class="dsh dshx">Crew and padi <small>· padi from the padi rules</small><button type="button" class="padibtn" id="dbPadiPop" aria-label="How the padi is worked out" title="How the padi is worked out"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 6.5h8"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h3.5"/></svg></button></h3>
                     <div class="dscrew"><label for="dbDriver">Driver</label><select id="dbDriver"></select><input id="dbPayD" type="number" inputmode="numeric" min="0" aria-label="Driver padi (₹)"><span class="err" id="e-dbDriver"></span><span class="hint" id="dbHowD"></span></div>
                     <div class="dscrew"><label for="dbConductor">Conductor</label><select id="dbConductor"></select><input id="dbPayC" type="number" inputmode="numeric" min="0" aria-label="Conductor padi (₹)"><span class="err" id="e-dbConductor"></span><span class="hint" id="dbHowC"></span></div>
                     <div class="dscrew"><label for="dbChecker">Checker</label><select id="dbChecker"></select><input id="dbPayK" type="number" inputmode="numeric" min="0" aria-label="Checker padi (₹)"><span class="hint" id="dbHowK"></span></div>
@@ -7331,7 +7343,7 @@ function rsPageHtml() {
       rsSec("2", "Collection", rsh.s.map((v, i) => `<div class="tprow"><span class="tpl">${RS_TRIPS[i]}</span>${rsMoneyIn("s:" + i, v, RS_TRIPS[i] + " collection")}</div>`).join("") +
         `<div class="tprow rstot"><span class="tpl"><b>Total collection</b><small class="rshow" id="rsTrips">${rsTripsText()}</small></span>${rsMoneyIn("coltot", rsh.colTot, "Total collection")}</div>` +
         `<p class="bwnote" id="rsColNote" style="margin:2px 0 4px">${rsColNote()}</p>`) +
-      rsSec("3", "Crew and padi", `<div id="rsCrew">${rsCrewHtml()}</div>`) +
+      rsSec("3", `Crew and padi<button type="button" class="padibtn" data-padipop="rs" aria-label="How the padi is worked out" title="How the padi is worked out"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 6.5h8"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h3.5"/></svg></button>`, `<div id="rsCrew">${rsCrewHtml()}</div>`) +
       rsSec("4", "Diesel", `<div class="tpfc">` +
         `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="dsl:litres" value="${esc(rsh.dsl.litres)}" placeholder="0" aria-label="Diesel litres"${ro}></span></label>` +
         `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="dsl:amount" value="${esc(rsh.dsl.amount)}" placeholder="0" aria-label="Diesel amount"${ro}></span></label>` +
@@ -11291,6 +11303,92 @@ function pWire(cfg) {
   $(pre === "dv" ? "dPrintBtn" : "cPrintBtn").onclick = e => pPrintAll(cfg, e.currentTarget);
 }
 pWire(P_CFG.driver); pWire(P_CFG.conductor); Object.values(X_CFG).forEach(wireXDocs);
+/* ================= Padi calculation pop-up on the trip sheets =================
+   The padi rule in use (with or without a checker) and the day's working, with Save as image and Share. */
+function padiInfo(o) {
+  const bands = rsRules(o.checker), r = padiFor(o.col, bands), roles = o.checker ? PADI_ROLES : PADI_ROLES.filter(([k]) => k !== "checker");
+  const pc = v => `${nf(num(v), Number.isInteger(num(v)) ? 0 : 1)}%`;
+  const rows = roles.map(([k, l]) => ({ k, l, name: o.crew[k] || "", amt: r?.[k]?.amt || 0, how: (r?.[k]?.parts || []).map(p => `${rs(p.base)} × ${pc(p.pct)}`).join(" + "), entered: o.entered?.[k] }));
+  const rule = bands.map((b, i) => {
+    const low = i ? num(bands[i - 1].upto) : 0, head = pdOpen(b.upto) ? (i ? `Above ${rs(low)}` : "Any collection") : `${i ? `${rs(low + 1)} to` : "Up to"} ${rs(num(b.upto))}`;
+    const parts = b.steps.map((st, j) => { const from = j ? num(b.steps[j - 1].upto) : 0, what = b.steps.length === 1 ? "" : pdOpen(st.upto) ? `above ${rs(from)}: ` : `${j ? `${rs(from + 1)}–` : "first "}${rs(num(st.upto))}: `;
+      return what + roles.map(([k, l]) => `${l} ${pc(st.pct?.[k])}`).join(", "); });
+    return { head, parts, on: !!r && r.band === b };
+  });
+  rows.forEach(x => { x.changed = x.entered != null && x.entered !== "" && num(x.entered) !== x.amt; });
+  const total = rows.reduce((a, x) => a + x.amt, 0), sheet = rows.reduce((a, x) => a + (x.changed ? num(x.entered) : x.amt), 0);
+  return { ...o, rows, rule, total, sheet, set: o.checker ? "With checker" : "Without checker" };
+}
+function openPadiPop(btn, o) {
+  const open = document.querySelector(".padipop"); closeDuePop(); if (open) return;
+  const x = padiInfo(o), pop = document.createElement("div");
+  pop.className = "duepop padipop"; pop.setAttribute("role", "dialog");
+  pop.innerHTML = `<h4>Padi · ${esc(x.plate)} · ${fmtDate(x.date)}</h4><p class="dnote">${x.set} rules · Collection <b>${rs(x.col)}</b></p>` +
+    (x.col ? `<table class="pptab">${x.rows.map(r => `<tr><td><span class="who">${esc(r.l)}${r.name ? ` · ${esc(r.name)}` : ""}</span><span class="how">${esc(r.how || "—")}</span>${r.changed ? `<span class="chg">Entered ${rs(num(r.entered))} on the sheet</span>` : ""}</td><td class="n">${rs(r.amt)}</td></tr>`).join("")}` +
+      `<tr class="tot"><td>Total padi${x.sheet !== x.total ? " by the rules" : ""}</td><td class="n">${rs(x.total)}</td></tr>${x.sheet !== x.total ? `<tr><td class="chg" style="color:var(--warn)">Padi on the sheet (changed by hand)</td><td class="n" style="color:var(--warn)">${rs(x.sheet)}</td></tr>` : ""}</table>` : `<p class="dnote">Enter the collection to see the padi.</p>`) +
+    `<div class="pprule"><b>Rule in use · ${x.set.toLowerCase()}</b>${x.rule.map(b => `<span${b.on ? ' style="font-weight:700;color:var(--ink)"' : ""}>${b.on ? "▸ " : ""}${esc(b.head)}${b.parts.length === 1 && !b.parts[0].includes(":") ? `: ${esc(b.parts[0])}` : `<br>${b.parts.map(esc).join("<br>")}`}</span>`).join("")}</div>` + popActsHtml();
+  const file = async () => { const d = new Date(), p2 = n => String(n).padStart(2, "0"); return [{ filename: `${plateKey(x.plate).slice(-4) || "0000"}_PADI_${x.date.split("-").reverse().join("-")}_${p2(d.getHours())}-${p2(d.getMinutes())}.jpg`, data: await padiJpg(x) }]; };
+  const save = pop.querySelector(".duesave"); save.lastChild.textContent = "Save as image";
+  save.onclick = async ev => {
+    ev.stopPropagation(); let downloads = null;
+    try { downloads = await auDownloads(); } catch { downloads = null; }
+    if (!downloads) { toast("Saving files isn't available in this view."); return; }
+    save.disabled = true;
+    try { try { await document.fonts?.ready; } catch {} await downloads.save((await file())[0]); toast("Saved as a JPG image. Open it to print or share."); closeDuePop(); }
+    catch (er) { toast(er?.code === "declined" ? "Image not saved." : er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't save the image. Try again."); }
+    finally { if (save.isConnected) save.disabled = false; }
+  };
+  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); popShare(ev.currentTarget, file, `Padi · ${x.plate} · ${fmtDate(x.date)}`); };
+  placePop(pop, btn);
+}
+async function padiJpg(x) {
+  const W = 1080, PADX = 64, F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  const ruleLines = x.rule.flatMap(b => [{ t: b.head, on: b.on, head: true }, ...b.parts.map(p => ({ t: p, on: b.on }))]);
+  const H = 360 + (x.col ? x.rows.length * 110 + x.rows.filter(r => r.changed).length * 40 + 90 + (x.sheet !== x.total ? 60 : 0) : 70) + 90 + ruleLines.length * 44 + 120;
+  const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H); g.textBaseline = "middle";
+  g.fillStyle = "#18212b"; g.fillRect(0, 0, W, 150);
+  g.fillStyle = "#ffffff"; g.font = `700 46px ${F}`; g.fillText("VBS", PADX, 62);
+  g.fillStyle = "#c9d3dc"; g.font = `500 30px ${F}`; g.fillText("Padi calculation", PADX, 108);
+  g.textAlign = "right"; g.fillText(fmtDate(x.date), W - PADX, 108); g.textAlign = "left";
+  g.fillStyle = "#18212b"; g.font = `700 52px ${MONO}`; g.fillText(x.plate, PADX, 215);
+  g.fillStyle = "#5c6977"; g.font = `500 30px ${F}`; g.fillText(`${x.set} rules  ·  Collection ${rs(x.col)}`, PADX, 278);
+  let y = 330; const line = () => { g.strokeStyle = "#e6e9ee"; g.lineWidth = 2; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke(); };
+  line();
+  if (x.col) {
+    x.rows.forEach(r => {
+      g.fillStyle = "#18212b"; g.font = `600 34px ${F}`; g.fillText(`${r.l}${r.name ? "  ·  " + r.name : ""}`, PADX, y + 40);
+      g.fillStyle = "#5c6977"; g.font = `400 28px ${F}`; g.fillText(r.how || "—", PADX, y + 82);
+      g.textAlign = "right"; g.fillStyle = "#18212b"; g.font = `700 38px ${MONO}`; g.fillText(rs(r.amt), W - PADX, y + 55); g.textAlign = "left";
+      if (r.changed) { g.fillStyle = "#c45a00"; g.font = `600 28px ${F}`; g.fillText(`Entered ${rs(num(r.entered))} on the sheet`, PADX, y + 122); y += 40; }
+      y += 110; line();
+    });
+    g.fillStyle = "#1e7a3c"; g.font = `700 36px ${F}`; g.fillText(x.sheet !== x.total ? "Total padi by the rules" : "Total padi", PADX, y + 45);
+    g.textAlign = "right"; g.font = `700 40px ${MONO}`; g.fillText(rs(x.total), W - PADX, y + 45); g.textAlign = "left"; y += 90;
+    if (x.sheet !== x.total) { g.fillStyle = "#c45a00"; g.font = `600 30px ${F}`; g.fillText("Padi on the sheet (changed by hand)", PADX, y + 20); g.textAlign = "right"; g.font = `700 34px ${MONO}`; g.fillText(rs(x.sheet), W - PADX, y + 20); g.textAlign = "left"; y += 60; }
+  } else { g.fillStyle = "#5c6977"; g.font = `400 30px ${F}`; g.fillText("Collection not entered yet.", PADX, y + 40); y += 70; }
+  y += 20; g.fillStyle = "#f2f5f3"; g.fillRect(PADX - 20, y, W - 2 * PADX + 40, 60 + ruleLines.length * 44 + 20);
+  g.fillStyle = "#5c6977"; g.font = `700 26px ${F}`; g.fillText(`RULE IN USE  ·  ${x.set.toUpperCase()}`, PADX, y + 38); y += 70;
+  ruleLines.forEach(l => { g.fillStyle = l.on ? "#18212b" : "#5c6977"; g.font = `${l.head ? 700 : 400} 28px ${F}`; g.fillText(`${l.head ? (l.on ? "▸ " : "") : "     "}${l.t}`, PADX, y + 18); y += 44; });
+  g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`; g.fillText(`Printed by ${whoAmI()}`, PADX, H - 50);
+  return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
+}
+// Day sheet (computer): the figures on the screen right now.
+$("dbPadiPop").addEventListener("click", e => {
+  e.stopPropagation();
+  const sum = [1, 2, 3, 4, 5].reduce((a, i) => a + num($("dbS" + i).value), 0), sel = id => $(id).value ? $(id).selectedOptions[0]?.textContent || "" : "";
+  openPadiPop(e.currentTarget, { plate: plateOf(vehicles.find(v => v.id === dbBus)), date: opDate, col: num(dbColTold) || sum, checker: !!$("dbChecker").value,
+    crew: { driver: sel("dbDriver"), conductor: sel("dbConductor"), checker: sel("dbChecker") },
+    entered: { driver: $("dbPayD").value === "" ? null : $("dbPayD").value, conductor: $("dbPayC").value === "" ? null : $("dbPayC").value, checker: $("dbPayK").value === "" ? null : $("dbPayK").value } });
+});
+// Phone trip sheet.
+document.addEventListener("click", e => {
+  const b = e.target.closest('[data-padipop="rs"]'); if (!b || !rsh) return;
+  e.stopPropagation(); e.preventDefault();
+  openPadiPop(b, { plate: plateOf(vehicles.find(v => v.id === rsh.bus)), date: rsh.date, col: rsCol(), checker: !!rsh.crew.checker,
+    crew: Object.fromEntries(RS_ROLES.map(([k]) => [k, rsCrewName(k)])), entered: Object.fromEntries(RS_ROLES.map(([k]) => [k, rsh.padiEd[k] ? rsh.padi[k] : null])) });
+});
+
 V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
 function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
 ["bkPrint", "bkTsPrint"].forEach(id => $(id).insertAdjacentHTML("afterbegin", ICON_PRINT));
