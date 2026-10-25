@@ -1576,7 +1576,8 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsdays { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 #view-trsheet .rstop { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; } .rstop h1 { margin: 0; font-size: 20px; } .rsacts { display: flex; gap: 6px; flex: none; } .rsacts .btn { padding: 6px 10px; min-height: 0; font-size: 14px; }
 .rsmsum .sec { font-size: 17px; }
-.rsmsum .sec { margin-bottom: 8px; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.rsmnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; } .rsmnav .sec { margin: 0; text-align: center; } .rsmnav .sec small { font: 500 12px var(--body); color: var(--muted); }
+.rsmnav .btn { padding: 6px 10px; min-height: 0; font-size: 14px; white-space: nowrap; } .rsmnav .btn:disabled { opacity: .35; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 @media (min-width: 701px) { .rsmg { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .rsmt { border: 1px solid var(--line); border-radius: 8px; padding: 5px 7px; background: var(--surface); min-width: 0; } .rsmt i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rsmt b { font-size: 14px; white-space: nowrap; } .rsmt.neg b { color: var(--danger); } .rsmt.pos b { color: var(--ok); }
@@ -7248,8 +7249,8 @@ function rsEnds(bus, date) { const r = routeCalc(fyOf(date), busWin(bus), yearsA
 const RS_PAIR = { vellore: "Thiruthani", thiruthani: "Vellore", thiruthanni: "Vellore", tiruttani: "Vellore" };
 function rsOpposite(place, ends) {
   const p = placeName(place).toLowerCase(), e = ends.map(placeName);
-  if (e.length === 2 && e.some(x => x.toLowerCase() === p)) return e.find(x => x.toLowerCase() !== p);
-  return RS_PAIR[p] || "";
+  const o = e.length === 2 && e.some(x => x.toLowerCase() === p) && e.find(x => x.toLowerCase() !== p);
+  return o || RS_PAIR[p] || "";
 }
 // The starting place's list in the Route expenses master (same name, or one name containing the other, e.g. "Vellore Bus Stand").
 function rsMaster(place) {
@@ -7632,8 +7633,8 @@ function rsClose() {
 }
 
 // One status for a day, read from the trip sheet itself (the record the office and the reports use), then the conductor's sheet.
-function rsDayState(bus, day) {
-  const x = rsDoc(bus, day), t = winTrips().find(y => y.vehicleId === bus && y.date === day), stamp = v => v ? fmtStamp(v) : "";
+function rsDayState(bus, day, src = canTrips ? [...winTrips(), ...trips] : winTrips()) {
+  const x = rsDoc(bus, day), t = src.find(y => y.vehicleId === bus && y.date === day), stamp = v => v ? fmtStamp(v) : "";
   const col = t ? tripCollection(t) : num(x?.collection), bal = t ? tripCollection(t) - tripExpense(t) : num(x?.balance);
   const sg = t && !t.notRun ? [1, 2, 3, 4, 5].filter(i => num(t["s" + i]) > 0).length : 0;
   const changed = !!(t && x?.status === "approved" && !t.notRun && (Math.round(col) !== Math.round(num(x.collection)) || Math.round(bal) !== Math.round(num(x.balance))));
@@ -7647,21 +7648,37 @@ function rsDayState(bus, day) {
   return { ...base, cls: "todo", label: "Not entered", sub: "" };
 }
 // Kilometres for a day: its closing reading less the last reading before it.
-function rsDayKm(bus, day, T) {
+function rsDayKm(bus, day, T, src = winTrips()) {
   if (!T?.odo) return null;
-  const prev = winTrips().filter(y => y.vehicleId === bus && y.date < day && y.odo).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const prev = src.filter(y => y.vehicleId === bus && y.date < day && y.odo).sort((a, b) => b.date.localeCompare(a.date))[0];
   const k = prev ? T.odo - prev.odo : null; return k > 0 && k < 2000 ? k : null;
 }
-// The month so far for the bus, as small tiles (the office's view of the phone page).
-function rsMonthHtml(bus) {
-  const ym = todayISO().slice(0, 7), all = winTrips().filter(t => t.vehicleId === bus).sort((a, b) => a.date.localeCompare(b.date));
+// The days the phone page reads. The office reads the bus's whole financial year (the same data as the monthly screen),
+// so any month can be shown; a conductor reads the recent days only.
+let rsYm = "";
+function rsSrc(bus, ym) {
+  if (!canTrips) return winTrips();
+  const fy = fyOf(ym + "-01");
+  if (tBusId !== bus || tFyStart !== fy) { tBusId = bus; tFyStart = fy; tSubKey = ""; trips = []; tripMonths = []; if ($("tFy")) $("tFy").value = String(fy); }
+  subscribeTrips(); loadLocalTrips();
+  return tripDb && !trips.length && ym === todayISO().slice(0, 7) ? winTrips() : trips;
+}
+const ymLabel = ym => new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+const ymShift = (ym, n) => { const d = new Date(ym + "-01T00:00:00"); d.setMonth(d.getMonth() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; };
+// The month for the bus as small tiles, with the month switcher on top (the office's view of the phone page).
+function rsMonthHtml(bus, ym, src) {
+  const cur = todayISO().slice(0, 7), all = src.filter(t => t.vehicleId === bus).sort((a, b) => a.date.localeCompare(b.date));
+  // Back as far as the bus has trip sheet data; never past this month.
+  const known = [...all.map(t => t.date.slice(0, 7)), ...monthsAll().filter(m => m.vehicleId === bus).map(m => m.month)].filter(Boolean).sort()[0] || ym;
+  const prev = ymShift(ym, -1), next = ymShift(ym, 1), short = x => ymLabel(x).slice(0, 3);
   const ran = all.filter(t => t.date.startsWith(ym) && !t.notRun);
   const T = ran.reduce((a, t) => { a.col += tripCollection(t); a.exp += tripExpense(t); a.fuel += num(t.fuelCost); a.lit += num(t.litres); a.pay += num(t.driverPay) + num(t.conductorPay) + num(t.checkerPay); a.sg += singlesRun(t); return a; }, { col: 0, exp: 0, fuel: 0, lit: 0, pay: 0, sg: 0 });
   const days = T.sg / SINGLES_PER_DAY, bal = T.col - T.exp, per = v => days ? rs(v / days) : "—";
   const rates = ran.map(t => num(t.dieselRate)).filter(Boolean), open = (tBusId === bus ? openingKm(ym).km : null) ?? [...all].reverse().find(t => t.date < ym && t.odo)?.odo, last = [...ran].reverse().find(t => t.odo)?.odo;
   const km = open && last ? last - open : null;
   const tile = (k, v, cls = "") => `<div class="rsmt${cls ? " " + cls : ""}"><i>${k}</i><b>${v}</b></div>`;
-  return `<section class="panel rsmsum"><h2 class="sec">${new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })} so far</h2><div class="rsmg">` +
+  return `<section class="panel rsmsum"><div class="rsmnav"><button type="button" class="btn" data-rsym="${prev}"${prev < known ? " disabled" : ""}>‹ ${short(prev)}</button>` +
+    `<h2 class="sec">${ymLabel(ym)}${ym === cur ? " <small>so far</small>" : ""}</h2><button type="button" class="btn" data-rsym="${next}"${next > cur ? " disabled" : ""}>${short(next)} ›</button></div><div class="rsmg">` +
     tile("Days run", `${fmtDays(days)} / ${daysIn(ym)}`) + tile("Total collection", rs(T.col)) + tile("Total expense", rs(T.exp)) +
     tile("Total balance", `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`, bal < 0 ? "neg" : "pos") + tile("Avg col / day", per(T.col)) + tile("Avg bal / day", per(bal), bal < 0 ? "neg" : "") +
     tile("Diesel (₹)", rs(T.fuel)) + tile("Avg diesel/day", per(T.fuel)) + tile("Avg salary/day", per(T.pay)) +
@@ -7669,19 +7686,22 @@ function rsMonthHtml(bus) {
     tile("Total kms", km != null ? nf(km) : "—") + tile("Mileage", km && T.lit ? `${nf(km / T.lit, 2)} km/L` : "—") + tile("Per day kms", km != null && days ? nf(km / days) : "—") +
     `</div></section>`;
 }
-// The conductor's page: his bus and his last days (today included); the office also sees the month so far.
+// The phone trip sheet page: every day of the month for the bus, newest first. The office also sees the month's figures and can change month.
 function renderRsList() {
   const rb = routeBuses(), bus = rsMyBus(); rsBus = bus;
   $("rsMonthBtn").hidden = !canTrips; $("rsMonthBtn").dataset.rsmonth = bus || ""; $("rsCloseBtn").href = canTrips ? "#trips" : "#home";
   if (rsh && !rsh.ready) { rsLoad(); if (rsh.ready) rsRender(); }
   if (!rb.length) { $("rsHome").innerHTML = `<div class="empty panel"><strong>No route buses yet</strong>Ask the office to add the route buses.</div>`; return; }
   const v = vehicles.find(x => x.id === bus), today = todayISO();
-  const chip = S => `<span class="bstage ${S.cls}">${S.label}</span>`;
-  const days = [...Array(7)].map((_, i) => shiftDay(today, -i));
+  if (!rsh && opDate !== today) { opDate = today; subscribeDay(); }
+  const cur = today.slice(0, 7), ym = canTrips && rsYm && rsYm <= cur ? rsYm : cur, src = rsSrc(bus, ym);
+  $("rsMonthBtn").dataset.ym = ym;
+  const chip = S => `<span class="bstage ${S.cls}">${S.label}</span>`, lastDay = ym === cur ? today : `${ym}-${pad2(daysIn(ym))}`;
+  const days = [...Array(+lastDay.slice(8, 10))].map((_, i) => shiftDay(lastDay, -i));
   $("rsHome").innerHTML = `<div class="rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
-    `</div>` + (canTrips ? rsMonthHtml(bus) : "") +
-    `<section class="panel"><h2 class="sec">Last 7 days · ${esc(plateOf(v))}</h2><div class="rsdays">` +
-    days.map(day => { const S = rsDayState(bus, day), T = S.t || (S.x && rsTripFrom(S.x)), km = rsDayKm(bus, day, T), lit = num(T?.litres);
+    `</div>` + (canTrips ? rsMonthHtml(bus, ym, src) : "") +
+    `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><div class="rsdays">` +
+    days.map(day => { const S = rsDayState(bus, day, src), T = S.t || (S.x && rsTripFrom(S.x)), km = rsDayKm(bus, day, T, src), lit = num(T?.litres);
       const f = (k, v, cls = "") => `<span${cls ? ` class="${cls}"` : ""}><i>${k}</i>${v}</span>`;
       return `<button type="button" class="rsday${S.tone ? " " + S.tone : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${chip(S)}</span>` +
         (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Balance", `${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}`, S.bal < 0 ? "neg" : "")}` +
@@ -7702,7 +7722,11 @@ function rsWaitHtml() {
 }
 document.addEventListener("click", e => {
   const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) { rsOpen(rsBus, o.dataset.rsopen); return; }
-  const mo = e.target.closest("[data-rsmonth]"); if (mo) { tBusId = mo.dataset.rsmonth; tSubKey = ""; }
+  const ny = e.target.closest("[data-rsym]"); if (ny && $("rsHome")?.contains(ny)) { rsYm = ny.dataset.rsym; renderRsList(); scrollTo(0, 0); return; }
+  // The monthly screen opens on the bus and month being viewed.
+  const mo = e.target.closest("[data-rsmonth]"); if (mo) { const ym = mo.dataset.ym || todayISO().slice(0, 7);
+    if (tBusId !== mo.dataset.rsmonth || tFyStart !== fyOf(ym + "-01")) { tBusId = mo.dataset.rsmonth; tFyStart = fyOf(ym + "-01"); tSubKey = ""; trips = []; tripMonths = []; }
+    if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+ym.slice(5, 7) + 8) % 12; subscribeTrips(); loadLocalTrips(); setTimeout(renderTrips); }
   const a = e.target.closest("[data-rsappr]"); if (a) { const x = ops.routeSheets.find(y => y.id === a.dataset.rsappr); if (!x) return;
     if (bwIsPhone()) rsOpen(x.vehicleId, x.date, true); else { dbBus = x.vehicleId; opDate = x.date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; } }
 });
