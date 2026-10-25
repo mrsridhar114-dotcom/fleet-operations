@@ -1577,7 +1577,8 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 #view-trsheet .rstop { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; } .rstop h1 { margin: 0; font-size: 20px; } .rsacts { display: flex; gap: 6px; flex: none; } .rsacts .btn { padding: 6px 10px; min-height: 0; font-size: 14px; }
 .rsmsum .sec { font-size: 17px; }
 .rsmnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; } .rsmnav .sec { margin: 0; text-align: center; } .rsmnav .sec small { font: 500 12px var(--body); color: var(--muted); }
-.rsmnav .btn { padding: 6px 10px; min-height: 0; font-size: 14px; white-space: nowrap; } .rsmnav .btn:disabled { opacity: .35; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.rsmnav .btn, #rsMonthBtn { padding: 6px 12px; min-height: 0; font-size: 14px; font-weight: 600; white-space: nowrap; background: var(--accent-soft); color: var(--accent); border: 1.5px solid var(--accent); }
+.rsmnav .btn:disabled { opacity: .3; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 @media (min-width: 701px) { .rsmg { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .rsmt { border: 1px solid var(--line); border-radius: 8px; padding: 5px 7px; background: var(--surface); min-width: 0; } .rsmt i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rsmt b { font-size: 14px; white-space: nowrap; } .rsmt.neg b { color: var(--danger); } .rsmt.pos b { color: var(--ok); }
@@ -1586,6 +1587,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsdg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px 8px; } .rsdc { display: flex; gap: 2px 14px; flex-wrap: wrap; }
 .rsdg > span, .rsdc > span { font-size: 13px; font-weight: 600; min-width: 0; } .rsdg i, .rsdc i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; } .rsdc > span { display: flex; gap: 4px; align-items: baseline; } .rsdc i { display: inline; }
 .bstage.todo { background: var(--surface); color: var(--danger); border: 1px dashed var(--danger); } .bstage.idle { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); }
+.rsday.good { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
 .rsday.loss { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); }
 .rsday.part { background: color-mix(in srgb, #f2c200 22%, var(--surface)); border-color: color-mix(in srgb, #d9a900 50%, var(--line)); }
 .rsday .neg, .rshist .neg { color: var(--danger); font-weight: 600; } .rschg, .rsday small.rschg { color: var(--warn); font-weight: 600; }
@@ -7703,11 +7705,13 @@ function renderRsList() {
     `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><div class="rsdays">` +
     days.map(day => { const S = rsDayState(bus, day, src), T = S.t || (S.x && rsTripFrom(S.x)), km = rsDayKm(bus, day, T, src), lit = num(T?.litres);
       const f = (k, v, cls = "") => `<span${cls ? ` class="${cls}"` : ""}><i>${k}</i>${v}</span>`;
-      return `<button type="button" class="rsday${S.tone ? " " + S.tone : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${chip(S)}</span>` +
+      // A day that ran is green, a loss red, a part day yellow. Days in the trip sheet need no tag; who sent or entered them is in the sheet itself.
+      const tone = S.money ? (S.bal < 0 ? "loss" : S.tone || "good") : "", sub = ["rejected", "idle", "draft"].includes(S.cls) ? S.sub : "";
+      return `<button type="button" class="rsday${tone ? " " + tone : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${S.cls === "completed" ? "" : chip(S)}</span>` +
         (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Balance", `${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}`, S.bal < 0 ? "neg" : "")}` +
           `${f("Kms", km != null ? nf(km) : "—")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
           `<span class="rsdc">${f("Driver", esc(crewName("driver", T) || "—"))}${f("Conductor", esc(crewName("conductor", T) || "—"))}</span>` : "") +
-        `${S.sub || S.changed ? `<small>${esc(S.sub)}${S.changed ? `${S.sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
+        `${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
     `</div></section>` +
     (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
 }
