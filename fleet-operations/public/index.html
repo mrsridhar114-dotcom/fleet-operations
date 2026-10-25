@@ -106,16 +106,6 @@ body.navless .twrap { max-width: none; }
   body.dsfull .topbar { display: none; }
   body.dsfull #view-tday { padding: 0; height: 100dvh; }
   body.dsfull #view-tday .dsheet { border: 0; border-radius: 0; }
-  body.dsfull #view-tday .dshead { background: var(--side-bg); color: var(--side-ink); border-bottom: 0; padding: 7px 16px; align-items: center; min-height: 48px; }
-  body.dsfull #view-tday .dshead h1 { font: 700 22px/1.1 var(--display); color: var(--side-ink); }
-  body.dsfull #view-tday .dshead .vsub, body.dsfull #view-tday .dshead .k { color: var(--side-muted); }
-  body.dsfull #view-tday .dshead .dsf { gap: 2px; }
-  body.dsfull #view-tday .dshead .navbtn { background: transparent; color: var(--side-ink); border-color: var(--side-line); }
-  body.dsfull #view-tday .dshead .seg span { background: transparent; color: var(--side-ink); border-color: var(--side-line); }
-  body.dsfull #view-tday .dshead .seg input:checked + span { background: var(--accent); border-color: var(--accent); color: #fff; }
-  body.dsfull #view-tday .dshead .ro-tag { color: var(--side-muted); border-color: var(--side-line); }
-  body.dsfull #dbClose { background: transparent; color: var(--side-ink); border-color: var(--side-line); }
-  body.dsfull #dbClose:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
   #view-tday #dbWrap { height: 100%; display: flex; flex-direction: column; gap: 8px; }
   #view-tday .dsheet { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   #view-tday .dsbody { flex: 1; min-height: 0; overflow: hidden; grid-template-rows: minmax(0, 1fr); }
@@ -723,12 +713,16 @@ a.btn { text-decoration: none; display: inline-block; }
 .otodo .orow .btn { padding: 5px 12px; font-size: 13px; }
 .otodo .none { color: var(--muted); font-size: 14px; padding: 8px 0; margin: 0; }
 .dsheet { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+/* Dark title bar of the day sheet, the same as the spare bus trip sheet. */
+.dsbar #dbClose { background: transparent; color: var(--side-ink); border: 1.5px solid var(--side-line); font-weight: 700; font-size: 14px; padding: 7px 12px; border-radius: 6px; flex: none; }
+.dsbar #dbClose:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+.dsbar #dbTitle { font: inherit; color: inherit; }
+.dsbar .ro-tag { color: var(--side-muted); border-color: var(--side-line); vertical-align: 3px; }
 .dshead { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px 18px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.dshead h1 { font-size: 24px; } .dstitle { min-width: 0; } .dstitle .vsub { margin-top: 3px; }
 .dsf { display: flex; flex-direction: column; gap: 4px; }
-#dbClose { border: 1.5px solid color-mix(in srgb, var(--danger) 60%, var(--line)); color: var(--danger); background: var(--surface); font-weight: 700; font-size: 14px; padding: 7px 12px; border-radius: 6px; } #dbClose:hover { background: var(--danger); color: #fff; } .dsf .k { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.dsf .k { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .dsf input#dbStart { font: inherit; font-size: 15px; font-weight: 600; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); width: 150px; }
-.dsf .plate { font-size: 15px; padding: 3px 8px; } .dsf input#dbDate { font: inherit; font-weight: 600; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+.dsf input#dbDate { font: inherit; font-weight: 600; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
 .dsbody { display: grid; grid-template-columns: 180px minmax(0, 1fr); background: var(--bg); } .dsbody.one { grid-template-columns: minmax(0, 1fr); }
 .dblist { display: flex; flex-direction: column; gap: 3px; background: var(--surface); border-right: 1px solid var(--line); padding: 10px 8px; }
 .dbl-h { font-size: 12px; color: var(--muted); margin: 4px 8px 6px; font-weight: 600; }
@@ -1939,16 +1933,13 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="dbdirty" id="dbDirty" hidden><span>You have unsaved changes for this bus.</span><button class="btn primary" type="button" id="dbDirtySave">Save and go</button><button class="btn" type="button" id="dbDirtyDiscard">Discard</button><button class="icon" type="button" id="dbDirtyStay">Stay</button></div>
         <div class="dbloading panel" id="dbLoading" hidden>Loading this day's entries…</div>
         <form id="dbForm" class="dsheet" novalidate>
+          <header class="bwh dsbar"><div style="flex:1;min-width:0"><b>Day sheet · <span id="dbTitle">Bus</span><span class="ro-tag" id="dbRoTag" hidden>View only</span></b><span id="dbSub"></span></div><button class="icon" type="button" id="dbClose" aria-label="Close">Close ✕</button></header>
           <div class="dshead">
-            <div class="dstitle"><h1>Day sheet<span class="ro-tag" id="dbRoTag" hidden>View only</span></h1><div class="vsub" id="dbSub"></div></div>
-            <div class="dsf"><span class="k">Bus</span><span class="plate psv" id="dbTitle">Bus</span></div>
             <div class="dsf"><span class="k">Day</span><div class="datenav"><button class="navbtn" type="button" id="dbPrevDay" aria-label="Previous day" title="Previous day">‹</button><input type="date" id="dbDate" aria-label="Day"><button class="navbtn" type="button" id="dbNextDay" aria-label="Next day" title="Next day">›</button></div></div>
             <div class="dsf"><label class="k" for="dbStart">Started from</label><input id="dbStart" list="dbStarts" autocomplete="off" maxlength="40"><datalist id="dbStarts"></datalist><span class="err" id="e-dbStart"></span></div>
             <div class="dsf"><span class="k">Ran or not</span><div class="seg" role="radiogroup" aria-label="Did the bus run">
               <label><input type="radio" name="dbMode" id="dbModeRan" value="ran"><span>Ran</span></label>
               <label><input type="radio" name="dbMode" id="dbModeIdle" value="idle"><span>Did not run</span></label></div></div>
-            <span style="flex:1"></span>
-            <button class="icon" type="button" id="dbClose" aria-label="Close">Close ✕</button>
           </div>
           <div class="dsbody" id="dbBody">
             <nav class="dblist" id="dbList" aria-label="Route buses"></nav>
@@ -2018,7 +2009,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
             <div class="dbcalc" id="dbCalc" aria-live="polite"></div>
             <span style="flex:1"></span>
             <span class="hint" id="dbSaved" aria-live="polite"></span>
-            <button class="btn" type="button" id="dbSaveStay">Save</button>
             <button class="btn primary" type="submit" id="dbSave">Save, next bus →</button>
           </div>
         </form>
@@ -7900,7 +7890,7 @@ function fillDayForm() {
   $("dbNote").textContent = dbReviewSheet ? "" : t ? `Saved entry. Change anything and save to update it.` : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
   dbFuelTouched = !!t && num(t.fuelCost) !== Math.round(num(t.dieselRate) * num(t.litres));
   $("dbForm").querySelectorAll("input, select").forEach(el => { if (el.id !== "dbDate") el.disabled = !canTrips; });
-  $("dbSave").hidden = !canTrips; $("dbSaveStay").hidden = !canTrips || !!dbReviewSheet; $("dbDelete").hidden = !(canTrips && t0);
+  $("dbSave").hidden = !canTrips; $("dbDelete").hidden = !(canTrips && t0);
   $("dbDelete").textContent = "Delete entry"; delete $("dbDelete").dataset.confirm;
   $("dbForm").querySelectorAll(".err").forEach(e => e.textContent = ""); $("dbForm").querySelectorAll("[aria-invalid]").forEach(e => e.removeAttribute("aria-invalid"));
   dbDirty = false; $("dbDirty").hidden = true; $("dbSaved").textContent = "";
@@ -7918,7 +7908,7 @@ function nextPending() {
   return [...rb.slice(i + 1), ...rb.slice(0, Math.max(0, i))].find(b => !entryOf(b.id));
 }
 const dbOneBus = () => routeBuses().length === 1;
-function syncDbSaveLabel() { if (dbReviewSheet) { $("dbSave").textContent = "✓ Approve and add to trip sheet"; return; } $("dbSave").textContent = dbOneBus() ? (opDate < todayISO() ? "Save, next day →" : "Save ↵") : nextPending() ? "Save, next bus →" : "Save ↵"; }
+function syncDbSaveLabel() { if (dbReviewSheet) { $("dbSave").textContent = "✓ Approve and add to trip sheet"; return; } $("dbSave").textContent = dbOneBus() ? (opDate < todayISO() ? "Save, next day →" : "Save") : nextPending() ? "Save, next bus →" : "Save"; }
 function dbCalc() {
   if ($("dbModeIdle").checked) { $("dbCalc").innerHTML = `<span>Marked as not run · counts as 0 singles</span>`; return; }
   const rate = num($("dbRate").value), lit = num($("dbLitres").value);
@@ -8062,12 +8052,11 @@ $("dbForm").addEventListener("submit", async e => {
     const b = vehicles.find(v => v.id === bus);
     toast(rv ? `${plateOf(b)} · ${fmtShort(date)} approved and added to the trip sheet` : t.notRun ? `${plateOf(b)} marked as not run` : `${plateOf(b)} saved · ${singlesRun(t)} of 5 singles · balance ${rs(t.balance)}`);
     dbDirty = false; $("dbDirty").hidden = true;
-    const target = dbPending, stay = dbStay; dbPending = null; dbStay = false;
+    const target = dbPending; dbPending = null;
     if (target) { applyDbTarget(target); return; }
-    if (!stay && dbOneBus() && date < todayISO()) { applyDbTarget({ date: shiftDay(date, 1), bus: bus }); return; }
-    const nxt = !stay && !dbOneBus() && nextPending();
+    if (dbOneBus() && date < todayISO()) { applyDbTarget({ date: shiftDay(date, 1), bus: bus }); return; }
+    const nxt = !dbOneBus() && nextPending();
     if (nxt) { applyDbTarget({ bus: nxt.id }); return; }
-    if (stay) { dbFilledKey = ""; renderDayBook(); $("dbSaved").textContent = "Saved ✓"; return; }
     dbFilledKey = ""; renderDayBook(); $("dbSaved").textContent = "Saved ✓";
     toast(`All route buses are entered for ${fmtDate(date)}`);
   } catch { toast("Couldn't save. Check your connection and try again."); }
@@ -8090,8 +8079,6 @@ $("dbReview").addEventListener("click", async e => {
   try { await opsSave("routeSheets", { ...dbReviewSheet, status: "rejected", rejectReason: why, rejectedByName: whoAmI(), rejectedOn: todayISO() }); toast("Sent back to the conductor"); dbFilledKey = ""; dbDirty = false; renderDayBook(); }
   catch { toast("Couldn't save. Check your connection and try again."); }
 });
-let dbStay = false;
-$("dbSaveStay").onclick = () => { dbStay = true; $("dbForm").requestSubmit(); };
 // Close goes back to the monthly entry of the same bus and month.
 $("dbClose").onclick = () => {
   const go = () => { dbDirty = false; $("dbDirty").hidden = true; tBusId = dbBus; tFyStart = fyOf(opDate); if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
