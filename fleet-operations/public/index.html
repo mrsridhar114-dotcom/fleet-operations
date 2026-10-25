@@ -97,6 +97,7 @@ body.navless .side.open { transform: none; box-shadow: var(--shadow); }
 body.navless .navscrim { position: fixed; inset: 0; z-index: 29; background: rgba(10, 18, 26, .45); display: block; }
 body.navless .navscrim[hidden] { display: none; }
 body.navless .twrap { max-width: none; }
+#view-tday { padding-top: 16px; }
 @media (prefers-reduced-motion: reduce) { .side { transition: none; } }
 .main { min-width: 0; }
 .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: flex; flex-direction: column; gap: 20px; }
@@ -1904,7 +1905,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </section>
     <!-- ================= Route bus day sheet (computer) ================= -->
     <section class="wrap twrap" id="view-tday" hidden>
-      <nav class="crumbs" aria-label="Breadcrumb" style="margin-bottom:10px"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><a href="#trips">Trip sheet</a><span class="slash">/</span><a href="#trips-route">Route bus monthly entry</a><span class="slash">/</span><span>Day sheet</span></nav>
       <div class="empty panel" id="dbNone" hidden><strong>No route buses yet</strong>Add a vehicle with class Bus and operation type Route under Masters › Vehicle.</div>
       <div id="dbWrap">
         <div class="dbdirty" id="dbDirty" hidden><span>You have unsaved changes for this bus.</span><button class="btn primary" type="button" id="dbDirtySave">Save and go</button><button class="btn" type="button" id="dbDirtyDiscard">Discard</button><button class="icon" type="button" id="dbDirtyStay">Stay</button></div>
