@@ -578,6 +578,30 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
 @media (min-width: 1024px) {
   .drawer.fullpage .docpop { left: 40px; right: 40px; width: auto; max-width: 1500px; padding: 16px 18px 14px; }
 }
+/* Other documents: any number of extra files with a name of the user's choice. */
+.xdocs { margin-top: 8px; border-top: 2px solid var(--line); padding-top: 8px; overflow-y: auto; min-height: 0; flex: 0 1 auto; }
+.xdhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 4px; }
+.xdhead h4 { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.xdhead .btn { padding: 4px 10px; font-size: 12px; }
+.xdocs .xnone { margin: 2px 0 4px; font-size: 12px; color: var(--muted); }
+.xdlist { display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 700px) { .drawer.fullpage .xdlist { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 14px; } }
+.xrow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 0 10px; align-items: center; padding: 6px 4px; border-top: 1px solid var(--line); }
+.xthumb { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--muted); }
+.xthumb img { width: 100%; height: 100%; object-fit: cover; }
+.xthumb svg { width: 20px; height: 20px; }
+.xrow .xs { min-width: 0; display: flex; flex-direction: column; font-size: 12px; }
+.xrow .xs a { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+.xrow .xs .sub { color: var(--muted); overflow-wrap: anywhere; }
+.xrow .xact { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+.xrow .xact .btn { padding: 4px 10px; font-size: 12px; }
+.xpanel { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+.xpanel .xprow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 4px 10px; align-items: center; font-size: 13px; }
+.xpanel .xprow .fnm { overflow-wrap: anywhere; color: var(--muted); }
+.xpanel .xprow input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); min-width: 0; }
+.xpanel .err { color: var(--danger); font-size: 13px; } .xpanel .err:empty { display: none; }
+.xpanel .acts { display: flex; justify-content: flex-end; gap: 8px; }
+@media (max-width: 480px) { .xpanel .xprow { grid-template-columns: minmax(0, 1fr); } }
 .sevpanel { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
 .sevrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13px; }
 .sevrow .fnm { overflow-wrap: anywhere; }
@@ -2494,7 +2518,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </div>
     <figure class="vphoto" id="vPhoto" hidden></figure>
     <section id="vDocSec" class="docpop" role="dialog" aria-label="Documents" hidden><div class="dochead"><h3>Documents</h3><span class="dacts"><label class="btn" id="vAddSev" hidden>+ Add several<input type="file" id="vAddSevIn" multiple hidden></label><button type="button" class="dclose" id="vDocClose" aria-label="Close documents">✕</button></span></div>
-      <div class="doclist pdoclist" id="vDocList"></div><div class="sevpanel" id="vSevPanel" hidden></div></section>
+      <div class="doclist pdoclist" id="vDocList"></div><div class="sevpanel" id="vSevPanel" hidden></div><div class="xdocs" id="vXDocs"></div></section>
     <section><h3>Registration &amp; identification</h3><dl class="dl" id="vReg"></dl></section>
     <section><h3>Vehicle specifications</h3><dl class="dl" id="vSpec"></dl></section>
     <section id="vCapSec"><h3>Capacity</h3><dl class="dl" id="vCap"></dl></section>
@@ -2646,7 +2670,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </button>
     </div>
     <section id="dvDocSec" class="docpop" role="dialog" aria-label="Documents" hidden><div class="dochead"><h3>Documents</h3><span class="dacts"><label class="btn" id="dvAddSev" hidden>+ Add several<input type="file" id="dvAddSevIn" multiple hidden></label><button type="button" class="dclose" id="dvDocClose" aria-label="Close documents">✕</button></span></div>
-      <div class="doclist pdoclist" id="dvDocList"></div><div class="sevpanel" id="dvSevPanel" hidden></div></section>
+      <div class="doclist pdoclist" id="dvDocList"></div><div class="sevpanel" id="dvSevPanel" hidden></div><div class="xdocs" id="dvXDocs"></div></section>
     <figure class="vphoto dvphoto" id="dvPhoto" hidden></figure>
     <section><h3>Personal details</h3><dl class="dl" id="dvPersonal"></dl></section>
     <section><h3>Contact</h3><dl class="dl" id="dvContact"></dl></section>
@@ -2728,7 +2752,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   <div class="vbody">
     <div class="vtools"><button type="button" class="cdocs attbtn" id="cvAttBtn" aria-label="Documents" title="Documents" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><b id="cvAttCount" hidden></b></button><button type="button" class="cdocs" id="cvDocsBtn" aria-label="Download attached documents" title="Download attached documents" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button><button class="btn histbtn" type="button" id="cvHistBtn" aria-label="Change history" title="Change history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span class="hcount" id="cvHistCount"></span></button></div>
     <section id="cvDocSec" class="docpop" role="dialog" aria-label="Documents" hidden><div class="dochead"><h3>Documents</h3><span class="dacts"><label class="btn" id="cvAddSev" hidden>+ Add several<input type="file" id="cvAddSevIn" multiple hidden></label><button type="button" class="dclose" id="cvDocClose" aria-label="Close documents">✕</button></span></div>
-      <div class="doclist pdoclist" id="cvDocList"></div><div class="sevpanel" id="cvSevPanel" hidden></div></section>
+      <div class="doclist pdoclist" id="cvDocList"></div><div class="sevpanel" id="cvSevPanel" hidden></div><div class="xdocs" id="cvXDocs"></div></section>
     <figure class="vphoto dvphoto" id="cvPhoto"></figure>
     <section><h3>Personal details</h3><dl class="dl" id="cvPersonal"></dl></section>
     <section><h3>Contact</h3><dl class="dl" id="cvContact"></dl></section>
@@ -3247,7 +3271,7 @@ const TRACKED = [
   ["seats", "Seating capacity"], ["staffSeats", "Seating capacity (+ staff)"], ["gvw", "Gross vehicle weight", "kg"], ["ulw", "Unladen weight", "kg"], ["fuelTank", "Fuel tank capacity", "litres"],
   ["tyreCount", "No. of tyres"], ["tyreSize", "Tyre size"], ["batteryMake", "Battery make & model"], ["batteryDate", "Battery installed on", "date"],
   ["usage", "Usage category", "usage"], ["opType", "Operation type"], ["odoStart", "Odometer when added", "km"],
-  ["ownerName", "Owner name"], ["ownerAddress", "Owner address", "text"], ["remarks", "Remarks", "text"]
+  ["ownerName", "Owner name"], ["ownerAddress", "Owner address", "text"], ["remarks", "Remarks", "text"], ["extraDocFileName", "Other document", "file"]
 ];
 const FIELD_INFO = Object.fromEntries([
   ...TRACKED.map(([k, label, fmt]) => [k, { label, fmt }]),
@@ -3693,6 +3717,108 @@ function openVDrawer(v) {
   $("scrim").hidden = false; $("vDrawer").hidden = false; viewOpened(); vLayout();
   setTimeout(() => $("vCloseBtn").focus(), 30);
 }
+/* ================= Other documents on a vehicle, driver or conductor =================
+   Any number of extra files (address proof, more photos of the vehicle and so on), each with a name the user chooses.
+   Kept on the record as extraDocs: [{ id, file, fileName, label, at, by }]; adding or removing one is written to the change history. */
+const X_NAMES = {
+  vehicle: ["Vehicle photo, front", "Vehicle photo, back", "Vehicle photo, left side", "Vehicle photo, right side", "Vehicle photo, inside", "Purchase invoice", "Body building bill", "Loan / hypothecation papers", "NOC", "Accident report", "Owner ID proof"],
+  person: ["Address proof", "Aadhaar card", "PAN card", "Voter ID", "Bank passbook", "Photo", "Police verification", "Medical certificate", "Education certificate", "Experience letter"]
+};
+const xDocs = r => Array.isArray(r?.extraDocs) ? r.extraDocs : [];
+const xDocFiles = r => { const seen = {}; return xDocs(r).map(x => { const t = x.label || "Document", n = seen[t] = (seen[t] || 0) + 1; return { k: "x" + x.id, tag: n > 1 ? `${t} ${n}` : t, label: x.label || "Document", f: { id: x.file, name: x.fileName || "Document" } }; }); };
+const X_CFG = {
+  vehicle: { box: "vXDocs", names: X_NAMES.vehicle, list: () => vehicles, viewId: () => vViewId, can: () => canAttach(), save: v => saveVehicle(v), addHist: e => addHistory(e), histKey: "vehicleId", redraw: v => renderDocList(v) },
+  driver: { box: "dvXDocs", names: X_NAMES.person, list: () => drivers, viewId: () => dViewId, can: () => canDrivers && !!assetsCap, save: d => saveDriver(d), addHist: e => addDHistory(e), histKey: "driverId", redraw: d => { pRenderDocs(P_CFG.driver, d); } },
+  conductor: { box: "cvXDocs", names: X_NAMES.person, list: () => conductors, viewId: () => cViewId, can: () => canConductors && !!assetsCap, save: c => saveConductor(c), addHist: e => addCHistory(e), histKey: "conductorId", redraw: c => { pRenderDocs(P_CFG.conductor, c); } }
+};
+const X_FILE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/></svg>`;
+function renderXDocs(cfg, r) {
+  const box = $(cfg.box); if (!box) return;
+  if (box.querySelector(".xpanel:not([hidden])") && box.dataset.rid === r.id) { box.querySelector(".xdhead h4").textContent = `Other documents · ${xDocs(r).length}`; return; }
+  const can = cfg.can(), list = xDocs(r), dl = "xdn-" + cfg.box;
+  box.dataset.rid = r.id;
+  box.innerHTML = `<div class="xdhead"><h4>Other documents${list.length ? ` · ${list.length}` : ""}</h4>${can ? `<label class="btn">+ Add document<input type="file" data-xadd multiple accept="${FILE_TYPES.join(",")}" hidden></label>` : ""}</div>` +
+    (list.length ? `<div class="xdlist">${list.map(x => {
+      const img = /\.(jpe?g|png|webp)$/i.test(x.fileName || ""), href = `/_blob/${encodeURIComponent(x.file)}`;
+      return `<div class="xrow" data-x="${esc(x.id)}"><a class="xthumb" href="${href}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">${img ? `<img src="${href}" alt="" loading="lazy">` : X_FILE_SVG}</a>
+        <span class="xs"><a class="filelink" href="${href}" target="_blank" rel="noopener" title="${esc(x.fileName || "")}">${esc(x.label || "Document")}</a><span class="sub">${esc(x.fileName || "")}${x.at ? ` · added ${fmtDate(String(x.at).slice(0, 10))}` : ""}</span></span>
+        <span class="xact">${can ? `<button type="button" class="btn" data-xrm>Remove</button>` : ""}</span></div>`; }).join("")}</div>`
+      : `<p class="xnone">${can ? "Nothing here yet. Add any other paper or photo: address proof, more photos and so on." : "No other documents."}</p>`) +
+    `<div class="xpanel" hidden></div><datalist id="${dl}">${cfg.names.map(n => `<option value="${esc(n)}">`).join("")}</datalist>`;
+}
+// A first name for a new file, from its file name ("address proof.jpg" → "Address proof").
+const xGuess = (cfg, name) => {
+  const n = String(name).replace(/\.[a-z0-9]{2,5}$/i, "").replace(/[_-]+/g, " ").trim(), lo = n.toLowerCase();
+  const hit = cfg.names.find(x => lo && x.toLowerCase().split(/[ ,/]+/).filter(w => w.length > 3).some(w => lo.includes(w)));
+  if (hit) return hit;
+  return /^(img|image|dsc|photo|pxl|scan|wa)?[\s\d]*$/i.test(n) ? "" : n.charAt(0).toUpperCase() + n.slice(1);
+};
+function wireXDocs(cfg) {
+  const box = $(cfg.box); let files = [];
+  const cur = () => cfg.list().find(x => x.id === cfg.viewId());
+  const who = () => ({ at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "" });
+  box.addEventListener("change", e => {
+    const inp = e.target.closest("input[data-xadd]"); if (!inp) return;
+    files = [...inp.files]; inp.value = ""; if (!files.length || !cur()) return;
+    const bad = files.filter(f => !FILE_TYPES.includes(f.type) || f.size > 20 * 1024 * 1024);
+    if (bad.length) toast(`Left out ${bad.map(f => f.name).join(", ")}: attach PDF, JPG or PNG files up to 20 MB.`);
+    files = files.filter(f => !bad.includes(f)); if (!files.length) return;
+    const panel = box.querySelector(".xpanel"), dl = "xdn-" + cfg.box;
+    panel.innerHTML = `<b>Name each document</b><span class="hint">Pick from the list or type your own name.</span>` +
+      files.map((f, i) => `<div class="xprow"><span class="fnm">${esc(f.name)}</span><input data-i="${i}" list="${dl}" maxlength="60" value="${esc(xGuess(cfg, f.name))}" placeholder="e.g. Address proof" aria-label="Name for ${esc(f.name)}"></div>`).join("") +
+      `<span class="err" data-err></span><div class="acts"><button type="button" class="btn" data-cancel>Cancel</button><button type="button" class="btn primary" data-save>Save ${files.length} file${files.length === 1 ? "" : "s"}</button></div>`;
+    panel.hidden = false; panel.querySelector("input")?.focus();
+    panel.oninput = () => { panel.querySelector("[data-err]").textContent = ""; };
+  });
+  // Clicks here stay inside the documents pop-up (the list redraws as it saves, so the outside-click check must not see them).
+  box.addEventListener("click", async e => {
+    e.stopPropagation();
+    const panel = box.querySelector(".xpanel");
+    if (e.target.closest("[data-cancel]")) { panel.hidden = true; files = []; const r = cur(); if (r) cfg.redraw(r); return; }
+    if (e.target.closest("[data-save]")) {
+      const save = e.target.closest("[data-save]"), err = panel.querySelector("[data-err]");
+      const names = [...panel.querySelectorAll("input[data-i]")].map(i => i.value.trim().replace(/\s+/g, " "));
+      if (names.some(n => !n)) { err.textContent = "Give every file a name, for example Address proof."; panel.querySelector("input[data-i]:placeholder-shown")?.focus(); return; }
+      const id = cfg.viewId(); if (!id) return;
+      save.disabled = true; err.textContent = "";
+      const added = [], failed = [];
+      for (const [i, f] of files.entries()) {
+        save.textContent = `Uploading ${i + 1} of ${files.length}…`;
+        try { const r = await assetsCap.upload(f, { type: f.type }); added.push({ id: "x" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), file: r.id, fileName: f.name, label: names[i], ...who() }); }
+        catch (er) { failed.push(f.name); if (er?.code === "quota_or_state") break; }
+      }
+      if (added.length) {
+        const r0 = cfg.list().find(x => x.id === id);
+        if (r0) {
+          try {
+            await cfg.save({ ...r0, extraDocs: [...xDocs(r0), ...added.map(({ at, byUser, byAccount, ...x }) => ({ ...x, at, by: byUser || byAccount || "" }))] });
+            await cfg.addHist(added.map(x => ({ [cfg.histKey]: id, field: "extraDocFileName", from: "", to: `${x.label} · ${x.fileName}`, fromFileId: "", toFileId: x.file, at: x.at, byUser: x.byUser, byAccount: x.byAccount, note: "Added in Other documents" }))).catch(() => {});
+          } catch { failed.push(...added.map(x => x.fileName)); added.length = 0; }
+        }
+      }
+      save.disabled = false;
+      if (failed.length) { err.textContent = `Couldn't save: ${failed.join(", ")}. Try those again.`; save.textContent = "Save"; files = files.filter(f => failed.includes(f.name)); panel.querySelectorAll(".xprow").forEach(row => { if (!failed.includes(row.querySelector(".fnm").textContent)) row.remove(); }); panel.querySelectorAll("input[data-i]").forEach((inp, j) => inp.dataset.i = j); }
+      else { panel.hidden = true; files = []; }
+      if (added.length) toast(`${added.length} document${added.length === 1 ? "" : "s"} added.`);
+      const r = cfg.list().find(x => x.id === id); if (r && cfg.viewId() === id && panel.hidden) cfg.redraw(r);
+      return;
+    }
+    const row = e.target.closest(".xrow"); if (!row) return;
+    const act = row.querySelector(".xact");
+    if (e.target.closest("[data-xrm]")) { act.innerHTML = `<span>Remove?</span><button type="button" class="btn" data-xno>No</button><button type="button" class="btn danger" data-xyes>Yes, remove</button>`; return; }
+    if (e.target.closest("[data-xno]")) { act.innerHTML = `<button type="button" class="btn" data-xrm>Remove</button>`; return; }
+    if (e.target.closest("[data-xyes]")) {
+      const id = cfg.viewId(), r0 = cfg.list().find(x => x.id === id), x = xDocs(r0).find(d => d.id === row.dataset.x); if (!r0 || !x) return;
+      e.target.disabled = true;
+      try {
+        await cfg.save({ ...r0, extraDocs: xDocs(r0).filter(d => d.id !== x.id) });
+        await cfg.addHist([{ [cfg.histKey]: id, field: "extraDocFileName", from: `${x.label} · ${x.fileName}`, to: "", fromFileId: x.file, toFileId: "", ...who(), note: "Removed from Other documents" }]).catch(() => {});
+        toast("Document removed. Its copy stays in the change history.");
+      } catch { toast("Couldn't remove it. Try again."); }
+      const r = cfg.list().find(y => y.id === id); if (r && cfg.viewId() === id) cfg.redraw(r);
+    }
+  });
+}
 // Documents section of the vehicle record: every document slot in one list, attachable without opening the form.
 const docSlots = v => [["rc", "RC copy", null], ...DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).map(([k, , short]) => [k, short, k])];
 const DOC_GUESS = [["rcValidity", /rc.?(renew|valid)/], ["permitAuthExp", /auth/], ["rc", /(^|[^a-z])rc([^a-z]|$)|registration|r\.c/], ["fcDate", /(^|[^a-z])fc([^a-z]|$)|fitness/],
@@ -3701,9 +3827,10 @@ const DOC_GUESS = [["rcValidity", /rc.?(renew|valid)/], ["permitAuthExp", /auth/
 const guessSlot = (name, keys) => { const n = String(name).toLowerCase(); const g = DOC_GUESS.find(([k, re]) => keys.includes(k) && re.test(n)); return g ? g[0] : ""; };
 const canAttach = () => canWrite && !!assetsCap;
 function renderDocList(v) {
-  const can = canAttach(), n = docSlots(v).filter(([k]) => fileOf(v, k)).length;
+  const can = canAttach(), n = docSlots(v).filter(([k]) => fileOf(v, k)).length + xDocs(v).length;
   $("vAttCount").hidden = !n; $("vAttCount").textContent = n;
   $("vAddSev").hidden = !can;
+  renderXDocs(X_CFG.vehicle, v);
   $("vDocList").innerHTML = docSlots(v).map(([k, label, dk]) => {
     const f = fileOf(v, k), date = dk && v[dk];
     const when = date ? `<span class="pill ${listBand(daysUntil(date))} num">${fmtDate(date)}</span>` : "";
@@ -4339,6 +4466,7 @@ $("form").addEventListener("submit", async e => {
   if (!ok) return;
   const wasEdit = !!editingId;
   const prev = vehicles.find(x => x.id === v.id) || {};
+  if (xDocs(prev).length) v.extraDocs = prev.extraDocs;
   const at = new Date().toISOString(), note = $("chgNote").value.trim();
   const who = { at, byUser: myUserId || "", byAccount: myId() || "", ...(note ? { note } : {}) };
   const keys = ALL_KEYS();
@@ -4490,7 +4618,7 @@ const D_TRACKED = [
   ["dlNo", "Licence number", "dl"], ["state", "Issued by"], ["firstIssue", "Date of first issue", "date"], ["issueDate", "Issue date", "date"],
   ["valNT", "Validity (NT), non-transport", "date", true], ["valTR", "Validity (TR), transport", "date", true], ["vClass", "Vehicle class"], ["vCat", "Vehicle category"],
   ["dlFrontFileName", "Licence copy, front", "file"], ["dlBackFileName", "Licence copy, back", "file"],
-  ["status", "Status"], ["remarks", "Remarks", "text"]
+  ["status", "Status"], ["remarks", "Remarks", "text"], ["extraDocFileName", "Other document", "file"]
 ];
 const D_FIELD_INFO = Object.fromEntries(D_TRACKED.map(([k, label, fmt, doc]) => [k, { label, fmt, doc: !!doc }]));
 const D_KEYS = D_TRACKED.map(t => t[0]);
@@ -4692,6 +4820,7 @@ $("dForm").addEventListener("submit", async e => {
   if (!ok) { document.querySelector('#dForm [aria-invalid="true"]')?.focus(); return; }
   const wasEdit = !!dEditingId;
   const prev = drivers.find(x => x.id === d.id) || {}, note = $("dNote").value.trim();
+  if (xDocs(prev).length) d.extraDocs = prev.extraDocs;
   const who = { at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", ...(note ? { note } : {}) };
   const changes = wasEdit ? [] : [{ driverId: d.id, field: "_created", from: "", to: "", ...who }];
   D_KEYS.forEach(k => {
@@ -4782,7 +4911,7 @@ const C_TRACKED = [
   ["clNo", "Licence number"], ["badgeNo", "Badge number"], ["state", "Issued by"], ["rto", "Issuing RTO"], ["issueDate", "Issue date", "date"],
   ["clValid", "Licence valid until", "date", true], ["clCopyFileName", "Licence copy", "file"],
   ["faNo", "First-aid certificate number"], ["faValid", "First-aid valid until", "date", true], ["faCopyFileName", "First-aid certificate copy", "file"],
-  ["status", "Status"], ["remarks", "Remarks", "text"]
+  ["status", "Status"], ["remarks", "Remarks", "text"], ["extraDocFileName", "Other document", "file"]
 ];
 const C_FIELD_INFO = Object.fromEntries(C_TRACKED.map(([k, label, fmt, doc]) => [k, { label, fmt, doc: !!doc }]));
 const C_KEYS = C_TRACKED.map(t => t[0]);
@@ -4954,6 +5083,7 @@ $("cForm").addEventListener("submit", async e => {
   if (!ok) { document.querySelector('#cForm [aria-invalid="true"]')?.focus(); return; }
   const wasEdit = !!cEditingId;
   const prev = conductors.find(x => x.id === c.id) || {}, note = $("cNote").value.trim();
+  if (xDocs(prev).length) c.extraDocs = prev.extraDocs;
   const who = { at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", ...(note ? { note } : {}) };
   const changes = wasEdit ? [] : [{ conductorId: c.id, field: "_created", from: "", to: "", ...who }];
   C_KEYS.forEach(k => {
@@ -10563,7 +10693,7 @@ function dueSoonBtn(v) {
 }
 // Attached documents of a vehicle (latest copy only), for the admin's download list.
 const vDocFiles = v => [["rc", "RC", "RC copy"], ...DOCS.map(([k, , short]) => [k, short, short])]
-  .map(([k, tag, label]) => ({ k, tag, label, f: fileOf(v, k) })).filter(x => x.f);
+  .map(([k, tag, label]) => ({ k, tag, label, f: fileOf(v, k) })).filter(x => x.f).concat(xDocFiles(v));
 function docsBtn(v) {
   if (acc.users !== "edit" || !vDocFiles(v).length) return "";
   return `<button type="button" class="cdocs" data-vdocs="${v.id}" aria-label="Download attached documents" title="Download attached documents"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>`;
@@ -10845,7 +10975,7 @@ const P_CFG = {
 const pActive = p => (p.status || "Active") !== "Inactive";
 const pDueOf = (cfg, p) => !pActive(p) ? [] : cfg.dates.filter(([k]) => p[k] && daysUntil(p[k]) <= 30)
   .map(([k, label]) => ({ k, label, date: p[k], n: daysUntil(p[k]) })).sort((a, b) => a.n - b.n);
-const pFiles = (cfg, p) => cfg.slots(p).map(([k, label]) => ({ k, tag: label.replace(/[,()]/g, ""), label, f: dFile(p, k) })).filter(x => x.f);
+const pFiles = (cfg, p) => cfg.slots(p).map(([k, label]) => ({ k, tag: label.replace(/[,()]/g, ""), label, f: dFile(p, k) })).filter(x => x.f).concat(xDocFiles(p));
 const pMask = s => { const k = normDl(s); return k ? "******" + k.slice(-4) : "-"; };
 // File names start with the person's first name, e.g. RAMESH_18-10-2026_16-55.jpg
 const pFileBase = p => (String(p.name || "").trim().split(/\s+/)[0] || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase() || "PERSON";
@@ -11013,7 +11143,8 @@ async function pPrintAll(cfg, btn) {
 }
 /* Documents pop-up on the driver and conductor pages */
 function pRenderDocs(cfg, p) {
-  const pre = cfg.pre, can = cfg.can() && !!assetsCap, slots = cfg.slots(p), n = slots.filter(([k]) => dFile(p, k)).length;
+  const pre = cfg.pre, can = cfg.can() && !!assetsCap, slots = cfg.slots(p), n = slots.filter(([k]) => dFile(p, k)).length + xDocs(p).length;
+  renderXDocs(X_CFG[cfg.pre === "dv" ? "driver" : "conductor"], p);
   $(pre + "AttCount").hidden = !n; $(pre + "AttCount").textContent = n;
   $(pre + "AddSev").hidden = !can;
   $(pre + "DocsBtn").hidden = acc.users !== "edit" || !pFiles(cfg, p).length;
@@ -11098,7 +11229,7 @@ function pWire(cfg) {
   });
   $(pre === "dv" ? "dPrintBtn" : "cPrintBtn").onclick = e => pPrintAll(cfg, e.currentTarget);
 }
-pWire(P_CFG.driver); pWire(P_CFG.conductor);
+pWire(P_CFG.driver); pWire(P_CFG.conductor); Object.values(X_CFG).forEach(wireXDocs);
 V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
 function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
 ["bkPrint", "bkTsPrint"].forEach(id => $(id).insertAdjacentHTML("afterbegin", ICON_PRINT));
