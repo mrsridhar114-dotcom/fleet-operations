@@ -10777,11 +10777,13 @@ async function tsLayout(L, pdf, b) {
   text(rentTxt, X0 + 10 + lw, y, { size: rsz, bold: true }); y -= 10;
   if (c.ext) { y -= 4; text(fit("Extra from party: " + bkExtras(b).map(x => `${x.kind}${x.note ? " (" + x.note + ")" : ""} ${nf(Math.round(num(x.amt)))}`).join(", "), reg, 9, X1 - X0 - 14), X0 + 10, y, { size: 9, color: grey }); y -= 8; }
   // expenses table
-  const cx = X1 - 92, rowH = 17.5, other = (b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : []).slice(0, 4);
+  const cx = X1 - 92, rowH = 17.5, otherAll = b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : [];
+  // Other expenses are listed one by one below their heading (the heading carries no amount, so the column adds up); a fifth item onwards goes on the last line.
+  const other = otherAll.length > 4 ? [...otherAll.slice(0, 3), { kind: `${otherAll.length - 3} more`, amt: otherAll.slice(3).reduce((a, x) => a + num(x.amt), 0) }] : otherAll;
   hline(X0, X1, y); text("Expense", (cx + X1) / 2, y - 13, { size: 9, bold: true, align: "center" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y);
   const per = v => days && num(v) && Number.isInteger(num(v) / days) ? `${nf(num(v) / days)} x ${fmtDays(days)}` : "";
   const rows = [["Driver padi", per(b.padiPaid), n0(b.padiPaid)], ["Cleaner padi", per(b.cleanerPadi), n0(b.cleanerPadi)], ["Permit", "", n0(b.permit)], ["Toll gate", "", n0(b.toll)],
-    [`Diesel filled (${litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) : "   "} L)  bill`, "", n0(b.fuelCost)], ["Other expenses", "", n0(b.otherExp)],
+    [`Diesel filled (${litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) : "   "} L)  bill`, "", n0(b.fuelCost)], ["Other expenses", "", ""],
     ...[0, 1, 2, 3].map(i => [`${i + 1})  ${other[i] ? [other[i].kind, other[i].note].filter(Boolean).join(" - ") : ""}`, "", other[i] ? n0(other[i].amt) : ""])];
   rows.forEach(([l, m, v]) => { text(fit(l, reg, 9.5, cx - X0 - 90), X0 + 6, y - 13, { size: 9.5 }); if (m) text(m, cx - 14, y - 13, { size: 9.5, align: "right" });
     text(v, X1 - 8, y - 13, { size: 10.5, align: "right" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y, { t: 0.5 }); });
