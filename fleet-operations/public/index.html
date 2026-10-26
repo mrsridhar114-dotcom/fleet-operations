@@ -10792,7 +10792,8 @@ async function tsLayout(L, pdf, b) {
   y = H - 96; text(`${plateOf(bus)}  ·  ${b.places || ""}  ·  ${fd(b.from)} to ${fd(bkEnd(b))}`, W / 2, y, { size: 8.5, align: "center", color: grey }); y -= 20;
   // Tables with borders, made a little tighter when there are many lines so the back stays on one page (a very long list still carries on to a new page).
   const d = drvCalc(b), paid = d.exp.filter(x => !d.off.includes(x.key)), nFill = fills.length + legacy.length;
-  const nRows = (nFill ? nFill + 2 : 2) + (d.total || d.ext || d.spent ? 2 + (d.toll ? 1 : 0) + (d.ext ? 2 : 0) + 1 + (paid.length || 1) + 2 : 0);
+  const pays = (b.payments || []).filter(p => num(p.amount)), extras = c.ext ? bkExtras(b).filter(x => num(x.amt)) : [];
+  const nRows = (nFill ? nFill + 2 : 2) + 1 + pays.length + extras.length + (c.adj ? 1 : 0) + 4 + (d.total || d.ext || d.spent ? 2 + (d.toll ? 1 : 0) + (d.ext ? 2 : 0) + 1 + (paid.length || 1) + 2 : 0);
   const K = Math.max(0.55, Math.min(1, (y - 50 - 140) / (nRows * 16.5)));
   const ensure = h => { if (y - h < 50) { head("TRIP SHEET  -  BACK (continued)"); y = H - 100; } };
   const title = t => { ensure(70); text(t, X0, y, { size: 10, bold: true, color: ink }); y -= 9; };
@@ -10812,6 +10813,16 @@ async function tsLayout(L, pdf, b) {
   dcols[2][1] = X1 - X0 - dcols.reduce((a, c2) => a + c2[1], 0);
   tbl(dcols, all.length ? [...all.map((r, k) => ({ cells: [String(k + 1), r[0], r[1], r[2] ? nf(num(r[2]), 2) : "", r[3] ? nf(num(r[3])) : "", r[4], r[5]] })),
     { cells: ["", "", "Total", nf(litres, 2), nf(all.reduce((a, r) => a + num(r[3]), 0)), "", ""], bold: true, fill: true }] : [{ cells: ["", "", "No diesel fills entered", "", "", "", ""] }], 8.5);
+  // What the party paid: each payment, extras the driver collected, any balance adjusted at closing; then the trip amount and what is left.
+  y -= 22 * K; title("PAYMENT DETAILS");
+  const pcols = [["#", 18], ["Date", 56], ["Mode", 50], ["Details", 0], ["Amount (Rs.)", 74, 1]];
+  pcols[3][1] = X1 - X0 - pcols.reduce((a, c2) => a + c2[1], 0);
+  const prows = [...pays.map(p => [fd(p.date), p.mode || "", p.note || "Payment", p.amount]),
+    ...extras.map(x => ["", "", `${[x.kind, x.note].filter(Boolean).join(" - ")} (collected by the driver)`, x.amt]),
+    ...(c.adj ? [[fd(b.balAdj.on), "", b.balAdj.note || "Adjusted with driver advance", c.adj]] : [])];
+  tbl(pcols, [...(prows.length ? prows.map((r, k) => ({ cells: [String(k + 1), r[0], r[1], r[2], nf(Math.round(num(r[3])))] })) : [{ cells: ["", "", "", "No payments received", ""] }]),
+    { cells: ["", "", "", "Total received", nf(c.received)], bold: true, fill: true }, { cells: ["", "", "", "Trip amount (rent + toll + extra)", nf(c.due)] },
+    { cells: ["", "", "", c.balance < 0 ? "Paid in excess" : "Balance to collect", nf(Math.abs(c.balance))], bold: true, fill: true }], 8.5);
   // Driver advance and the expenses paid from it.
   const AW = 104;
   y -= 22 * K; title("DRIVER ADVANCE");
@@ -10834,7 +10845,7 @@ async function tsLayout(L, pdf, b) {
 }
 // Print: a tick list (like the vehicle master's) to choose the front and back images and, if wanted, the PDF of both; save or share them.
 function tsPrint(b, btn) {
-  const items = [{ k: 0, label: "Front (image)", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back (image)", sub: "Diesel fill-ups, driver advance and expenses" },
+  const items = [{ k: 0, label: "Front (image)", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back (image)", sub: "Diesel fill-ups, payments, driver advance and expenses" },
     { k: "pdf", label: "PDF", sub: "Front and back in one file" }];
   openPickPop(btn, `Trip sheet ${b.no || ""} · print`, items, { ts: b.id }, (keys, go) => tsSave(b, keys, go),
     { note: "Tick what you want. The images are ticked; tick PDF if you need it too.", on: d => d.k !== "pdf", saveText: n => n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Choose a file", share: keys => tsFiles(b, keys) });
