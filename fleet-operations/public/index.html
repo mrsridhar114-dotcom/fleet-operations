@@ -10766,13 +10766,18 @@ async function tsLayout(L, pdf, b) {
   // trip / rent box
   const boxTop = y + 6; y -= 8;
   text("Trip / rent details :", X0 + 6, y, { size: 8.5, color: grey });
-  y -= 16;
-  text(fit(b.places || "", reg, 11, X1 - X0 - 14), X0 + 10, y, { size: 11 }); y -= 18;
+  // Places, then the pick-up place, then the rent line.
+  const lw = 72;
+  [["Places", b.places], ["Pickup from", b.address]].forEach(([l, v]) => { y -= 16;
+    text(l, X0 + 10, y, { size: 8.5, color: grey }); text(fit(v || "-", reg, 11, X1 - X0 - lw - 14), X0 + 10 + lw, y, { size: 11 }); });
+  y -= 18; text("Rent", X0 + 10, y, { size: 8.5, color: grey });
   const parts = [["Rent", num(b.rent)], ["Extra", c.ext], ["Toll", num(b.toll)]].filter(x => x[1]);
-  text(parts.length > 1 ? `${parts.map(([l, v]) => `${l} ${nf(v)}`).join(" + ")} = ${nf(c.due)}` : nf(c.due), X0 + 10, y, { size: 12, bold: true }); y -= 10;
+  const rentTxt = parts.length > 1 ? `${parts.map(([l, v]) => `${l} ${nf(v)}`).join(" + ")} = ${nf(c.due)}` : nf(c.due);
+  let rsz = 12; while (rsz > 8.5 && bold.widthOfTextAtSize(pdfSafe(rentTxt), rsz) > X1 - X0 - lw - 14) rsz -= 0.5;
+  text(rentTxt, X0 + 10 + lw, y, { size: rsz, bold: true }); y -= 10;
   if (c.ext) { y -= 4; text(fit("Extra from party: " + bkExtras(b).map(x => `${x.kind}${x.note ? " (" + x.note + ")" : ""} ${nf(Math.round(num(x.amt)))}`).join(", "), reg, 9, X1 - X0 - 14), X0 + 10, y, { size: 9, color: grey }); y -= 8; }
   // expenses table
-  const cx = X1 - 92, rowH = 19, other = (b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : []).slice(0, 4);
+  const cx = X1 - 92, rowH = 17.5, other = (b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : []).slice(0, 4);
   hline(X0, X1, y); text("Expense", (cx + X1) / 2, y - 13, { size: 9, bold: true, align: "center" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y);
   const per = v => days && num(v) && Number.isInteger(num(v) / days) ? `${nf(num(v) / days)} x ${fmtDays(days)}` : "";
   const rows = [["Driver padi", per(b.padiPaid), n0(b.padiPaid)], ["Cleaner padi", per(b.cleanerPadi), n0(b.cleanerPadi)], ["Permit", "", n0(b.permit)], ["Toll gate", "", n0(b.toll)],
@@ -10782,9 +10787,9 @@ async function tsLayout(L, pdf, b) {
     text(v, X1 - 8, y - 13, { size: 10.5, align: "right" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y, { t: 0.5 }); });
   page.drawRectangle({ x: X0, y, width: X1 - X0, height: boxTop - y, borderColor: ink, borderWidth: 0.8 });
   text("Total", cx - 8, y - 14, { size: 10, bold: true, align: "right" }); text(nf(c.exp), X1 - 8, y - 14, { size: 12, bold: true, align: "right" }); vline(cx, y, y - rowH);
-  page.drawRectangle({ x: cx, y: y - rowH, width: X1 - cx, height: rowH, borderColor: ink, borderWidth: 0.8 }); y -= rowH + 22;
+  page.drawRectangle({ x: cx, y: y - rowH, width: X1 - cx, height: rowH, borderColor: ink, borderWidth: 0.8 }); y -= rowH + 20;
   [["Total income", nf(c.due), "Total km", km ? nf(km) : ""], ["Total expense", nf(c.exp), "Total diesel", litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) + " L" : ""],
-   ["Balance", nf(c.profit), "Mileage", km && litres ? nf(km / litres, 1) + " km/L" : ""]].forEach(([l1, v1, l2, v2]) => { field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 24; });
+   ["Balance", nf(c.profit), "Mileage", km && litres ? nf(km / litres, 1) + " km/L" : ""]].forEach(([l1, v1, l2, v2]) => { field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 21; });
   // Names only, never an email address (a user without a name in the user master shows as their email).
   if (b.tsStatus === "approved") text(`Approved${b.tsApprovedByName && !b.tsApprovedByName.includes("@") ? " by " + b.tsApprovedByName : ""}${b.tsApprovedOn ? " on " + fd(b.tsApprovedOn) : ""}`, W / 2, 40, { size: 8, color: grey, align: "center" });
   // ---- back
