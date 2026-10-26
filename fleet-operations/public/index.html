@@ -10663,40 +10663,54 @@ function slipData() {
 }
 // The standard PDF fonts only cover Latin characters, so arrows and other symbols are swapped for plain ones.
 const pdfSafe = s => String(s ?? "").replace(/[→⇄]/g, "->").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/₹/g, "Rs.").replace(/[^\x20-\x7E\xA0-\xFF]/g, "?");
+// The company header shared by the booking slip and the trip sheet: border, VBS badge, name and address.
+function vbsHeader(page, text, W, H, X0, ink) {
+  page.drawRectangle({ x: 14, y: 14, width: W - 28, height: H - 28, borderColor: ink, borderWidth: 1.4 });
+  page.drawEllipse({ x: X0 + 26, y: H - 44, xScale: 24, yScale: 13, borderColor: ink, borderWidth: 1.6 });
+  text("VBS", X0 + 26, H - 48, { size: 11, bold: true, align: "center", color: ink });
+  text("VINAYAGAR BUS SERVICE", W / 2 + 22, H - 44, { size: 14, bold: true, align: "center", color: ink });
+  text("NO. 15, 4TH MAIN ROAD, ANNANAGAR WEST, VELLORE - 632001.", W / 2 + 22, H - 56, { size: 6.5, bold: true, align: "center", color: ink });
+}
 async function slipPdf(L, d) {
+  const pdf = await L.PDFDocument.create(); await slipLayout(L, pdf, d);
+  return new Blob([await pdf.save()], { type: "application/pdf" });
+}
+// Same order as the receipt book, under the trip sheet's company header; each column of fields starts its values in one line.
+async function slipLayout(L, pdf, d) {
   const { b, c, bus, fd, terms } = d, amt = n => "Rs. " + Math.round(n).toLocaleString("en-IN");
-  const pdf = await L.PDFDocument.create(), page = pdf.addPage([419.53, 595.28]);
+  const W = 419.53, H = 595.28, X0 = 30, X1 = W - 30, page = pdf.addPage([W, H]);
   const reg = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
-  const W = 419.53, H = 595.28, X0 = 34, X1 = W - 34, ink = L.rgb(0.106, 0.165, 0.42), grey = L.rgb(0.3, 0.3, 0.3), black = L.rgb(0, 0, 0);
-  page.drawRectangle({ x: 17, y: 17, width: W - 34, height: H - 34, borderColor: ink, borderWidth: 1.6 });
+  const ink = L.rgb(0.106, 0.165, 0.42), grey = L.rgb(0.35, 0.35, 0.35), black = L.rgb(0, 0, 0);
   const text = (t, x, y, o = {}) => { const f = o.bold ? bold : reg, s = o.size || 11, str = pdfSafe(t), w = f.widthOfTextAtSize(str, s);
     page.drawText(str, { x: o.align === "right" ? x - w : o.align === "center" ? x - w / 2 : x, y, size: s, font: f, color: o.color || black }); return w; };
-  const top = H - 46;
-  text(`S.No  ${b.no || ""}`, X0, top, { size: 10 }); text(`Date  ${fd(b.bookedOn)}`, X1, top, { size: 10, align: "right" });
-  text("Booking slip", W / 2, top - 1, { size: 15, bold: true, align: "center" });
-  page.drawLine({ start: { x: X0, y: top - 12 }, end: { x: X1, y: top - 12 }, thickness: 1.4, color: ink });
+  vbsHeader(page, text, W, H, X0, ink);
+  text("BOOKING SLIP", W / 2, H - 74, { size: 9.5, bold: true, align: "center", color: ink });
+  text(`S.No.  ${b.no || ""}`, X0, H - 74, { size: 10, bold: true }); text(`Date  ${fd(b.bookedOn)}`, X1, H - 74, { size: 10, bold: true, align: "right" });
   const wrap = (t, f, s, maxW) => { const words = pdfSafe(t).split(/\s+/), out = []; let cur = "";
     words.forEach(w => { const n = cur ? cur + " " + w : w; if (f.widthOfTextAtSize(n, s) > maxW && cur) { out.push(cur); cur = w; } else cur = n; }); out.push(cur); return out; };
-  const field = (label, value, x, w, y, isBold = false) => {
-    const lw = text(label, x, y, { size: 9, bold: true, color: grey }) + 8;
-    const lines = wrap(value || "", isBold ? bold : reg, 11.5, w - lw);
-    lines.forEach((ln, i) => { text(ln, x + lw, y - i * 15, { size: 11.5, bold: isBold });
-      page.drawLine({ start: { x: x + lw - 3, y: y - 4 - i * 15 }, end: { x: x + w, y: y - 4 - i * 15 }, thickness: 0.5, color: grey, dashArray: [1.2, 1.8] }); });
+  const lwOf = labels => Math.max(...labels.map(l => reg.widthOfTextAtSize(l, 8.5))) + 6;
+  // A field: grey label, then the value on a dotted line from a fixed point; a long value carries on to more lines.
+  const field = (label, value, x, w, y, lw, isBold = false) => {
+    text(label, x, y, { size: 8.5, color: grey });
+    const lines = wrap(value || "", isBold ? bold : reg, 11, w - lw - 2);
+    lines.forEach((ln, i) => { text(ln, x + lw, y + 1 - i * 15, { size: 11, bold: isBold });
+      page.drawLine({ start: { x: x + lw - 2, y: y - 3 - i * 15 }, end: { x: x + w, y: y - 3 - i * 15 }, thickness: 0.5, color: grey, dashArray: [1.2, 1.8] }); });
     return lines.length * 15;
   };
-  let y = top - 40;
-  [["Vehicle no.", plateOf(bus)], ["Name", b.party], ["Address", b.address], ["Phone", b.phone]].forEach(([l, v]) => { y -= field(l, v, X0, X1 - X0, y) + 12; });
+  let y = H - 104;
+  const full = [["Vehicle no.", plateOf(bus)], ["Name", b.party], ["Address", b.address], ["Phone", b.phone]], lwF = lwOf([...full.map(r => r[0]), "Places", "Start date"]);
+  full.forEach(([l, v]) => { y -= field(l, v, X0, X1 - X0, y, lwF) + 9; });
   const third = (X1 - X0) / 3;
-  field("Start date", fd(b.from), X0, third - 10, y); field("End date", fd(b.to), X0 + third, third - 10, y); field("Days", fmtDays(b.days), X0 + 2 * third, third, y); y -= 27;
-  y -= field("Places", b.places, X0, X1 - X0, y) + 18;
-  const half = (X1 - X0) / 2, rx = X0 + half + 6;
-  field("Empty rent / day", b.rentType !== "day" && b.rate ? amt(b.rate) : "-", X0, half - 10, y); field("Day rent / day", b.rentType === "day" && b.rate ? amt(b.rate) : "-", rx, half - 6, y); y -= 27;
-  field("Driver padi", b.padi ? amt(b.padi) : "-", X0, half - 10, y); field("Total rent", amt(num(b.rent)), rx, half - 6, y, true); y -= 27;
-  field("Advance", amt(c.received), rx, half - 6, y); y -= 27;
-  field("Balance", amt(c.balance), rx, half - 6, y, true); y -= 34;
+  field("Start date", fd(b.from), X0, third - 8, y, lwF); field("End date", fd(b.to), X0 + third + 4, third - 8, y, lwOf(["End date"])); field("Days", fmtDays(b.days), X0 + 2 * third + 4, third - 4, y, lwOf(["Days"])); y -= 24;
+  y -= field("Places", b.places, X0, X1 - X0, y, lwF) + 15;
+  // Rent: two columns, values lined up in each.
+  const half = (X1 - X0) / 2, rx = X0 + half + 4, L1 = lwOf(["Empty rent / day", "Driver padi"]), L2 = lwOf(["Day rent / day", "Total rent", "Advance", "Balance"]);
+  field("Empty rent / day", b.rentType !== "day" && b.rate ? amt(b.rate) : "-", X0, half - 10, y, L1); field("Day rent / day", b.rentType === "day" && b.rate ? amt(b.rate) : "-", rx, half - 4, y, L2); y -= 24;
+  field("Driver padi", b.padi ? amt(b.padi) : "-", X0, half - 10, y, L1); field("Total rent", amt(num(b.rent)), rx, half - 4, y, L2, true); y -= 24;
+  field("Advance", amt(c.received), rx, half - 4, y, L2); y -= 24;
+  field("Balance", amt(c.balance), rx, half - 4, y, L2, true); y -= 32;
   wrap(terms, reg, 9.5, X1 - X0).forEach(ln => { text(ln, X0, y, { size: 9.5, color: grey }); y -= 13; });
-  text("Party signature", X0, 40, { size: 9.5 }); text("Owner signature", X1, 40, { size: 9.5, align: "right" });
-  return new Blob([await pdf.save()], { type: "application/pdf" });
+  text("Party signature", X0, 34, { size: 9.5 }); text("Owner signature", X1, 34, { size: 9.5, align: "right" });
 }
 // Trip sheet PDF, laid out like the printed VBS trip sheet book. Front: trip, crew, km, expenses and totals.
 // Back: every diesel fill and the driver advance. A5, the size of the book.
@@ -10748,12 +10762,7 @@ async function tsLayout(L, pdf, b) {
     let sz = 11; while (sz > 8 && reg.widthOfTextAtSize(pdfSafe(value || ""), sz) > w - lw - 2) sz -= 0.5;
     text(fit(value || "", reg, sz, w - lw - 2), x + lw, y + 1, { size: sz }); hline(x + lw - 2, x + w, y - 3, { dash: true, color: grey, t: 0.5 }); };
   const head = sub => {
-    page = pdf.addPage([W, H]);
-    page.drawRectangle({ x: 14, y: 14, width: W - 28, height: H - 28, borderColor: ink, borderWidth: 1.4 });
-    page.drawEllipse({ x: X0 + 26, y: H - 44, xScale: 24, yScale: 13, borderColor: ink, borderWidth: 1.6 });
-    text("VBS", X0 + 26, H - 48, { size: 11, bold: true, align: "center", color: ink });
-    text("VINAYAGAR BUS SERVICE", W / 2 + 22, H - 44, { size: 14, bold: true, align: "center", color: ink });
-    text("NO. 15, 4TH MAIN ROAD, ANNANAGAR WEST, VELLORE - 632001.", W / 2 + 22, H - 56, { size: 6.5, bold: true, align: "center", color: ink });
+    page = pdf.addPage([W, H]); vbsHeader(page, text, W, H, X0, ink);
     text(sub, W / 2, H - 74, { size: 9.5, bold: true, align: "center", color: ink });
     text(`S.No.  ${b.no || ""}`, X0, H - 74, { size: 10, bold: true });
     text("This is a computer-generated document. No signature is required.", W / 2, 24, { size: 8, color: grey, align: "center" });
@@ -10772,7 +10781,8 @@ async function tsLayout(L, pdf, b) {
   // Places, then the pick-up place, then the rent line.
   const lw = 72;
   [["Places", b.places], ["Pickup from", b.address]].forEach(([l, v]) => { y -= 16;
-    text(l, X0 + 10, y, { size: 8.5, color: grey }); text(fit(v || "-", reg, 11, X1 - X0 - lw - 14), X0 + 10 + lw, y, { size: 11 }); });
+    let sz = 11; while (sz > 8 && reg.widthOfTextAtSize(pdfSafe(v || "-"), sz) > X1 - X0 - lw - 14) sz -= 0.5;
+    text(l, X0 + 10, y, { size: 8.5, color: grey }); text(fit(v || "-", reg, sz, X1 - X0 - lw - 14), X0 + 10 + lw, y, { size: sz }); });
   y -= 18; text("Rent", X0 + 10, y, { size: 8.5, color: grey });
   const parts = [["Rent", num(b.rent)], ["Extra", c.ext], ["Toll", num(b.toll)]].filter(x => x[1]);
   const rentTxt = parts.length > 1 ? `${parts.map(([l, v]) => `${l} ${nf(v)}`).join(" + ")} = ${nf(c.due)}` : nf(c.due);
