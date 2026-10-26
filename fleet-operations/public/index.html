@@ -1167,7 +1167,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .padipop .pprule { margin-top: 10px; background: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 3px; }
 .padipop .pprule b { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .duepop .dnote { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
-.duepop .dall { display: flex; gap: 10px; align-items: center; font-weight: 600; padding: 2px 0 8px; border-bottom: 1px solid var(--line); cursor: pointer; } .duepop .dall input { width: 18px; height: 18px; }
+.duepop .dall { display: flex; gap: 10px; align-items: center; font-weight: 600; padding: 2px 0 8px; border-bottom: 1px solid var(--line); cursor: pointer; } .duepop .dall input { width: 18px; height: 18px; } .duepop .dextra { border-bottom: 0; border-top: 1px solid var(--line); padding: 8px 0 4px; margin-top: 4px; }
 .duepop .dlist label { display: flex; gap: 10px; align-items: center; flex: 1; min-width: 0; cursor: pointer; }
 .duepop .dlist input { width: 18px; height: 18px; flex: none; }
 .duepop .dlist .fn { display: block; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
@@ -8918,6 +8918,7 @@ function bwClick(e) {
   if (a === "apprbk") { bwDeskAct(() => $("bkApprove").click()); return; }
   if (a === "apprts") { bwDeskAct(() => $("tsApprove").click()); return; }
   if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b, t); return; }
+  if (a === "slipprint") { const b = bwBkNow(); if (b) slipPrint(b, t); return; }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
   if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
   if (a === "advtoll") { bw.da.toll = !bw.da.toll; bwRender(); bwAdvSoon(50); return; }
@@ -9453,6 +9454,7 @@ function bwHomeHtml(b) {
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       (canBookings && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", "Driver advance", b.drvSettle ? "Settled" : !d.total && !d.ext ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle", b.drvSettle ? "ok" : (d.total || d.ext) && d.net ? "due" : ""))(drvCalc(b)) : "") +
+      (bw.driver ? "" : tile('data-bw="slipprint"', "🖨️", "Booking slip", "Image or PDF to print or share")) +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
       (b.tsStatus === "approved" || tsFill(b).pct === 100 ? tile('data-bw="tsprint" aria-label="Print trip sheet" title="Print trip sheet"', "🖨️", "") : "") +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
@@ -10654,12 +10656,14 @@ function loadPdfLib() {
     document.head.appendChild(s);
   });
 }
-function slipData() {
-  const b = { ...bkRead(), no: $("bkNo").value.trim(), bookedOn: $("bkBookedOn").value, party: $("bkParty").value.trim(), phone: $("bkPhone").value.trim(), address: $("bkAddress").value.trim(), places: $("bkPlaces").value.trim() };
+// The slip of the booking open on the computer, with any changes not yet saved.
+const slipForm = () => ({ ...ops.bookings.find(x => x.id === bkEditId), ...bkRead(), no: $("bkNo").value.trim(), bookedOn: $("bkBookedOn").value, party: $("bkParty").value.trim(), phone: $("bkPhone").value.trim(), address: $("bkAddress").value.trim(), places: $("bkPlaces").value.trim() });
+// showBus false leaves the vehicle no. off the slip, for when the bus may change before the trip.
+function slipData(b, showBus = true) {
   const c = bkCalc(b), bus = vehicles.find(v => v.id === b.vehicleId), fd = iso => iso ? iso.split("-").reverse().join("/") : "";
   const pp = ppNames(b);
-  const terms = pp.length ? `${pp.join(", ")} ${pp.length === 1 ? "is" : "are"} paid by the party.` : "All expenses are borne by us.";
-  return { b, c, bus, fd, terms };
+  const terms = pp.length ? `${pp.join(", ")} ${pp.length === 1 ? "is" : "are"} paid by the party.` : "";
+  return { b, c, bus, fd, terms, showBus };
 }
 // The standard PDF fonts only cover Latin characters, so arrows and other symbols are swapped for plain ones.
 const pdfSafe = s => String(s ?? "").replace(/[→⇄]/g, "->").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/₹/g, "Rs.").replace(/[^\x20-\x7E\xA0-\xFF]/g, "?");
@@ -10677,7 +10681,7 @@ async function slipPdf(L, d) {
 }
 // Same order as the receipt book, under the trip sheet's company header; each column of fields starts its values in one line.
 async function slipLayout(L, pdf, d) {
-  const { b, c, bus, fd, terms } = d, amt = n => "Rs. " + Math.round(n).toLocaleString("en-IN");
+  const { b, c, bus, fd, terms, showBus } = d, amt = n => "Rs. " + Math.round(n).toLocaleString("en-IN");
   const W = 419.53, H = 595.28, X0 = 30, X1 = W - 30, page = pdf.addPage([W, H]);
   const reg = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
   const ink = L.rgb(0.106, 0.165, 0.42), grey = L.rgb(0.35, 0.35, 0.35), black = L.rgb(0, 0, 0);
@@ -10698,7 +10702,7 @@ async function slipLayout(L, pdf, d) {
     return lines.length * 15;
   };
   let y = H - 104;
-  const full = [["Vehicle no.", plateOf(bus)], ["Name", b.party], ["Address", b.address], ["Phone", b.phone]], lwF = lwOf([...full.map(r => r[0]), "Places", "Start date"]);
+  const full = [...(showBus ? [["Vehicle no.", plateOf(bus)]] : []), ["Name", b.party], ["Address", b.address], ["Phone", b.phone]], lwF = lwOf([...full.map(r => r[0]), "Places", "Start date"]);
   full.forEach(([l, v]) => { y -= field(l, v, X0, X1 - X0, y, lwF) + 9; });
   const third = (X1 - X0) / 3;
   field("Start date", fd(b.from), X0, third - 8, y, lwF); field("End date", fd(b.to), X0 + third + 4, third - 8, y, lwOf(["End date"])); field("Days", fmtDays(b.days), X0 + 2 * third + 4, third - 4, y, lwOf(["Days"])); y -= 24;
@@ -10709,8 +10713,8 @@ async function slipLayout(L, pdf, d) {
   field("Driver padi", b.padi ? amt(b.padi) : "-", X0, half - 10, y, L1); field("Total rent", amt(num(b.rent)), rx, half - 4, y, L2, true); y -= 24;
   field("Advance", amt(c.received), rx, half - 4, y, L2); y -= 24;
   field("Balance", amt(c.balance), rx, half - 4, y, L2, true); y -= 32;
-  wrap(terms, reg, 9.5, X1 - X0).forEach(ln => { text(ln, X0, y, { size: 9.5, color: grey }); y -= 13; });
-  text("Party signature", X0, 34, { size: 9.5 }); text("Owner signature", X1, 34, { size: 9.5, align: "right" });
+  if (terms) wrap(terms, reg, 9.5, X1 - X0).forEach(ln => { text(ln, X0, y, { size: 9.5, color: grey }); y -= 13; });
+  text("This is a computer-generated slip. No signature is required.", W / 2, 24, { size: 8, color: grey, align: "center" });
 }
 // Trip sheet PDF, laid out like the printed VBS trip sheet book. Front: trip, crew, km, expenses and totals.
 // Back: every diesel fill and the driver advance. A5, the size of the book.
@@ -10863,6 +10867,33 @@ async function tsLayout(L, pdf, b) {
     y -= 40;
   }
 }
+// Booking slip: the image (and the PDF if wanted), with or without the vehicle no.; save or share, like the trip sheet.
+function slipPrint(b, btn) {
+  const items = [{ k: "img", label: "Booking slip (image)", sub: "JPG to share or print" }, { k: "pdf", label: "PDF", sub: "The same slip as a PDF" }];
+  openPickPop(btn, `Booking slip ${b.no || ""} · print`, items, { slip: b.id || "" }, (keys, go, showBus) => slipSave(b, keys, go, showBus),
+    { note: "The image is ticked; tick PDF if you need it too.", extra: "Show the vehicle no. on the slip", on: d => d.k !== "pdf",
+      saveText: n => n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Choose a file", share: (keys, showBus) => slipFiles(b, keys, showBus) });
+}
+async function slipFiles(b, keys, showBus) {
+  const d = slipData(b, showBus), base = `Booking slip ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " "), out = [];
+  if (keys.includes("img")) { const { doc, L } = tsCanvasKit(); await slipLayout(L, doc, d);
+    out.push({ filename: base + ".jpg", data: await new Promise((ok, fail) => doc.pages[0].toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92)) }); }
+  if (keys.includes("pdf")) out.push({ filename: base + ".pdf", data: await slipPdf(await loadPdfLib(), d) });
+  return out;
+}
+async function slipSave(b, keys, btn, showBus) {
+  let downloads = null;
+  try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view."); return; }
+  if (btn) btn.disabled = true; toast("Preparing the slip…");
+  try {
+    const files = await slipFiles(b, keys, showBus);
+    for (const f of files) await downloads.save(f);
+    toast(`${files.length === 1 ? "Slip" : files.length + " files"} saved. Open ${files.length === 1 ? "it" : "them"} to print.`);
+  } catch (e) {
+    toast(e?.code === "declined" ? "Slip not saved." : e?.code === "rate_limited" ? "A save is already waiting for your answer." : e?.message === "load failed" ? "Couldn't prepare the PDF. Check your internet connection and try again." : "Couldn't save the slip. Try again.");
+  } finally { if (btn) btn.disabled = false; }
+}
 // Print: a tick list (like the vehicle master's) to choose the front and back images and, if wanted, the PDF of both; save or share them.
 function tsPrint(b, btn) {
   const items = [{ k: 0, label: "Front (image)", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back (image)", sub: "Diesel fill-ups, payments, driver advance and expenses" },
@@ -11009,6 +11040,7 @@ async function popShare(btn, make, title) {
 }
 // Choose the dates to put on the image first, like the documents download list: everything ticked, untick what isn't wanted.
 // Tick list pop-up. Used for renewal dates (the default wording) and for the trip sheet's pages (o.note, o.on, o.saveText).
+// o.extra: the label of one more tick box (ticked to start) that is an option, not a file; go and share get its value.
 // o.share(keys) gives the files for the Share button.
 function openPickPop(b, title, items, mark, go, o = {}) {
   const on = o.on || (d => d.date && d.n <= 90), pop = document.createElement("div");
@@ -11016,11 +11048,11 @@ function openPickPop(b, title, items, mark, go, o = {}) {
   pop.className = "duepop"; Object.assign(pop.dataset, mark); pop.setAttribute("role", "dialog");
   const sync = () => { const n = pop.querySelectorAll("input[data-i]:checked").length, btn = pop.querySelector(".duesave"); btn.disabled = !n; btn.lastChild.textContent = saveText(n); const sh = pop.querySelector(".dshare"); if (sh) sh.disabled = !n;
     const all = pop.querySelector("input[data-all]"), m = pop.querySelectorAll("input[data-i]:not(:disabled)").length; all.disabled = !m; all.checked = !!m && n === m; all.indeterminate = n > 0 && n < m; };
-  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all> Select all</label><p class="dnote">${o.note || "Dates due within 3 months are ticked. Tick any others you want, including ones with no date."}</p><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}"${on(d) ? " checked" : ""}><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul>${o.share ? popActsHtml() : `<button type="button" class="btn primary duesave">${ICON_DL}<span></span></button>`}`;
+  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all> Select all</label><p class="dnote">${o.note || "Dates due within 3 months are ticked. Tick any others you want, including ones with no date."}</p><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}"${on(d) ? " checked" : ""}><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul>${o.extra ? `<label class="dall dextra"><input type="checkbox" data-extra checked> ${esc(o.extra)}</label>` : ""}${o.share ? popActsHtml() : `<button type="button" class="btn primary duesave">${ICON_DL}<span></span></button>`}`;
   pop.addEventListener("change", e => { if (e.target.dataset.all != null) pop.querySelectorAll("input[data-i]:not(:disabled)").forEach(x => x.checked = e.target.checked); sync(); });
-  const keys = () => [...pop.querySelectorAll("input[data-i]:checked")].map(x => items[+x.dataset.i].k);
-  pop.querySelector(".duesave").onclick = async ev => { ev.stopPropagation(); await go(keys(), ev.currentTarget); closeDuePop(); };
-  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); const k = keys(); popShare(ev.currentTarget, () => o.share(k), title); };
+  const keys = () => [...pop.querySelectorAll("input[data-i]:checked")].map(x => items[+x.dataset.i].k), extra = () => !!pop.querySelector("input[data-extra]")?.checked;
+  pop.querySelector(".duesave").onclick = async ev => { ev.stopPropagation(); await go(keys(), ev.currentTarget, extra()); closeDuePop(); };
+  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); const k = keys(), x = extra(); popShare(ev.currentTarget, () => o.share(k, x), title); };
   placePop(pop, b); sync();
 }
 const pickSub = d => d.date ? `<span class="pill ${listBand(d.n)} num exppill">${fmtDate(d.date)}</span> ${esc(whenText(d.n))}` : "Date not entered";
@@ -11741,24 +11773,7 @@ document.addEventListener("click", e => {
 V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
 function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
 ["bkPrint", "bkTsPrint"].forEach(id => $(id).insertAdjacentHTML("afterbegin", ICON_PRINT));
-$("bkPrint").onclick = async () => {
-  const btn = $("bkPrint"), d = slipData(), name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
-  let downloads = null;
-  try { downloads = await auDownloads(); } catch { downloads = null; }
-  if (!downloads) { toast("Saving files isn't available in this view. Reload the page and try again."); return; }
-  btn.disabled = true; const label = btn.textContent; btn.textContent = "Preparing slip…";
-  try {
-    const blob = await slipPdf(await loadPdfLib(), d);
-    await downloads.save({ filename: name, data: blob });
-    toast("Slip saved as a PDF. Open it to print.");
-  } catch (e) {
-    const code = e?.code;
-    if (code === "declined") toast("Slip not saved.");
-    else if (code === "rate_limited") toast("A save is already waiting for your answer.");
-    else if (e?.message === "load failed") toast("Couldn't prepare the slip. Check your internet connection and try again.");
-    else toast("Couldn't save the slip. Try again.");
-  } finally { btn.disabled = false; btn.textContent = label; }
-};
+$("bkPrint").onclick = () => slipPrint(slipForm(), $("bkPrint"));
 
 /* ---------- truck trips ---------- */
 let kBusId = "", kFy = 0, lgEditId = null, lgDaysTouched = false;
