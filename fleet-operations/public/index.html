@@ -1167,7 +1167,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .padipop .pprule { margin-top: 10px; background: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 3px; }
 .padipop .pprule b { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .duepop .dnote { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
-.duepop .dall { display: flex; gap: 10px; align-items: center; font-weight: 600; padding: 2px 0 8px; border-bottom: 1px solid var(--line); cursor: pointer; } .duepop .dall input { width: 18px; height: 18px; } .duepop .dextra { border-bottom: 0; border-top: 1px solid var(--line); padding: 8px 0 4px; margin-top: 4px; }
+.duepop .dall { display: flex; gap: 10px; align-items: center; font-weight: 600; padding: 2px 0 8px; border-bottom: 1px solid var(--line); cursor: pointer; } .duepop .dall input { width: 18px; height: 18px; }
 .duepop .dlist label { display: flex; gap: 10px; align-items: center; flex: 1; min-width: 0; cursor: pointer; }
 .duepop .dlist input { width: 18px; height: 18px; flex: none; }
 .duepop .dlist .fn { display: block; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
@@ -1571,33 +1571,10 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsreset { border: 0; background: none; color: var(--accent); font: 600 14px var(--body); text-decoration: underline; padding: 6px 0; cursor: pointer; }
 .rsmiss { margin: 6px 0 0; font-size: 13px; color: var(--warn); text-align: center; }
 .bhappr.rswarn { background: var(--warn-soft); }
-.rshome { margin: 0 0 10px; } .rsbus { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .rsbus .plate { font-size: 18px; }
+.rshome { display: flex; flex-direction: column; gap: 12px; } .rsbus { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .rsbus .plate { font-size: 18px; }
 .rsbus select { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); padding: 0 8px; }
+.rstoday { max-width: 520px; } .rstst { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .rsdays { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-#view-trsheet .rstop { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; } .rstop h1 { margin: 0; font-size: 20px; } .rsacts { display: flex; gap: 6px; flex: none; } .rsacts .btn { padding: 6px 10px; min-height: 0; font-size: 14px; }
-.rsmsum .sec { font-size: 17px; }
-.rsmnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; } .rsmnav .sec { margin: 0; text-align: center; } .rsmnav .sec small { font: 500 12px var(--body); color: var(--muted); }
-.rsmnav .btn, #rsMonthBtn { padding: 6px 12px; min-height: 0; font-size: 14px; font-weight: 600; white-space: nowrap; background: var(--accent-soft); color: var(--accent); border: 1.5px solid var(--accent); }
-.rsmnav .btn:disabled { opacity: .3; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-@media (min-width: 701px) { .rsmg { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-.rsmt { border: 1px solid var(--line); border-radius: 8px; padding: 5px 7px; background: var(--surface); min-width: 0; } .rsmt i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rsbal { text-align: center; margin: 2px 0 8px; } .rsbal i { display: block; font: 600 12px var(--body); color: var(--muted); font-style: normal; text-transform: uppercase; letter-spacing: .04em; }
-.rsbal b { font-size: 26px; color: #14532d; } .rsbal.neg b { color: #8b1a12; }
-:root[data-theme="dark"] .rsbal b { color: #8fe0a8; } :root[data-theme="dark"] .rsbal.neg b { color: #ff9b91; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rsbal b { color: #8fe0a8; } :root:not([data-theme="light"]) .rsbal.neg b { color: #ff9b91; } }
-.rsmt b { font-size: 14px; white-space: nowrap; } .rsmt.neg b { color: var(--danger); } .rsmt.pos b { color: var(--ok); }
-.rsdays .rsday { flex-direction: column; align-items: stretch; gap: 4px; min-height: 0; padding: 8px 10px; }
-.rsdays .rsday > .rsdh { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px; flex-wrap: wrap; } .rsdh > :last-child:not(b) { margin-left: auto; } .rsdays .rsday { text-align: left; } .rsdh b { font-size: 15px; } .rsdh .bstage { font-size: 12px; }
-.rsdbal { display: inline-flex; align-items: baseline; gap: 6px; padding: 3px 10px; border-radius: 999px; background: #14532d; color: #fff; font-size: 15px; font-weight: 700; white-space: nowrap; }
-.rsdbal i { font: 500 11px var(--body); font-style: normal; opacity: .85; } .rsday .rsdbal.neg { background: #8b1a12; color: #fff; }
-.rsdg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px 8px; } .rsdc { display: flex; gap: 2px 14px; flex-wrap: wrap; }
-.rsdg > span, .rsdc > span { font-size: 13px; font-weight: 600; min-width: 0; } .rsdg i, .rsdc i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; } .rsdc > span { display: flex; gap: 4px; align-items: baseline; } .rsdc i { display: inline; }
-.bstage.todo { background: var(--surface); color: var(--danger); border: 1px dashed var(--danger); } .bstage.idle { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); }
-.rsday.good { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
-.rsday.loss { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); }
-.rsday.part { background: color-mix(in srgb, #f2c200 22%, var(--surface)); border-color: color-mix(in srgb, #d9a900 50%, var(--line)); }
-.rsday .neg, .rshist .neg { color: var(--danger); font-weight: 600; } .rschg, .rsday small.rschg { color: var(--warn); font-weight: 600; }
-.rshist { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; color: var(--muted); padding: 8px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 10px; }
 .rsday { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 58px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .rsday > span:first-child { display: flex; flex-direction: column; gap: 2px; } .rsday b { font-size: 16px; } .rsday small { color: var(--muted); font-size: 13px; }
 .tpcheer { margin: 8px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ink); font: 600 15px var(--body); }
@@ -1924,7 +1901,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
           <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
           <button class="btn" type="button" id="tPrint" title="Monthly sheet in Excel">Print</button>
-          <a class="btn primary" href="#trips-day" id="tDayLink">Day sheet</a>
+          <a class="btn primary" href="#trips-day">Day sheet</a>
           <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
         </div>
       </header>
@@ -1978,8 +1955,10 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 
     <!-- ================= Route bus trip sheet on the phone (conductors) ================= -->
     <section class="wrap twrap" id="view-trsheet" hidden>
-      <header class="top rstop"><h1>Route trip sheet</h1>
-        <div class="rsacts"><a class="btn" href="#trips-route" id="rsMonthBtn" hidden>Monthly view ›</a><a class="btn mclose" href="#home" id="rsCloseBtn" aria-label="Close">Close ✕</a></div></header>
+      <header class="top"><div>
+        <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><span>Route trip sheet</span></nav>
+        <h1>Route trip sheet</h1>
+        <p class="sync">Fill in the day's sheet at night and send it to the office. It saves by itself as you type.</p></div></header>
       <div id="rsHome"></div>
     </section>
     <!-- ================= Route bus day sheet (computer) ================= -->
@@ -2871,7 +2850,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <button class="btn danger" type="button" id="bkReject">Reject</button>
         <button class="btn primary" type="button" id="bkApprove">Approve</button>
       </span>
-      <button class="btn primary" type="button" id="bkUnreject" hidden>Bring back for approval</button>
     </div>
     <div class="bkappr" id="bkLock" hidden>
       <span id="bkLockText"></span>
@@ -5563,7 +5541,6 @@ async function meSaveAll() {
 async function meOpenDay(date) {
   const n = meChangedKeys().length;
   if (n && canTrips) { const ok = await askYesNo(`Save the ${n} changed day${n === 1 ? "" : "s"} first?`, { yes: "Save and open", no: "Open without saving" }); if (ok) await meSaveAll(); }
-  if (bwIsPhone()) { rsOpen(tBusId, date); return; }
   dbBus = tBusId; opDate = date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day";
 }
 // Calendar: each day of the month with its state; a click opens the day sheet.
@@ -5588,8 +5565,6 @@ function renderTrips() {
   loadLocalTrips();
   $("tNoBus").hidden = !!buses.length; $("tBody").hidden = !buses.length; $("tBusF").hidden = buses.length === 1;
   if (!buses.length) return;
-  // On a phone the day is filled in the phone trip sheet, so the button goes there.
-  $("tDayLink").textContent = bwIsPhone() ? "Trip sheet" : "Day sheet"; $("tDayLink").href = bwIsPhone() ? "#route-sheet" : "#trips-day";
 
   const has = new Set(trips.map(t => t.date.slice(0, 7)));
   $("tTabs").innerHTML = MONTHS.map((m, i) => { const ym = monthYM(tFyStart, i);
@@ -7258,8 +7233,8 @@ function rsEnds(bus, date) { const r = routeCalc(fyOf(date), busWin(bus), yearsA
 const RS_PAIR = { vellore: "Thiruthani", thiruthani: "Vellore", thiruthanni: "Vellore", tiruttani: "Vellore" };
 function rsOpposite(place, ends) {
   const p = placeName(place).toLowerCase(), e = ends.map(placeName);
-  const o = e.length === 2 && e.some(x => x.toLowerCase() === p) && e.find(x => x.toLowerCase() !== p);
-  return o || RS_PAIR[p] || "";
+  if (e.length === 2 && e.some(x => x.toLowerCase() === p)) return e.find(x => x.toLowerCase() !== p);
+  return RS_PAIR[p] || "";
 }
 // The starting place's list in the Route expenses master (same name, or one name containing the other, e.g. "Vellore Bus Stand").
 function rsMaster(place) {
@@ -7462,23 +7437,12 @@ function rsColNote() {
 }
 // Nothing is required: the conductor sends whatever he knows and the office fills in the rest.
 function rsMissing() { return []; }
-// The day's story in one line: filled, sent, approved or sent back, and changed by the office later.
-function rsHistHtml() {
-  const S = rsDayState(rsh.bus, rsh.date), x = S.x, t = S.t, at = v => v ? fmtStamp(v) : "", steps = [];
-  if (x) steps.push(`Filled by ${esc(x.byName || "the conductor")}`);
-  if (x?.submittedOn) steps.push(`Sent ${at(x.submittedOn)}`);
-  if (x?.status === "rejected") steps.push(`<span class="neg">Sent back${x.rejectedByName ? ` by ${esc(x.rejectedByName)}` : ""}${x.rejectReason ? `: ${esc(x.rejectReason)}` : ""}</span>`);
-  if (x?.status === "approved") steps.push(`Approved${x.approvedByName ? ` by ${esc(x.approvedByName)}` : ""}${x.approvedOn ? ` ${at(x.approvedOn)}` : ""}`);
-  if (t && !t.fromSheet) steps.push("Entered by the office");
-  if (S.changed) steps.push(`<span class="rschg">Changed by office</span>`);
-  return `<div class="rshist"><span class="bstage ${S.cls}">${S.label}</span>${steps.length ? `<span>${steps.join(" → ")}</span>` : ""}</div>`;
-}
 function rsRender(top) {
   const el = $("rsw"), keep = !top && $("rsBody") ? $("rsBody").scrollTop : 0, v = vehicles.find(x => x.id === rsh.bus), d = rsDoc(rsh.bus, rsh.date);
   const day = new Date(rsh.date + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
   const bal = rsCol() - rsExpTot(), miss = rsh.ready ? rsMissing() : ["…"];
   el.innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="rsTitle">${rsh.admin ? "Office view" : "Trip sheet"} · ${esc(plateOf(v))}</b><span>${day}${rsh.start && !rsh.notRun ? ` · Starts from ${esc(placeName(rsh.start))}` : ""}${rsh.admin && d?.byName ? ` · sent by ${esc(d.byName)}` : ""}</span></div></header>` +
-    `<div class="bwb tws tpage" id="rsBody">${rsHistHtml()}${rsPageHtml()}</div>` +
+    `<div class="bwb tws tpage" id="rsBody">${rsPageHtml()}</div>` +
     (rsh.admin && rsh.askWhy ? `<footer class="bwf"><label class="bwf1"><span>Why is it sent back? The conductor will see this.</span><textarea id="rsWhy" rows="2" maxlength="200"></textarea></label><span class="bwerr" id="rsWhyErr"></span><div class="bw2" style="margin-top:8px"><button type="button" class="bwalt" data-rs="rejectno">Cancel</button><button type="button" class="bwgo" data-rs="rejectgo">Send back</button></div></footer>` :
      rsh.admin ? (rsh.edit && d?.status === "submitted" ? `<footer class="bwf two"><button type="button" class="bwalt" data-rs="reject">Send back</button><button type="button" class="bwgo" data-rs="approve"${rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Saving…" : "Approve"}</button></footer>` : "")
       : rsh.edit && canTrips ? `<footer class="bwf"><div class="twspent"><span class="tpst ${rsh.dirty ? "bad" : "ok"}" id="rsSt">${rsh.dirty ? "Not saved yet" : rsh.saved ? "✓ Saved" : ""}</span><span>${rsh.notRun ? "Did not run" : `Balance <b id="rsBal">${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b>`}</span></div>` +
@@ -7641,86 +7605,20 @@ function rsClose() {
   if ($("rsw")) $("rsw").hidden = true; document.documentElement.classList.remove("bw-on"); rsh = null; renderOps(); ovClosed();
 }
 
-// One status for a day, read from the trip sheet itself (the record the office and the reports use), then the conductor's sheet.
-function rsDayState(bus, day, src = canTrips ? [...winTrips(), ...trips] : winTrips()) {
-  const x = rsDoc(bus, day), t = src.find(y => y.vehicleId === bus && y.date === day), stamp = v => v ? fmtStamp(v) : "";
-  const col = t ? tripCollection(t) : num(x?.collection), bal = t ? tripCollection(t) - tripExpense(t) : num(x?.balance);
-  const sg = t && !t.notRun ? [1, 2, 3, 4, 5].filter(i => num(t["s" + i]) > 0).length : 0;
-  const changed = !!(t && x?.status === "approved" && !t.notRun && (Math.round(col) !== Math.round(num(x.collection)) || Math.round(bal) !== Math.round(num(x.balance))));
-  const base = { x, t, col, bal, changed, money: !!(t ? !t.notRun : x && !x.notRun), tone: t && !t.notRun ? (bal < 0 ? "loss" : sg > 0 && sg < SINGLES_PER_DAY && !(num(t.colTotal) > [1, 2, 3, 4, 5].reduce((a, i) => a + num(t["s" + i]), 0)) ? "part" : "") : "" };
-  if (x?.status === "submitted") return { ...base, cls: "pending", label: "Waiting for office", sub: `Sent${x.byName ? ` by ${x.byName}` : ""} ${stamp(x.submittedOn)}` };
-  if (t?.notRun) return { ...base, cls: "idle", label: "Did not run", sub: t.idleReason || "" };
-  if (t) return { ...base, cls: "completed", label: "✓ In trip sheet", sub: t.fromSheet && x ? `Sent by ${x.byName || "the conductor"}${x.approvedByName ? ` · approved by ${x.approvedByName}` : ""}` : "Entered by the office" };
-  if (x?.status === "rejected") return { ...base, cls: "rejected", label: "Sent back", sub: x.rejectReason || "" };
-  if (x?.notRun) return { ...base, cls: "draft", label: "Saved on phone, not sent", sub: "Did not run" };
-  if (x) return { ...base, cls: "draft", label: "Saved on phone, not sent", sub: "" };
-  return { ...base, cls: "todo", label: "Not entered", sub: "" };
-}
-// Kilometres for a day: its closing reading less the last reading before it.
-function rsDayKm(bus, day, T, src = winTrips()) {
-  if (!T?.odo) return null;
-  const prev = src.filter(y => y.vehicleId === bus && y.date < day && y.odo).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const k = prev ? T.odo - prev.odo : null; return k > 0 && k < 2000 ? k : null;
-}
-// The days the phone page reads. The office reads the bus's whole financial year (the same data as the monthly screen),
-// so any month can be shown; a conductor reads the recent days only.
-let rsYm = "";
-function rsSrc(bus, ym) {
-  if (!canTrips) return winTrips();
-  const fy = fyOf(ym + "-01");
-  if (tBusId !== bus || tFyStart !== fy) { tBusId = bus; tFyStart = fy; tSubKey = ""; trips = []; tripMonths = []; if ($("tFy")) $("tFy").value = String(fy); }
-  subscribeTrips(); loadLocalTrips();
-  return tripDb && !trips.length && ym === todayISO().slice(0, 7) ? winTrips() : trips;
-}
-const ymLabel = ym => new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-const ymShift = (ym, n) => { const d = new Date(ym + "-01T00:00:00"); d.setMonth(d.getMonth() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; };
-// The month for the bus as small tiles, with the month switcher on top (the office's view of the phone page).
-function rsMonthHtml(bus, ym, src) {
-  const cur = todayISO().slice(0, 7), all = src.filter(t => t.vehicleId === bus).sort((a, b) => a.date.localeCompare(b.date));
-  // Back as far as the bus has trip sheet data; never past this month.
-  const known = [...all.map(t => t.date.slice(0, 7)), ...monthsAll().filter(m => m.vehicleId === bus).map(m => m.month)].filter(Boolean).sort()[0] || ym;
-  const prev = ymShift(ym, -1), next = ymShift(ym, 1), short = x => ymLabel(x).slice(0, 3);
-  const ran = all.filter(t => t.date.startsWith(ym) && !t.notRun);
-  const T = ran.reduce((a, t) => { a.col += tripCollection(t); a.exp += tripExpense(t); a.fuel += num(t.fuelCost); a.lit += num(t.litres); a.pay += num(t.driverPay) + num(t.conductorPay) + num(t.checkerPay); a.sg += singlesRun(t); return a; }, { col: 0, exp: 0, fuel: 0, lit: 0, pay: 0, sg: 0 });
-  const days = T.sg / SINGLES_PER_DAY, bal = T.col - T.exp, per = v => days ? rs(v / days) : "—";
-  const open = (tBusId === bus ? openingKm(ym).km : null) ?? [...all].reverse().find(t => t.date < ym && t.odo)?.odo, last = [...ran].reverse().find(t => t.odo)?.odo;
-  const km = open && last ? last - open : null;
-  const tile = (k, v, cls = "") => `<div class="rsmt${cls ? " " + cls : ""}"><i>${k}</i><b>${v}</b></div>`;
-  return `<section class="panel rsmsum"><div class="rsmnav"><button type="button" class="btn" data-rsym="${prev}"${prev < known ? " disabled" : ""}>‹ ${short(prev)}</button>` +
-    `<h2 class="sec">${ymLabel(ym)}${ym === cur ? " <small>so far</small>" : ""}</h2><button type="button" class="btn" data-rsym="${next}"${next > cur ? " disabled" : ""}>${short(next)} ›</button></div>` +
-    `<div class="rsbal${bal < 0 ? " neg" : ""}"><i>Total balance</i><b>${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</b></div><div class="rsmg">` +
-    tile("Days run", `${fmtDays(days)} / ${daysIn(ym)}`) + tile("Total collection", rs(T.col)) + tile("Total expense", rs(T.exp)) +
-    tile("Avg col / day", per(T.col)) + tile("Avg bal / day", per(bal), bal < 0 ? "neg" : "") + tile("Diesel (₹)", rs(T.fuel)) +
-    tile("Avg diesel/day", per(T.fuel)) + tile("Fuel (ltrs)", `${nf(T.lit, T.lit % 1 ? 1 : 0)} L`) + tile("Total kms", km != null ? nf(km) : "—") +
-    tile("Mileage", km && T.lit ? `${nf(km / T.lit, 2)} km/L` : "—") + tile("Per day kms", km != null && days ? nf(km / days) : "—") + tile("Avg salary/day", per(T.pay)) +
-    `</div></section>`;
-}
-// The phone trip sheet page: every day of the month for the bus, newest first. The office also sees the month's figures and can change month.
+// The conductor's page: today's sheet for his bus, and his last days.
 function renderRsList() {
   const rb = routeBuses(), bus = rsMyBus(); rsBus = bus;
-  $("rsMonthBtn").hidden = !canTrips; $("rsMonthBtn").dataset.rsmonth = bus || ""; $("rsCloseBtn").href = canTrips ? "#trips" : "#home";
   if (rsh && !rsh.ready) { rsLoad(); if (rsh.ready) rsRender(); }
   if (!rb.length) { $("rsHome").innerHTML = `<div class="empty panel"><strong>No route buses yet</strong>Ask the office to add the route buses.</div>`; return; }
-  const v = vehicles.find(x => x.id === bus), today = todayISO();
-  if (!rsh && opDate !== today) { opDate = today; subscribeDay(); }
-  const cur = today.slice(0, 7), ym = canTrips && rsYm && rsYm <= cur ? rsYm : cur, src = rsSrc(bus, ym);
-  $("rsMonthBtn").dataset.ym = ym;
-  const chip = S => `<span class="bstage ${S.cls}">${S.label}</span>`, lastDay = ym === cur ? today : `${ym}-${pad2(daysIn(ym))}`;
-  const days = [...Array(+lastDay.slice(8, 10))].map((_, i) => shiftDay(lastDay, -i));
-  $("rsHome").innerHTML = `<div class="rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
-    `</div>` + (canTrips ? rsMonthHtml(bus, ym, src) : "") +
-    `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><div class="rsdays">` +
-    days.map(day => { const S = rsDayState(bus, day, src), T = S.t || (S.x && rsTripFrom(S.x)), km = rsDayKm(bus, day, T, src), lit = num(T?.litres);
-      const f = (k, v, cls = "") => `<span${cls ? ` class="${cls}"` : ""}><i>${k}</i>${v}</span>`;
-      // A day that ran is green, a loss red, a part day yellow. Days in the trip sheet need no tag; who sent or entered them is in the sheet itself.
-      const tone = S.money ? (S.bal < 0 ? "loss" : S.tone || "good") : "", sub = ["rejected", "idle", "draft"].includes(S.cls) ? S.sub : "";
-      return `<button type="button" class="rsday${tone ? " " + tone : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${S.cls === "completed" ? "" : chip(S)}` +
-        // The day's balance on the first line, like the month's total balance at the top.
-        `${S.money ? `<span class="rsdbal${S.bal < 0 ? " neg" : ""}"><i>Balance</i>${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}</span>` : ""}</span>` +
-        (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Starting", esc(T?.start || "—"))}` +
-          `${f("Kms", km != null ? nf(km) : "—")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
-          `<span class="rsdc">${f("Driver", esc(crewName("driver", T) || "—"))}${f("Conductor", esc(crewName("conductor", T) || "—"))}</span>` : "") +
-        `${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
+  const v = vehicles.find(x => x.id === bus), today = todayISO(), d = rsDoc(bus, today), mine = canTrips ? ops.routeSheets : ops.routeSheets.filter(x => x.vehicleId === bus || x.by === myUserId);
+  const st = x => x ? `<span class="bstage ${{ draft: "draft", submitted: "pending", approved: "completed", rejected: "rejected" }[x.status] || ""}">${RS_ST[x.status] || ""}</span>` : `<span class="bstage draft">Not started</span>`;
+  const days = [...Array(7)].map((_, i) => shiftDay(today, -i));
+  $("rsHome").innerHTML = `<section class="panel rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
+    `<button type="button" class="bwgo rstoday" data-rsopen="${today}">${d?.status === "submitted" || d?.status === "approved" ? "Open today's trip sheet" : d ? "Continue today's trip sheet" : "Fill today's trip sheet"} ${BW_ICON.next}</button>` +
+    `<div class="rstst">${st(d)}${d?.status === "rejected" && d.rejectReason ? `<span class="rshow">${esc(d.rejectReason)}</span>` : ""}</div></section>` +
+    `<section class="panel"><h2 class="sec">Last 7 days · ${esc(plateOf(v))}</h2><div class="rsdays">` +
+    days.map(day => { const x = rsDoc(bus, day), t = winTrips().find(y => y.vehicleId === bus && y.date === day);
+      return `<button type="button" class="rsday" data-rsopen="${day}"><span><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${x && !x.notRun ? `<small>Collection ${rs(num(x.collection))} · Balance ${rs(num(x.balance))}</small>` : x?.notRun ? `<small>Did not run</small>` : t ? `<small>Entered by the office</small>` : ""}</span>${x ? st(x) : t ? `<span class="bstage completed">In trip sheet</span>` : st(null)}</button>`; }).join("") +
     `</div></section>` +
     (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
 }
@@ -7735,11 +7633,6 @@ function rsWaitHtml() {
 }
 document.addEventListener("click", e => {
   const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) { rsOpen(rsBus, o.dataset.rsopen); return; }
-  const ny = e.target.closest("[data-rsym]"); if (ny && $("rsHome")?.contains(ny)) { rsYm = ny.dataset.rsym; renderRsList(); scrollTo(0, 0); return; }
-  // The monthly screen opens on the bus and month being viewed.
-  const mo = e.target.closest("[data-rsmonth]"); if (mo) { const ym = mo.dataset.ym || todayISO().slice(0, 7);
-    if (tBusId !== mo.dataset.rsmonth || tFyStart !== fyOf(ym + "-01")) { tBusId = mo.dataset.rsmonth; tFyStart = fyOf(ym + "-01"); tSubKey = ""; trips = []; tripMonths = []; }
-    if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+ym.slice(5, 7) + 8) % 12; subscribeTrips(); loadLocalTrips(); setTimeout(renderTrips); }
   const a = e.target.closest("[data-rsappr]"); if (a) { const x = ops.routeSheets.find(y => y.id === a.dataset.rsappr); if (!x) return;
     if (bwIsPhone()) rsOpen(x.vehicleId, x.date, true); else { dbBus = x.vehicleId; opDate = x.date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; } }
 });
@@ -8678,16 +8571,13 @@ function bwApprCard(b) {
     `<div class="bwseg c2">${btn("ask", "Reject", "bwdanger", "reject")}${btn("apprbk", bw.apprBusy ? "Saving…" : "Approve", "twsave")}</div></div>`;
   if (b.tsStatus === "submitted" && !tripClosed(b)) return `<div class="bhappr"><b>Trip sheet sent for approval</b><span>By ${esc(b.tsSubmittedByName || "the driver")}${b.tsSubmittedOn ? ` on ${fmtDate(b.tsSubmittedOn)}` : ""}. Open Trip sheet to check it, then decide.</span>` +
     `<div class="bwseg c2">${btn("ask", "Send back", "bwdanger", "tsback")}${btn("apprts", bw.apprBusy ? "Saving…" : "Approve", "twsave")}</div></div>`;
-  if (b.status === "rejected") return `<div class="bhappr gone"><b>Rejected</b><span>${b.rejectedByName ? `By ${esc(b.rejectedByName)}` : ""}${b.rejectedOn ? ` on ${fmtDate(b.rejectedOn)}` : ""}${b.rejectReason ? `: ${esc(b.rejectReason)}` : ""}. You can bring it back to approve it after all.</span>` +
-    `<div class="bwseg">${btn("ask", "Bring back for approval", "twsave", "unreject")}</div></div>`;
   if (b.status === "cancelled" && !tripClosed(b)) return `<div class="bhappr gone"><b>Cancelled</b><span>This booking was cancelled. The admin can bring it back if the trip is on again.</span>` +
     `<div class="bwseg">${btn("ask", "Bring back booking", "twsave", "restore")}</div></div>`;
   return "";
 }
 const BW_ASK = { reject: ["Reject this booking?", "The booking planner sees your reason and can change and send it again.", "Why? e.g. bus not free on these days", "Reject"],
   tsback: ["Send the trip sheet back?", "The driver sees your reason and can correct and send it again.", "What should be corrected?", "Send back"],
-  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"],
-  unreject: ["Bring this booking back?", "It goes back to Awaiting approval with the same details. Check it, then approve.", "", "Bring back"] };
+  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"] };
 function bwAskHtml() {
   const [t, p, ph, go] = BW_ASK[bw.ask];
   return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwAkT"><div><b id="bwAkT">${t}</b><p>${p}</p>` +
@@ -8711,9 +8601,6 @@ async function bwAskGo() {
   const note = String(bw.askNote || "").trim(), cur = bwBkNow(); if (!cur) return;
   if (bw.ask === "reject") { if (!note) { toast("Type the reason for rejecting."); return; } bwDeskAct(() => { $("bkRejectWhy").value = note; $("bkReject").click(); }); return; }
   if (bw.ask === "tsback") { if (!note) { toast("Type what should be corrected."); return; } bwDeskAct(() => { $("tsRejectWhy").value = note; $("tsReject").click(); }); return; }
-  if (bw.ask === "unreject") { bw.apprBusy = true; bwRender();
-    try { await bkUnreject(cur); } catch { toast("Couldn't save. Check your connection and try again."); }
-    if (bw) { bw.apprBusy = false; bw.ask = ""; bwClose(); openBooking(cur.id); } return; }
   // Bring back: only if the bus is still free on those days.
   const clash = clashOf({ ...cur, status: "booked" }, cur.id);
   if (clash) { toast(`The bus is already taken on these days by booking ${clash.no || ""}. Change the dates or bus first.`); return; }
@@ -8929,7 +8816,6 @@ function bwClick(e) {
   if (a === "apprbk") { bwDeskAct(() => $("bkApprove").click()); return; }
   if (a === "apprts") { bwDeskAct(() => $("tsApprove").click()); return; }
   if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b, t); return; }
-  if (a === "slipprint") { const b = bwBkNow(); if (b) slipPrint(b, t); return; }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
   if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
   if (a === "advtoll") { bw.da.toll = !bw.da.toll; bwRender(); bwAdvSoon(50); return; }
@@ -9465,7 +9351,6 @@ function bwHomeHtml(b) {
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       (canBookings && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", "Driver advance", b.drvSettle ? "Settled" : !d.total && !d.ext ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle", b.drvSettle ? "ok" : (d.total || d.ext) && d.net ? "due" : ""))(drvCalc(b)) : "") +
-      (bw.driver ? "" : tile('data-bw="slipprint"', "🖨️", "Booking slip", "Image or PDF to print or share")) +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
       (b.tsStatus === "approved" || tsFill(b).pct === 100 ? tile('data-bw="tsprint" aria-label="Print trip sheet" title="Print trip sheet"', "🖨️", "") : "") +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
@@ -9788,8 +9673,6 @@ function openBooking(id, preset, full) {
   syncTsAppr(b); syncBkLock(b);
   $("bkAppr").hidden = !(pending || b?.status === "rejected" || b?.status === "draft");
   $("bkApprAct").hidden = !(pending && canBookings);
-  // The admin can undo a rejection: the booking goes back to Awaiting approval, to be approved after all.
-  $("bkUnreject").hidden = !(b?.status === "rejected" && canBookings && platformWrite);
   $("bkRejectWhy").value = "";
   const lastRej = b?.rejections?.length ? b.rejections[b.rejections.length - 1] : (b?.rejectReason ? { reason: b.rejectReason, by: b.rejectedByName, on: b.rejectedOn } : null);
   const rejNote = lastRej ? ` Last rejected${lastRej.by ? ` by ${esc(lastRej.by)}` : ""}${lastRej.on ? ` on ${fmtDate(lastRej.on)}` : ""}: <i>${esc(lastRej.reason || "")}</i>` : "";
@@ -10636,17 +10519,6 @@ $("bkReject").onclick = async () => {
   try { await opsSave("bookings", next); await addBHistory(bookingChanges(cur, next, `Rejected: ${why}`)).catch(() => {}); closeBkDrawer(); toast(`Booking ${cur.no} rejected`); renderOps(); }
   catch { toast("Couldn't save. Try again."); }
 };
-$("bkUnreject").onclick = async () => {
-  const cur = ops.bookings.find(x => x.id === bkEditId); if (!cur || !canBookings) return;
-  if (!await askYesNo(`Bring booking ${cur.no || ""} back? It goes back to Awaiting approval with the same details, so you can approve it.`, { yes: "Yes, bring it back" })) return;
-  try { await bkUnreject(cur); closeBkDrawer(); openBooking(cur.id); } catch { toast("Couldn't save. Try again."); }
-};
-// Undo a rejection (computer and phone): back to Awaiting approval, the rejection kept in its history.
-async function bkUnreject(cur) {
-  const next = { ...cur, status: "pending", broughtBackOn: todayISO(), broughtBackByName: whoAmI() };
-  await opsSave("bookings", next); await addBHistory(bookingChanges(cur, next, "Brought back from rejected")).catch(() => {});
-  toast(`Booking ${cur.no || ""} is back in Awaiting approval`); renderOps();
-}
 $("bkDelete").onclick = async () => {
   if (bkMode === "view") return;
   if (!await askYesNo(`Delete booking ${$("bkNo").value.trim()}? This cannot be undone.`, { yes: "Yes, delete", danger: true })) return;
@@ -10680,65 +10552,49 @@ function loadPdfLib() {
     document.head.appendChild(s);
   });
 }
-// The slip of the booking open on the computer, with any changes not yet saved.
-const slipForm = () => ({ ...ops.bookings.find(x => x.id === bkEditId), ...bkRead(), no: $("bkNo").value.trim(), bookedOn: $("bkBookedOn").value, party: $("bkParty").value.trim(), phone: $("bkPhone").value.trim(), address: $("bkAddress").value.trim(), places: $("bkPlaces").value.trim() });
-// showBus false leaves the vehicle no. off the slip, for when the bus may change before the trip.
-function slipData(b, showBus = true) {
+function slipData() {
+  const b = { ...bkRead(), no: $("bkNo").value.trim(), bookedOn: $("bkBookedOn").value, party: $("bkParty").value.trim(), phone: $("bkPhone").value.trim(), address: $("bkAddress").value.trim(), places: $("bkPlaces").value.trim() };
   const c = bkCalc(b), bus = vehicles.find(v => v.id === b.vehicleId), fd = iso => iso ? iso.split("-").reverse().join("/") : "";
   const pp = ppNames(b);
-  const terms = pp.length ? `${pp.join(", ")} ${pp.length === 1 ? "is" : "are"} paid by the party.` : "";
-  return { b, c, bus, fd, terms, showBus };
+  const terms = pp.length ? `${pp.join(", ")} ${pp.length === 1 ? "is" : "are"} paid by the party.` : "All expenses are borne by us.";
+  return { b, c, bus, fd, terms };
 }
 // The standard PDF fonts only cover Latin characters, so arrows and other symbols are swapped for plain ones.
 const pdfSafe = s => String(s ?? "").replace(/[→⇄]/g, "->").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/₹/g, "Rs.").replace(/[^\x20-\x7E\xA0-\xFF]/g, "?");
-// The company header shared by the booking slip and the trip sheet: border, VBS badge, name and address.
-function vbsHeader(page, text, W, H, X0, ink) {
-  page.drawRectangle({ x: 14, y: 14, width: W - 28, height: H - 28, borderColor: ink, borderWidth: 1.4 });
-  page.drawEllipse({ x: X0 + 26, y: H - 44, xScale: 24, yScale: 13, borderColor: ink, borderWidth: 1.6 });
-  text("VBS", X0 + 26, H - 48, { size: 11, bold: true, align: "center", color: ink });
-  text("VINAYAGAR BUS SERVICE", W / 2 + 22, H - 44, { size: 14, bold: true, align: "center", color: ink });
-  text("NO. 15, 4TH MAIN ROAD, ANNANAGAR WEST, VELLORE - 632001.", W / 2 + 22, H - 56, { size: 6.5, bold: true, align: "center", color: ink });
-}
 async function slipPdf(L, d) {
-  const pdf = await L.PDFDocument.create(); await slipLayout(L, pdf, d);
-  return new Blob([await pdf.save()], { type: "application/pdf" });
-}
-// Same order as the receipt book, under the trip sheet's company header; each column of fields starts its values in one line.
-async function slipLayout(L, pdf, d) {
-  const { b, c, bus, fd, terms, showBus } = d, amt = n => "Rs. " + Math.round(n).toLocaleString("en-IN");
-  const W = 419.53, H = 595.28, X0 = 30, X1 = W - 30, page = pdf.addPage([W, H]);
+  const { b, c, bus, fd, terms } = d, amt = n => "Rs. " + Math.round(n).toLocaleString("en-IN");
+  const pdf = await L.PDFDocument.create(), page = pdf.addPage([419.53, 595.28]);
   const reg = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
-  const ink = L.rgb(0.106, 0.165, 0.42), grey = L.rgb(0.35, 0.35, 0.35), black = L.rgb(0, 0, 0);
+  const W = 419.53, H = 595.28, X0 = 34, X1 = W - 34, ink = L.rgb(0.106, 0.165, 0.42), grey = L.rgb(0.3, 0.3, 0.3), black = L.rgb(0, 0, 0);
+  page.drawRectangle({ x: 17, y: 17, width: W - 34, height: H - 34, borderColor: ink, borderWidth: 1.6 });
   const text = (t, x, y, o = {}) => { const f = o.bold ? bold : reg, s = o.size || 11, str = pdfSafe(t), w = f.widthOfTextAtSize(str, s);
     page.drawText(str, { x: o.align === "right" ? x - w : o.align === "center" ? x - w / 2 : x, y, size: s, font: f, color: o.color || black }); return w; };
-  vbsHeader(page, text, W, H, X0, ink);
-  text("BOOKING SLIP", W / 2, H - 74, { size: 9.5, bold: true, align: "center", color: ink });
-  text(`S.No.  ${b.no || ""}`, X0, H - 74, { size: 10, bold: true }); text(`Date  ${fd(b.bookedOn)}`, X1, H - 74, { size: 10, bold: true, align: "right" });
+  const top = H - 46;
+  text(`S.No  ${b.no || ""}`, X0, top, { size: 10 }); text(`Date  ${fd(b.bookedOn)}`, X1, top, { size: 10, align: "right" });
+  text("Booking slip", W / 2, top - 1, { size: 15, bold: true, align: "center" });
+  page.drawLine({ start: { x: X0, y: top - 12 }, end: { x: X1, y: top - 12 }, thickness: 1.4, color: ink });
   const wrap = (t, f, s, maxW) => { const words = pdfSafe(t).split(/\s+/), out = []; let cur = "";
     words.forEach(w => { const n = cur ? cur + " " + w : w; if (f.widthOfTextAtSize(n, s) > maxW && cur) { out.push(cur); cur = w; } else cur = n; }); out.push(cur); return out; };
-  const lwOf = labels => Math.max(...labels.map(l => reg.widthOfTextAtSize(l, 8.5))) + 6;
-  // A field: grey label, then the value on a dotted line from a fixed point; a long value carries on to more lines.
-  const field = (label, value, x, w, y, lw, isBold = false) => {
-    text(label, x, y, { size: 8.5, color: grey });
-    const lines = wrap(value || "", isBold ? bold : reg, 11, w - lw - 2);
-    lines.forEach((ln, i) => { text(ln, x + lw, y + 1 - i * 15, { size: 11, bold: isBold });
-      page.drawLine({ start: { x: x + lw - 2, y: y - 3 - i * 15 }, end: { x: x + w, y: y - 3 - i * 15 }, thickness: 0.5, color: grey, dashArray: [1.2, 1.8] }); });
+  const field = (label, value, x, w, y, isBold = false) => {
+    const lw = text(label, x, y, { size: 9, bold: true, color: grey }) + 8;
+    const lines = wrap(value || "", isBold ? bold : reg, 11.5, w - lw);
+    lines.forEach((ln, i) => { text(ln, x + lw, y - i * 15, { size: 11.5, bold: isBold });
+      page.drawLine({ start: { x: x + lw - 3, y: y - 4 - i * 15 }, end: { x: x + w, y: y - 4 - i * 15 }, thickness: 0.5, color: grey, dashArray: [1.2, 1.8] }); });
     return lines.length * 15;
   };
-  let y = H - 104;
-  const full = [...(showBus ? [["Vehicle no.", plateOf(bus)]] : []), ["Name", b.party], ["Address", b.address], ["Phone", b.phone]], lwF = lwOf([...full.map(r => r[0]), "Places", "Start date"]);
-  full.forEach(([l, v]) => { y -= field(l, v, X0, X1 - X0, y, lwF) + 9; });
+  let y = top - 40;
+  [["Vehicle no.", plateOf(bus)], ["Name", b.party], ["Address", b.address], ["Phone", b.phone]].forEach(([l, v]) => { y -= field(l, v, X0, X1 - X0, y) + 12; });
   const third = (X1 - X0) / 3;
-  field("Start date", fd(b.from), X0, third - 8, y, lwF); field("End date", fd(b.to), X0 + third + 4, third - 8, y, lwOf(["End date"])); field("Days", fmtDays(b.days), X0 + 2 * third + 4, third - 4, y, lwOf(["Days"])); y -= 24;
-  y -= field("Places", b.places, X0, X1 - X0, y, lwF) + 15;
-  // Rent: two columns, values lined up in each.
-  const half = (X1 - X0) / 2, rx = X0 + half + 4, L1 = lwOf(["Empty rent / day", "Driver padi"]), L2 = lwOf(["Day rent / day", "Total rent", "Advance", "Balance"]);
-  field("Empty rent / day", b.rentType !== "day" && b.rate ? amt(b.rate) : "-", X0, half - 10, y, L1); field("Day rent / day", b.rentType === "day" && b.rate ? amt(b.rate) : "-", rx, half - 4, y, L2); y -= 24;
-  field("Driver padi", b.padi ? amt(b.padi) : "-", X0, half - 10, y, L1); field("Total rent", amt(num(b.rent)), rx, half - 4, y, L2, true); y -= 24;
-  field("Advance", amt(c.received), rx, half - 4, y, L2); y -= 24;
-  field("Balance", amt(c.balance), rx, half - 4, y, L2, true); y -= 32;
-  if (terms) wrap(terms, reg, 9.5, X1 - X0).forEach(ln => { text(ln, X0, y, { size: 9.5, color: grey }); y -= 13; });
-  text("This is a computer-generated slip. No signature is required.", W / 2, 24, { size: 8, color: grey, align: "center" });
+  field("Start date", fd(b.from), X0, third - 10, y); field("End date", fd(b.to), X0 + third, third - 10, y); field("Days", fmtDays(b.days), X0 + 2 * third, third, y); y -= 27;
+  y -= field("Places", b.places, X0, X1 - X0, y) + 18;
+  const half = (X1 - X0) / 2, rx = X0 + half + 6;
+  field("Empty rent / day", b.rentType !== "day" && b.rate ? amt(b.rate) : "-", X0, half - 10, y); field("Day rent / day", b.rentType === "day" && b.rate ? amt(b.rate) : "-", rx, half - 6, y); y -= 27;
+  field("Driver padi", b.padi ? amt(b.padi) : "-", X0, half - 10, y); field("Total rent", amt(num(b.rent)), rx, half - 6, y, true); y -= 27;
+  field("Advance", amt(c.received), rx, half - 6, y); y -= 27;
+  field("Balance", amt(c.balance), rx, half - 6, y, true); y -= 34;
+  wrap(terms, reg, 9.5, X1 - X0).forEach(ln => { text(ln, X0, y, { size: 9.5, color: grey }); y -= 13; });
+  text("Party signature", X0, 40, { size: 9.5 }); text("Owner signature", X1, 40, { size: 9.5, align: "right" });
+  return new Blob([await pdf.save()], { type: "application/pdf" });
 }
 // Trip sheet PDF, laid out like the printed VBS trip sheet book. Front: trip, crew, km, expenses and totals.
 // Back: every diesel fill and the driver advance. A5, the size of the book.
@@ -10785,12 +10641,16 @@ async function tsLayout(L, pdf, b) {
   const hline = (x0, x1, y, o = {}) => page.drawLine({ start: { x: x0, y }, end: { x: x1, y }, thickness: o.t || 0.8, color: o.color || ink, ...(o.dash ? { dashArray: [1.2, 1.8] } : {}) });
   const vline = (x, y0, y1) => page.drawLine({ start: { x, y: y0 }, end: { x, y: y1 }, thickness: 0.8, color: ink });
   // A long value (e.g. the special permit no.) is set a little smaller to fit before anything is cut off.
-  // lw0: a fixed label width, so the values of a column of fields start in one straight line.
-  const field = (label, value, x, w, y, lw0) => { const lw = Math.max(text(label, x, y, { size: 8.5, color: grey }) + 6, lw0 || 0);
+  const field = (label, value, x, w, y) => { const lw = text(label, x, y, { size: 8.5, color: grey }) + 6;
     let sz = 11; while (sz > 8 && reg.widthOfTextAtSize(pdfSafe(value || ""), sz) > w - lw - 2) sz -= 0.5;
     text(fit(value || "", reg, sz, w - lw - 2), x + lw, y + 1, { size: sz }); hline(x + lw - 2, x + w, y - 3, { dash: true, color: grey, t: 0.5 }); };
   const head = sub => {
-    page = pdf.addPage([W, H]); vbsHeader(page, text, W, H, X0, ink);
+    page = pdf.addPage([W, H]);
+    page.drawRectangle({ x: 14, y: 14, width: W - 28, height: H - 28, borderColor: ink, borderWidth: 1.4 });
+    page.drawEllipse({ x: X0 + 26, y: H - 44, xScale: 24, yScale: 13, borderColor: ink, borderWidth: 1.6 });
+    text("VBS", X0 + 26, H - 48, { size: 11, bold: true, align: "center", color: ink });
+    text("VINAYAGAR BUS SERVICE", W / 2 + 22, H - 44, { size: 14, bold: true, align: "center", color: ink });
+    text("NO. 15, 4TH MAIN ROAD, ANNANAGAR WEST, VELLORE - 632001.", W / 2 + 22, H - 56, { size: 6.5, bold: true, align: "center", color: ink });
     text(sub, W / 2, H - 74, { size: 9.5, bold: true, align: "center", color: ink });
     text(`S.No.  ${b.no || ""}`, X0, H - 74, { size: 10, bold: true });
     text("This is a computer-generated document. No signature is required.", W / 2, 24, { size: 8, color: grey, align: "center" });
@@ -10798,41 +10658,31 @@ async function tsLayout(L, pdf, b) {
   // ---- front
   head("TRIP SHEET");
   let y = H - 98; const half = (X1 - X0) / 2;
-  // Two columns of fields; the values of each column start at the same place.
-  const pairs = (rows, step) => { const lw = k => Math.max(...rows.map(r => reg.widthOfTextAtSize(r[k], 8.5))) + 6, w1 = lw(0), w2 = lw(2);
-    rows.forEach(([l1, v1, l2, v2]) => { field(l1, v1, X0, half - 10, y, w1); field(l2, v2, X0 + half + 4, half - 4, y, w2); y -= step; }); };
-  pairs([["Vehicle no.", plateOf(bus), "Special Permit No.", b.splPermit || ""], ["Driver", drv || "", "Cleaner", b.noCleaner ? "No cleaner" : b.cleanerName || ""],
-   ["Trip start date", fd(b.from), "Trip end date", fd(bkEnd(b))], ["Start km", n0(b.startKm), "End km", n0(b.endKm)]], 22);
+  [["Vehicle no.", plateOf(bus), "Special Permit No.", b.splPermit || ""], ["Driver", drv || "", "Cleaner", b.noCleaner ? "No cleaner" : b.cleanerName || ""],
+   ["Trip start date", fd(b.from), "Trip end date", fd(bkEnd(b))], ["Start km", n0(b.startKm), "End km", n0(b.endKm)]].forEach(([l1, v1, l2, v2]) => {
+    field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 22; });
   // trip / rent box
   const boxTop = y + 6; y -= 8;
   text("Trip / rent details :", X0 + 6, y, { size: 8.5, color: grey });
-  // Places, then the pick-up place, then the rent line.
-  const lw = 72;
-  [["Places", b.places], ["Pickup from", b.address]].forEach(([l, v]) => { y -= 16;
-    let sz = 11; while (sz > 8 && reg.widthOfTextAtSize(pdfSafe(v || "-"), sz) > X1 - X0 - lw - 14) sz -= 0.5;
-    text(l, X0 + 10, y, { size: 8.5, color: grey }); text(fit(v || "-", reg, sz, X1 - X0 - lw - 14), X0 + 10 + lw, y, { size: sz }); });
-  y -= 18; text("Rent", X0 + 10, y, { size: 8.5, color: grey });
+  y -= 16;
+  text(fit(b.places || "", reg, 11, X1 - X0 - 14), X0 + 10, y, { size: 11 }); y -= 18;
   const parts = [["Rent", num(b.rent)], ["Extra", c.ext], ["Toll", num(b.toll)]].filter(x => x[1]);
-  const rentTxt = parts.length > 1 ? `${parts.map(([l, v]) => `${l} ${nf(v)}`).join(" + ")} = ${nf(c.due)}` : nf(c.due);
-  let rsz = 12; while (rsz > 8.5 && bold.widthOfTextAtSize(pdfSafe(rentTxt), rsz) > X1 - X0 - lw - 14) rsz -= 0.5;
-  text(rentTxt, X0 + 10 + lw, y, { size: rsz, bold: true }); y -= 10;
+  text(parts.length > 1 ? `${parts.map(([l, v]) => `${l} ${nf(v)}`).join(" + ")} = ${nf(c.due)}` : nf(c.due), X0 + 10, y, { size: 12, bold: true }); y -= 10;
   if (c.ext) { y -= 4; text(fit("Extra from party: " + bkExtras(b).map(x => `${x.kind}${x.note ? " (" + x.note + ")" : ""} ${nf(Math.round(num(x.amt)))}`).join(", "), reg, 9, X1 - X0 - 14), X0 + 10, y, { size: 9, color: grey }); y -= 8; }
   // expenses table
-  const cx = X1 - 92, rowH = 17.5, otherAll = b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : [];
-  // Other expenses are listed one by one below their heading (the heading carries no amount, so the column adds up); a fifth item onwards goes on the last line.
-  const other = otherAll.length > 4 ? [...otherAll.slice(0, 3), { kind: `${otherAll.length - 3} more`, amt: otherAll.slice(3).reduce((a, x) => a + num(x.amt), 0) }] : otherAll;
+  const cx = X1 - 92, rowH = 19, other = (b.otherList?.length ? b.otherList : num(b.otherExp) ? [{ kind: "Other", amt: b.otherExp }] : []).slice(0, 4);
   hline(X0, X1, y); text("Expense", (cx + X1) / 2, y - 13, { size: 9, bold: true, align: "center" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y);
   const per = v => days && num(v) && Number.isInteger(num(v) / days) ? `${nf(num(v) / days)} x ${fmtDays(days)}` : "";
   const rows = [["Driver padi", per(b.padiPaid), n0(b.padiPaid)], ["Cleaner padi", per(b.cleanerPadi), n0(b.cleanerPadi)], ["Permit", "", n0(b.permit)], ["Toll gate", "", n0(b.toll)],
-    [`Diesel filled (${litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) : "   "} L)  bill`, "", n0(b.fuelCost)], ["Other expenses", "", ""],
+    [`Diesel filled (${litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) : "   "} L)  bill`, "", n0(b.fuelCost)], ["Other expenses", "", n0(b.otherExp)],
     ...[0, 1, 2, 3].map(i => [`${i + 1})  ${other[i] ? [other[i].kind, other[i].note].filter(Boolean).join(" - ") : ""}`, "", other[i] ? n0(other[i].amt) : ""])];
   rows.forEach(([l, m, v]) => { text(fit(l, reg, 9.5, cx - X0 - 90), X0 + 6, y - 13, { size: 9.5 }); if (m) text(m, cx - 14, y - 13, { size: 9.5, align: "right" });
     text(v, X1 - 8, y - 13, { size: 10.5, align: "right" }); vline(cx, y, y - rowH); y -= rowH; hline(X0, X1, y, { t: 0.5 }); });
   page.drawRectangle({ x: X0, y, width: X1 - X0, height: boxTop - y, borderColor: ink, borderWidth: 0.8 });
   text("Total", cx - 8, y - 14, { size: 10, bold: true, align: "right" }); text(nf(c.exp), X1 - 8, y - 14, { size: 12, bold: true, align: "right" }); vline(cx, y, y - rowH);
-  page.drawRectangle({ x: cx, y: y - rowH, width: X1 - cx, height: rowH, borderColor: ink, borderWidth: 0.8 }); y -= rowH + 20;
-  pairs([["Total income", nf(c.due), "Total km", km ? nf(km) : ""], ["Total expense", nf(c.exp), "Total diesel", litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) + " L" : ""],
-   ["Balance", nf(c.profit), "Mileage", km && litres ? nf(km / litres, 1) + " km/L" : ""]], 21);
+  page.drawRectangle({ x: cx, y: y - rowH, width: X1 - cx, height: rowH, borderColor: ink, borderWidth: 0.8 }); y -= rowH + 22;
+  [["Total income", nf(c.due), "Total km", km ? nf(km) : ""], ["Total expense", nf(c.exp), "Total diesel", litres ? nf(litres, Number.isInteger(litres) ? 0 : 2) + " L" : ""],
+   ["Balance", nf(c.profit), "Mileage", km && litres ? nf(km / litres, 1) + " km/L" : ""]].forEach(([l1, v1, l2, v2]) => { field(l1, v1, X0, half - 10, y); field(l2, v2, X0 + half + 4, half - 4, y); y -= 24; });
   // Names only, never an email address (a user without a name in the user master shows as their email).
   if (b.tsStatus === "approved") text(`Approved${b.tsApprovedByName && !b.tsApprovedByName.includes("@") ? " by " + b.tsApprovedByName : ""}${b.tsApprovedOn ? " on " + fd(b.tsApprovedOn) : ""}`, W / 2, 40, { size: 8, color: grey, align: "center" });
   // ---- back
@@ -10840,8 +10690,7 @@ async function tsLayout(L, pdf, b) {
   y = H - 96; text(`${plateOf(bus)}  ·  ${b.places || ""}  ·  ${fd(b.from)} to ${fd(bkEnd(b))}`, W / 2, y, { size: 8.5, align: "center", color: grey }); y -= 20;
   // Tables with borders, made a little tighter when there are many lines so the back stays on one page (a very long list still carries on to a new page).
   const d = drvCalc(b), paid = d.exp.filter(x => !d.off.includes(x.key)), nFill = fills.length + legacy.length;
-  const pays = (b.payments || []).filter(p => num(p.amount)), extras = c.ext ? bkExtras(b).filter(x => num(x.amt)) : [];
-  const nRows = (nFill ? nFill + 2 : 2) + 1 + pays.length + extras.length + (c.adj ? 1 : 0) + 4 + (d.total || d.ext || d.spent ? 2 + (d.toll ? 1 : 0) + (d.ext ? 2 : 0) + 1 + (paid.length || 1) + 2 : 0);
+  const nRows = (nFill ? nFill + 2 : 2) + (d.total || d.ext || d.spent ? 2 + (d.toll ? 1 : 0) + (d.ext ? 2 : 0) + 1 + (paid.length || 1) + 2 : 0);
   const K = Math.max(0.55, Math.min(1, (y - 50 - 140) / (nRows * 16.5)));
   const ensure = h => { if (y - h < 50) { head("TRIP SHEET  -  BACK (continued)"); y = H - 100; } };
   const title = t => { ensure(70); text(t, X0, y, { size: 10, bold: true, color: ink }); y -= 9; };
@@ -10861,16 +10710,6 @@ async function tsLayout(L, pdf, b) {
   dcols[2][1] = X1 - X0 - dcols.reduce((a, c2) => a + c2[1], 0);
   tbl(dcols, all.length ? [...all.map((r, k) => ({ cells: [String(k + 1), r[0], r[1], r[2] ? nf(num(r[2]), 2) : "", r[3] ? nf(num(r[3])) : "", r[4], r[5]] })),
     { cells: ["", "", "Total", nf(litres, 2), nf(all.reduce((a, r) => a + num(r[3]), 0)), "", ""], bold: true, fill: true }] : [{ cells: ["", "", "No diesel fills entered", "", "", "", ""] }], 8.5);
-  // What the party paid: each payment, extras the driver collected, any balance adjusted at closing; then the trip amount and what is left.
-  y -= 22 * K; title("PAYMENT DETAILS");
-  const pcols = [["#", 18], ["Date", 56], ["Mode", 50], ["Details", 0], ["Amount (Rs.)", 74, 1]];
-  pcols[3][1] = X1 - X0 - pcols.reduce((a, c2) => a + c2[1], 0);
-  const prows = [...pays.map(p => [fd(p.date), p.mode || "", p.note || "Payment", p.amount]),
-    ...extras.map(x => ["", "", `${[x.kind, x.note].filter(Boolean).join(" - ")} (collected by the driver)`, x.amt]),
-    ...(c.adj ? [[fd(b.balAdj.on), "", b.balAdj.note || "Adjusted with driver advance", c.adj]] : [])];
-  tbl(pcols, [...(prows.length ? prows.map((r, k) => ({ cells: [String(k + 1), r[0], r[1], r[2], nf(Math.round(num(r[3])))] })) : [{ cells: ["", "", "", "No payments received", ""] }]),
-    { cells: ["", "", "", "Total received", nf(c.received)], bold: true, fill: true }, { cells: ["", "", "", "Trip amount (rent + toll + extra)", nf(c.due)] },
-    { cells: ["", "", "", c.balance < 0 ? "Paid in excess" : "Balance to collect", nf(Math.abs(c.balance))], bold: true, fill: true }], 8.5);
   // Driver advance and the expenses paid from it.
   const AW = 104;
   y -= 22 * K; title("DRIVER ADVANCE");
@@ -10891,36 +10730,9 @@ async function tsLayout(L, pdf, b) {
     y -= 40;
   }
 }
-// Booking slip: the image (and the PDF if wanted), with or without the vehicle no.; save or share, like the trip sheet.
-function slipPrint(b, btn) {
-  const items = [{ k: "img", label: "Booking slip (image)", sub: "JPG to share or print" }, { k: "pdf", label: "PDF", sub: "The same slip as a PDF" }];
-  openPickPop(btn, `Booking slip ${b.no || ""} · print`, items, { slip: b.id || "" }, (keys, go, showBus) => slipSave(b, keys, go, showBus),
-    { note: "The image is ticked; tick PDF if you need it too.", extra: "Show the vehicle no. on the slip", on: d => d.k !== "pdf",
-      saveText: n => n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Choose a file", share: (keys, showBus) => slipFiles(b, keys, showBus) });
-}
-async function slipFiles(b, keys, showBus) {
-  const d = slipData(b, showBus), base = `Booking slip ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " "), out = [];
-  if (keys.includes("img")) { const { doc, L } = tsCanvasKit(); await slipLayout(L, doc, d);
-    out.push({ filename: base + ".jpg", data: await new Promise((ok, fail) => doc.pages[0].toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92)) }); }
-  if (keys.includes("pdf")) out.push({ filename: base + ".pdf", data: await slipPdf(await loadPdfLib(), d) });
-  return out;
-}
-async function slipSave(b, keys, btn, showBus) {
-  let downloads = null;
-  try { downloads = await auDownloads(); } catch { downloads = null; }
-  if (!downloads) { toast("Saving files isn't available in this view."); return; }
-  if (btn) btn.disabled = true; toast("Preparing the slip…");
-  try {
-    const files = await slipFiles(b, keys, showBus);
-    for (const f of files) await downloads.save(f);
-    toast(`${files.length === 1 ? "Slip" : files.length + " files"} saved. Open ${files.length === 1 ? "it" : "them"} to print.`);
-  } catch (e) {
-    toast(e?.code === "declined" ? "Slip not saved." : e?.code === "rate_limited" ? "A save is already waiting for your answer." : e?.message === "load failed" ? "Couldn't prepare the PDF. Check your internet connection and try again." : "Couldn't save the slip. Try again.");
-  } finally { if (btn) btn.disabled = false; }
-}
 // Print: a tick list (like the vehicle master's) to choose the front and back images and, if wanted, the PDF of both; save or share them.
 function tsPrint(b, btn) {
-  const items = [{ k: 0, label: "Front (image)", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back (image)", sub: "Diesel fill-ups, payments, driver advance and expenses" },
+  const items = [{ k: 0, label: "Front (image)", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back (image)", sub: "Diesel fill-ups, driver advance and expenses" },
     { k: "pdf", label: "PDF", sub: "Front and back in one file" }];
   openPickPop(btn, `Trip sheet ${b.no || ""} · print`, items, { ts: b.id }, (keys, go) => tsSave(b, keys, go),
     { note: "Tick what you want. The images are ticked; tick PDF if you need it too.", on: d => d.k !== "pdf", saveText: n => n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Choose a file", share: keys => tsFiles(b, keys) });
@@ -11064,7 +10876,6 @@ async function popShare(btn, make, title) {
 }
 // Choose the dates to put on the image first, like the documents download list: everything ticked, untick what isn't wanted.
 // Tick list pop-up. Used for renewal dates (the default wording) and for the trip sheet's pages (o.note, o.on, o.saveText).
-// o.extra: the label of one more tick box (ticked to start) that is an option, not a file; go and share get its value.
 // o.share(keys) gives the files for the Share button.
 function openPickPop(b, title, items, mark, go, o = {}) {
   const on = o.on || (d => d.date && d.n <= 90), pop = document.createElement("div");
@@ -11072,11 +10883,11 @@ function openPickPop(b, title, items, mark, go, o = {}) {
   pop.className = "duepop"; Object.assign(pop.dataset, mark); pop.setAttribute("role", "dialog");
   const sync = () => { const n = pop.querySelectorAll("input[data-i]:checked").length, btn = pop.querySelector(".duesave"); btn.disabled = !n; btn.lastChild.textContent = saveText(n); const sh = pop.querySelector(".dshare"); if (sh) sh.disabled = !n;
     const all = pop.querySelector("input[data-all]"), m = pop.querySelectorAll("input[data-i]:not(:disabled)").length; all.disabled = !m; all.checked = !!m && n === m; all.indeterminate = n > 0 && n < m; };
-  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all> Select all</label><p class="dnote">${o.note || "Dates due within 3 months are ticked. Tick any others you want, including ones with no date."}</p><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}"${on(d) ? " checked" : ""}><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul>${o.extra ? `<label class="dall dextra"><input type="checkbox" data-extra checked> ${esc(o.extra)}</label>` : ""}${o.share ? popActsHtml() : `<button type="button" class="btn primary duesave">${ICON_DL}<span></span></button>`}`;
+  pop.innerHTML = `<h4>${esc(title)}</h4><label class="dall"><input type="checkbox" data-all> Select all</label><p class="dnote">${o.note || "Dates due within 3 months are ticked. Tick any others you want, including ones with no date."}</p><ul class="dlist">${items.map((d, i) => `<li><label><input type="checkbox" data-i="${i}"${on(d) ? " checked" : ""}><span><b>${esc(d.label)}</b><span class="fn">${d.sub}</span></span></label></li>`).join("")}</ul>${o.share ? popActsHtml() : `<button type="button" class="btn primary duesave">${ICON_DL}<span></span></button>`}`;
   pop.addEventListener("change", e => { if (e.target.dataset.all != null) pop.querySelectorAll("input[data-i]:not(:disabled)").forEach(x => x.checked = e.target.checked); sync(); });
-  const keys = () => [...pop.querySelectorAll("input[data-i]:checked")].map(x => items[+x.dataset.i].k), extra = () => !!pop.querySelector("input[data-extra]")?.checked;
-  pop.querySelector(".duesave").onclick = async ev => { ev.stopPropagation(); await go(keys(), ev.currentTarget, extra()); closeDuePop(); };
-  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); const k = keys(), x = extra(); popShare(ev.currentTarget, () => o.share(k, x), title); };
+  const keys = () => [...pop.querySelectorAll("input[data-i]:checked")].map(x => items[+x.dataset.i].k);
+  pop.querySelector(".duesave").onclick = async ev => { ev.stopPropagation(); await go(keys(), ev.currentTarget); closeDuePop(); };
+  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); const k = keys(); popShare(ev.currentTarget, () => o.share(k), title); };
   placePop(pop, b); sync();
 }
 const pickSub = d => d.date ? `<span class="pill ${listBand(d.n)} num exppill">${fmtDate(d.date)}</span> ${esc(whenText(d.n))}` : "Date not entered";
@@ -11797,7 +11608,24 @@ document.addEventListener("click", e => {
 V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
 function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
 ["bkPrint", "bkTsPrint"].forEach(id => $(id).insertAdjacentHTML("afterbegin", ICON_PRINT));
-$("bkPrint").onclick = () => slipPrint(slipForm(), $("bkPrint"));
+$("bkPrint").onclick = async () => {
+  const btn = $("bkPrint"), d = slipData(), name = `Booking slip ${d.b.no || ""} ${d.b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " ") + ".pdf";
+  let downloads = null;
+  try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view. Reload the page and try again."); return; }
+  btn.disabled = true; const label = btn.textContent; btn.textContent = "Preparing slip…";
+  try {
+    const blob = await slipPdf(await loadPdfLib(), d);
+    await downloads.save({ filename: name, data: blob });
+    toast("Slip saved as a PDF. Open it to print.");
+  } catch (e) {
+    const code = e?.code;
+    if (code === "declined") toast("Slip not saved.");
+    else if (code === "rate_limited") toast("A save is already waiting for your answer.");
+    else if (e?.message === "load failed") toast("Couldn't prepare the slip. Check your internet connection and try again.");
+    else toast("Couldn't save the slip. Try again.");
+  } finally { btn.disabled = false; btn.textContent = label; }
+};
 
 /* ---------- truck trips ---------- */
 let kBusId = "", kFy = 0, lgEditId = null, lgDaysTouched = false;
