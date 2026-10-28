@@ -2869,6 +2869,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <button class="btn danger" type="button" id="bkReject">Reject</button>
         <button class="btn primary" type="button" id="bkApprove">Approve</button>
       </span>
+      <button class="btn primary" type="button" id="bkUnreject" hidden>Bring back for approval</button>
     </div>
     <div class="bkappr" id="bkLock" hidden>
       <span id="bkLockText"></span>
@@ -8673,13 +8674,16 @@ function bwApprCard(b) {
     `<div class="bwseg c2">${btn("ask", "Reject", "bwdanger", "reject")}${btn("apprbk", bw.apprBusy ? "Saving…" : "Approve", "twsave")}</div></div>`;
   if (b.tsStatus === "submitted" && !tripClosed(b)) return `<div class="bhappr"><b>Trip sheet sent for approval</b><span>By ${esc(b.tsSubmittedByName || "the driver")}${b.tsSubmittedOn ? ` on ${fmtDate(b.tsSubmittedOn)}` : ""}. Open Trip sheet to check it, then decide.</span>` +
     `<div class="bwseg c2">${btn("ask", "Send back", "bwdanger", "tsback")}${btn("apprts", bw.apprBusy ? "Saving…" : "Approve", "twsave")}</div></div>`;
+  if (b.status === "rejected") return `<div class="bhappr gone"><b>Rejected</b><span>${b.rejectedByName ? `By ${esc(b.rejectedByName)}` : ""}${b.rejectedOn ? ` on ${fmtDate(b.rejectedOn)}` : ""}${b.rejectReason ? `: ${esc(b.rejectReason)}` : ""}. You can bring it back to approve it after all.</span>` +
+    `<div class="bwseg">${btn("ask", "Bring back for approval", "twsave", "unreject")}</div></div>`;
   if (b.status === "cancelled" && !tripClosed(b)) return `<div class="bhappr gone"><b>Cancelled</b><span>This booking was cancelled. The admin can bring it back if the trip is on again.</span>` +
     `<div class="bwseg">${btn("ask", "Bring back booking", "twsave", "restore")}</div></div>`;
   return "";
 }
 const BW_ASK = { reject: ["Reject this booking?", "The booking planner sees your reason and can change and send it again.", "Why? e.g. bus not free on these days", "Reject"],
   tsback: ["Send the trip sheet back?", "The driver sees your reason and can correct and send it again.", "What should be corrected?", "Send back"],
-  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"] };
+  restore: ["Bring this booking back?", "It becomes Booked again, with the same bus and dates.", "", "Bring back"],
+  unreject: ["Bring this booking back?", "It goes back to Awaiting approval with the same details. Check it, then approve.", "", "Bring back"] };
 function bwAskHtml() {
   const [t, p, ph, go] = BW_ASK[bw.ask];
   return `<div class="bwleave" role="alertdialog" aria-modal="true" aria-labelledby="bwAkT"><div><b id="bwAkT">${t}</b><p>${p}</p>` +
@@ -8703,6 +8707,9 @@ async function bwAskGo() {
   const note = String(bw.askNote || "").trim(), cur = bwBkNow(); if (!cur) return;
   if (bw.ask === "reject") { if (!note) { toast("Type the reason for rejecting."); return; } bwDeskAct(() => { $("bkRejectWhy").value = note; $("bkReject").click(); }); return; }
   if (bw.ask === "tsback") { if (!note) { toast("Type what should be corrected."); return; } bwDeskAct(() => { $("tsRejectWhy").value = note; $("tsReject").click(); }); return; }
+  if (bw.ask === "unreject") { bw.apprBusy = true; bwRender();
+    try { await bkUnreject(cur); } catch { toast("Couldn't save. Check your connection and try again."); }
+    if (bw) { bw.apprBusy = false; bw.ask = ""; bwClose(); openBooking(cur.id); } return; }
   // Bring back: only if the bus is still free on those days.
   const clash = clashOf({ ...cur, status: "booked" }, cur.id);
   if (clash) { toast(`The bus is already taken on these days by booking ${clash.no || ""}. Change the dates or bus first.`); return; }
@@ -9777,6 +9784,8 @@ function openBooking(id, preset, full) {
   syncTsAppr(b); syncBkLock(b);
   $("bkAppr").hidden = !(pending || b?.status === "rejected" || b?.status === "draft");
   $("bkApprAct").hidden = !(pending && canBookings);
+  // The admin can undo a rejection: the booking goes back to Awaiting approval, to be approved after all.
+  $("bkUnreject").hidden = !(b?.status === "rejected" && canBookings && platformWrite);
   $("bkRejectWhy").value = "";
   const lastRej = b?.rejections?.length ? b.rejections[b.rejections.length - 1] : (b?.rejectReason ? { reason: b.rejectReason, by: b.rejectedByName, on: b.rejectedOn } : null);
   const rejNote = lastRej ? ` Last rejected${lastRej.by ? ` by ${esc(lastRej.by)}` : ""}${lastRej.on ? ` on ${fmtDate(lastRej.on)}` : ""}: <i>${esc(lastRej.reason || "")}</i>` : "";
@@ -10623,6 +10632,17 @@ $("bkReject").onclick = async () => {
   try { await opsSave("bookings", next); await addBHistory(bookingChanges(cur, next, `Rejected: ${why}`)).catch(() => {}); closeBkDrawer(); toast(`Booking ${cur.no} rejected`); renderOps(); }
   catch { toast("Couldn't save. Try again."); }
 };
+$("bkUnreject").onclick = async () => {
+  const cur = ops.bookings.find(x => x.id === bkEditId); if (!cur || !canBookings) return;
+  if (!await askYesNo(`Bring booking ${cur.no || ""} back? It goes back to Awaiting approval with the same details, so you can approve it.`, { yes: "Yes, bring it back" })) return;
+  try { await bkUnreject(cur); closeBkDrawer(); openBooking(cur.id); } catch { toast("Couldn't save. Try again."); }
+};
+// Undo a rejection (computer and phone): back to Awaiting approval, the rejection kept in its history.
+async function bkUnreject(cur) {
+  const next = { ...cur, status: "pending", broughtBackOn: todayISO(), broughtBackByName: whoAmI() };
+  await opsSave("bookings", next); await addBHistory(bookingChanges(cur, next, "Brought back from rejected")).catch(() => {});
+  toast(`Booking ${cur.no || ""} is back in Awaiting approval`); renderOps();
+}
 $("bkDelete").onclick = async () => {
   if (bkMode === "view") return;
   if (!await askYesNo(`Delete booking ${$("bkNo").value.trim()}? This cannot be undone.`, { yes: "Yes, delete", danger: true })) return;
