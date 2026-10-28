@@ -1587,7 +1587,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rsbal b { color: #8fe0a8; } :root:not([data-theme="light"]) .rsbal.neg b { color: #ff9b91; } }
 .rsmt b { font-size: 14px; white-space: nowrap; } .rsmt.neg b { color: var(--danger); } .rsmt.pos b { color: var(--ok); }
 .rsdays .rsday { flex-direction: column; align-items: stretch; gap: 4px; min-height: 0; padding: 8px 10px; }
-.rsdays .rsday > .rsdh { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 8px; } .rsdays .rsday { text-align: left; } .rsdh b { font-size: 15px; } .rsdh .bstage { font-size: 12px; }
+.rsdays .rsday > .rsdh { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px; flex-wrap: wrap; } .rsdh > :last-child:not(b) { margin-left: auto; } .rsdays .rsday { text-align: left; } .rsdh b { font-size: 15px; } .rsdh .bstage { font-size: 12px; }
+.rsdbal { display: inline-flex; align-items: baseline; gap: 6px; padding: 3px 10px; border-radius: 999px; background: #14532d; color: #fff; font-size: 15px; font-weight: 700; white-space: nowrap; }
+.rsdbal i { font: 500 11px var(--body); font-style: normal; opacity: .85; } .rsday .rsdbal.neg { background: #8b1a12; color: #fff; }
 .rsdg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px 8px; } .rsdc { display: flex; gap: 2px 14px; flex-wrap: wrap; }
 .rsdg > span, .rsdc > span { font-size: 13px; font-weight: 600; min-width: 0; } .rsdg i, .rsdc i { display: block; font: 500 11px var(--body); color: var(--muted); font-style: normal; } .rsdc > span { display: flex; gap: 4px; align-items: baseline; } .rsdc i { display: inline; }
 .bstage.todo { background: var(--surface); color: var(--danger); border: 1px dashed var(--danger); } .bstage.idle { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); }
@@ -7712,8 +7714,10 @@ function renderRsList() {
       const f = (k, v, cls = "") => `<span${cls ? ` class="${cls}"` : ""}><i>${k}</i>${v}</span>`;
       // A day that ran is green, a loss red, a part day yellow. Days in the trip sheet need no tag; who sent or entered them is in the sheet itself.
       const tone = S.money ? (S.bal < 0 ? "loss" : S.tone || "good") : "", sub = ["rejected", "idle", "draft"].includes(S.cls) ? S.sub : "";
-      return `<button type="button" class="rsday${tone ? " " + tone : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${S.cls === "completed" ? "" : chip(S)}</span>` +
-        (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Balance", `${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}`, S.bal < 0 ? "neg" : "")}` +
+      return `<button type="button" class="rsday${tone ? " " + tone : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${S.cls === "completed" ? "" : chip(S)}` +
+        // The day's balance on the first line, like the month's total balance at the top.
+        `${S.money ? `<span class="rsdbal${S.bal < 0 ? " neg" : ""}"><i>Balance</i>${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}</span>` : ""}</span>` +
+        (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Starting", esc(T?.start || "—"))}` +
           `${f("Kms", km != null ? nf(km) : "—")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
           `<span class="rsdc">${f("Driver", esc(crewName("driver", T) || "—"))}${f("Conductor", esc(crewName("conductor", T) || "—"))}</span>` : "") +
         `${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
