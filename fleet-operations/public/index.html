@@ -1436,14 +1436,55 @@ html.bw-on, html.bw-on body { overflow: hidden; }
   .xptable tbody td:nth-child(2) { grid-area: 2 / 1 / 3 / 4; font-weight: 600; }
   .xptable tbody td:nth-child(3) { grid-area: 3 / 1; font-size: 13px; } .xptable tbody td:nth-child(4) { grid-area: 3 / 2; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .xptable tbody td:nth-child(6) { grid-area: 3 / 3; font-size: 13px; color: var(--muted); text-align: right; }
   .xptable tfoot td:first-child { grid-area: 1 / 1 / 2 / 3; } .xptable tfoot td.n { grid-area: 1 / 3; } .xptable tfoot td:last-child:not(.n) { display: none; } }
-.xpvt { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.xpvt button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
-.xpvt button small { font: 600 11.5px var(--mono); color: var(--muted); } .xpvt button b { font: 700 15px var(--mono); }
-.xpvt button.tot { cursor: default; background: var(--accent-soft); } .xpvt button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .xptable { width: 100%; } .xptable td:nth-child(2) { min-width: 200px; white-space: normal; } .xptable td.n, .xptable th.n { white-space: nowrap; }
 .xptable tr.on td { background: var(--accent-soft); }
-#xpSeg { flex-wrap: nowrap; gap: 0; } #xpSeg button { padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 14px var(--body); cursor: pointer; }
-#xpSeg button:first-child { border-radius: 8px 0 0 8px; } #xpSeg button:last-child { border-radius: 0 8px 8px 0; border-left: 0; } #xpSeg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+/* Category colours (work in light and dark) */
+.xptag { --h: #5b6b73; display: inline-block; padding: 1px 8px; border-radius: 99px; font: 600 12px var(--body); white-space: nowrap; background: color-mix(in srgb, var(--h) 17%, var(--surface)); border: 1px solid color-mix(in srgb, var(--h) 35%, var(--surface)); color: var(--ink); }
+.xc1 { --h: #3b9a1e; } .xc2 { --h: #2f6fd6; } .xc3 { --h: #e07b12; } .xc4 { --h: #9b3bc0; } .xc5 { --h: #5b6b73; } .xc6 { --h: #0f9a8e; } .xc7 { --h: #c0392b; }
+.xpbody { margin-top: 4px; } .xpbody > .panel { margin-top: 10px; }
+.xpform { margin: 0; } .xpform [hidden] { display: none !important; } #xfClose { display: none; } .lay-cards .f-top #xfClose { display: inline-flex; }
+/* Classic */
+.xptbar { display: flex; flex-wrap: wrap; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.xptbar > * { flex: 1 1 140px; padding: 8px 12px; border: 0; border-left: 1px solid var(--line); background: none; color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.xptbar > :first-child { border-left: 0; background: var(--accent); color: var(--accent-ink); cursor: default; }
+.xptbar small { display: block; font: 600 11px var(--mono); opacity: .8; text-transform: uppercase; } .xptbar b { font: 700 17px var(--mono); } .xptbar [aria-pressed="true"] { background: var(--accent-soft); }
+.lay-classic .f-top { border-left: 5px solid var(--accent); }
+/* Sheet */
+.xps { display: grid; grid-template-columns: minmax(0, 1fr) 250px; column-gap: 14px; align-items: start; }
+.xps > [data-slot="top"] { grid-column: 1 / -1; grid-row: 1; } .xps > [data-slot="top"]:not(:empty) { margin-bottom: 10px; }
+.xps > .xpsheet { grid-column: 1; grid-row: 2; overflow: hidden; } .xps > .xpvtab { grid-column: 2; grid-row: 2; overflow: hidden; }
+.xpgridt { table-layout: fixed; } .xpgridt col.c1 { width: 112px; } .xpgridt col.c3 { width: 128px; } .xpgridt col.c4 { width: 136px; } .xpgridt col.c5 { width: 96px; } .xpgridt col.c6 { width: 128px; } .xpgridt col.c7 { width: 80px; } .xpgridt td:nth-child(2) { min-width: 0; }
+.xpgridt th, .xpgridt td { border-right: 1px solid var(--line); } .xpgridt tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--accent) 3%, var(--surface)); } .xpgridt tbody tr.on td { background: var(--accent-soft); }
+.xpsfoot { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--accent-soft); font-weight: 700; } .xpsfoot b { font-family: var(--mono); padding-right: 218px; }
+.xpvtab table { width: 100%; border-collapse: collapse; } .xpvtab th, .xpvtab td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13.5px; }
+.xpvtab th { font: 600 11.5px var(--mono); text-transform: uppercase; color: var(--muted); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); } .xpvtab .n { text-align: right; font-family: var(--mono); }
+.xpvtab tr[data-xpveh] { cursor: pointer; } .xpvtab tr.on td { background: var(--accent-soft); } .xpvtab tr.tot td { font-weight: 700; background: var(--accent-soft); border-bottom: 0; }
+.xpyel { background: color-mix(in srgb, #f5c400 12%, var(--surface)) !important; }
+.f-row { border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 5px 0; }
+.f-row .xpfh, .f-row label > span { display: none; } .f-row .err:empty { display: none; } .f-row .err { padding: 0 10px 4px; }
+.f-row .xpgrid { grid-template-columns: 112px minmax(0, 1fr) 128px 136px 96px 128px 80px; gap: 0; } .f-row #xfDate { font-size: 13px; padding: 0 4px; } .f-row .xpgrid > * { padding: 0 4px; } .f-row .xpgrid input, .f-row .xpgrid select { height: 36px; font-size: 14px; }
+.f-row .xpgrid .xpd, .f-row .xpbtns { grid-column: auto; } .f-row .xpbtns .btn { height: 36px; width: 100%; padding: 0 6px; }
+.f-row.ed .xpbtns { grid-column: 1 / -1; justify-content: flex-end; padding-top: 6px; } .f-row.ed .xpbtns .btn { width: auto; padding: 0 16px; }
+@media (max-width: 1500px) { .xps { grid-template-columns: minmax(0, 1fr); } .xps > .xpvtab { grid-column: 1; grid-row: 2; margin-bottom: 10px; max-width: 420px; } .xps > .xpsheet { grid-row: 3; } }
+/* Cards */
+.xpc { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; } .xpc.solo { grid-template-columns: minmax(0, 1fr); }
+.xphero { background: linear-gradient(135deg, #2f6a16, #4a9026); color: #fff; border-radius: 14px; padding: 14px 16px; }
+.xphero .k { opacity: .85; font-size: 13px; } .xphero .v { font: 700 32px var(--mono); margin: 2px 0 10px; }
+.xphero .vs { display: flex; flex-wrap: wrap; gap: 6px; } .xphero .vs button { background: rgba(255,255,255,.16); border: 1px solid transparent; color: #fff; border-radius: 8px; padding: 5px 9px; font: 600 12.5px var(--mono); cursor: pointer; }
+.xphero .vs button[aria-pressed="true"] { background: #fff; color: #2f6a16; }
+.xpfab { display: none; width: 100%; margin-top: 12px; height: 52px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-ink); font: 700 17px var(--body); cursor: pointer; }
+.xpc [data-slot="top"]:not(:empty) { margin-top: 12px; }
+.xpday { margin-top: 14px; } .xpdh { display: flex; justify-content: space-between; padding: 0 4px 6px; font: 700 12.5px var(--body); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.xpdc { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.xpit { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--line); cursor: pointer; } .xpit:first-child { border-top: 0; } .xpit.on { background: var(--accent-soft); }
+.xpic { --h: #5b6b73; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; background: color-mix(in srgb, var(--h) 17%, var(--surface)); }
+.xpit b { display: block; font-size: 14.5px; } .xpit small { color: var(--muted); font-size: 12.5px; } .xpit .xpa { font: 700 15px var(--mono); white-space: nowrap; }
+.xpctot { display: flex; justify-content: space-between; margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: var(--accent-soft); font-weight: 700; } .xpctot b { font-family: var(--mono); }
+.f-side .xpgrid { grid-template-columns: minmax(0, 1fr); } .f-side .xpgrid .xpd, .f-side .xpbtns { grid-column: auto; } .f-side .xpbtns .btn { flex: 1; height: 48px; } .f-side .xpgrid input, .f-side .xpgrid select { height: 46px; font-size: 16px; }
+.f-side { position: sticky; top: 12px; }
+@media (max-width: 700px) { .xpc { grid-template-columns: minmax(0, 1fr); } .xpfab { display: block; } .xptable td:nth-child(7) { display: none !important; } .xpsfoot b { padding-right: 0; } .xpgridt tbody tr:nth-child(even) td { background: none; } .xpgridt tbody tr.on { background: var(--accent-soft); } }
+.xpsegs { flex-wrap: nowrap; gap: 0; } .xpsegs button { padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 14px var(--body); cursor: pointer; }
+.xpsegs button:first-child { border-radius: 8px 0 0 8px; } .xpsegs button:last-child { border-radius: 0 8px 8px 0; } .xpsegs button + button { border-left: 0; } .xpsegs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 #mtw .bwb, #msgw .bwb, #mtw .bwf, #msgw .bwf { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
 #mtw .bwf, #msgw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 .bwf1 input[type=date], .bwf1 select { box-sizing: border-box; width: 100%; height: 60px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); }
@@ -2416,13 +2457,13 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
         <div class="tcontrols">
           <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next">›</button></div>
-          <div class="seg" id="xpSeg" role="group" aria-label="Period"><button type="button" data-v="month">Month</button><button type="button" data-v="fy">Year</button></div>
+          <div class="seg xpsegs" id="xpLay" role="group" aria-label="Screen design"><button type="button" data-l="sheet">Sheet</button><button type="button" data-l="cards">Cards</button><button type="button" data-l="classic">Classic</button></div>
+          <div class="seg xpsegs" id="xpSeg" role="group" aria-label="Period"><button type="button" data-v="month">Month</button><button type="button" data-v="fy">Year</button></div>
           <div class="hf"><label for="xpBusF">Vehicle</label><select id="xpBusF"></select></div>
         </div>
       </header>
+      <div class="xpbody" id="xpBody"></div>
       <section class="panel xpform" id="xpForm" hidden></section>
-      <div class="xpvt" id="xpSum"></div>
-      <section class="panel" style="margin-top:10px"><div class="tscroll" id="xpList"></div></section>
     </section>
 
     <!-- ================= Maintenance entry ================= -->
@@ -6308,25 +6349,69 @@ const canMtAdd = () => platformWrite && (acc.maintenance === "edit" || acc.maint
 let xpYm = todayISO().slice(0, 7), xpFy = false, xpBus = "", xpEd = null;
 const xpPeriod = () => xpFy ? { from: `${fyOf(xpYm + "-01")}-04-01`, to: `${fyOf(xpYm + "-01") + 1}-03-31`, label: `FY ${fyLabel(fyOf(xpYm + "-01"))}` }
   : { from: xpYm + "-01", to: `${xpYm}-${pad2(daysIn(xpYm))}`, label: new Date(xpYm + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
+let xpLay = "sheet", xpFormOpen = false;
+try { xpLay = localStorage.getItem("fleet-xplay") || "sheet"; } catch {}
+const XP_CC = { "Maintenance": "xc1", "Loan repayment": "xc2", "Quarter tax": "xc3", "Insurance": "xc4", "Permit / FC": "xc6", "Salary / padi": "xc7", "Other": "xc5" };
+const XP_IC = { "Maintenance": "🔧", "Loan repayment": "🏦", "Quarter tax": "🧾", "Insurance": "🛡️", "Permit / FC": "📄", "Salary / padi": "👤", "Other": "📌" };
+const xpTag = c => `<span class="xptag ${XP_CC[c] || "xc5"}">${esc(c || "Other")}</span>`;
+const xpNarrow = w => matchMedia(`(max-width: ${w}px)`).matches;
 function renderExp() {
-  const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to);
+  const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to), can = canXp();
   const list = all.filter(x => !xpBus || mtKeyOf(x) === xpBus).sort((a, b) => b.date.localeCompare(a.date) || String(b.createdOn || "").localeCompare(String(a.createdOn || "")));
-  $("xpPer").textContent = P.label; $("xpRoTag").hidden = canXp();
+  $("xpPer").textContent = P.label; $("xpRoTag").hidden = can;
   $("xpSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.v === "fy") === xpFy)));
+  $("xpLay").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.l === xpLay)));
   const keys = [...new Set([...mtFleet().map(v => v.id), ...ops.expenses.map(mtKeyOf)])];
   $("xpBusF").innerHTML = `<option value="">All vehicles</option>` + keys.map(k => `<option value="${esc(k)}">${esc(xpKeyName(k))}</option>`).join("");
   $("xpBusF").value = xpBus;
-  // The entry row stays as typed; it is drawn once, and only its vehicle list is refreshed.
-  $("xpForm").hidden = !canXp();
-  if (canXp()) { if (!$("xfDate")) xfRender(null); else if (document.activeElement !== $("xfVeh")) xfVehOpts(); }
   const sum = a => a.reduce((s, x) => s + num(x.amount), 0), byVeh = new Map();
   all.forEach(x => { const k = mtKeyOf(x); byVeh.set(k, (byVeh.get(k) || 0) + num(x.amount)); });
-  $("xpSum").innerHTML = `<button type="button" class="tot" tabindex="-1"><small>TOTAL · ${esc(P.label)}</small><b>${rs(sum(all))}</b></button>` +
-    [...byVeh.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpBus === k}"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("");
-  $("xpList").innerHTML = list.length ? `<table class="ctable xptable"><thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th></tr></thead><tbody>` +
-    list.map(x => `<tr data-xp="${x.id}" tabindex="0"${x.id === xpEd ? ' class="on"' : ""}${canXp() ? ' style="cursor:pointer" title="Tap to change"' : ""}><td class="num" style="white-space:nowrap">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${esc(xpKeyName(mtKeyOf(x), x))}</td><td>${esc(x.category || "")}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td></tr>`).join("") +
-    `</tbody><tfoot><tr><td colspan="4">Total · ${list.length} payment${list.length === 1 ? "" : "s"}${xpBus ? ` · ${esc(xpKeyName(xpBus))}` : ""}</td><td class="n">${nf(sum(list))}</td><td></td></tr></tfoot></table>`
-    : `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.</p>`;
+  const VS = [...byVeh.entries()].sort((a, b) => b[1] - a[1]);
+  const veh = x => esc(xpKeyName(mtKeyOf(x), x)), on = x => x.id === xpEd ? " on" : "";
+  const totTxt = `Total · ${list.length} payment${list.length === 1 ? "" : "s"}${xpBus ? ` · ${esc(xpKeyName(xpBus))}` : ""}`;
+  const none = `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.</p>`;
+  const tip = can ? ' title="Tap to change" style="cursor:pointer"' : "";
+  let h, slot;
+  if (xpLay === "sheet") {
+    // Like the Excel sheet: oldest first, the new row at the bottom, vehicle totals at the side.
+    const wide = !xpNarrow(1000), rows = wide ? [...list].reverse() : list;
+    h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet"><div class="tscroll"><table class="ctable xptable xpgridt"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
+      `<thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
+      rows.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("") +
+      `</tbody></table></div>${rows.length ? "" : none}<div data-slot="row"></div><div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
+      `<aside class="panel xpvtab"><table><thead><tr><th>Vehicle</th><th class="n">Expense</th></tr></thead><tbody>` +
+      VS.map(([k, v]) => `<tr data-xpveh="${esc(k)}" class="${xpBus === k ? "on" : ""}"><td class="num">${esc(xpKeyName(k))}</td><td class="n">${nf(v)}</td></tr>`).join("") +
+      `<tr class="tot"><td>TOTAL</td><td class="n">${nf(sum(all))}</td></tr></tbody></table></aside></div>`;
+    slot = wide ? "row" : "top";
+  } else if (xpLay === "cards") {
+    const days = new Map(); list.forEach(x => { if (!days.has(x.date)) days.set(x.date, []); days.get(x.date).push(x); });
+    const wide = !xpNarrow(700);
+    h = `<div class="xpc${can && wide ? "" : " solo"}"><div><div class="xphero"><div class="k">Total spent · ${esc(P.label)}</div><div class="v">${rs(sum(all))}</div><div class="vs">` +
+      VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpBus === k}">${esc(xpKeyName(k))} · ${rs(v)}</button>`).join("") + `</div></div>` +
+      (can && !xpFormOpen && !xpEd ? `<button type="button" class="xpfab" data-xpnew>+ New expense</button>` : "") + `<div data-slot="top"></div>` +
+      ([...days.entries()].map(([d, xs]) => `<div class="xpday"><div class="xpdh"><span>${fmtDate(d)}</span><span>${rs(sum(xs))}</span></div><div class="xpdc">` +
+        xs.map(x => `<div class="xpit${on(x)}" data-xp="${x.id}" tabindex="0"${tip}><span class="xpic ${XP_CC[x.category] || "xc5"}">${XP_IC[x.category] || "📌"}</span><span><b>${esc(x.desc || "")}</b><small>${veh(x)} · ${esc(x.category || "")} · ${esc(x.pay || "")}</small></span><span class="xpa">${rs(num(x.amount))}</span></div>`).join("") + `</div></div>`).join("") || none) +
+      (list.length ? `<div class="xpctot"><span>${totTxt}</span><b>${rs(sum(list))}</b></div>` : "") +
+      `</div><aside data-slot="side"></aside></div>`;
+    slot = wide ? "side" : "top";
+  } else {
+    h = `<div data-slot="top"></div><div class="xptbar"><div><small>Total · ${esc(P.label)}</small><b>${rs(sum(all))}</b></div>` +
+      VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpBus === k}"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>` +
+      `<section class="panel"><div class="tscroll">` + (list.length ? `<table class="ctable xptable"><thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th></tr></thead><tbody>` +
+      list.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num" style="white-space:nowrap">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td></tr>`).join("") +
+      `</tbody><tfoot><tr><td colspan="4">${totTxt}</td><td class="n">${nf(sum(list))}</td><td></td></tr></tfoot></table>` : none) + `</div></section>`;
+    slot = "top";
+  }
+  // The entry form is one element moved into place, so whatever is being typed stays.
+  const F = $("xpForm"), act = F.contains(document.activeElement) ? document.activeElement : null;
+  $("xpBody").className = `xpbody lay-${xpLay}`; $("xpBody").innerHTML = h;
+  F.className = `panel xpform f-${slot}${xpEd ? " ed" : ""}${xpLay === "sheet" ? " xpyel" : ""}`;
+  F.hidden = !can || (xpLay === "cards" && slot === "top" && !xpFormOpen && !xpEd);
+  if (can) {
+    $("xpBody").querySelector(`[data-slot="${slot}"]`).appendChild(F);
+    if (!$("xfDate")) xfRender(null); else if (document.activeElement !== $("xfVeh")) xfVehOpts();
+    if (act && document.contains(act)) act.focus({ preventScroll: true });
+  }
 }
 // A vehicle's number for a key: the master's number, the number kept on old rows, or "Office / general".
 function xpKeyName(k, x) {
@@ -6337,9 +6422,17 @@ $("xpPrev").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") - 1}-04` : mon
 $("xpNext").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") + 1}-04` : monthShift(xpYm, 1); renderExp(); };
 $("xpSeg").onclick = e => { const b = e.target.closest("button[data-v]"); if (!b) return; xpFy = b.dataset.v === "fy"; renderExp(); };
 $("xpBusF").onchange = () => { xpBus = $("xpBusF").value; renderExp(); };
-$("xpSum").onclick = e => { const b = e.target.closest("[data-xpveh]"); if (!b) return; xpBus = xpBus === b.dataset.xpveh ? "" : b.dataset.xpveh; renderExp(); };
-$("xpList").addEventListener("click", e => { const r = e.target.closest("tr[data-xp]"); const x = r && ops.expenses.find(y => y.id === r.dataset.xp); if (x && canXp()) { xfRender(x); renderExp(); $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus(), 250); } });
-$("xpList").addEventListener("keydown", e => { if (e.key === "Enter") e.target.closest("tr[data-xp]")?.click(); });
+$("xpLay").onclick = e => { const b = e.target.closest("button[data-l]"); if (!b) return; xpLay = b.dataset.l; xpFormOpen = false; try { localStorage.setItem("fleet-xplay", xpLay); } catch {} renderExp(); };
+const xpGo = () => { $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus({ preventScroll: true }), 300); };
+$("xpBody").addEventListener("click", e => {
+  const vb = e.target.closest("[data-xpveh]"); if (vb) { xpBus = xpBus === vb.dataset.xpveh ? "" : vb.dataset.xpveh; renderExp(); return; }
+  if (e.target.closest("[data-xpnew]")) { xpFormOpen = true; renderExp(); xpGo(); return; }
+  const r = e.target.closest("[data-xp]"), x = r && ops.expenses.find(y => y.id === r.dataset.xp);
+  if (x && canXp()) { xfRender(x); renderExp(); xpGo(); }
+});
+$("xpBody").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-xp]")) e.target.click(); });
+// Phone, tablet and computer sizes place the entry form differently.
+[700, 1000].forEach(w => matchMedia(`(max-width: ${w}px)`).addEventListener("change", () => { if (!$("view-texp").hidden) renderExp(); }));
 function monthShift(ym, n) { const d = new Date(ym + "-01T00:00:00"); d.setMonth(d.getMonth() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; }
 
 // The entry row, in the order of the Excel sheet: date, description, vehicle, category, amount and paid by.
@@ -6349,7 +6442,6 @@ function xfRender(x) {
   const v = x || { date: xfLast.date || todayISO(), desc: "", category: xfLast.category, pay: xfLast.pay, amount: "" };
   const opt = (list, cur) => (cur && !list.includes(cur) ? [cur, ...list] : list).map(o => `<option${o === cur ? " selected" : ""}>${esc(o)}</option>`).join("");
   const descs = [...new Set(ops.expenses.map(e => e.desc).filter(Boolean))].slice(-300);
-  $("xpForm").classList.toggle("ed", !!x);
   $("xpForm").innerHTML = `<div class="xpfh"><b>${x ? "Change expense" : "New expense"}</b><span class="sub">${x ? "Make the change and tap Save." : "Fill the row and tap Add (or press Enter)."}</span></div>` +
     `<div class="xpgrid">` +
     `<label class="xpdt"><span>Date</span><input type="date" id="xfDate" value="${esc(v.date)}" max="${todayISO()}"></label>` +
@@ -6358,7 +6450,7 @@ function xfRender(x) {
     `<label><span>Category</span><select id="xfCat">${opt(XP_CATS, v.category)}</select></label>` +
     `<label><span>Amount (₹)</span><input type="number" id="xfAmt" inputmode="numeric" min="0" value="${esc(String(v.amount ?? ""))}" placeholder="0"></label>` +
     `<label><span>Paid by</span><select id="xfPay">${opt(XP_PAY, v.pay)}</select></label>` +
-    `<div class="xpbtns"><button type="button" class="btn primary" id="xfSave">${x ? "Save" : "+ Add"}</button>${x ? `<button type="button" class="btn" id="xfDel">Delete</button><button type="button" class="btn" id="xfCancel">Cancel</button>` : ""}</div>` +
+    `<div class="xpbtns"><button type="button" class="btn primary" id="xfSave">${x ? "Save" : "+ Add"}</button>${x ? `<button type="button" class="btn" id="xfDel">Delete</button><button type="button" class="btn" id="xfCancel">Cancel</button>` : `<button type="button" class="btn" id="xfClose">Close</button>`}</div>` +
     `</div><datalist id="xpDescs">${descs.map(d => `<option value="${esc(d)}">`).join("")}</datalist><p class="err" id="xpErr" style="margin:6px 0 0"></p>`;
   xfVehOpts(x ? mtKeyOf(x) : xfLast.veh, x);
 }
@@ -6373,7 +6465,7 @@ $("xpForm").addEventListener("keydown", e => { if (e.key === "Enter" && e.target
 $("xpForm").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   const err = m => { $("xpErr").textContent = m; };
-  if (b.id === "xfCancel") { xfRender(null); renderExp(); return; }
+  if (b.id === "xfCancel" || b.id === "xfClose") { if (b.id === "xfClose") xpFormOpen = false; xfRender(null); renderExp(); return; }
   if (b.id === "xfDel") {
     if (!await askYesNo("Delete this expense?", { yes: "Yes, delete", danger: true })) return;
     try { await opsDelete("expenses", xpEd); toast("Expense deleted"); xfRender(null); renderExp(); } catch { toast("Couldn't delete. Try again."); } return;
