@@ -1419,14 +1419,33 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; text-transform: uppercase; }
 
 /* Expenses and maintenance */
-.xpsum { margin-top: 4px; } .xpsum .stat { text-align: left; font: inherit; color: inherit; background: none; border-top: 0; border-bottom: 0; border-left: 0; cursor: pointer; }
-.xpsum .stat.xptot { cursor: default; } .xpsum .stat.on { background: var(--accent-soft); } .xpsum .xpveh .k { font-family: var(--mono); }
-.xpcats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; } .xpcats .pill b { margin-left: 4px; }
+.xpform { margin-top: 4px; padding: 12px 14px; } .xpform.ed { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.xpfh { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; margin-bottom: 8px; } .xpfh b { font: 700 15px var(--body); }
+.xpgrid { display: grid; grid-template-columns: 138px minmax(170px, 1.6fr) minmax(130px, 1fr) minmax(120px, 1fr) 96px minmax(130px, 1fr) auto; gap: 8px; align-items: end; }
+.xpgrid label { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .xpgrid label > span { font: 600 12px var(--body); color: var(--muted); }
+.xpgrid input, .xpgrid select { width: 100%; box-sizing: border-box; height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 15px var(--body); }
+.xpgrid input[type=number] { text-align: right; font-family: var(--mono); }
+.xpbtns { display: flex; gap: 6px; } .xpform.ed .xpbtns { grid-column: 1 / -1; justify-content: flex-end; } .xpbtns .btn { height: 44px; white-space: nowrap; }
+@media (max-width: 1240px) { .xpgrid { grid-template-columns: 1fr 1fr 1fr; } .xpgrid .xpd { grid-column: span 2; } .xpbtns { grid-column: 1 / -1; } }
+@media (max-width: 700px) { .xpgrid { grid-template-columns: 1fr 1fr; } .xpgrid .xpdt, .xpgrid .xpd { grid-column: 1 / -1; } .xpbtns .btn { flex: 1; } .xpgrid input, .xpgrid select { font-size: 16px; }
+  /* On a phone each expense is a small card: date and amount, the description, then vehicle, category and paid by. */
+  .xptable thead { display: none; } .xptable, .xptable tbody, .xptable tfoot { display: block; }
+  .xptable tr { display: grid; grid-template-columns: auto 1fr auto; column-gap: 10px; row-gap: 2px; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  .xptable td { display: block; border: 0 !important; padding: 0 !important; min-width: 0 !important; }
+  .xptable tbody td:nth-child(1) { grid-area: 1 / 1; color: var(--muted); font-size: 13px; } .xptable tbody td:nth-child(5) { grid-area: 1 / 3; font-weight: 700; font-size: 15px; }
+  .xptable tbody td:nth-child(2) { grid-area: 2 / 1 / 3 / 4; font-weight: 600; }
+  .xptable tbody td:nth-child(3) { grid-area: 3 / 1; font-size: 13px; } .xptable tbody td:nth-child(4) { grid-area: 3 / 2; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .xptable tbody td:nth-child(6) { grid-area: 3 / 3; font-size: 13px; color: var(--muted); text-align: right; }
+  .xptable tfoot td:first-child { grid-area: 1 / 1 / 2 / 3; } .xptable tfoot td.n { grid-area: 1 / 3; } .xptable tfoot td:last-child:not(.n) { display: none; } }
+.xpvt { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.xpvt button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.xpvt button small { font: 600 11.5px var(--mono); color: var(--muted); } .xpvt button b { font: 700 15px var(--mono); }
+.xpvt button.tot { cursor: default; background: var(--accent-soft); } .xpvt button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .xptable { width: 100%; } .xptable td:nth-child(2) { min-width: 200px; white-space: normal; } .xptable td.n, .xptable th.n { white-space: nowrap; }
+.xptable tr.on td { background: var(--accent-soft); }
 #xpSeg { flex-wrap: nowrap; gap: 0; } #xpSeg button { padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 14px var(--body); cursor: pointer; }
 #xpSeg button:first-child { border-radius: 8px 0 0 8px; } #xpSeg button:last-child { border-radius: 0 8px 8px 0; border-left: 0; } #xpSeg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-#xpw .bwb, #mtw .bwb, #msgw .bwb, #xpw .bwf, #mtw .bwf, #msgw .bwf, #xpw .bwnb { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
-#xpw .bwf, #mtw .bwf, #msgw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+#mtw .bwb, #msgw .bwb, #mtw .bwf, #msgw .bwf { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+#mtw .bwf, #msgw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 .bwf1 input[type=date], .bwf1 select { box-sizing: border-box; width: 100%; height: 60px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); }
 .bwin input[type=number] { flex: 1; min-width: 0; height: 58px; border: 0; background: none; color: inherit; font: inherit; padding: 0 12px; outline: none; } .bwin > b { padding-left: 14px; color: var(--muted); }
 .bwchips.mtplates { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } .bwchips.mtplates button { font-family: var(--mono); letter-spacing: .02em; }
@@ -2399,12 +2418,11 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next">›</button></div>
           <div class="seg" id="xpSeg" role="group" aria-label="Period"><button type="button" data-v="month">Month</button><button type="button" data-v="fy">Year</button></div>
           <div class="hf"><label for="xpBusF">Vehicle</label><select id="xpBusF"></select></div>
-          <button class="btn primary" type="button" id="xpAdd">+ Add expense</button>
         </div>
       </header>
-      <div class="summary xpsum" id="xpSum"></div>
-      <div class="xpcats" id="xpCats"></div>
-      <section class="panel" style="margin-top:12px"><div class="tscroll" id="xpList"></div></section>
+      <section class="panel xpform" id="xpForm" hidden></section>
+      <div class="xpvt" id="xpSum"></div>
+      <section class="panel" style="margin-top:10px"><div class="tscroll" id="xpList"></div></section>
     </section>
 
     <!-- ================= Maintenance entry ================= -->
@@ -6293,75 +6311,90 @@ const xpPeriod = () => xpFy ? { from: `${fyOf(xpYm + "-01")}-04-01`, to: `${fyOf
 function renderExp() {
   const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to);
   const list = all.filter(x => !xpBus || mtKeyOf(x) === xpBus).sort((a, b) => b.date.localeCompare(a.date) || String(b.createdOn || "").localeCompare(String(a.createdOn || "")));
-  $("xpPer").textContent = P.label; $("xpAdd").hidden = !canXp(); $("xpRoTag").hidden = canXp();
+  $("xpPer").textContent = P.label; $("xpRoTag").hidden = canXp();
   $("xpSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.v === "fy") === xpFy)));
   const keys = [...new Set([...mtFleet().map(v => v.id), ...ops.expenses.map(mtKeyOf)])];
-  $("xpBusF").innerHTML = `<option value="">All vehicles</option>` + keys.map(k => `<option value="${esc(k)}">${esc(mtVehOf(k) ? plateOf(mtVehOf(k)) : ops.expenses.find(x => mtKeyOf(x) === k)?.plate || k)}</option>`).join("");
+  $("xpBusF").innerHTML = `<option value="">All vehicles</option>` + keys.map(k => `<option value="${esc(k)}">${esc(xpKeyName(k))}</option>`).join("");
   $("xpBusF").value = xpBus;
-  const sum = a => a.reduce((s, x) => s + num(x.amount), 0), byVeh = new Map(), byCat = new Map();
-  all.forEach(x => { const k = mtKeyOf(x); byVeh.set(k, (byVeh.get(k) || 0) + num(x.amount)); byCat.set(x.category || "Other", (byCat.get(x.category || "Other") || 0) + num(x.amount)); });
-  $("xpSum").innerHTML = `<div class="stat xptot"><div class="k">Total · ${esc(P.label)}</div><div class="v">${rs(sum(all))}</div><div class="sub">${all.length} payment${all.length === 1 ? "" : "s"}</div></div>` +
-    [...byVeh.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `<button type="button" class="stat xpveh${xpBus === k ? " on" : ""}" data-xpveh="${esc(k)}"><div class="k">${esc(mtPlateOf(ops.expenses.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</div><div class="v">${rs(v)}</div></button>`).join("");
-  $("xpCats").innerHTML = [...byCat.entries()].sort((a, b) => b[1] - a[1]).map(([c, v]) => `<span class="pill">${esc(c)} <b>${rs(v)}</b></span>`).join("");
-  $("xpList").innerHTML = list.length ? `<table class="ctable xptable"><thead><tr><th>Date</th><th>Description</th><th>Vehicle</th><th>Category</th><th>Payment</th><th class="n">Amount</th></tr></thead><tbody>` +
-    list.map(x => `<tr data-xp="${x.id}" tabindex="0"${canXp() ? ' style="cursor:pointer"' : ""}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${esc(mtPlateOf(x))}</td><td>${esc(x.category || "")}</td><td>${esc(x.pay || "")}</td><td class="n">${nf(num(x.amount))}</td></tr>`).join("") +
-    `</tbody><tfoot><tr><td colspan="5">${list.length} payment${list.length === 1 ? "" : "s"}${xpBus ? ` · ${esc(mtPlateOf(list[0] || { vehicleId: xpBus }))}` : ""}</td><td class="n">${nf(sum(list))}</td></tr></tfoot></table>`
-    : `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.${canXp() ? " Tap + Add expense to enter one." : ""}</p>`;
+  // The entry row stays as typed; it is drawn once, and only its vehicle list is refreshed.
+  $("xpForm").hidden = !canXp();
+  if (canXp()) { if (!$("xfDate")) xfRender(null); else if (document.activeElement !== $("xfVeh")) xfVehOpts(); }
+  const sum = a => a.reduce((s, x) => s + num(x.amount), 0), byVeh = new Map();
+  all.forEach(x => { const k = mtKeyOf(x); byVeh.set(k, (byVeh.get(k) || 0) + num(x.amount)); });
+  $("xpSum").innerHTML = `<button type="button" class="tot" tabindex="-1"><small>TOTAL · ${esc(P.label)}</small><b>${rs(sum(all))}</b></button>` +
+    [...byVeh.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpBus === k}"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("");
+  $("xpList").innerHTML = list.length ? `<table class="ctable xptable"><thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th></tr></thead><tbody>` +
+    list.map(x => `<tr data-xp="${x.id}" tabindex="0"${x.id === xpEd ? ' class="on"' : ""}${canXp() ? ' style="cursor:pointer" title="Tap to change"' : ""}><td class="num" style="white-space:nowrap">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${esc(xpKeyName(mtKeyOf(x), x))}</td><td>${esc(x.category || "")}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td></tr>`).join("") +
+    `</tbody><tfoot><tr><td colspan="4">Total · ${list.length} payment${list.length === 1 ? "" : "s"}${xpBus ? ` · ${esc(xpKeyName(xpBus))}` : ""}</td><td class="n">${nf(sum(list))}</td><td></td></tr></tfoot></table>`
+    : `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.</p>`;
+}
+// A vehicle's number for a key: the master's number, the number kept on old rows, or "Office / general".
+function xpKeyName(k, x) {
+  const v = mtVehOf(k); if (v) return plateOf(v);
+  const r = x || ops.expenses.find(e => mtKeyOf(e) === k); return r?.plate || (k === "p:" ? "Office / general" : k.replace(/^p:/, ""));
 }
 $("xpPrev").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") - 1}-04` : monthShift(xpYm, -1); renderExp(); };
 $("xpNext").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") + 1}-04` : monthShift(xpYm, 1); renderExp(); };
 $("xpSeg").onclick = e => { const b = e.target.closest("button[data-v]"); if (!b) return; xpFy = b.dataset.v === "fy"; renderExp(); };
 $("xpBusF").onchange = () => { xpBus = $("xpBusF").value; renderExp(); };
 $("xpSum").onclick = e => { const b = e.target.closest("[data-xpveh]"); if (!b) return; xpBus = xpBus === b.dataset.xpveh ? "" : b.dataset.xpveh; renderExp(); };
-$("xpAdd").onclick = () => xpOpen(null);
-$("xpList").addEventListener("click", e => { const r = e.target.closest("tr[data-xp]"); if (r && canXp()) xpOpen(ops.expenses.find(x => x.id === r.dataset.xp)); });
+$("xpList").addEventListener("click", e => { const r = e.target.closest("tr[data-xp]"); const x = r && ops.expenses.find(y => y.id === r.dataset.xp); if (x && canXp()) { xfRender(x); renderExp(); $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus(), 250); } });
 $("xpList").addEventListener("keydown", e => { if (e.key === "Enter") e.target.closest("tr[data-xp]")?.click(); });
 function monthShift(ym, n) { const d = new Date(ym + "-01T00:00:00"); d.setMonth(d.getMonth() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; }
 
-// The expense form: one screen, big buttons for the vehicle, category and payment.
-function xpOpen(x) {
-  xpEd = x ? { ...x, amount: String(x.amount ?? "") } : { id: "", date: todayISO(), vehicleId: xpBus && !xpBus.startsWith("p:") ? xpBus : "", plate: "", desc: "", category: "Maintenance", pay: "Online transfer", amount: "" };
-  if (!$("xpw")) { document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="xpw" role="dialog" aria-modal="true" aria-labelledby="xpTitle" hidden></div>');
-    $("xpw").addEventListener("click", xpClick); $("xpw").addEventListener("input", e => { const k = e.target.dataset.k; if (k) xpEd[k] = e.target.value; }); }
-  xpRender(); $("xpw").hidden = false; document.documentElement.classList.add("bw-on");
-  setTimeout(() => $("xpw").querySelector('[data-k="desc"]')?.focus(), 50);
+// The entry row, in the order of the Excel sheet: date, description, vehicle, category, amount and paid by.
+let xfLast = { veh: "", category: "Maintenance", pay: "Online transfer", date: "" };
+function xfRender(x) {
+  xpEd = x?.id || null;
+  const v = x || { date: xfLast.date || todayISO(), desc: "", category: xfLast.category, pay: xfLast.pay, amount: "" };
+  const opt = (list, cur) => (cur && !list.includes(cur) ? [cur, ...list] : list).map(o => `<option${o === cur ? " selected" : ""}>${esc(o)}</option>`).join("");
+  const descs = [...new Set(ops.expenses.map(e => e.desc).filter(Boolean))].slice(-300);
+  $("xpForm").classList.toggle("ed", !!x);
+  $("xpForm").innerHTML = `<div class="xpfh"><b>${x ? "Change expense" : "New expense"}</b><span class="sub">${x ? "Make the change and tap Save." : "Fill the row and tap Add (or press Enter)."}</span></div>` +
+    `<div class="xpgrid">` +
+    `<label class="xpdt"><span>Date</span><input type="date" id="xfDate" value="${esc(v.date)}" max="${todayISO()}"></label>` +
+    `<label class="xpd"><span>Expense description</span><input type="text" id="xfDesc" list="xpDescs" maxlength="160" value="${esc(v.desc || "")}" placeholder="e.g. Tyre rebuilt (2 nos)" autocomplete="off"></label>` +
+    `<label><span>Vehicle</span><select id="xfVeh"></select></label>` +
+    `<label><span>Category</span><select id="xfCat">${opt(XP_CATS, v.category)}</select></label>` +
+    `<label><span>Amount (₹)</span><input type="number" id="xfAmt" inputmode="numeric" min="0" value="${esc(String(v.amount ?? ""))}" placeholder="0"></label>` +
+    `<label><span>Paid by</span><select id="xfPay">${opt(XP_PAY, v.pay)}</select></label>` +
+    `<div class="xpbtns"><button type="button" class="btn primary" id="xfSave">${x ? "Save" : "+ Add"}</button>${x ? `<button type="button" class="btn" id="xfDel">Delete</button><button type="button" class="btn" id="xfCancel">Cancel</button>` : ""}</div>` +
+    `</div><datalist id="xpDescs">${descs.map(d => `<option value="${esc(d)}">`).join("")}</datalist><p class="err" id="xpErr" style="margin:6px 0 0"></p>`;
+  xfVehOpts(x ? mtKeyOf(x) : xfLast.veh, x);
 }
-function xpRender() {
-  const x = xpEd, chips = (k, list) => `<div class="bwchips">${list.map(v => `<button type="button" data-xs="${k}" data-v="${esc(v)}" aria-pressed="${x[k] === v}">${esc(v)}</button>`).join("")}</div>`;
-  const fleet = mtFleet(), descs = [...new Set(ops.expenses.map(e => e.desc).filter(Boolean))].slice(-300);
-  $("xpw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="xpTitle">${x.id ? "Change expense" : "New expense"}</b><span>Every payment made for a vehicle</span></div></header>` +
-    `<div class="bwb tws" id="xpBody">` +
-    rsSec("1", "Date", `<label class="bwf1"><span>Date of payment</span><input type="date" data-k="date" value="${esc(x.date)}" max="${todayISO()}"></label>`) +
-    rsSec("2", "Vehicle", `<div class="bwchips mtplates">${fleet.map(v => `<button type="button" data-xs="vehicleId" data-v="${v.id}" aria-pressed="${x.vehicleId === v.id}">${esc(plateOf(v))}</button>`).join("")}` +
-      `<button type="button" data-xs="vehicleId" data-v="" aria-pressed="${!x.vehicleId && !x.plate}">Office / general</button></div>${!x.vehicleId && x.plate ? `<p class="bwnote">${esc(x.plate)} (not in the vehicle master)</p>` : ""}`) +
-    rsSec("3", "What was paid for", `<label class="bwf1"><span>Description</span><input type="text" data-k="desc" list="xpDescs" maxlength="160" value="${esc(x.desc)}" placeholder="e.g. Tyre rebuilt (2 nos)"></label><datalist id="xpDescs">${descs.map(d => `<option value="${esc(d)}">`).join("")}</datalist>`) +
-    rsSec("4", "Category", chips("category", XP_CATS)) +
-    rsSec("5", "Paid by", chips("pay", XP_PAY)) +
-    rsSec("6", "Amount", `<label class="bwf1"><span>Amount (₹)</span><span class="bwin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="amount" value="${esc(x.amount)}" placeholder="0"></span></label>`) +
-    `<p class="err" id="xpErr" style="margin:6px 0 0"></p></div>` +
-    `<footer class="bwf${x.id ? " two" : ""}">${x.id ? `<button type="button" class="bwalt" data-xa="del">Delete</button>` : ""}<button type="button" class="bwgo" data-xa="save">${BW_ICON.ok} Save</button></footer>` + navBar("xp", false);
+// Vehicle choices: the fleet, "Office / general", and the old number of the row being changed.
+function xfVehOpts(cur, x) {
+  const sel = $("xfVeh"); if (!sel) return; if (cur === undefined) cur = sel.value;
+  const fleet = mtFleet(), extra = cur && cur.startsWith("p:") && cur !== "p:" && !fleet.some(v => v.id === cur) ? [[cur, xpKeyName(cur, x)]] : [];
+  sel.innerHTML = `<option value="">Choose…</option>` + [...fleet.map(v => [v.id, plateOf(v)]), ...extra, ["p:", "Office / general"]].map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join("");
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : "";
 }
-async function xpClick(e) {
+$("xpForm").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input")) { e.preventDefault(); $("xfSave")?.click(); } });
+$("xpForm").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.xs) { xpEd[b.dataset.xs] = b.dataset.v; if (b.dataset.xs === "vehicleId") xpEd.plate = ""; xpRender(); return; }
-  if (b.dataset.xp === "back") { xpClose(); return; }
-  if (b.dataset.xa === "del") {
+  const err = m => { $("xpErr").textContent = m; };
+  if (b.id === "xfCancel") { xfRender(null); renderExp(); return; }
+  if (b.id === "xfDel") {
     if (!await askYesNo("Delete this expense?", { yes: "Yes, delete", danger: true })) return;
-    try { await opsDelete("expenses", xpEd.id); toast("Expense deleted"); xpClose(); } catch { toast("Couldn't delete. Try again."); } return;
+    try { await opsDelete("expenses", xpEd); toast("Expense deleted"); xfRender(null); renderExp(); } catch { toast("Couldn't delete. Try again."); } return;
   }
-  if (b.dataset.xa === "save") {
-    const x = xpEd, amt = Math.round(num(x.amount)), err = m => { $("xpErr").textContent = m; };
-    if (!x.date) return err("Choose the date.");
-    if (!upText(x.desc)) return err("Type what was paid for.");
-    if (!amt) return err("Type the amount.");
-    const doc = { ...x, desc: upText(x.desc), amount: amt, ...rxStamp() };
-    if (!doc.id) Object.assign(doc, { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdOn: new Date().toISOString(), byName: whoAmI() });
-    b.disabled = true;
-    try { await opsSave("expenses", doc); toast(`Expense saved · ${rs(amt)}`); xpYm = doc.date.slice(0, 7); xpClose(); }
-    catch { b.disabled = false; toast("Couldn't save. Check your connection and try again."); }
-  }
-}
-function xpClose() { if ($("xpw")) $("xpw").hidden = true; document.documentElement.classList.remove("bw-on"); xpEd = null; renderExp(); }
+  if (b.id !== "xfSave") return;
+  const date = $("xfDate").value, desc = upText($("xfDesc").value), veh = $("xfVeh").value, amt = Math.round(num($("xfAmt").value));
+  if (!date) return err("Choose the date.");
+  if (!desc) return err("Type the expense description.");
+  if (!veh) return err("Choose the vehicle (or Office / general).");
+  if (!amt) return err("Type the amount.");
+  const old = xpEd ? ops.expenses.find(x => x.id === xpEd) : null;
+  const where = veh === "p:" ? { vehicleId: "", plate: "" } : veh.startsWith("p:") ? { vehicleId: "", plate: old?.plate || veh.slice(2) } : { vehicleId: veh, plate: "" };
+  const doc = { ...(old || {}), date, desc, ...where, category: $("xfCat").value, pay: $("xfPay").value, amount: amt, ...rxStamp() };
+  if (!doc.id) Object.assign(doc, { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdOn: new Date().toISOString(), byName: whoAmI() });
+  b.disabled = true;
+  try {
+    await opsSave("expenses", doc); toast(`${old ? "Expense saved" : "Expense added"} · ${rs(amt)}`);
+    if (!old) xfLast = { veh, category: doc.category, pay: doc.pay, date }; // the next row starts like this one, as in the sheet
+    xpYm = xpFy ? xpYm : date.slice(0, 7); xfRender(null); renderExp(); $("xfDesc")?.focus();
+  } catch { b.disabled = false; toast("Couldn't save. Check your connection and try again."); }
+});
 
 /* ---------- Maintenance entry ---------- */
 let mtBus = "", mtw = null;
@@ -8513,7 +8546,7 @@ function renderOps() {
   if (view === "trexp") { renderRxp(); return; }
   if (view === "tpadi") { renderPadi(); return; }
   if (view === "tutil") { renderUpload(); return; }
-  if (view === "texp") { if (!$("xpw") || $("xpw").hidden) renderExp(); return; }
+  if (view === "texp") { renderExp(); return; }
   if (view === "tmaint") { renderMaint(); return; }
   if (view === "tmsum") { renderMsum(); return; }
   const ro = !canTrips;
