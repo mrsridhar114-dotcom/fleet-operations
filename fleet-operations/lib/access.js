@@ -6,7 +6,7 @@ const VE = ["none", "view", "edit"];
 const LEVELS = {
   dashboard: ["none", "view"], vehicles: VE, drivers: VE, conductors: VE, trips: ["none", "view", "update", "edit"],
   bookings: ["none", "view", "request", "edit"], tripsheets: ["none", "view", "update", "edit"],
-  fuel: VE, maintenance: VE, users: VE
+  fuel: VE, expenses: VE, maintenance: ["none", "view", "update", "edit"], users: VE
 };
 const FULL = Object.fromEntries(Object.entries(LEVELS).map(([m, l]) => [m, l.at(-1)]));
 
@@ -30,7 +30,9 @@ const MOD_OF = {
   trips: "trips", tripMonths: "trips", tripYears: "trips", truckTrips: "trips", truckRounds: "trips",
   routeExpenses: "trips", padiSlabs: "trips", // route bus masters: standard expenses by starting place, padi slabs
   routeSheets: "trips", // the conductor's day sheet, approved into trips by an admin
-  fuelLog: "fuel"
+  fuelLog: "fuel",
+  expenses: "expenses", // payments made for each vehicle
+  maintLog: "maintenance", maintTypes: "maintenance" // maintenance visits, and the service gaps
 };
 const HISTORY = /History$/;
 const AUDIT = ["auditLog", "auditSessions"];
@@ -43,6 +45,7 @@ export function canRead(a, coll) {
   if (isAdmin(a)) return true;
   if (coll === "bookings" || coll === "bookingHistory") return seesBookings(a);
   if (AUDIT.includes(coll)) return false;
+  if (coll === "expenses") return a.expenses === "view" || a.expenses === "edit";
   return true;
 }
 // A fingerprint of what someone may read; when it changes, their app reloads everything it is now allowed to see.
@@ -106,6 +109,9 @@ export function canWrite(a, me, op, coll, id, prev, next, linkedClosed) {
   // Trip sheet diesel: someone who fills in trip sheets may add, change and delete fills linked to a booking.
   if (coll === "fuelLog" && a.fuel !== "edit" && (a.tripsheets === "update" || a.tripsheets === "edit"))
     return (op === "delete" ? !!prev?.bookingId : !!next?.bookingId && (!prev || prev.bookingId === next.bookingId)) ? "" : no;
+
+  // Maintenance entry (add entries): adds and corrects maintenance visits; the service gaps and deleting stay with editors.
+  if (coll === "maintLog" && a.maintenance === "update") return op !== "delete" ? "" : no;
 
   const m = MOD_OF[coll];
   if (!m) return no; // anything new is admin-only until a rule is added here
