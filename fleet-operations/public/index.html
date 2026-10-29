@@ -1458,12 +1458,13 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xsum > * { min-width: 140px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; }
 .xsum button { cursor: pointer; } .xsum button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
 .xsum .t { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.xsum .t.off { background: var(--surface); color: var(--accent); border: 1.5px dashed var(--accent); } .xsum .t.off small { opacity: 1; font-weight: 700; }
 .xsum small { display: block; font: 600 11px var(--mono); text-transform: uppercase; opacity: .78; } .xsum b { font: 700 16px var(--mono); }
 .xsheet { background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-radius: 10px; overflow: hidden; }
-.xsc { position: relative; max-height: max(240px, calc(100vh - 230px)); overflow: auto; outline: none; scroll-padding-top: 40px; scroll-padding-bottom: 6px; }
+.xsc { position: relative; max-height: max(240px, calc(100vh - 230px)); overflow-y: auto; overflow-x: hidden; outline: none; scroll-padding-top: 40px; scroll-padding-bottom: 6px; }
 .xgrid { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
 .xgrid col.g0 { width: 40px; } .xgrid { min-width: 100%; }
-.xgrid th[data-col] { cursor: pointer; user-select: none; white-space: nowrap; } .xgrid th[data-col]:hover { color: var(--ink); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.xgrid th[data-col] { cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .xgrid th[data-col]:hover { color: var(--ink); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .xfi { margin-left: 5px; opacity: .55; } .xsrt { margin-left: 5px; color: var(--accent); font-size: 9px; } .xgrid th.xfon { color: var(--accent); background: var(--accent-soft); } .xgrid th.xfon .xfi { opacity: 1; }
 .xgrid tr.xd.miss td.rn { background: color-mix(in srgb, var(--danger) 22%, var(--surface)) !important; color: var(--danger); }
 .xmenu { position: fixed; z-index: 60; width: 260px; max-width: calc(100vw - 24px); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,.18); padding: 8px; font-size: 14px; }
@@ -6425,10 +6426,11 @@ const xpGrow = el => { if (!el) return; el.style.height = "auto"; el.style.heigh
 var xpAct = null, xpEdit = null, xpRowsNow = [], xpScrollEnd = true, xpNews = [], xpDeferred = false;
 const XP_BLANK = 10, XP_COLS = ["date", "desc", "veh", "category", "pay", "amount"]; // the order of the Excel sheet
 // Column widths: chosen to fit their contents; each can be dragged wider or narrower and is remembered.
-const XP_W = { date: 104, veh: 130, category: 142, pay: 132, amount: 108 };
+const XP_W = { date: 118, veh: 130, category: 142, pay: 132, amount: 112 }, XP_MIN = { date: 104, veh: 114, category: 92, pay: 92, amount: 88 };
 var xpW = {}, xpRowSel = new Set(), xpRowAnchor = null;
 try { xpW = JSON.parse(localStorage.getItem("fleet-xpcols") || "{}") || {}; } catch {}
-const xpColW = c => xpW[c] || XP_W[c] || 0;
+const xpColW = c => c === "desc" ? 0 : Math.max(XP_MIN[c] || 0, xpW[c] || XP_W[c] || 0);
+delete xpW.desc; // the description is never fixed: it takes the room left, so the sheet always fits the screen
 const XP_NAMES = { date: "date", desc: "description", veh: "vehicle", category: "details for Other", amount: "amount", pay: "paid by" };
 const xpBlank = () => ({ k: Math.random().toString(36).slice(2, 9), date: "", desc: "", veh: "", category: "", catNote: "", pay: "", amount: "", used: false, miss: false });
 const xpFill = () => { while (xpNews.length < XP_BLANK) xpNews.push(xpBlank()); };
@@ -6477,7 +6479,7 @@ function xpGridRender(o) {
   const { P, all, list, VS, sum, can, force } = o;
   if (can) xpFill();
   xpRowsNow = [...xpSorted(list).map(x => "e:" + x.id), ...(can ? xpNews.map(d => "n:" + d.k) : [])];
-  const strip = `<div class="xsum"><div class="t"><small>Total · ${esc(P.label)}</small><b>${rs(sum(all))}</b></div>` +
+  const strip = `<div class="xsum"><button type="button" class="t${xpFilt.veh ? " off" : ""}" data-xpveh="" title="Show all vehicles"><small>${xpFilt.veh ? "◂ All vehicles" : `All vehicles · ${esc(P.label)}`}</small><b>${rs(sum(all))}</b></button>` +
     VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpOnlyVeh() === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>`;
   const foot = `<div class="xfoot"><span class="xfl"><span id="xpSelAct">${xpSelHtml()}</span><span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot">Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
   // While a cell is open for typing, only the totals are refreshed; the sheet is redrawn when it closes.
@@ -6490,8 +6492,8 @@ function xpGridRender(o) {
   if (xpAct && !xpRowsNow.includes(xpAct.r)) xpAct = null;
   xpRowSel.forEach(r => { if (!xpRowsNow.includes(r)) xpRowSel.delete(r); });
   const old = $("xpSc"), top = old ? old.scrollTop : 0, had = document.activeElement === old;
-  $("xpBody").innerHTML = strip + `<section class="xsheet"><div class="xsc" id="xpSc"${can ? ' tabindex="0"' : ""}><table class="xgrid"${xpW.desc ? ` style="width:${40 + XP_COLS.reduce((a, c) => a + xpColW(c), 0)}px"` : ""}><colgroup><col class="g0">${XP_COLS.map(c => `<col data-col="${c}"${xpColW(c) ? ` style="width:${xpColW(c)}px"` : ""}>`).join("")}</colgroup>` +
-    `<thead><tr><th class="rn"${can ? ' title="Select all lines" data-xall' : ""}></th>` + XP_COLS.map(c => `<th data-col="${c}" class="${c === "amount" ? "n " : ""}${xpFilt[c] && (xpFilt[c].size || typeof xpFilt[c] === "string") ? "xfon" : ""}" title="Sort or filter">${XP_HEAD[c]}${xpSort.c === c ? `<span class="xsrt">${xpSort.dir > 0 ? "▲" : "▼"}</span>` : ""}<span class="xfi" aria-hidden="true">${xpFilt[c] ? "⏷" : "▾"}</span><span class="xrs" data-rs="${c}" title="Drag to change the width · double-click to reset"></span></th>`).join("") + `</tr></thead><tbody>` +
+  $("xpBody").innerHTML = strip + `<section class="xsheet"><div class="xsc" id="xpSc"${can ? ' tabindex="0"' : ""}><table class="xgrid"><colgroup><col class="g0">${XP_COLS.map(c => `<col data-col="${c}"${xpColW(c) ? ` style="width:${xpColW(c)}px"` : ""}>`).join("")}</colgroup>` +
+    `<thead><tr><th class="rn"${can ? ' title="Select all lines" data-xall' : ""}></th>` + XP_COLS.map(c => `<th data-col="${c}" class="${c === "amount" ? "n " : ""}${xpFilt[c] && (xpFilt[c].size || typeof xpFilt[c] === "string") ? "xfon" : ""}" title="Sort or filter">${XP_HEAD[c]}${xpSort.c === c ? `<span class="xsrt">${xpSort.dir > 0 ? "▲" : "▼"}</span>` : ""}<span class="xfi" aria-hidden="true">${xpFilt[c] ? "⏷" : "▾"}</span>${c === "desc" ? "" : `<span class="xrs" data-rs="${c}" title="Drag to change the width · double-click to reset"></span>`}</th>`).join("") + `</tr></thead><tbody>` +
     xpRowsNow.map((r, i) => xpRowHtml(r, i, can)).join("") + `</tbody></table>` +
     (list.length || can ? "" : none) +
     `<div class="xed" id="xpEdBox" hidden></div></div>` + foot + `</section>`;
@@ -6505,6 +6507,11 @@ function xpFit() {
   const sc = $("xpSc"); if (!sc || $("view-texp").hidden) return;
   const root = document.scrollingElement || document.documentElement, padB = parseFloat(getComputedStyle($("view-texp")).paddingBottom) || 0;
   sc.style.maxHeight = Math.max(240, Math.floor(innerHeight - (sc.getBoundingClientRect().top + root.scrollTop) - sc.nextElementSibling.offsetHeight - padB - 2)) + "px";
+  // On a narrow screen the columns shrink together (never below their minimum) so there is no sideways scrolling.
+  // The description gives up room first (down to 150px), then the other columns shrink towards their minimum.
+  const fixed = XP_COLS.filter(c => c !== "desc"), room = sc.clientWidth - 40 - 150, mins = fixed.reduce((a, c) => a + XP_MIN[c], 0), want = fixed.reduce((a, c) => a + xpColW(c), 0);
+  const k = want <= room ? 1 : Math.max(0, (room - mins) / Math.max(1, want - mins));
+  fixed.forEach(c => { const el = $("xpBody").querySelector(`col[data-col="${c}"]`); if (el) el.style.width = Math.round(XP_MIN[c] + (xpColW(c) - XP_MIN[c]) * k) + "px"; });
 }
 addEventListener("resize", () => xpFit());
 const XP_HEAD = { date: "Date", desc: "Expense description", veh: "Vehicle", category: "Category", pay: "Paid by", amount: "Amount" };
@@ -6595,10 +6602,10 @@ async function xpDeleteSel() {
 }
 // Dragging the edge of a column heading changes its width.
 function xpResize(h, e) {
-  const c = h.dataset.rs, th = h.closest("th"), col = $("xpBody").querySelector(`col[data-col="${c}"]`), tbl = th.closest("table"), x0 = e.clientX, w0 = th.getBoundingClientRect().width;
-  const fixAll = () => { if (c === "desc" || xpW.desc) { XP_COLS.forEach(k => { if (!xpW[k]) xpW[k] = Math.round($("xpBody").querySelector(`th[data-col="${k}"]`).getBoundingClientRect().width); }); } };
-  fixAll(); h.classList.add("on"); document.body.style.cursor = "col-resize";
-  const mv = ev => { const w = Math.max(c === "desc" ? 120 : 48, Math.round(w0 + ev.clientX - x0)); xpW[c] = w; col.style.width = w + "px"; if (xpW.desc) tbl.style.width = 40 + XP_COLS.reduce((a, k) => a + xpColW(k), 0) + "px"; };
+  const c = h.dataset.rs, th = h.closest("th"), col = $("xpBody").querySelector(`col[data-col="${c}"]`), x0 = e.clientX, w0 = th.getBoundingClientRect().width;
+  h.classList.add("on"); document.body.style.cursor = "col-resize";
+  const room = $("xpSc").clientWidth - 40 - 150 - XP_COLS.filter(k => k !== c && k !== "desc").reduce((a, k) => a + Math.round($("xpBody").querySelector(`th[data-col="${k}"]`).getBoundingClientRect().width), 0);
+  const mv = ev => { const w = Math.min(Math.max(XP_MIN[c] || 60, Math.round(w0 + ev.clientX - x0)), Math.max(XP_MIN[c] || 60, room)); xpW[c] = w; col.style.width = w + "px"; };
   const up = () => { removeEventListener("mousemove", mv); removeEventListener("mouseup", up); h.classList.remove("on"); document.body.style.cursor = ""; try { localStorage.setItem("fleet-xpcols", JSON.stringify(xpW)); } catch {} };
   addEventListener("mousemove", mv); addEventListener("mouseup", up);
 }
@@ -6843,7 +6850,7 @@ $("xpBody").addEventListener("click", async e => {
     toast(bad ? `${ok ? `${ok} saved. ` : ""}${bad} line${bad > 1 ? "s" : ""} not saved: fill the red cells.` : ok ? `${ok} expense${ok > 1 ? "s" : ""} saved` : "Everything is saved.");
     return;
   }
-  const vb = e.target.closest("[data-xpveh]"); if (vb) { const k = vb.dataset.xpveh; if (xpOnlyVeh() === k) delete xpFilt.veh; else xpFilt.veh = new Set([k]); xpScrollEnd = true; xpMenuClose(); renderExp(); return; }
+  const vb = e.target.closest("[data-xpveh]"); if (vb) { const k = vb.dataset.xpveh; if (!k || xpOnlyVeh() === k) delete xpFilt.veh; else xpFilt.veh = new Set([k]); xpScrollEnd = true; xpMenuClose(); renderExp(); return; }
   const r = e.target.closest("[data-xp]"), x = r && ops.expenses.find(y => y.id === r.dataset.xp);
   if (x && canXp()) { xfRender(x); renderExp(); xpGo(); }
 });
@@ -7190,6 +7197,75 @@ function emPreview(res) {
     `<div class="upgo"><button class="btn primary" type="button" id="emGo"${!upState.emBusy && (newX.length || newM.length || Object.keys(R.gaps).length) ? "" : " disabled"}>${upState.emBusy || `Load ${newX.length} expenses and ${newM.length} maintenance visits`}</button>` +
     `<span class="sub">Rows already loaded before are left as they are, so loading the same file again adds nothing twice.</span></div>`;
 }
+/* ---------- Expenses from the Excel sheet (one row per payment) ---------- */
+// Finds the heading row (Date, Description, Vehicle Number, Category, Payment Type, Amount) and reads every row after it.
+// Excel often reads a typed day/month as month/day (07/04 becomes 4 July): such a date takes the reading closest to the row
+// before it, and a date that would be in the future takes the other reading when that one is not.
+function xpParseSheet(sheets) {
+  let sh = null, hr = -1, C = null;
+  for (const t of sheets) { for (let i = 0; i < Math.min(15, t.rows.length) && !sh; i++) {
+    const h = (t.rows[i] || []).map(v => upText(v).toLowerCase()), at = re => h.findIndex(x => re.test(x));
+    const c = { date: at(/^date/), desc: at(/desc|particular|detail/), veh: at(/vehicle|bus/), cat: at(/categ/), pay: at(/payment|paid|mode/), amt: at(/amount|amt/) };
+    if (c.date >= 0 && c.desc >= 0 && c.amt >= 0) { sh = t; hr = i; C = c; } } if (sh) break; }
+  if (!sh) return { error: "No sheet in this file has the headings Date, Description and Amount. Download the template and copy the rows into it." };
+  const today = todayISO(), cell = (r, k) => C[k] >= 0 ? r[C[k]] : "", out = { sheet: sh.name, rows: [], fixed: [], plates: new Map() };
+  let prev = ""; const first = sh.rows.slice(hr + 1).map(r => r?.[C.date]).find(v => typeof v === "string" && upDate(v).a); if (first) prev = upDate(first).a;
+  sh.rows.forEach((r, i) => {
+    if (i <= hr || !r) return;
+    const desc = upText(cell(r, "desc")), amt = upNum(cell(r, "amt")), rawD = cell(r, "date"); if (!desc && !upText(rawD)) return; // empty, or a total line
+    const d = upDate(rawD); let date = d.a;
+    if (d.b) { let pick = date; if (date > today && d.b <= today) pick = d.b; else if (prev && Math.abs(dayDiff(prev, d.b)) < Math.abs(dayDiff(prev, d.a))) pick = d.b; if (pick !== date) { out.fixed.push({ line: i + 1, from: date, to: pick, desc }); date = pick; } }
+    if (date) prev = date;
+    const p = upText(cell(r, "veh")), office = !p || /office|general/i.test(p), v = office ? null : vehicles.find(x => plateKey(x.plateNo) === plateKey(p));
+    const cr = upText(cell(r, "cat")), cf = XP_CATS.find(x => x.toLowerCase() === cr.toLowerCase()) || XP_CATS.find(x => cr && x.toLowerCase().replace(/\s+/g, "") === cr.toLowerCase().replace(/\s+/g, ""));
+    const probs = [!date && "date cannot be read", date > today && "date is in the future", !desc && "no description", !(amt > 0) && "no amount"].filter(Boolean);
+    if (!office) { const k = plateKey(p), x = out.plates.get(k) || { plate: v ? plateOf(v) : p, v, n: 0 }; x.n++; out.plates.set(k, x); }
+    out.rows.push({ line: i + 1, raw: typeof rawD === "number" ? (d.a ? xpDMY(d.a) : String(rawD)) : upText(rawD), date, desc, vehicleId: v?.id || "", plate: v ? plateOf(v) : office ? "" : p, hashPlate: v ? plateOf(v) : p,
+      category: cf || (cr ? "Other" : "Miscellaneous"), ...(cr && !cf ? { catNote: cr } : {}), pay: xpPay(cell(r, "pay") || "") || "", amount: Math.round(amt || 0), probs });
+  });
+  // The same ids as the workbook upload, so a row already loaded is never added twice.
+  const seen = {}; out.rows.forEach(x => { const h = mtHash(`${x.date}|${x.desc}|${plateKey(x.hashPlate)}|${x.amount}`); seen[h] = (seen[h] || 0) + 1; x.id = `xp_${h}${seen[h] > 1 ? "_" + seen[h] : ""}`; });
+  return out;
+}
+function xpUpPreview(R) {
+  const have = new Set(ops.expenses.map(x => x.id)), ok = R.rows.filter(x => !x.probs.length), add = ok.filter(x => !have.has(x.id)), bad = R.rows.filter(x => x.probs.length);
+  const tot = add.reduce((a, x) => a + x.amount, 0), other = [...R.plates.values()].filter(x => !x.v);
+  const show = (list, n) => list.slice(0, n), more = (list, n) => list.length > n ? `<p class="sub" style="margin:0">…and ${list.length - n} more.</p>` : "";
+  return `<div class="upsum"><span><b>${R.rows.length}</b> rows read</span><span><b>${add.length}</b> new · ${rs(tot)}</span><span><b>${ok.length - add.length}</b> already in the app</span><span><b>${R.fixed.length}</b> dates corrected</span><span><b>${bad.length}</b> with a problem (left out)</span></div>` +
+    (R.fixed.length ? `<h3 class="sec" style="margin:4px 0 0">Dates corrected</h3><p class="sub" style="margin:0">Excel had read these as month/day. They are loaded as day/month, judged from the rows around them: please glance through.</p>` +
+      `<div class="tscroll"><table class="ctable"><thead><tr><th>Row</th><th>Description</th><th>Excel read it as</th><th>Loaded as</th></tr></thead><tbody>` +
+      show(R.fixed, 60).map(f => `<tr><td class="num">${f.line}</td><td>${esc(f.desc)}</td><td class="num" style="text-decoration:line-through;color:var(--muted)">${xpDMY(f.from)}</td><td class="num"><b>${xpDMY(f.to)}</b></td></tr>`).join("") + `</tbody></table></div>${more(R.fixed, 60)}` : "") +
+    (bad.length ? `<h3 class="sec" style="margin:4px 0 0">Rows with a problem</h3><p class="sub" style="margin:0">These are left out. Fix them in the Excel and upload it again (rows already loaded are not added twice).</p>` +
+      `<div class="tscroll"><table class="ctable"><thead><tr><th>Row</th><th>Date in the Excel</th><th>Description</th><th class="n">Amount</th><th>Problem</th></tr></thead><tbody>` +
+      show(bad, 60).map(x => `<tr class="bad"><td class="num">${x.line}</td><td class="num">${esc(x.raw || "—")}</td><td>${esc(x.desc || "—")}</td><td class="n">${x.amount ? nf(x.amount) : "—"}</td><td>${esc(x.probs.join(", "))}</td></tr>`).join("") + `</tbody></table></div>${more(bad, 60)}` : "") +
+    (other.length ? `<p class="sub" style="margin:0">Not in the vehicle master, kept by their number: ${other.map(x => `${esc(x.plate)} (${x.n})`).join(", ")}.</p>` : "") +
+    `<div class="upgo"><button class="btn primary" type="button" id="xpUpGo"${!upState.emBusy && add.length ? "" : " disabled"}>${upState.emBusy || `Load ${add.length} expense${add.length === 1 ? "" : "s"}`}</button><span class="sub">Rows already loaded before are left as they are.</span></div>`;
+}
+async function xpUpImport() {
+  const R = upState.rows?.xp; if (!R || upState.emBusy) return;
+  const have = new Set(ops.expenses.map(x => x.id)), list = R.rows.filter(x => !x.probs.length && !have.has(x.id)), stamp = { createdOn: new Date().toISOString(), byName: whoAmI(), src: "excel" };
+  let n = 0, failed = 0; const busy = () => { upState.emBusy = `Loading… ${n + failed} of ${list.length}`; renderUpload(); }; busy();
+  for (const x of list) { const { line, raw, probs, hashPlate, ...doc } = x; try { await opsSave("expenses", { ...doc, ...stamp }); n++; } catch { failed++; } if ((n + failed) % 10 === 0) busy(); }
+  upState.emBusy = ""; upState.rows = null; $("upFile").value = "";
+  upState.emDone = `<div class="upok"><b>${n} expense${n === 1 ? "" : "s"} loaded</b>${failed ? `, ${failed} could not be saved: upload the file again to add them` : ""}. See them in <a href="#expenses">Expenses</a>.</div>`;
+  renderUpload();
+}
+// The template: the same columns as the office sheet. The Date column is kept as text, so Excel cannot turn 07/04 into 4 July.
+function xpTemplate() {
+  const S = XL.S, ws = XL.sheet("Expenses"), help = XL.sheet("How to fill"), rows = 1000;
+  const T = [["Date", 13, S.tx, "Day of the payment as day/month/year, e.g. 07/10/2026"], ["Description", 44, S.text, "What was paid for"], ["Vehicle Number", 17, S.text, "Bus number, e.g. TN23DK2277, or Office for office expenses"],
+    ["Category", 18, S.text, `Pick from the list: ${XP_CATS.join(", ")}`], ["Payment Type", 16, S.text, `Pick from the list: ${XP_PAY.join(", ")}`], ["Amount", 12, S.int, "In rupees, without the ₹ sign"]];
+  T.forEach(([h, w, st], i) => { const c = XL.col(i); XL.put(ws, `${c}1`, h, S.head); ws.widths[c] = w; for (let r = 2; r <= rows; r++) XL.put(ws, `${c}${r}`, "", st); });
+  ws.freeze = 1; ws.lists.push({ ref: `D2:D${rows}`, items: XP_CATS }, { ref: `E2:E${rows}`, items: XP_PAY });
+  XL.put(help, "A1", "Expenses: how to fill the template", S.title);
+  ["Type one payment on each row of the Expenses sheet, starting on row 2. Keep the headings in row 1 as they are.", "Type the date as day/month/year, e.g. 07/10/2026. The Date column is text, so Excel will not change it.",
+   "You can also paste rows copied from your own expenses sheet (same column order).", "Save the file as .xlsx and upload it in Utility › Data upload › Expenses. Every row is shown before anything is saved; rows already loaded are skipped."]
+    .forEach((t, i) => XL.put(help, `A${3 + i}`, `${i + 1}. ${t}`, S.plain));
+  XL.put(help, "A8", "Column", S.head); XL.put(help, "B8", "What to type", S.head);
+  T.forEach(([h, , , note], i) => { XL.put(help, `A${9 + i}`, h, S.label); XL.put(help, `B${9 + i}`, note, S.text); });
+  help.widths.A = 18; help.widths.B = 90;
+  return XL.build([ws, help]);
+}
 async function emImport() {
   const R = upState.rows?.em; if (!R || upState.emBusy) return;
   const have = new Set(ops.expenses.map(x => x.id)), haveM = new Set(ops.maintLog.map(x => x.id)), stamp = { createdOn: new Date().toISOString(), byName: whoAmI(), src: "excel" };
@@ -7281,6 +7357,11 @@ function upDate(v) {
 
 // ---- kinds of upload
 const UP_KINDS = {
+  xp: {
+    label: "Expenses (Excel sheet, one row per payment)",
+    note: "Use the template, or your own sheet with the headings Date, Description, Vehicle Number, Category, Payment Type and Amount. Dates that Excel turned around (7 April read as 4 July) are put right before loading, and every row is shown before anything is saved.",
+    xp: true
+  },
   em: {
     label: "Expenses and maintenance (Excel workbook)",
     note: "The workbook with the sheets Expense List, Maintenance Details and Maintenance Summary. Nothing is saved until you check the list and press Load.",
@@ -7390,13 +7471,13 @@ $("upTpl").addEventListener("click", async () => {
   const K = UP_KINDS[upState.kind], ym = $("upMonth").value, fy = $("upFy").value;
   if (K.year && !fy) { msg.hidden = false; msg.textContent = "Choose the financial year first: the template has a sheet for each of its months."; return; }
   if (K.route && !K.year && !ym) { msg.hidden = false; msg.textContent = "Choose the month first: the template lists its days."; return; }
-  const filename = K.year ? `${digits ? digits + "_" : ""}route-bus-FY${fyLabel(+fy)}.xlsx` : K.route ? `${digits ? digits + "_" : ""}route-bus-${ym}.xlsx` : `${digits ? digits + "_" : ""}spare-bus-trips-template.xlsx`;
+  const filename = K.xp ? "expenses-template.xlsx" : K.year ? `${digits ? digits + "_" : ""}route-bus-FY${fyLabel(+fy)}.xlsx` : K.route ? `${digits ? digits + "_" : ""}route-bus-${ym}.xlsx` : `${digits ? digits + "_" : ""}spare-bus-trips-template.xlsx`;
   msg.hidden = false;
   try {
     const dl = await auDownloads();
     if (!dl) { msg.textContent = "Saving files isn't available in this view. Reload the page and try again."; return; }
-    await dl.save({ filename, data: K.year ? upRouteYearTemplate($("upBus").value, +fy) : K.route ? upRouteTemplate($("upBus").value, ym) : upTemplate(upState.kind) });
-    msg.textContent = `Saved ${filename}. Fill in the Trips sheet${digits ? "" : " (name the file with the bus number, e.g. 3366_2026.xlsx, and the bus is picked for you)"}, then choose it above.`;
+    await dl.save({ filename, data: K.xp ? xpTemplate() : K.year ? upRouteYearTemplate($("upBus").value, +fy) : K.route ? upRouteTemplate($("upBus").value, ym) : upTemplate(upState.kind) });
+    msg.textContent = K.xp ? `Saved ${filename}. Fill in the Expenses sheet (or paste your rows into it), then choose it above.` : `Saved ${filename}. Fill in the Trips sheet${digits ? "" : " (name the file with the bus number, e.g. 3366_2026.xlsx, and the bus is picked for you)"}, then choose it above.`;
   } catch (er) { msg.textContent = er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."; }
 });
 
@@ -7631,18 +7712,19 @@ function renderUpload() {
   const buses = K.route ? routeBuses() : spareBuses(), cur = $("upBus").value;
   $("upBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))}</option>`).join("");
   $("upBus").value = buses.some(v => v.id === cur) ? cur : "";
-  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route || !!K.em; $("upFyRow").hidden = !K.needsFy; $("upTpl").hidden = !!K.em;
+  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route || !!K.em || !!K.xp; $("upFyRow").hidden = !K.needsFy; $("upTpl").hidden = !!K.em;
   if (!$("upFy").options.length) { const y = fyOf(todayISO()); $("upFy").innerHTML = `<option value="">Choose</option>` + [0, 1, 2, 3, 4, 5].map(i => `<option value="${y - i}">FY ${fyLabel(y - i)}</option>`).join(""); }
   $("upMonth").max = todayISO().slice(0, 7);
   const res = S.rows, list = res?.rows || [];
   if (S.done) { const d = S.done, u = K.route ? "day" : "trip";
     $("upOut").innerHTML = `<div class="upok"><b>${d.n} new ${u}${d.n === 1 ? "" : "s"} added, ${d.u} updated</b> in ${esc(d.bus)}${d.mon ? ` for ${esc(d.mon)}` : ""}${d.failed ? `, ${d.failed} could not be saved${d.why ? ` (${esc(d.why)})` : ""}. Upload the same file again: rows already saved show as No change` : ""}. ${K.route ? "They are in the route trip sheet (Day sheet and Monthly entry)." : "They are in the Booking planner and in Reports."}</div>`; return; }
-  if (!res) { $("upOut").innerHTML = K.em && S.emDone ? S.emDone : ""; return; }
+  if (!res) { $("upOut").innerHTML = (K.em || K.xp) && S.emDone ? S.emDone : ""; return; }
   if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
   if (res.loading) { $("upOut").innerHTML = `<p class="sub" style="margin:0">Loading the days already in the app for this month…</p>`; return; }
   list.forEach((x, i) => x.i = i);
   if (K.route) { $("upOut").innerHTML = upRouteTable(res); return; }
   if (K.em) { $("upOut").innerHTML = res.em ? emPreview(res) : ""; return; }
+  if (K.xp) { $("upOut").innerHTML = res.xp ? xpUpPreview(res.xp) : ""; return; }
   const C = upCounts(list), sel = upSelected(list);
   const tot = k => sel.filter(x => x.st !== "Cancelled").reduce((a, x) => a + num(x.c[k]), 0);
   $("upOut").innerHTML = `<div class="upsum"><span><b>${C.new}</b> new</span><span><b>${C.change}</b> with changes</span><span><b>${C.same}</b> no change</span><span><b>${C.skip}</b> clash with another booking</span><span><b>${C.bad}</b> with a problem</span>` +
@@ -7660,6 +7742,13 @@ async function upLoad() {
   const K = UP_KINDS[upState.kind];
   if (K.needsBus && !$("upBus").value) { upState.rows = { error: K.route ? "Choose the route bus of this sheet first." : "Choose the bus these trips belong to first." }; renderUpload(); return; }
   if (K.needsMonth && !$("upMonth").value) { upState.rows = { error: "Choose the month of this sheet first." }; renderUpload(); return; }
+  if (K.xp) {
+    try {
+      if (!/\.xlsx$/i.test(f.name)) { upState.rows = { error: "Choose the Excel file (.xlsx)." }; renderUpload(); return; }
+      upState.emDone = ""; const R = xpParseSheet(await upReadXlsx(await f.arrayBuffer(), true)); upState.rows = R.error ? { error: R.error } : { xp: R };
+    } catch { upState.rows = { error: "This file could not be read. Open it in Excel, save it as .xlsx and try again." }; }
+    renderUpload(); return;
+  }
   if (K.em) {
     try {
       if (!/\.xlsx$/i.test(f.name)) { upState.rows = { error: "Choose the Excel workbook (.xlsx)." }; renderUpload(); return; }
@@ -7700,7 +7789,7 @@ $("upFile").addEventListener("change", () => {
   upLoad();
 });
 ["upBus", "upPaid", "upMonth", "upFy"].forEach(id => $(id).addEventListener("change", upLoad));
-$("upOut").addEventListener("click", e => { if (e.target.id === "emGo") emImport(); });
+$("upOut").addEventListener("click", e => { if (e.target.id === "emGo") emImport(); if (e.target.id === "xpUpGo") xpUpImport(); });
 $("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; $("upBus").value = ""; renderUpload(); upLoad(); });
 $("upOut").addEventListener("change", e => {
   const list = upState.rows?.rows; if (!list) return;
@@ -8088,12 +8177,12 @@ const XL = (() => {
   const idx = L => [...L].reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1;
   // Styles: 0 plain, 1 title, 2 label, 3 heading, 4 text, 5 whole number, 6 date, 7 two decimals, 8 bold number,
   // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number
-  const S = { plain: 0, title: 1, label: 2, head: 3, text: 4, int: 5, date: 6, dec: 7, sum: 8, mtext: 9, tint: 10, ttext: 11, head2: 12, note: 13, mint: 14 };
+  const S = { plain: 0, title: 1, label: 2, head: 3, text: 4, int: 5, date: 6, dec: 7, sum: 8, mtext: 9, tint: 10, ttext: 11, head2: 12, note: 13, mint: 14, tx: 15 };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
     xf(0, 0, 0, 1, 'vertical="center"'), xf(165, 0, 0, 1), xf(164, 0, 0, 1, 'horizontal="center"'), xf(166, 0, 0, 1), xf(165, 1, 0, 1), xf(0, 0, 0, 1, 'horizontal="center" vertical="center" wrapText="1"'),
-    xf(165, 1, 3, 1), xf(0, 1, 3, 1), xf(0, 1, 4, 1, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 3, 0, 0), xf(165, 1, 0, 1, 'vertical="center"')];
+    xf(165, 1, 3, 1), xf(0, 1, 3, 1), xf(0, 1, 4, 1, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 3, 0, 0), xf(165, 1, 0, 1, 'vertical="center"'), xf(49, 0, 0, 1)];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd-mm-yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="4"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font></fonts>` +
