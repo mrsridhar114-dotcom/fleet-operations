@@ -7199,8 +7199,10 @@ function emPreview(res) {
 }
 /* ---------- Expenses from the Excel sheet (one row per payment) ---------- */
 // Finds the heading row (Date, Description, Vehicle Number, Category, Payment Type, Amount) and reads every row after it.
-// Excel often reads a typed day/month as month/day (07/04 becomes 4 July): such a date takes the reading closest to the row
-// before it, and a date that would be in the future takes the other reading when that one is not.
+// The sheet is typed as dd/mm/yyyy. An Excel set to month/day keeps a date like 27/04/2026 as text (there is no month 27), but turns
+// 07/04/2026 into a real date: 4 July. So when the sheet has text dates with a day above 12 and every real date has a day of 12 or less,
+// every real date was turned around and is put back (4 July → 7 April). When a real date has a day above 12, Excel read the sheet
+// correctly and nothing is changed. Only when the file gives no such sign is each date judged from the row before it.
 function xpParseSheet(sheets) {
   let sh = null, hr = -1, C = null;
   for (const t of sheets) { for (let i = 0; i < Math.min(15, t.rows.length) && !sh; i++) {
@@ -7210,11 +7212,19 @@ function xpParseSheet(sheets) {
   if (!sh) return { error: "No sheet in this file has the headings Date, Description and Amount. Download the template and copy the rows into it." };
   const today = todayISO(), cell = (r, k) => C[k] >= 0 ? r[C[k]] : "", out = { sheet: sh.name, rows: [], fixed: [], plates: new Map() };
   let prev = ""; const first = sh.rows.slice(hr + 1).map(r => r?.[C.date]).find(v => typeof v === "string" && upDate(v).a); if (first) prev = upDate(first).a;
+  const dv = sh.rows.slice(hr + 1).map(r => r?.[C.date]), real = dv.filter(v => typeof v === "number").map(v => upDate(v).a).filter(Boolean);
+  const textBig = dv.some(v => typeof v === "string" && +(/^(\d{1,2})[/.-]\d{1,2}[/.-]\d{2,4}$/.exec(upText(v))?.[1] || 0) > 12);
+  out.mode = real.some(a => +a.slice(8, 10) > 12) ? "asis" : textBig && real.length ? "swap" : "guess";
   sh.rows.forEach((r, i) => {
     if (i <= hr || !r) return;
     const desc = upText(cell(r, "desc")), amt = upNum(cell(r, "amt")), rawD = cell(r, "date"); if (!desc && !upText(rawD)) return; // empty, or a total line
     const d = upDate(rawD); let date = d.a;
-    if (d.b) { let pick = date; if (date > today && d.b <= today) pick = d.b; else if (prev && Math.abs(dayDiff(prev, d.b)) < Math.abs(dayDiff(prev, d.a))) pick = d.b; if (pick !== date) { out.fixed.push({ line: i + 1, from: date, to: pick, desc }); date = pick; } }
+    if (d.b && out.mode !== "asis") {
+      let pick = date;
+      if (out.mode === "swap") pick = d.b;
+      else if (date > today && d.b <= today) pick = d.b; else if (prev && Math.abs(dayDiff(prev, d.b)) < Math.abs(dayDiff(prev, d.a))) pick = d.b;
+      if (pick !== date) { out.fixed.push({ line: i + 1, from: date, to: pick, desc }); date = pick; }
+    }
     if (date) prev = date;
     const p = upText(cell(r, "veh")), office = !p || /office|general/i.test(p), v = office ? null : vehicles.find(x => plateKey(x.plateNo) === plateKey(p));
     const cr = upText(cell(r, "cat")), cf = XP_CATS.find(x => x.toLowerCase() === cr.toLowerCase()) || XP_CATS.find(x => cr && x.toLowerCase().replace(/\s+/g, "") === cr.toLowerCase().replace(/\s+/g, ""));
@@ -7232,8 +7242,8 @@ function xpUpPreview(R) {
   const tot = add.reduce((a, x) => a + x.amount, 0), other = [...R.plates.values()].filter(x => !x.v);
   const show = (list, n) => list.slice(0, n), more = (list, n) => list.length > n ? `<p class="sub" style="margin:0">…and ${list.length - n} more.</p>` : "";
   return `<div class="upsum"><span><b>${R.rows.length}</b> rows read</span><span><b>${add.length}</b> new · ${rs(tot)}</span><span><b>${ok.length - add.length}</b> already in the app</span><span><b>${R.fixed.length}</b> dates corrected</span><span><b>${bad.length}</b> with a problem (left out)</span></div>` +
-    (R.fixed.length ? `<h3 class="sec" style="margin:4px 0 0">Dates corrected</h3><p class="sub" style="margin:0">Excel had read these as month/day. They are loaded as day/month, judged from the rows around them: please glance through.</p>` +
-      `<div class="tscroll"><table class="ctable"><thead><tr><th>Row</th><th>Description</th><th>Excel read it as</th><th>Loaded as</th></tr></thead><tbody>` +
+    (R.fixed.length ? `<h3 class="sec" style="margin:4px 0 0">Dates corrected</h3><p class="sub" style="margin:0">${R.mode === "swap" ? "The sheet is in dd/mm/yyyy, but Excel turned these dates (day 12 or less) into month/day, e.g. 07/04/2026 into 4 July. They are put back to the dd/mm/yyyy you typed: 7 April." : "Excel seems to have read these as month/day. They are loaded as day/month, judged from the rows around them: please glance through."}</p>` +
+      `<div class="tscroll"><table class="ctable"><thead><tr><th>Row</th><th>Description</th><th>Excel turned it into</th><th>Loaded as (dd/mm/yyyy)</th></tr></thead><tbody>` +
       show(R.fixed, 60).map(f => `<tr><td class="num">${f.line}</td><td>${esc(f.desc)}</td><td class="num" style="text-decoration:line-through;color:var(--muted)">${xpDMY(f.from)}</td><td class="num"><b>${xpDMY(f.to)}</b></td></tr>`).join("") + `</tbody></table></div>${more(R.fixed, 60)}` : "") +
     (bad.length ? `<h3 class="sec" style="margin:4px 0 0">Rows with a problem</h3><p class="sub" style="margin:0">These are left out. Fix them in the Excel and upload it again (rows already loaded are not added twice).</p>` +
       `<div class="tscroll"><table class="ctable"><thead><tr><th>Row</th><th>Date in the Excel</th><th>Description</th><th class="n">Amount</th><th>Problem</th></tr></thead><tbody>` +
