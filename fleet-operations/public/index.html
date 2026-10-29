@@ -1443,12 +1443,6 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xc1 { --h: #3b9a1e; } .xc2 { --h: #2f6fd6; } .xc3 { --h: #e07b12; } .xc4 { --h: #9b3bc0; } .xc5 { --h: #5b6b73; } .xc6 { --h: #0f9a8e; } .xc7 { --h: #c0392b; }
 .xpbody { margin-top: 4px; } .xpbody > .panel { margin-top: 10px; }
 .xpform { margin: 0; } .xpform [hidden] { display: none !important; } #xfClose { display: none; } .lay-cards .f-top #xfClose { display: inline-flex; }
-/* Classic */
-.xptbar { display: flex; flex-wrap: wrap; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
-.xptbar > * { flex: 1 1 140px; padding: 8px 12px; border: 0; border-left: 1px solid var(--line); background: none; color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
-.xptbar > :first-child { border-left: 0; background: var(--accent); color: var(--accent-ink); cursor: default; }
-.xptbar small { display: block; font: 600 11px var(--mono); opacity: .8; text-transform: uppercase; } .xptbar b { font: 700 17px var(--mono); } .xptbar [aria-pressed="true"] { background: var(--accent-soft); }
-.lay-classic .f-top { border-left: 5px solid var(--accent); }
 /* Sheet */
 .xps { display: grid; grid-template-columns: minmax(0, 1fr) 250px; column-gap: 14px; align-items: start; }
 .xps > [data-slot="top"] { grid-column: 1 / -1; grid-row: 1; } .xps > [data-slot="top"]:not(:empty) { margin-bottom: 10px; }
@@ -2457,7 +2451,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
         <div class="tcontrols">
           <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next">›</button></div>
-          <div class="seg xpsegs" id="xpLay" role="group" aria-label="Screen design"><button type="button" data-l="sheet">Sheet</button><button type="button" data-l="cards">Cards</button><button type="button" data-l="classic">Classic</button></div>
+          <div class="seg xpsegs" id="xpLay" role="group" aria-label="Screen design"><button type="button" data-l="sheet">Sheet</button><button type="button" data-l="cards">Cards</button></div>
           <div class="seg xpsegs" id="xpSeg" role="group" aria-label="Period"><button type="button" data-v="month">Month</button><button type="button" data-v="fy">Year</button></div>
           <div class="hf"><label for="xpBusF">Vehicle</label><select id="xpBusF"></select></div>
         </div>
@@ -6350,7 +6344,7 @@ let xpYm = todayISO().slice(0, 7), xpFy = false, xpBus = "", xpEd = null;
 const xpPeriod = () => xpFy ? { from: `${fyOf(xpYm + "-01")}-04-01`, to: `${fyOf(xpYm + "-01") + 1}-03-31`, label: `FY ${fyLabel(fyOf(xpYm + "-01"))}` }
   : { from: xpYm + "-01", to: `${xpYm}-${pad2(daysIn(xpYm))}`, label: new Date(xpYm + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
 let xpLay = "sheet", xpFormOpen = false;
-try { xpLay = localStorage.getItem("fleet-xplay") || "sheet"; } catch {}
+try { xpLay = localStorage.getItem("fleet-xplay") === "cards" ? "cards" : "sheet"; } catch {}
 const XP_CC = { "Maintenance": "xc1", "Loan repayment": "xc2", "Quarter tax": "xc3", "Insurance": "xc4", "Permit / FC": "xc6", "Salary / padi": "xc7", "Other": "xc5" };
 const XP_IC = { "Maintenance": "🔧", "Loan repayment": "🏦", "Quarter tax": "🧾", "Insurance": "🛡️", "Permit / FC": "📄", "Salary / padi": "👤", "Other": "📌" };
 const xpTag = c => `<span class="xptag ${XP_CC[c] || "xc5"}">${esc(c || "Other")}</span>`;
@@ -6394,13 +6388,6 @@ function renderExp() {
       (list.length ? `<div class="xpctot"><span>${totTxt}</span><b>${rs(sum(list))}</b></div>` : "") +
       `</div><aside data-slot="side"></aside></div>`;
     slot = wide ? "side" : "top";
-  } else {
-    h = `<div data-slot="top"></div><div class="xptbar"><div><small>Total · ${esc(P.label)}</small><b>${rs(sum(all))}</b></div>` +
-      VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpBus === k}"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>` +
-      `<section class="panel"><div class="tscroll">` + (list.length ? `<table class="ctable xptable"><thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th></tr></thead><tbody>` +
-      list.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num" style="white-space:nowrap">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td></tr>`).join("") +
-      `</tbody><tfoot><tr><td colspan="4">${totTxt}</td><td class="n">${nf(sum(list))}</td><td></td></tr></tfoot></table>` : none) + `</div></section>`;
-    slot = "top";
   }
   // The entry form is one element moved into place, so whatever is being typed stays.
   const F = $("xpForm"), act = F.contains(document.activeElement) ? document.activeElement : null;
