@@ -1450,34 +1450,39 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xpgridt { table-layout: fixed; } .xpgridt col.c1 { width: 112px; } .xpgridt col.c3 { width: 128px; } .xpgridt col.c4 { width: 136px; } .xpgridt col.c5 { width: 96px; } .xpgridt col.c6 { width: 128px; } .xpgridt col.c7 { width: 80px; } .xpgridt td:nth-child(2) { min-width: 0; }
 .xpgridt th, .xpgridt td { border-right: 1px solid var(--line); } .xpgridt tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--accent) 3%, var(--surface)); } .xpgridt tbody tr.on td { background: var(--accent-soft); }
 /* The sheet on a computer (works like Excel) */
-.xsum { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
-.xsum > * { min-width: 150px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; }
+#view-texp { padding-block: 16px 14px; gap: 12px; }
+@media (min-width: 1001px) { html:has(#view-texp:not([hidden])) { overflow: hidden; } } /* only the sheet scrolls */
+#view-texp .xphead { align-items: center; justify-content: flex-start; gap: 10px 22px; } #view-texp .xphead h1 { margin: 0; }
+#view-texp .xphead .tcontrols { align-items: center; } #view-texp .xphead .mclose { margin-left: auto; }
+.xsum { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+.xsum > * { min-width: 140px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; }
 .xsum button { cursor: pointer; } .xsum button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
 .xsum .t { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.xsum small { display: block; font: 600 11px var(--mono); text-transform: uppercase; opacity: .78; } .xsum b { font: 700 18px var(--mono); }
+.xsum small { display: block; font: 600 11px var(--mono); text-transform: uppercase; opacity: .78; } .xsum b { font: 700 16px var(--mono); }
 .xsheet { background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-radius: 10px; overflow: hidden; }
-.xsc { position: relative; max-height: max(320px, calc(100vh - 310px)); overflow: auto; outline: none; scroll-padding-top: 40px; scroll-padding-bottom: 6px; }
+.xsc { position: relative; max-height: max(240px, calc(100vh - 230px)); overflow: auto; outline: none; scroll-padding-top: 40px; scroll-padding-bottom: 6px; }
 .xgrid { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
 .xgrid col.g0 { width: 44px; } .xgrid col.g1 { width: 100px; } .xgrid col.g3 { width: 150px; } .xgrid col.g4 { width: 180px; } .xgrid col.g5 { width: 112px; } .xgrid col.g6 { width: 150px; } .xgrid col.g7 { width: 56px; }
-.xgrid th { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--accent) 6%, var(--surface)); font: 600 11.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 10px; border-right: 1px solid var(--line); border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); }
-.xgrid td { height: 38px; padding: 8px 10px; border-right: 1px solid color-mix(in srgb, var(--line) 70%, var(--surface)); border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, var(--surface)); font-size: 14px; line-height: 20px; vertical-align: top; word-break: break-word; cursor: cell; box-sizing: border-box; }
-.xgrid td.rn, .xgrid th.rn { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); color: var(--muted); font: 12px var(--mono); text-align: center; padding: 8px 0; cursor: default; }
-.xgrid th.n, .xgrid td.xc-amount { text-align: right; font-family: var(--mono); } .xgrid td.xc-date, .xgrid td.xc-veh { font: 13px/20px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xgrid th { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--accent) 6%, var(--surface)); font: 600 11.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 7px 8px; border-right: 1px solid var(--line); border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); }
+.xgrid td { height: 30px; padding: 5px 8px; border-right: 1px solid color-mix(in srgb, var(--line) 70%, var(--surface)); border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, var(--surface)); font-size: 13.5px; line-height: 19px; vertical-align: top; word-break: break-word; cursor: cell; box-sizing: border-box; }
+.xgrid td.rn, .xgrid th.rn { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); color: var(--muted); font: 12px/19px var(--mono); text-align: center; padding: 5px 0; cursor: default; }
+.xgrid th.n, .xgrid td.xc-amount { text-align: right; font-family: var(--mono); } .xgrid td.xc-date, .xgrid td.xc-veh { font: 12.5px/19px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .xgrid td.sel { box-shadow: inset 0 0 0 2px var(--accent); background: var(--surface); }
 .xsc:not(:focus-within) td.sel { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.xgrid .xptag { padding: 0 7px; font-size: 11.5px; line-height: 17px; }
 .xgrid tr.xd.used td { background: color-mix(in srgb, #f5c400 11%, var(--surface)); } .xgrid tr.xd.used td.rn { background: color-mix(in srgb, #f5c400 30%, var(--surface)); color: var(--ink); font-weight: 700; }
 .xgrid td.xbad { background: color-mix(in srgb, var(--danger) 9%, var(--surface)) !important; }
 .xghost { color: var(--muted); opacity: .6; font-style: italic; } .xreq { color: var(--danger); opacity: .55; font-style: italic; font-size: 12.5px; } .xc-amount .xreq { font-family: var(--body); }
-.xgrid td.xst { text-align: center; cursor: default; padding: 8px 2px; white-space: nowrap; } .xok { color: #3b9a1e; font-weight: 700; } .xdot { color: #c99a00; font-size: 12px; } .xdot.bad { color: var(--danger); }
+.xgrid td.xst { text-align: center; cursor: default; padding: 5px 2px; white-space: nowrap; } .xok { color: #3b9a1e; font-weight: 700; } .xdot { color: #c99a00; font-size: 12px; } .xdot.bad { color: var(--danger); }
 .xdel, .xclr { display: none; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 14px; vertical-align: middle; } .xdel svg { width: 16px; height: 16px; }
 .xgrid tr:hover .xdel, .xgrid tr:hover .xclr { display: inline-block; } .xgrid tr:hover .xok, .xgrid tr:hover .xdot { display: none; } .xdel:hover, .xclr:hover { color: var(--danger); }
-.xed { position: absolute; z-index: 5; } .xed > input, .xed > textarea { display: block; width: 100%; min-height: var(--h); box-sizing: border-box; margin: 0; padding: 8px 10px; border: 2px solid var(--accent); border-radius: 0; background: var(--surface); color: var(--ink); font: 14px/20px var(--body); outline: none; resize: none; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+.xed { position: absolute; z-index: 5; } .xed > input, .xed > textarea { display: block; width: 100%; min-height: var(--h); box-sizing: border-box; margin: 0; padding: 4px 7px; border: 2px solid var(--accent); border-radius: 0; background: var(--surface); color: var(--ink); font: 13.5px/19px var(--body); outline: none; resize: none; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
 .xed.xe-amount > input { text-align: right; font-family: var(--mono); } .xed.xe-date > input, .xed.xe-veh > input { font-family: var(--mono); font-size: 13px; } .xed.bad > * { border-color: var(--danger) !important; }
 .xlist { position: absolute; left: 0; top: 100%; min-width: 100%; width: max-content; max-width: 280px; max-height: 240px; overflow: auto; margin-top: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
 .xlist div { padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; } .xlist div.h { background: var(--accent-soft); font-weight: 700; } .xlist p { margin: 4px 8px; color: var(--muted); font-size: 13px; }
 .xe-veh .xlist div { font-family: var(--mono); font-size: 13px; }
-.xfoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); font-size: 13.5px; color: var(--muted); }
-.xftot { display: flex; align-items: center; gap: 18px; } .xftot b { color: var(--ink); font: 700 16px var(--mono); } .xfoot .btn { min-width: 110px; } .xbadtxt { color: var(--danger); font-weight: 600; }
+.xfoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 12px; border-top: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); font-size: 13.5px; color: var(--muted); }
+.xftot { display: flex; align-items: center; gap: 18px; } .xftot b { color: var(--ink); font: 700 16px var(--mono); } .xfoot .btn { min-width: 110px; padding-block: 6px; } .xbadtxt { color: var(--danger); font-weight: 600; }
 .xpsfoot { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--accent-soft); font-weight: 700; } .xpsfoot b { font-family: var(--mono); padding-right: 218px; }
 .xpvtab table { width: 100%; border-collapse: collapse; } .xpvtab th, .xpvtab td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13.5px; }
 .xpvtab th { font: 600 11.5px var(--mono); text-transform: uppercase; color: var(--muted); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); } .xpvtab .n { text-align: right; font-family: var(--mono); }
@@ -2453,17 +2458,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 
     <!-- ================= Expenses ================= -->
     <section class="wrap twrap" id="view-texp" hidden>
-      <header class="top">
-        <div>
-          <h1>Expenses<span class="ro-tag" id="xpRoTag" hidden>View only</span></h1>
-          <p class="sync">Every payment made for a vehicle: maintenance, loan, tax and others.</p>
-        </div>
+      <header class="top xphead">
+        <h1>Expenses<span class="ro-tag" id="xpRoTag" hidden>View only</span></h1>
         <div class="tcontrols">
           <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next">›</button></div>
           <div class="seg xpsegs" id="xpSeg" role="group" aria-label="Period"><button type="button" data-v="month">Month</button><button type="button" data-v="fy">Year</button></div>
-          <div class="hf"><label for="xpBusF">Vehicle</label><select id="xpBusF"></select></div>
-          <a class="btn mclose" href="#home" aria-label="Close">Close ✕</a>
+          <div class="hf"><select id="xpBusF" aria-label="Vehicle"></select></div>
         </div>
+        <a class="btn mclose" href="#home" aria-label="Close">Close ✕</a>
       </header>
       <div class="xpbody" id="xpBody"></div>
       <section class="panel xpform" id="xpForm" hidden></section>
@@ -6475,11 +6477,18 @@ function xpGridRender(o) {
     xpRowsNow.map((r, i) => xpRowHtml(r, i, can)).join("") + `</tbody></table>` +
     (list.length || can ? "" : `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.</p>`) +
     `<div class="xed" id="xpEdBox" hidden></div></div>` + foot + `</section>`;
-  const sc = $("xpSc");
+  const sc = $("xpSc"); xpFit();
   if (xpScrollEnd) { sc.scrollTop = sc.scrollHeight; xpScrollEnd = false; } else sc.scrollTop = top;
   if (had) sc.focus({ preventScroll: true });
 }
 
+// The sheet takes the room left in the window, so only the sheet scrolls, never the page.
+function xpFit() {
+  const sc = $("xpSc"); if (!sc || $("view-texp").hidden) return;
+  const root = document.scrollingElement || document.documentElement, padB = parseFloat(getComputedStyle($("view-texp")).paddingBottom) || 0;
+  sc.style.maxHeight = Math.max(240, Math.floor(innerHeight - (sc.getBoundingClientRect().top + root.scrollTop) - sc.nextElementSibling.offsetHeight - padB - 2)) + "px";
+}
+addEventListener("resize", () => xpFit());
 /* Selecting and moving */
 function xpSel(r, c) {
   const prev = xpAct; xpAct = { r, c };
