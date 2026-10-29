@@ -1453,6 +1453,12 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xpedit td { padding: 0 !important; } .xpedit tbody tr:hover td { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
 .xpedit input, .xpedit select { width: 100%; height: 40px; box-sizing: border-box; padding: 0 9px; border: 1px solid transparent; border-radius: 0; background: transparent; color: var(--ink); font: 14px var(--body); }
 .xpedit select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 22px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 13px) 18px, calc(100% - 8px) 18px; background-size: 5px 5px; background-repeat: no-repeat; }
+.xpedit textarea { display: block; width: 100%; min-height: 40px; box-sizing: border-box; padding: 9px; border: 1px solid transparent; background: transparent; color: var(--ink); font: 14px/20px var(--body); resize: none; overflow: hidden; white-space: pre-wrap; word-break: break-word; }
+.xpedit textarea:hover { border-color: var(--line); } .xpedit textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: inset 0 0 0 1px var(--accent); }
+.xpedit tr.xpnew textarea { border-color: var(--line); background: var(--surface); }
+.xpedit td { vertical-align: top !important; } .xpedit input, .xpedit select { display: block; } .xpedit .xpnote { height: 34px; font-size: 13px; border-color: var(--line); border-top-style: dashed; background: var(--surface); }
+.xpgrid textarea { width: 100%; box-sizing: border-box; min-height: 46px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 15.5px/20px var(--body); resize: none; overflow: hidden; }
+.xpgrid .xpnotef { grid-column: 1 / -1; }
 .xpedit input[type=date] { font: 13px var(--mono); padding: 0 6px; } .xpedit input[type=number] { text-align: right; font-family: var(--mono); } .xpedit input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
 .xpedit input:hover, .xpedit select:hover { border-color: var(--line); }
 .xpedit input:focus, .xpedit select:focus { outline: none; border-color: var(--accent); background-color: var(--surface); box-shadow: inset 0 0 0 1px var(--accent); }
@@ -6337,7 +6343,8 @@ let xpYm = todayISO().slice(0, 7), xpFy = false, xpBus = "", xpEd = null;
 const xpPeriod = () => xpFy ? { from: `${fyOf(xpYm + "-01")}-04-01`, to: `${fyOf(xpYm + "-01") + 1}-03-31`, label: `FY ${fyLabel(fyOf(xpYm + "-01"))}` }
   : { from: xpYm + "-01", to: `${xpYm}-${pad2(daysIn(xpYm))}`, label: new Date(xpYm + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
 const XP_CC = { "Maintenance": "xc1", "Loan repayment": "xc2", "Quarter tax": "xc3", "Insurance": "xc4", "Permit / FC": "xc6", "Salary / padi": "xc7", "Other": "xc5" };
-const xpTag = c => `<span class="xptag ${XP_CC[c] || "xc5"}">${esc(c || "Other")}</span>`;
+const xpTag = (c, note) => `<span class="xptag ${XP_CC[c] || "xc5"}">${esc(c || "Other")}${c === "Other" && note ? `: ${esc(note)}` : ""}</span>`;
+const xpCatTxt = x => x.category === "Other" && x.catNote ? `Other: ${x.catNote}` : x.category || "";
 const xpNarrow = w => matchMedia(`(max-width: ${w}px)`).matches;
 function renderExp(force) {
   const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to), can = canXp();
@@ -6361,8 +6368,8 @@ function renderExp(force) {
     h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet"><div class="tscroll"><table class="ctable xptable xpgridt${ed ? " xpedit" : ""}"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
       `<thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
       (ed ? rows.map(x => xpEditRow(x)).join("") + xpEditRow(null) :
-      rows.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("")) +
-      `</tbody></table></div>${rows.length || ed ? "" : none}<div data-slot="row"></div>${ed ? `<datalist id="xpDescs">${[...new Set(ops.expenses.map(e => e.desc).filter(Boolean))].slice(-300).map(d => `<option value="${esc(d)}">`).join("")}</datalist>` : ""}<div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
+      rows.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category, x.catNote)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("")) +
+      `</tbody></table></div>${rows.length || ed ? "" : none}<div data-slot="row"></div><div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
       `<aside class="panel xpvtab"><table><thead><tr><th>Vehicle</th><th class="n">Expense</th></tr></thead><tbody>` +
       VS.map(([k, v]) => `<tr data-xpveh="${esc(k)}" class="${xpBus === k ? "on" : ""}"><td class="num">${esc(xpKeyName(k))}</td><td class="n">${nf(v)}</td></tr>`).join("") +
       `<tr class="tot"><td>TOTAL</td><td class="n">${nf(sum(all))}</td></tr></tbody></table></aside></div>`;
@@ -6378,6 +6385,7 @@ function renderExp(force) {
   // The entry form is one element moved into place, so whatever is being typed stays.
   const F = $("xpForm"), act = F.contains(document.activeElement) ? document.activeElement : null;
   $("xpBody").innerHTML = h;
+  $("xpBody").querySelectorAll(".xpedit textarea").forEach(xpGrow);
   F.className = `panel xpform xpyel f-${slot}${xpEd ? " ed" : ""}`; F.hidden = !can || !slot;
   if (can && slot) {
     $("xpBody").querySelector(`[data-slot="${slot}"]`).appendChild(F);
@@ -6404,35 +6412,40 @@ function xpVehOpts(cur, x, blank) {
 // One row of the sheet; with no expense it is the blank row at the bottom for a new one.
 function xpEditRow(x) {
   if (!x && !xpNew) xpNew = { date: xfLast.date || todayISO(), desc: "", veh: xfLast.veh, category: xfLast.category, pay: xfLast.pay, amount: "" };
-  const v = x ? { date: x.date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "Other", pay: x.pay || "", amount: String(num(x.amount) || "") } : xpNew;
+  const v = x ? { date: x.date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "Other", catNote: x.catNote || "", pay: x.pay || "", amount: String(num(x.amount) || "") } : xpNew;
   return `<tr ${x ? `data-xe="${x.id}"` : `data-xnew class="xpnew"`}>` +
     `<td><input type="date" data-f="date" value="${esc(v.date)}" max="${todayISO()}" aria-label="Date"></td>` +
-    `<td><input type="text" data-f="desc" list="xpDescs" maxlength="160" value="${esc(v.desc)}" ${x ? `title="${esc(v.desc)}" ` : 'placeholder="Type a new expense here…" '}autocomplete="off" aria-label="Expense description"></td>` +
+    `<td><textarea data-f="desc" rows="1" ${x ? "" : 'placeholder="Type a new expense here…" '}aria-label="Expense description">${esc(v.desc)}</textarea></td>` +
     `<td><select data-f="veh" aria-label="Vehicle">${xpVehOpts(v.veh, x, !x)}</select></td>` +
-    `<td><select data-f="category" aria-label="Category">${xpOpts(XP_CATS, v.category)}</select></td>` +
+    `<td><select data-f="category" aria-label="Category">${xpOpts(XP_CATS, v.category)}</select>${xpNoteIn(v)}</td>` +
     `<td><input type="number" data-f="amount" inputmode="numeric" min="0" value="${esc(v.amount)}" placeholder="0" aria-label="Amount"></td>` +
     `<td><select data-f="pay" aria-label="Paid by">${xpOpts(XP_PAY, v.pay)}</select></td>` +
     `<td class="xpact">${x ? `<button type="button" class="xpdel" data-xdel="${x.id}" title="Delete this expense" aria-label="Delete this expense">${TW_BIN}</button>` : `<button type="button" class="btn primary xpadd" data-xadd title="Add this expense">+ Add</button>`}</td></tr>`;
 }
+// With "Other", a box under the category for what it was.
+const xpNoteIn = v => v.category === "Other" ? `<input type="text" data-f="catNote" class="xpnote" value="${esc(v.catNote || "")}" placeholder="Other: what was it?" aria-label="Details for Other">` : "";
+const xpGrow = el => { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; };
 // What a row says, checked; marks the cells that need fixing.
-function xpRowVals(tr) {
-  const g = k => tr.querySelector(`[data-f="${k}"]`), v = { date: g("date").value, desc: upText(g("desc").value), veh: g("veh").value, category: g("category").value, pay: g("pay").value, amount: Math.round(num(g("amount").value)) };
-  const bad = { date: !v.date, desc: !v.desc, veh: !v.veh, amount: !v.amount };
-  Object.entries(bad).forEach(([k, b]) => g(k).classList.toggle("bad", b));
-  const miss = bad.date ? "the date" : bad.desc ? "the expense description" : bad.veh ? "the vehicle" : bad.amount ? "the amount" : "";
+function xpRowVals(tr, old) {
+  const g = k => tr.querySelector(`[data-f="${k}"]`), v = { date: g("date").value, desc: upText(g("desc").value), veh: g("veh").value, category: g("category").value, catNote: upText(g("catNote")?.value), pay: g("pay").value, amount: Math.round(num(g("amount").value)) };
+  // Details are needed for a new "Other"; old rows already saved as Other may stay without.
+  const bad = { date: !v.date, desc: !v.desc, veh: !v.veh, catNote: v.category === "Other" && !v.catNote && old?.category !== "Other", amount: !v.amount };
+  Object.entries(bad).forEach(([k, b]) => g(k)?.classList.toggle("bad", b));
+  const miss = bad.date ? "the date" : bad.desc ? "the expense description" : bad.veh ? "the vehicle" : bad.catNote ? "what the Other expense was" : bad.amount ? "the amount" : "";
   return { v, miss };
 }
 const xpWhere = (veh, old) => veh === "p:" ? { vehicleId: "", plate: "" } : veh.startsWith("p:") ? { vehicleId: "", plate: old?.plate || veh.slice(2) } : { vehicleId: veh, plate: "" };
 async function xpCellSave(tr) {
   const old = ops.expenses.find(x => x.id === tr.dataset.xe); if (!old) return;
-  const { v, miss } = xpRowVals(tr); if (miss) { toast(`Type ${miss} — this row is not saved yet.`); return; }
-  const doc = { ...old, date: v.date, desc: v.desc, ...xpWhere(v.veh, old), category: v.category, pay: v.pay, amount: v.amount };
-  if (["date", "desc", "vehicleId", "plate", "category", "pay", "amount"].every(k => (doc[k] ?? "") === (old[k] ?? ""))) return;
+  const { v, miss } = xpRowVals(tr, old); if (miss) { toast(`Type ${miss} — this row is not saved yet.`); return; }
+  const doc = { ...old, date: v.date, desc: v.desc, ...xpWhere(v.veh, old), category: v.category, catNote: v.category === "Other" ? v.catNote : "", pay: v.pay, amount: v.amount };
+  if (!doc.catNote) delete doc.catNote;
+  if (["date", "desc", "vehicleId", "plate", "category", "catNote", "pay", "amount"].every(k => (doc[k] ?? "") === (old[k] ?? ""))) return;
   try { await opsSave("expenses", { ...doc, ...rxStamp() }); toast("Saved"); } catch { toast("Couldn't save. Check your connection and try again."); }
 }
 async function xpNewAdd(tr) {
   const { v, miss } = xpRowVals(tr); if (miss) { toast(`Type ${miss}.`); tr.querySelector(".bad")?.focus(); return; }
-  const doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: v.date, desc: v.desc, ...xpWhere(v.veh), category: v.category, pay: v.pay, amount: v.amount, createdOn: new Date().toISOString(), byName: whoAmI(), ...rxStamp() };
+  const doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: v.date, desc: v.desc, ...xpWhere(v.veh), category: v.category, ...(v.category === "Other" ? { catNote: v.catNote } : {}), pay: v.pay, amount: v.amount, createdOn: new Date().toISOString(), byName: whoAmI(), ...rxStamp() };
   const b = tr.querySelector("[data-xadd]"); if (b) b.disabled = true;
   try {
     await opsSave("expenses", doc); toast(`Expense added · ${rs(v.amount)}`);
@@ -6441,8 +6454,16 @@ async function xpNewAdd(tr) {
     renderExp(true); $("xpBody").querySelector('[data-xnew] [data-f="desc"]')?.focus();
   } catch { if (b) b.disabled = false; toast("Couldn't save. Check your connection and try again."); }
 }
-$("xpBody").addEventListener("change", e => { const tr = e.target.closest("tr[data-xe]"); if (tr && e.target.dataset.f) xpCellSave(tr); });
-$("xpBody").addEventListener("input", e => { const f = e.target.dataset.f; if (f && e.target.closest("tr[data-xnew]") && xpNew) { xpNew[f] = e.target.value; e.target.classList.remove("bad"); } });
+$("xpBody").addEventListener("change", e => {
+  const tr = e.target.closest(".xpedit tr"); if (!tr || !e.target.dataset.f) return;
+  if (e.target.dataset.f === "category") {
+    const td = e.target.closest("td"), box = td.querySelector(".xpnote");
+    if (e.target.value === "Other" && !box) { td.insertAdjacentHTML("beforeend", xpNoteIn({ category: "Other", catNote: "" })); td.querySelector(".xpnote").focus(); if (tr.dataset.xe) return; }
+    if (e.target.value !== "Other" && box) { box.remove(); if (xpNew && tr.matches("[data-xnew]")) xpNew.catNote = ""; }
+  }
+  if (tr.dataset.xe) xpCellSave(tr);
+});
+$("xpBody").addEventListener("input", e => { if (e.target.matches("textarea")) xpGrow(e.target); const f = e.target.dataset.f; if (f && e.target.closest("tr[data-xnew]") && xpNew) { xpNew[f] = e.target.value; e.target.classList.remove("bad"); } });
 $("xpBody").addEventListener("keydown", e => {
   const tr = e.target.closest?.(".xpedit tr"); if (!tr || e.key !== "Enter" || !e.target.dataset.f) return;
   e.preventDefault();
@@ -6475,18 +6496,18 @@ function xfRender(x) {
   xpEd = x?.id || null;
   const v = x || { date: xfLast.date || todayISO(), desc: "", category: xfLast.category, pay: xfLast.pay, amount: "" };
   const opt = (list, cur) => (cur && !list.includes(cur) ? [cur, ...list] : list).map(o => `<option${o === cur ? " selected" : ""}>${esc(o)}</option>`).join("");
-  const descs = [...new Set(ops.expenses.map(e => e.desc).filter(Boolean))].slice(-300);
   $("xpForm").innerHTML = `<div class="xpfh"><b>${x ? "Change expense" : "New expense"}</b><span class="sub">${x ? "Make the change and tap Save." : "Fill in the details and tap Add (or press Enter)."}</span></div>` +
     `<div class="xpgrid">` +
     `<label class="xpdt"><span>Date</span><input type="date" id="xfDate" value="${esc(v.date)}" max="${todayISO()}"></label>` +
-    `<label class="xpd"><span>Expense description</span><input type="text" id="xfDesc" list="xpDescs" maxlength="160" value="${esc(v.desc || "")}" placeholder="e.g. Tyre rebuilt (2 nos)" autocomplete="off"></label>` +
+    `<label class="xpd"><span>Expense description</span><textarea id="xfDesc" rows="1" placeholder="e.g. Tyre rebuilt (2 nos)">${esc(v.desc || "")}</textarea></label>` +
     `<label><span>Vehicle</span><select id="xfVeh"></select></label>` +
     `<label><span>Category</span><select id="xfCat">${opt(XP_CATS, v.category)}</select></label>` +
+    `<label class="xpnotef" id="xfNoteL"${v.category === "Other" ? "" : " hidden"}><span>Other: what was it?</span><input type="text" id="xfNote" value="${esc(v.catNote || "")}" placeholder="e.g. Office stationery"></label>` +
     `<label><span>Amount (₹)</span><input type="number" id="xfAmt" inputmode="numeric" min="0" value="${esc(String(v.amount ?? ""))}" placeholder="0"></label>` +
     `<label><span>Paid by</span><select id="xfPay">${opt(XP_PAY, v.pay)}</select></label>` +
     `<div class="xpbtns"><button type="button" class="btn primary" id="xfSave">${x ? "Save" : "+ Add"}</button>${x ? `<button type="button" class="btn" id="xfDel">Delete</button><button type="button" class="btn" id="xfCancel">Cancel</button>` : ""}</div>` +
-    `</div><datalist id="xpDescs">${descs.map(d => `<option value="${esc(d)}">`).join("")}</datalist><p class="err" id="xpErr" style="margin:6px 0 0"></p>`;
-  xfVehOpts(x ? mtKeyOf(x) : xfLast.veh, x);
+    `</div><p class="err" id="xpErr" style="margin:6px 0 0"></p>`;
+  xfVehOpts(x ? mtKeyOf(x) : xfLast.veh, x); xpGrow($("xfDesc"));
 }
 // Vehicle choices: the fleet, "Office / general", and the old number of the row being changed.
 function xfVehOpts(cur, x) {
@@ -6495,7 +6516,9 @@ function xfVehOpts(cur, x) {
   sel.innerHTML = `<option value="">Choose…</option>` + [...fleet.map(v => [v.id, plateOf(v)]), ...extra, ["p:", "Office / general"]].map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join("");
   sel.value = [...sel.options].some(o => o.value === cur) ? cur : "";
 }
-$("xpForm").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input")) { e.preventDefault(); $("xfSave")?.click(); } });
+$("xpForm").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input, textarea")) { e.preventDefault(); $("xfSave")?.click(); } });
+$("xpForm").addEventListener("input", e => { if (e.target.id === "xfDesc") xpGrow(e.target); });
+$("xpForm").addEventListener("change", e => { if (e.target.id === "xfCat") { $("xfNoteL").hidden = e.target.value !== "Other"; if (e.target.value === "Other") $("xfNote").focus(); } });
 $("xpForm").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   const err = m => { $("xpErr").textContent = m; };
@@ -6510,9 +6533,11 @@ $("xpForm").addEventListener("click", async e => {
   if (!desc) return err("Type the expense description.");
   if (!veh) return err("Choose the vehicle (or Office / general).");
   if (!amt) return err("Type the amount.");
-  const old = xpEd ? ops.expenses.find(x => x.id === xpEd) : null;
+  const old = xpEd ? ops.expenses.find(x => x.id === xpEd) : null, cat = $("xfCat").value, note = upText($("xfNote").value);
+  if (cat === "Other" && !note && old?.category !== "Other") return err("Type what the Other expense was.");
   const where = veh === "p:" ? { vehicleId: "", plate: "" } : veh.startsWith("p:") ? { vehicleId: "", plate: old?.plate || veh.slice(2) } : { vehicleId: veh, plate: "" };
-  const doc = { ...(old || {}), date, desc, ...where, category: $("xfCat").value, pay: $("xfPay").value, amount: amt, ...rxStamp() };
+  const doc = { ...(old || {}), date, desc, ...where, category: cat, catNote: cat === "Other" ? note : "", pay: $("xfPay").value, amount: amt, ...rxStamp() };
+  if (!doc.catNote) delete doc.catNote;
   if (!doc.id) Object.assign(doc, { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdOn: new Date().toISOString(), byName: whoAmI() });
   b.disabled = true;
   try {
