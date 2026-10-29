@@ -1417,6 +1417,51 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpex .tpsel { height: 48px; padding: 0 8px; font-size: 16px; } .tpex .tpin { width: 100%; height: 48px; padding: 0 6px; } .tpex .tpin input { font-size: 17px; }
 .tpex .tpbin { width: 26px; height: 48px; } .tpex .tpbin svg { width: 20px; height: 20px; } .tpex .tpnote { grid-column: 1 / -1; margin-top: 2px; }
 .tpspl { width: 100%; height: 52px; } .tpspl b { font-size: 17px; white-space: nowrap; } .tpspl input { font-size: 19px; min-width: 0; text-transform: uppercase; }
+
+/* Expenses and maintenance */
+.xpsum { margin-top: 4px; } .xpsum .stat { text-align: left; font: inherit; color: inherit; background: none; border-top: 0; border-bottom: 0; border-left: 0; cursor: pointer; }
+.xpsum .stat.xptot { cursor: default; } .xpsum .stat.on { background: var(--accent-soft); } .xpsum .xpveh .k { font-family: var(--mono); }
+.xpcats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; } .xpcats .pill b { margin-left: 4px; }
+.xptable { width: 100%; } .xptable td:nth-child(2) { min-width: 200px; white-space: normal; } .xptable td.n, .xptable th.n { white-space: nowrap; }
+#xpSeg { flex-wrap: nowrap; gap: 0; } #xpSeg button { padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 14px var(--body); cursor: pointer; }
+#xpSeg button:first-child { border-radius: 8px 0 0 8px; } #xpSeg button:last-child { border-radius: 0 8px 8px 0; border-left: 0; } #xpSeg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+#xpw .bwb, #mtw .bwb, #msgw .bwb, #xpw .bwf, #mtw .bwf, #msgw .bwf, #xpw .bwnb { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+#xpw .bwf, #mtw .bwf, #msgw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+.bwf1 input[type=date], .bwf1 select { box-sizing: border-box; width: 100%; height: 60px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); }
+.bwin input[type=number] { flex: 1; min-width: 0; height: 58px; border: 0; background: none; color: inherit; font: inherit; padding: 0 12px; outline: none; } .bwin > b { padding-left: 14px; color: var(--muted); }
+.bwchips.mtplates { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } .bwchips.mtplates button { font-family: var(--mono); letter-spacing: .02em; }
+.mthome { display: flex; flex-direction: column; gap: 12px; max-width: 760px; }
+.mtgo .bwgo { width: 100%; } .mtdue { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; } .mtdue b { margin-right: 4px; }
+.mtlist { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.mtcard { display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.mtcard .mth { display: flex; justify-content: space-between; gap: 10px; } .mtcard .mth span { font-family: var(--mono); color: var(--muted); }
+.mtcard .mti { display: flex; flex-wrap: wrap; gap: 4px; } .mtcard .mti span { font-size: 13px; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; } .mtcard small { color: var(--muted); }
+.bwh .mtsteps { display: flex; flex-direction: row; flex: none; align-self: center; gap: 4px; } .mtchk.mtfix { cursor: default; } .mtchk .mtnx { display: block; margin-bottom: 4px; } .mtnext span { white-space: nowrap; }
+.mscards { display: none; } .mscard { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+.mscard .mscn { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .mscard .mscn b { font-size: 15px; } .mscard.ms-over { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); } .mscard.ms-soon { background: color-mix(in srgb, #f2c200 14%, var(--surface)); }
+@media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
+.mtsteps span.on { background: #fff; color: var(--ink); } .mtsteps span.done { background: var(--accent); color: #fff; }
+.mtkm .bwin { display: flex; align-items: center; gap: 8px; } .mtkm input { font: 700 28px var(--mono); width: 100%; min-height: 58px; } .mtkm b { color: var(--muted); }
+.mttiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } @media (min-width: 701px) { .mttiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.mttile { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 64px; padding: 10px 12px 10px 42px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.mttile b { font-size: 16px; } .mttile small { font-size: 12px; color: var(--muted); } .mttile small.over { color: var(--danger); font-weight: 600; } .mttile small.soon { color: var(--warn); font-weight: 600; }
+.mttile[aria-pressed="true"], .mttile.on { border-color: var(--accent); background: var(--accent-soft); }
+.mtck { position: absolute; left: 10px; top: 12px; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; font-weight: 800; color: #fff; }
+.mttile[aria-pressed="true"] .mtck, .mttile.on .mtck { background: var(--accent); border-color: var(--accent); }
+.mttile.mtpos { padding: 0; grid-column: 1 / -1; } .mtpt { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 64px; padding: 10px 12px 10px 42px; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.mtwheels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 0 10px 10px; }
+.mtwheels button { min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+.mtwheels button small { font-size: 11px; font-weight: 600; } .mtwheels button small.over { color: var(--danger); } .mtwheels button small.soon { color: var(--warn); }
+.mtwheels button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); } .mtwheels button[aria-pressed="true"] small { color: inherit; }
+.mtwheels .mtall { border-style: dashed; color: var(--accent); }
+.mtsum { display: flex; flex-direction: column; gap: 8px; } .mtchk { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.mtchk span { color: var(--muted); font-size: 13px; grid-column: 1; } .mtchk b { grid-column: 1; font-size: 16px; line-height: 1.5; } .mtchk b small { font-weight: 500; color: var(--muted); }
+.mtchk i { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-style: normal; color: var(--accent); font-weight: 600; font-size: 14px; }
+.mtdone { text-align: center; padding: 20px 4px; } .mtok { width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 34px; font-weight: 800; }
+.mtnext { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; text-align: left; } .mtnext div { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); } .mtnext span { color: var(--muted); }
+.msh { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-bottom: 8px; } .msh .sec { margin: 0; }
+.mstable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mstable tr.ms-soon td { background: color-mix(in srgb, #f2c200 16%, var(--surface)); }
+.msgtable input { width: 120px; height: 36px; text-align: right; border: 1px solid var(--line); border-radius: 8px; padding: 0 8px; background: var(--surface); color: var(--ink); font: inherit; }
 /* Booking window: the booking at a glance (header) and the Booking slip in four groups. */
 .bkinfo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; min-width: 0; }
 .bkhead h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1718,9 +1763,15 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li data-mod="fuel"><a class="nav" href="#fuel" data-view="fuel">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h4"/></svg>
             Fuel log</a></li>
-          <li data-mod="maintenance"><span class="nav" aria-disabled="true">
+          <li data-mod="expenses"><a class="nav" href="#expenses" data-view="texp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+            Expenses</a></li>
+          <li data-mod="maintenance"><a class="nav" href="#maintenance" data-view="tmaint">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>
-            Maintenance <span class="soon">Soon</span></span></li>
+            Maintenance entry</a></li>
+          <li data-mod="maintenance"><a class="nav" href="#maintenance-summary" data-view="tmsum">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 4h11v16H8zM5 7v13a1 1 0 0 0 1 1h11"/><path d="M11 9h5M11 13h5M11 17h3"/></svg>
+            Maintenance summary</a></li>
         </ul>
       </div>
       <div class="group">
@@ -2334,6 +2385,55 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <p class="sub" id="upTplMsg" style="margin:0;grid-column:1/-1" hidden></p>
       </section>
       <section class="panel" style="margin-top:14px;display:flex;flex-direction:column;gap:12px" id="upOut" aria-live="polite"></section>
+    </section>
+
+
+    <!-- ================= Expenses ================= -->
+    <section class="wrap twrap" id="view-texp" hidden>
+      <header class="top">
+        <div>
+          <h1>Expenses<span class="ro-tag" id="xpRoTag" hidden>View only</span></h1>
+          <p class="sync">Every payment made for a vehicle: maintenance, loan, tax and others.</p>
+        </div>
+        <div class="tcontrols">
+          <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next">›</button></div>
+          <div class="seg" id="xpSeg" role="group" aria-label="Period"><button type="button" data-v="month">Month</button><button type="button" data-v="fy">Year</button></div>
+          <div class="hf"><label for="xpBusF">Vehicle</label><select id="xpBusF"></select></div>
+          <button class="btn primary" type="button" id="xpAdd">+ Add expense</button>
+        </div>
+      </header>
+      <div class="summary xpsum" id="xpSum"></div>
+      <div class="xpcats" id="xpCats"></div>
+      <section class="panel" style="margin-top:12px"><div class="tscroll" id="xpList"></div></section>
+    </section>
+
+    <!-- ================= Maintenance entry ================= -->
+    <section class="wrap twrap" id="view-tmaint" hidden>
+      <header class="top">
+        <div>
+          <h1>Maintenance entry<span class="ro-tag" id="mtRoTag" hidden>View only</span></h1>
+          <p class="sync">Choose the vehicle, then tap New maintenance. The km reading and the date come first.</p>
+        </div>
+        <div class="tcontrols"><a class="btn" href="#maintenance-summary">Maintenance summary</a></div>
+      </header>
+      <div id="mtHome" class="mthome"></div>
+    </section>
+
+    <!-- ================= Maintenance summary ================= -->
+    <section class="wrap twrap" id="view-tmsum" hidden>
+      <header class="top">
+        <div>
+          <h1>Maintenance summary</h1>
+          <p class="sync">For each vehicle, the last time each job was done and when it is due again. Tap a row to open that entry.</p>
+        </div>
+        <div class="tcontrols">
+          <div class="hf"><label for="msBusF">Vehicle</label><select id="msBusF"></select></div>
+          <button class="btn" type="button" id="msGaps">Service gaps</button>
+          <a class="btn primary" href="#maintenance">+ Maintenance entry</a>
+        </div>
+      </header>
+      <div class="summary" id="msSum"></div>
+      <div id="msList" style="display:flex;flex-direction:column;gap:12px;margin-top:12px"></div>
     </section>
 
     <section class="wrap twrap" id="view-tfuel" hidden>
@@ -3218,24 +3318,27 @@ const MODULES = [
   { id: "bookings", name: "Booking planner", abbr: "BP", levels: ["none", "view", "request", "edit"] },
   { id: "tripsheets", name: "Spare bus trip sheet", abbr: "ST", levels: ["none", "view", "update", "edit"] },
   { id: "fuel", name: "Fuel log", abbr: "FL" },
-  { id: "maintenance", name: "Maintenance", abbr: "MT", soon: true },
+  { id: "expenses", name: "Expenses", abbr: "EX" },
+  { id: "maintenance", name: "Maintenance", abbr: "MT", levels: ["none", "view", "update", "edit"], lab: { update: "Add entries" } },
   { id: "users", name: "User master", abbr: "UM" }
 ];
 const LEVELS = { none: "No access", view: "View", request: "Add for approval", update: "Fill & submit", edit: "Edit" };
 const levelsOf = m => m.levels || ["none", "view", "edit"];
 const ROLES = {
-  "Admin":         { dashboard: "view", vehicles: "edit", drivers: "edit", conductors: "edit", trips: "edit", bookings: "edit", tripsheets: "edit", fuel: "edit", maintenance: "edit", users: "edit" },
-  "Fleet manager": { dashboard: "view", vehicles: "edit", drivers: "edit", conductors: "edit", trips: "edit", bookings: "view", tripsheets: "view", fuel: "edit", maintenance: "edit", users: "none" },
-  "Operator":      { dashboard: "view", vehicles: "view", drivers: "view", conductors: "view", trips: "edit", bookings: "none", tripsheets: "none", fuel: "edit", maintenance: "edit", users: "none" },
-  "Viewer":        { dashboard: "view", vehicles: "view", drivers: "view", conductors: "view", trips: "view", bookings: "view", tripsheets: "view", fuel: "view", maintenance: "view", users: "none" },
+  "Admin":         { dashboard: "view", vehicles: "edit", drivers: "edit", conductors: "edit", trips: "edit", bookings: "edit", tripsheets: "edit", fuel: "edit", expenses: "edit", maintenance: "edit", users: "edit" },
+  "Fleet manager": { dashboard: "view", vehicles: "edit", drivers: "edit", conductors: "edit", trips: "edit", bookings: "view", tripsheets: "view", fuel: "edit", expenses: "edit", maintenance: "edit", users: "none" },
+  "Operator":      { dashboard: "view", vehicles: "view", drivers: "view", conductors: "view", trips: "edit", bookings: "none", tripsheets: "none", fuel: "edit", expenses: "none", maintenance: "edit", users: "none" },
+  "Viewer":        { dashboard: "view", vehicles: "view", drivers: "view", conductors: "view", trips: "view", bookings: "view", tripsheets: "view", fuel: "view", expenses: "view", maintenance: "view", users: "none" },
   // The booking planner only adds new bookings; each one goes to an admin for approval. It sees nothing else.
-  "Booking planner": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "none", fuel: "none", maintenance: "none", users: "none" },
+  "Booking planner": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "none", fuel: "none", expenses: "none", maintenance: "none", users: "none" },
   // Trip update fills in the spare bus trip sheet once the trip is over and sends it to an admin for approval.
-  "Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "update", fuel: "none", maintenance: "none", users: "none" },
+  "Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "update", fuel: "none", expenses: "none", maintenance: "none", users: "none" },
   // Both jobs: adds bookings for approval, and fills in the trip sheet from the day before the trip starts.
   // Conductor: fills in the route bus trip sheet of his bus each day and sends it to an admin for approval. Nothing else.
-  "Conductor": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "update", bookings: "none", tripsheets: "none", fuel: "none", maintenance: "none", users: "none" },
-  "Booking planner + Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "update", fuel: "none", maintenance: "none", users: "none" },
+  "Conductor": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "update", bookings: "none", tripsheets: "none", fuel: "none", expenses: "none", maintenance: "none", users: "none" },
+  // Maintenance entry: adds what was done to a vehicle (km, date, jobs) and sees the maintenance summary. Nothing else.
+  "Maintenance entry": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "none", fuel: "none", expenses: "none", maintenance: "update", users: "none" },
+  "Booking planner + Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "update", fuel: "none", expenses: "none", maintenance: "none", users: "none" },
 };
 const fullAccess = () => ({ ...ROLES.Admin });
 const noAccess = () => Object.fromEntries(MODULES.map(m => [m.id, "none"]));
@@ -3489,14 +3592,14 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
   // Someone without the dashboard (the booking office, say) lands on the first application they can use.
-  if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tfuel", "fuel"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
+  if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tfuel", "fuel"], ["tmaint", "maintenance"], ["texp", "expenses"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
   // A conductor (route trip sheet: fill & submit) only has his own day sheet.
   if (acc.trips === "update" && ["thub", "trips", "tday", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
   // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
@@ -3506,13 +3609,14 @@ function showView() {
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "tguide", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = want === "tguide" ? "guide" : want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = ["texp", "tmaint", "tmsum"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets" || VIEW_MOD[view] === "fuel") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
   if (view === "tutil") renderUpload();
+  if (view === "texp") renderExp(); if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
 }
@@ -4222,7 +4326,7 @@ function buildUserForm() {
   $("uRole").innerHTML = Object.keys(ROLES).map(r => `<option>${r}</option>`).join("") + `<option>Custom</option>`;
   $("uRoleF").innerHTML += Object.keys(ROLES).map(r => `<option>${r}</option>`).join("") + `<option>Custom</option>`;
   $("uMatrix").innerHTML = MODULES.map(m => `<tr><td>${esc(m.name)}${m.soon ? '<span class="soonmod">· coming soon</span>' : ""}</td><td><div class="seg" role="radiogroup" aria-label="${esc(m.name)} access">${levelsOf(m).map(l =>
-    `<label><input type="radio" name="acc-${m.id}" id="acc-${m.id}-${l}" value="${l}"><span>${l === "none" ? "None" : LEVELS[l]}</span></label>`).join("")}</div></td></tr>`).join("");
+    `<label><input type="radio" name="acc-${m.id}" id="acc-${m.id}-${l}" value="${l}"><span>${l === "none" ? "None" : m.lab?.[l] || LEVELS[l]}</span></label>`).join("")}</div></td></tr>`).join("");
   $("accLegend").innerHTML = `<span class="acc"><b class="edit">Ed</b></span>Edit <span class="acc"><b class="view">Vw</b></span>View only <span class="acc"><b class="request">Rq</b></span>Add for approval / Fill &amp; submit <span class="acc"><b class="none">No</b></span>No access <span>· ${MODULES.map(m => `${m.abbr} ${esc(m.name)}`).join(" · ")}</span>`;
   $("uRole").addEventListener("change", () => { if ($("uRole").value !== "Custom") setMatrix(ROLES[$("uRole").value]); syncMatrixLock(); });
   $("uMatrix").addEventListener("change", () => {
@@ -5766,8 +5870,8 @@ let tt; function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidde
 /* ================= Trip sheet home · route bus daily entry · spare bus bookings · truck trips ================= */
 // Spare bus bookings live in "bookings", truck trips in "truckTrips" (grouped into round trips by roundId),
 // and the open / closed state of each round trip in "truckRounds".
-const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1", routeSheets: "fleet-routesheets.v1" };
-const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [], routeSheets: [] };
+const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1", routeSheets: "fleet-routesheets.v1", expenses: "fleet-expenses.v1", maintLog: "fleet-maintlog.v1", maintTypes: "fleet-mainttypes.v1" };
+const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [], routeSheets: [], expenses: [], maintLog: [], maintTypes: [] };
 let opsUnsubs = [], allTripMonths = [], allTripYears = [], dayTrips = [], dayUnsub = null, dayKey = "", dayLoaded = "";
 let opDate = todayISO();
 const genId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6115,6 +6219,448 @@ $("pdSave").onclick = async () => {
   finally { $("pdSave").disabled = false; }
 };
 
+/* ================= Expenses and maintenance =================
+   Expenses: every payment made for a vehicle (maintenance, loan, tax…), month by month, with the total of each vehicle.
+   Maintenance entry: what was done to a vehicle, entered on the phone in a few big steps; the km reading and the date come first.
+   Maintenance summary: for each vehicle, the last time each job was done and when it is due again (km and an expected date).
+   Records: "expenses", "maintLog" (one visit: vehicle, date, km and the jobs done) and "maintTypes" (service gaps, one record "gaps"). */
+const XP_CATS = ["Maintenance", "Loan repayment", "Quarter tax", "Insurance", "Permit / FC", "Salary / padi", "Other"];
+const XP_PAY = ["Cash", "GPay", "UPI", "Online transfer", "Cheque"];
+const xpCat = s => { const t = upText(s); return XP_CATS.find(c => c.toLowerCase() === t.toLowerCase()) || t; };
+const xpPay = s => { const t = upText(s).toLowerCase(); return t === "gpay" || t === "g pay" ? "GPay" : t === "upi" ? "UPI" : /online|neft|imps|rtgs|transfer/.test(t) ? "Online transfer" : t === "cash" ? "Cash" : /cheque|check/.test(t) ? "Cheque" : upText(s); };
+// A vehicle is the vehicle master record; one that is not in the master (sold, old records) is kept by its number.
+const mtKeyOf = x => x.vehicleId || "p:" + plateKey(x.plate);
+const mtPlateOf = x => { const v = vehicles.find(y => y.id === x.vehicleId); return v ? plateOf(v) : x.plate || "—"; };
+const mtVehOf = key => key.startsWith("p:") ? null : vehicles.find(v => v.id === key);
+const mtFleet = () => vehicles.filter(v => v.status !== "Sold / Scrapped").sort((a, b) => plateOf(a).localeCompare(plateOf(b)));
+
+// Jobs. pos: done wheel by wheel. gap: km to the next one (the default; a vehicle can have its own).
+const MT_TYPES = [
+  { k: "oil", name: "Oil service", gap: 75000 }, { k: "gear", name: "Gear box oil", gap: 100000 }, { k: "housing", name: "Housing oil", gap: 100000 },
+  { k: "hub", name: "Hub grease", pos: true, gap: 35000 }, { k: "lining", name: "Brake lining", pos: true, gap: 60000 }, { k: "clutch", name: "Clutch plate", gap: 80000 },
+  { k: "air", name: "Air filter", gap: 100000 }, { k: "tappet", name: "Tappet adjustment", gap: 50000 }, { k: "battery", name: "Battery" },
+  { k: "drum", name: "Brake drum", pos: true }, { k: "clutchkit", name: "Clutch kit service" }, { k: "kingpin", name: "King pin" },
+  { k: "steer", name: "Steering ends" }, { k: "align", name: "Wheel alignment" }, { k: "nozzle", name: "Pump and nozzle service" },
+  { k: "ratchet", name: "Ratchets" }, { k: "dynamo", name: "Dynamo service" }, { k: "engine", name: "Engine work" }, { k: "other", name: "Other work" }
+];
+const MT_POS = [["fl", "Front left"], ["fr", "Front right"], ["bl", "Back left"], ["br", "Back right"], ["sl", "Second axle left"], ["sr", "Second axle right"], ["dl", "Dummy left"], ["dr", "Dummy right"]];
+const mtType = k => MT_TYPES.find(t => t.k === k) || { k, name: k };
+const mtPosName = p => MT_POS.find(x => x[0] === p)?.[1] || "";
+const mtItemName = it => `${mtType(it.k).name}${it.pos ? ` · ${mtPosName(it.pos)}` : ""}`;
+const mtGapsDoc = () => ops.maintTypes.find(x => x.id === "gaps") || {};
+function mtGap(key, k) { const d = mtGapsDoc(), b = d.bus?.[key]?.[k], g = d.gaps?.[k]; return num(b) || num(g) || (g === 0 ? 0 : mtType(k).gap || 0); }
+
+// The latest km reading known for a vehicle (maintenance, fuel log, trip sheets, bookings) and its km per day.
+function mtNow(key) {
+  const v = mtVehOf(key), pts = [];
+  ops.maintLog.filter(x => mtKeyOf(x) === key && num(x.km)).forEach(x => pts.push([x.date, num(x.km), "maintenance"]));
+  if (v) {
+    ops.fuelLog.filter(f => f.vehicleId === v.id && num(f.odo)).forEach(f => pts.push([f.date, num(f.odo), "fuel log"]));
+    [...trips, ...dayTrips, ...tripsLocal].filter(t => t.vehicleId === v.id && num(t.odo)).forEach(t => pts.push([t.date, num(t.odo), "trip sheet"]));
+    ops.bookings.filter(b => b.vehicleId === v.id && num(b.endKm)).forEach(b => pts.push([bkEnd(b), num(b.endKm), "trip sheet"]));
+  }
+  if (!pts.length) return null;
+  const best = pts.reduce((a, p) => p[1] > a[1] ? p : a);
+  // Km per day from the readings of the last year (at least two weeks apart).
+  const since = shiftDay(best[0], -365), rec = pts.filter(p => p[0] >= since && p[0] <= best[0]), first = rec.reduce((a, p) => p[0] < a[0] ? p : a, best);
+  const days = dayDiff(first[0], best[0]), perDay = days >= 14 && best[1] > first[1] ? (best[1] - first[1]) / days : 0;
+  return { km: best[1], date: best[0], src: best[2], perDay };
+}
+// Each job of a vehicle (by wheel where it is done wheel by wheel) with its last visit and the next one due.
+function mtDue(key) {
+  const now = mtNow(key), last = new Map();
+  ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => (x.items || []).forEach(it => {
+    const id = it.k + "|" + (it.pos || ""), cur = last.get(id);
+    if (!cur || num(x.km) > num(cur.e.km) || (num(x.km) === num(cur.e.km) && x.date > cur.e.date)) last.set(id, { it, e: x });
+  }));
+  return [...last.values()].map(({ it, e }) => {
+    const gap = mtGap(key, it.k), next = gap && num(e.km) ? num(e.km) + gap : null, left = next != null && now ? next - now.km : null;
+    const when = left != null && now?.perDay ? shiftDay(now.date, Math.round(left / now.perDay)) : "";
+    const st = next == null ? "nogap" : left == null ? "ok" : left <= 0 ? "over" : left <= 5000 ? "soon" : "ok";
+    return { it, e, gap, next, left, when, st };
+  }).sort((a, b) => ["over", "soon", "ok", "nogap"].indexOf(a.st) - ["over", "soon", "ok", "nogap"].indexOf(b.st) || (a.left ?? 9e12) - (b.left ?? 9e12) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
+}
+const MT_ST = { over: ["Overdue", "d7"], soon: ["Due soon", "d30"], ok: ["OK", "ok"], nogap: ["No gap set", "off"] };
+const mtLeftTxt = d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} km over` : `${nf(d.left)} km`;
+const canXp = () => platformWrite && acc.expenses === "edit";
+const canMt = () => platformWrite && acc.maintenance === "edit";
+const canMtAdd = () => platformWrite && (acc.maintenance === "edit" || acc.maintenance === "update");
+
+/* ---------- Expenses ---------- */
+let xpYm = todayISO().slice(0, 7), xpFy = false, xpBus = "", xpEd = null;
+const xpPeriod = () => xpFy ? { from: `${fyOf(xpYm + "-01")}-04-01`, to: `${fyOf(xpYm + "-01") + 1}-03-31`, label: `FY ${fyLabel(fyOf(xpYm + "-01"))}` }
+  : { from: xpYm + "-01", to: `${xpYm}-${pad2(daysIn(xpYm))}`, label: new Date(xpYm + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) };
+function renderExp() {
+  const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to);
+  const list = all.filter(x => !xpBus || mtKeyOf(x) === xpBus).sort((a, b) => b.date.localeCompare(a.date) || String(b.createdOn || "").localeCompare(String(a.createdOn || "")));
+  $("xpPer").textContent = P.label; $("xpAdd").hidden = !canXp(); $("xpRoTag").hidden = canXp();
+  $("xpSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.v === "fy") === xpFy)));
+  const keys = [...new Set([...mtFleet().map(v => v.id), ...ops.expenses.map(mtKeyOf)])];
+  $("xpBusF").innerHTML = `<option value="">All vehicles</option>` + keys.map(k => `<option value="${esc(k)}">${esc(mtVehOf(k) ? plateOf(mtVehOf(k)) : ops.expenses.find(x => mtKeyOf(x) === k)?.plate || k)}</option>`).join("");
+  $("xpBusF").value = xpBus;
+  const sum = a => a.reduce((s, x) => s + num(x.amount), 0), byVeh = new Map(), byCat = new Map();
+  all.forEach(x => { const k = mtKeyOf(x); byVeh.set(k, (byVeh.get(k) || 0) + num(x.amount)); byCat.set(x.category || "Other", (byCat.get(x.category || "Other") || 0) + num(x.amount)); });
+  $("xpSum").innerHTML = `<div class="stat xptot"><div class="k">Total · ${esc(P.label)}</div><div class="v">${rs(sum(all))}</div><div class="sub">${all.length} payment${all.length === 1 ? "" : "s"}</div></div>` +
+    [...byVeh.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `<button type="button" class="stat xpveh${xpBus === k ? " on" : ""}" data-xpveh="${esc(k)}"><div class="k">${esc(mtPlateOf(ops.expenses.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</div><div class="v">${rs(v)}</div></button>`).join("");
+  $("xpCats").innerHTML = [...byCat.entries()].sort((a, b) => b[1] - a[1]).map(([c, v]) => `<span class="pill">${esc(c)} <b>${rs(v)}</b></span>`).join("");
+  $("xpList").innerHTML = list.length ? `<table class="ctable xptable"><thead><tr><th>Date</th><th>Description</th><th>Vehicle</th><th>Category</th><th>Payment</th><th class="n">Amount</th></tr></thead><tbody>` +
+    list.map(x => `<tr data-xp="${x.id}" tabindex="0"${canXp() ? ' style="cursor:pointer"' : ""}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${esc(mtPlateOf(x))}</td><td>${esc(x.category || "")}</td><td>${esc(x.pay || "")}</td><td class="n">${nf(num(x.amount))}</td></tr>`).join("") +
+    `</tbody><tfoot><tr><td colspan="5">${list.length} payment${list.length === 1 ? "" : "s"}${xpBus ? ` · ${esc(mtPlateOf(list[0] || { vehicleId: xpBus }))}` : ""}</td><td class="n">${nf(sum(list))}</td></tr></tfoot></table>`
+    : `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.${canXp() ? " Tap + Add expense to enter one." : ""}</p>`;
+}
+$("xpPrev").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") - 1}-04` : monthShift(xpYm, -1); renderExp(); };
+$("xpNext").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") + 1}-04` : monthShift(xpYm, 1); renderExp(); };
+$("xpSeg").onclick = e => { const b = e.target.closest("button[data-v]"); if (!b) return; xpFy = b.dataset.v === "fy"; renderExp(); };
+$("xpBusF").onchange = () => { xpBus = $("xpBusF").value; renderExp(); };
+$("xpSum").onclick = e => { const b = e.target.closest("[data-xpveh]"); if (!b) return; xpBus = xpBus === b.dataset.xpveh ? "" : b.dataset.xpveh; renderExp(); };
+$("xpAdd").onclick = () => xpOpen(null);
+$("xpList").addEventListener("click", e => { const r = e.target.closest("tr[data-xp]"); if (r && canXp()) xpOpen(ops.expenses.find(x => x.id === r.dataset.xp)); });
+$("xpList").addEventListener("keydown", e => { if (e.key === "Enter") e.target.closest("tr[data-xp]")?.click(); });
+function monthShift(ym, n) { const d = new Date(ym + "-01T00:00:00"); d.setMonth(d.getMonth() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; }
+
+// The expense form: one screen, big buttons for the vehicle, category and payment.
+function xpOpen(x) {
+  xpEd = x ? { ...x, amount: String(x.amount ?? "") } : { id: "", date: todayISO(), vehicleId: xpBus && !xpBus.startsWith("p:") ? xpBus : "", plate: "", desc: "", category: "Maintenance", pay: "Online transfer", amount: "" };
+  if (!$("xpw")) { document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="xpw" role="dialog" aria-modal="true" aria-labelledby="xpTitle" hidden></div>');
+    $("xpw").addEventListener("click", xpClick); $("xpw").addEventListener("input", e => { const k = e.target.dataset.k; if (k) xpEd[k] = e.target.value; }); }
+  xpRender(); $("xpw").hidden = false; document.documentElement.classList.add("bw-on");
+  setTimeout(() => $("xpw").querySelector('[data-k="desc"]')?.focus(), 50);
+}
+function xpRender() {
+  const x = xpEd, chips = (k, list) => `<div class="bwchips">${list.map(v => `<button type="button" data-xs="${k}" data-v="${esc(v)}" aria-pressed="${x[k] === v}">${esc(v)}</button>`).join("")}</div>`;
+  const fleet = mtFleet(), descs = [...new Set(ops.expenses.map(e => e.desc).filter(Boolean))].slice(-300);
+  $("xpw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="xpTitle">${x.id ? "Change expense" : "New expense"}</b><span>Every payment made for a vehicle</span></div></header>` +
+    `<div class="bwb tws" id="xpBody">` +
+    rsSec("1", "Date", `<label class="bwf1"><span>Date of payment</span><input type="date" data-k="date" value="${esc(x.date)}" max="${todayISO()}"></label>`) +
+    rsSec("2", "Vehicle", `<div class="bwchips mtplates">${fleet.map(v => `<button type="button" data-xs="vehicleId" data-v="${v.id}" aria-pressed="${x.vehicleId === v.id}">${esc(plateOf(v))}</button>`).join("")}` +
+      `<button type="button" data-xs="vehicleId" data-v="" aria-pressed="${!x.vehicleId && !x.plate}">Office / general</button></div>${!x.vehicleId && x.plate ? `<p class="bwnote">${esc(x.plate)} (not in the vehicle master)</p>` : ""}`) +
+    rsSec("3", "What was paid for", `<label class="bwf1"><span>Description</span><input type="text" data-k="desc" list="xpDescs" maxlength="160" value="${esc(x.desc)}" placeholder="e.g. Tyre rebuilt (2 nos)"></label><datalist id="xpDescs">${descs.map(d => `<option value="${esc(d)}">`).join("")}</datalist>`) +
+    rsSec("4", "Category", chips("category", XP_CATS)) +
+    rsSec("5", "Paid by", chips("pay", XP_PAY)) +
+    rsSec("6", "Amount", `<label class="bwf1"><span>Amount (₹)</span><span class="bwin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="amount" value="${esc(x.amount)}" placeholder="0"></span></label>`) +
+    `<p class="err" id="xpErr" style="margin:6px 0 0"></p></div>` +
+    `<footer class="bwf${x.id ? " two" : ""}">${x.id ? `<button type="button" class="bwalt" data-xa="del">Delete</button>` : ""}<button type="button" class="bwgo" data-xa="save">${BW_ICON.ok} Save</button></footer>` + navBar("xp", false);
+}
+async function xpClick(e) {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.xs) { xpEd[b.dataset.xs] = b.dataset.v; if (b.dataset.xs === "vehicleId") xpEd.plate = ""; xpRender(); return; }
+  if (b.dataset.xp === "back") { xpClose(); return; }
+  if (b.dataset.xa === "del") {
+    if (!await askYesNo("Delete this expense?", { yes: "Yes, delete", danger: true })) return;
+    try { await opsDelete("expenses", xpEd.id); toast("Expense deleted"); xpClose(); } catch { toast("Couldn't delete. Try again."); } return;
+  }
+  if (b.dataset.xa === "save") {
+    const x = xpEd, amt = Math.round(num(x.amount)), err = m => { $("xpErr").textContent = m; };
+    if (!x.date) return err("Choose the date.");
+    if (!upText(x.desc)) return err("Type what was paid for.");
+    if (!amt) return err("Type the amount.");
+    const doc = { ...x, desc: upText(x.desc), amount: amt, ...rxStamp() };
+    if (!doc.id) Object.assign(doc, { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdOn: new Date().toISOString(), byName: whoAmI() });
+    b.disabled = true;
+    try { await opsSave("expenses", doc); toast(`Expense saved · ${rs(amt)}`); xpYm = doc.date.slice(0, 7); xpClose(); }
+    catch { b.disabled = false; toast("Couldn't save. Check your connection and try again."); }
+  }
+}
+function xpClose() { if ($("xpw")) $("xpw").hidden = true; document.documentElement.classList.remove("bw-on"); xpEd = null; renderExp(); }
+
+/* ---------- Maintenance entry ---------- */
+let mtBus = "", mtw = null;
+try { mtBus = localStorage.getItem("fleet-mtbus") || ""; } catch {}
+function renderMaint() {
+  const fleet = mtFleet(); if (!fleet.some(v => v.id === mtBus) && !ops.maintLog.some(x => mtKeyOf(x) === mtBus)) mtBus = fleet[0]?.id || "";
+  const add = canMtAdd(), now = mtBus ? mtNow(mtBus) : null, due = mtBus ? mtDue(mtBus).filter(d => d.st === "over" || d.st === "soon") : [];
+  const hist = ops.maintLog.filter(x => mtKeyOf(x) === mtBus).sort((a, b) => b.date.localeCompare(a.date) || num(b.km) - num(a.km));
+  $("mtRoTag").hidden = add;
+  $("mtHome").innerHTML =
+    `<section class="panel"><h2 class="sec">1 · Choose the vehicle</h2><div class="bwchips mtplates" style="margin-top:8px">${fleet.map(v => `<button type="button" data-mtbus="${v.id}" aria-pressed="${mtBus === v.id}">${esc(plateOf(v))}</button>`).join("")}</div></section>` +
+    (mtBus ? `<section class="panel mtgo">` +
+      (add ? `<button type="button" class="bwgo" data-mtnew>＋ New maintenance for ${esc(mtPlateOf({ vehicleId: mtBus }))}</button>` : "") +
+      `<p class="sub" style="margin:8px 0 0">${now ? `Last km reading: <b>${nf(now.km)} km</b> on ${fmtDate(now.date)} (${now.src})` : "No km reading yet for this vehicle."}</p>` +
+      (due.length ? `<div class="mtdue"><b>Due now</b>${due.slice(0, 6).map(d => `<span class="pill ${MT_ST[d.st][1]}">${esc(mtItemName(d.it))} · ${esc(mtLeftTxt(d))}</span>`).join("")}${due.length > 6 ? `<a href="#maintenance-summary">+${due.length - 6} more</a>` : ""}</div>` : "") +
+      `</section>` +
+      `<section class="panel"><h2 class="sec">Work done on ${esc(mtPlateOf({ vehicleId: mtBus }))}</h2>` +
+      (hist.length ? `<div class="mtlist">${hist.slice(0, 60).map(x => `<button type="button" class="mtcard" data-mtopen="${x.id}"><span class="mth"><b>${fmtDate(x.date)}</b><span>${nf(num(x.km))} km</span></span>` +
+        `<span class="mti">${(x.items || []).map(it => `<span>${esc(mtItemName(it))}</span>`).join("")}</span>${x.notes ? `<small>${esc(x.notes)}</small>` : ""}</button>`).join("")}</div>`
+        : `<p class="sub" style="margin:8px 0 0">Nothing entered yet.</p>`) + `</section>` : "");
+}
+$("mtHome").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.mtbus) { mtBus = b.dataset.mtbus; try { localStorage.setItem("fleet-mtbus", mtBus); } catch {} renderMaint(); return; }
+  if (b.dataset.mtnew != null) { mtOpen(null); return; }
+  if (b.dataset.mtopen) mtOpen(ops.maintLog.find(x => x.id === b.dataset.mtopen));
+});
+
+// The steps: 1 km and date · 2 work done · 3 notes · 4 check and save. A saved visit opens on step 4.
+const MT_STEPS = ["Km and date", "Work done", "Notes", "Check and save"];
+function mtOpen(x) {
+  const key = x ? mtKeyOf(x) : mtBus, now = mtNow(key);
+  const edit = x ? canMt() || (canMtAdd() && x.by && x.by === myUserId) : canMtAdd();
+  mtw = { key, step: x ? 3 : 0, id: x?.id || "", vehicleId: x ? x.vehicleId || "" : mtBus, plate: x?.plate || "", km: x ? String(x.km ?? "") : "", date: x?.date || todayISO(),
+    items: (x?.items || []).map(it => ({ ...it })), notes: x?.notes || "", now, edit, open: {}, more: false, saving: false, done: null, by: x?.by, byName: x?.byName, createdOn: x?.createdOn, src: x?.src };
+  if (!$("mtw")) { document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="mtw" role="dialog" aria-modal="true" aria-labelledby="mtTitle" hidden></div>');
+    $("mtw").addEventListener("click", mtClick); $("mtw").addEventListener("input", e => { const k = e.target.dataset.k; if (!k || !mtw) return; mtw[k] = e.target.value; if (k === "km") mtKmNote(); }); }
+  mtRender(); $("mtw").hidden = false; document.documentElement.classList.add("bw-on");
+  if (!x) setTimeout(() => $("mtKm")?.focus(), 60);
+}
+const mtHas = (k, pos) => mtw.items.some(it => it.k === k && (it.pos || "") === (pos || ""));
+const mtLast = () => ops.maintLog.filter(x => mtKeyOf(x) === mtw.key && x.id !== mtw.id && num(x.km)).sort((a, b) => num(b.km) - num(a.km))[0];
+function mtKmWarn() {
+  const km = num(mtw.km), last = mtLast(), now = mtw.now;
+  if (!km) return "";
+  if (last && km < num(last.km) && mtw.date >= last.date) return `Less than the last maintenance reading (${nf(num(last.km))} km on ${fmtDate(last.date)}). Check the meter.`;
+  if (now && km > now.km + 30000) return `Much more than the last known reading (${nf(now.km)} km on ${fmtDate(now.date)}). Check the meter.`;
+  return "";
+}
+function mtKmNote() { const w = mtKmWarn(), el = $("mtKmWarn"); if (el) { el.textContent = w; el.hidden = !w; } const go = $("mtw").querySelector('[data-mt="next"]'); if (go && mtw.step === 0) go.disabled = !num(mtw.km) || !mtw.date; }
+function mtRender() {
+  const s = mtw.step, plate = mtPlateOf({ vehicleId: mtw.vehicleId, plate: mtw.plate }), ro = mtw.edit ? "" : " disabled";
+  let body = "";
+  if (mtw.done) {
+    body = `<div class="mtdone"><div class="mtok">✓</div><h2>Saved</h2><p>${esc(plate)} · ${fmtDate(mtw.date)} · ${nf(num(mtw.km))} km</p>` +
+      `<div class="mtnext">${mtw.done.map(d => `<div><b>${esc(mtItemName(d.it))}</b><span>${d.next ? `Next at ${nf(d.next)} km` : "No service gap set"}</span></div>`).join("")}</div></div>`;
+    $("mtw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="mtTitle">Maintenance · ${esc(plate)}</b><span>Saved</span></div></header><div class="bwb tws">${body}</div>` +
+      `<footer class="bwf two"><button type="button" class="bwalt" data-mt="another">＋ Add another</button><button type="button" class="bwgo" data-mt="close">${BW_ICON.ok} Done</button></footer>`;
+    return;
+  }
+  if (s === 0) {
+    const last = mtLast(), w = mtKmWarn();
+    body = rsSec("1", "Kilometer reading", `<p class="rsq">What does the km meter show now?</p><label class="bwf1 mtkm"><span class="bwin"><input id="mtKm" type="number" inputmode="numeric" min="0" data-k="km" value="${esc(mtw.km)}" placeholder="e.g. 188502" aria-label="Kilometer reading"${ro}><b>km</b></span></label>` +
+      `<p class="bwnote">${last ? `Last maintenance: <b>${nf(num(last.km))} km</b> on ${fmtDate(last.date)}` : mtw.now ? `Last known reading: <b>${nf(mtw.now.km)} km</b> on ${fmtDate(mtw.now.date)}` : "First maintenance entry for this vehicle."}</p>` +
+      `<p class="rswarnt" id="mtKmWarn"${w ? "" : " hidden"}>${esc(w)}</p>`) +
+      rsSec("2", "Date", `<label class="bwf1"><span>Date the work was done</span><input type="date" data-k="date" value="${esc(mtw.date)}" max="${todayISO()}"${ro}></label>` +
+        `<div class="bwseg c2" style="margin-top:8px"><button type="button" data-mt="today" aria-pressed="${mtw.date === todayISO()}"${ro}>Today</button><button type="button" data-mt="yday" aria-pressed="${mtw.date === shiftDay(todayISO(), -1)}"${ro}>Yesterday</button></div>`);
+  } else if (s === 1) {
+    const due = new Map(mtDue(mtw.key).map(d => [d.it.k + "|" + (d.it.pos || ""), d]));
+    const hint = (k, pos) => { const d = due.get(k + "|" + (pos || "")); return d && d.left != null ? `<small class="${d.st}">${d.st === "over" ? "Overdue" : "Due in " + nf(d.left) + " km"}</small>` : ""; };
+    const tile = t => {
+      const on = mtw.items.some(it => it.k === t.k), open = on || mtw.open[t.k];
+      if (!t.pos) return `<button type="button" class="mttile" data-mtk="${t.k}" aria-pressed="${on}"${ro}><span class="mtck">${on ? "✓" : ""}</span><b>${esc(t.name)}</b>${hint(t.k)}</button>`;
+      const pos = mtw.more || mtw.items.some(it => it.k === t.k && /^[sd]/.test(it.pos || "")) ? MT_POS : MT_POS.slice(0, 4);
+      return `<div class="mttile mtpos${open ? " open" : ""}${on ? " on" : ""}"><button type="button" class="mtpt" data-mtopenk="${t.k}" aria-expanded="${!!open}"${ro}><span class="mtck">${on ? "✓" : ""}</span><b>${esc(t.name)}</b><small>${on ? mtw.items.filter(it => it.k === t.k).length + " wheel" + (mtw.items.filter(it => it.k === t.k).length === 1 ? "" : "s") : "Tap, then choose the wheels"}</small></button>` +
+        (open ? `<div class="mtwheels">${pos.map(([p, l]) => `<button type="button" data-mtk="${t.k}" data-pos="${p}" aria-pressed="${mtHas(t.k, p)}"${ro}>${mtHas(t.k, p) ? "✓ " : ""}${l}${hint(t.k, p)}</button>`).join("")}` +
+          `<button type="button" class="mtall" data-mtall="${t.k}"${ro}>All 4 wheels</button>${mtw.more ? "" : `<button type="button" class="mtall" data-mt="more"${ro}>More axles…</button>`}</div>` : "") + `</div>`;
+    };
+    body = `<p class="rsq" style="margin:4px 2px 10px">Tap everything that was done on ${fmtDate(mtw.date)}.</p><div class="mttiles">${MT_TYPES.map(tile).join("")}</div>` +
+      `<p class="bwnote">${mtw.items.length ? `${mtw.items.length} job${mtw.items.length === 1 ? "" : "s"} chosen` : "Nothing chosen yet"}</p>`;
+  } else if (s === 2) {
+    body = rsSec("3", "Notes", `<p class="rsq">Anything to remember? (not needed)</p><label class="bwf1"><textarea data-k="notes" rows="4" maxlength="400" placeholder="e.g. battery numbers, mechanic, place, parts changed"${ro}>${esc(mtw.notes)}</textarea></label>`);
+  } else {
+    const gaps = mtw.items.map(it => { const g = mtGap(mtw.key, it.k); return { it, next: g && num(mtw.km) ? num(mtw.km) + g : null }; });
+    const row = (n, t, v) => `<button type="button" class="mtchk" data-mtgo="${n}"${ro}><span>${t}</span><b>${v}</b>${mtw.edit ? '<i>Change</i>' : ""}</button>`;
+    body = `<div class="mtsum"><div class="mtchk mtfix"><span>Vehicle</span><b>${esc(plate)}</b></div>` + row(0, "Km and date", `${num(mtw.km) ? nf(num(mtw.km)) + " km" : "—"} · ${fmtDate(mtw.date)}`) +
+      `<button type="button" class="mtchk" data-mtgo="1"${ro}><span>Work done</span><b>${gaps.length ? gaps.map(g => `${esc(mtItemName(g.it))}${g.next ? `<small class="mtnx">next at ${nf(g.next)} km</small>` : ""}`).join("<br>") : "Nothing chosen"}</b>${mtw.edit ? "<i>Change</i>" : ""}</button>` +
+      row(2, "Notes", esc(mtw.notes || "—")) + `</div>` +
+      (mtw.byName ? `<p class="bwnote">Entered by ${esc(mtw.byName)}${mtw.createdOn ? ` on ${fmtDate(mtw.createdOn.slice(0, 10))}` : ""}${mtw.src === "excel" ? " (from Excel)" : ""}</p>` : "") +
+      `<p class="err" id="mtErr" style="margin:6px 0 0"></p>`;
+  }
+  const dots = `<div class="mtsteps">${MT_STEPS.map((t, i) => `<span class="${i === s ? "on" : i < s ? "done" : ""}">${i + 1}</span>`).join("")}</div>`;
+  const next = s === 0 ? !num(mtw.km) || !mtw.date : s === 1 ? !mtw.items.length : false;
+  $("mtw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="mtTitle">${mtw.id ? "Maintenance" : "New maintenance"} · ${esc(plate)}</b><span>${MT_STEPS[s]}</span></div>${dots}</header>` +
+    `<div class="bwb tws" id="mtBody">${body}</div>` +
+    (s < 3 ? `<footer class="bwf two"><button type="button" class="bwalt" data-mt="${s === 0 ? "close" : "prev"}">${s === 0 ? "Cancel" : "‹ Back"}</button><button type="button" class="bwgo" data-mt="next"${next ? " disabled" : ""}>Next ›</button></footer>`
+      : `<footer class="bwf${mtw.id && canMt() ? " two" : ""}">${mtw.id && canMt() ? `<button type="button" class="bwalt" data-mt="del">Delete</button>` : ""}${mtw.edit ? `<button type="button" class="bwgo" data-mt="save"${mtw.saving || !mtw.items.length || !num(mtw.km) ? " disabled" : ""}>${BW_ICON.ok} ${mtw.saving ? "Saving…" : "Save"}</button>` : `<button type="button" class="bwalt" data-mt="close">Close</button>`}</footer>`);
+  $("mtBody").scrollTop = 0;
+}
+async function mtClick(e) {
+  const b = e.target.closest("button"); if (!b || b.disabled || !mtw) return;
+  const a = b.dataset.mt;
+  if (a === "close") { mtClose(); return; }
+  if (a === "another") { const k = mtw.key; mtClose(); mtBus = k; mtOpen(null); return; }
+  if (a === "today" || a === "yday") { mtw.date = a === "today" ? todayISO() : shiftDay(todayISO(), -1); mtRender(); return; }
+  if (a === "next") { if (mtw.step === 0 && mtKmWarn() && !await askYesNo(`${mtKmWarn()} Go on with ${nf(num(mtw.km))} km?`, { yes: "Yes, it is right", no: "Change it" })) return; mtw.step = Math.min(3, mtw.step + 1); mtRender(); return; }
+  if (a === "prev") { mtw.step = Math.max(0, mtw.step - 1); mtRender(); return; }
+  if (a === "more") { mtw.more = true; mtRender(); return; }
+  if (b.dataset.mtgo != null) { mtw.step = +b.dataset.mtgo; mtRender(); return; }
+  if (b.dataset.mtopenk) { const k = b.dataset.mtopenk; mtw.open[k] = !mtw.open[k] || mtw.items.some(it => it.k === k); mtRender(); return; }
+  if (b.dataset.mtall) { const k = b.dataset.mtall, four = MT_POS.slice(0, 4).map(p => p[0]), all = four.every(p => mtHas(k, p));
+    mtw.items = mtw.items.filter(it => !(it.k === k && four.includes(it.pos))); if (!all) four.forEach(p => mtw.items.push({ k, pos: p })); mtRender(); return; }
+  if (b.dataset.mtk) { const k = b.dataset.mtk, pos = b.dataset.pos || "";
+    if (mtHas(k, pos)) mtw.items = mtw.items.filter(it => !(it.k === k && (it.pos || "") === pos)); else mtw.items.push(pos ? { k, pos } : { k });
+    mtw.items.sort((x, y) => MT_TYPES.indexOf(mtType(x.k)) - MT_TYPES.indexOf(mtType(y.k)) || MT_POS.findIndex(p => p[0] === x.pos) - MT_POS.findIndex(p => p[0] === y.pos)); mtRender(); return; }
+  if (a === "del") {
+    if (!await askYesNo("Delete this maintenance entry?", { yes: "Yes, delete", danger: true })) return;
+    try { await opsDelete("maintLog", mtw.id); toast("Maintenance entry deleted"); mtClose(); } catch { toast("Couldn't delete. Try again."); } return;
+  }
+  if (a === "save") {
+    const km = Math.round(num(mtw.km));
+    if (!km || !mtw.date) { mtw.step = 0; mtRender(); return; }
+    const doc = { id: mtw.id || "mt_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), vehicleId: mtw.vehicleId || "", plate: mtw.vehicleId ? plateOf(mtVehOf(mtw.vehicleId)) : mtw.plate,
+      date: mtw.date, km, items: mtw.items, notes: upText(mtw.notes), by: mtw.by || myUserId || "", byName: mtw.byName || whoAmI(), createdOn: mtw.createdOn || new Date().toISOString(), ...rxStamp(), ...(mtw.src ? { src: mtw.src } : {}) };
+    mtw.saving = true; mtRender();
+    try { await opsSave("maintLog", doc); mtw.id = doc.id; mtw.saving = false;
+      mtw.done = doc.items.map(it => { const g = mtGap(mtw.key, it.k); return { it, next: g ? km + g : null }; }); mtRender(); toast("Maintenance saved"); }
+    catch { mtw.saving = false; mtRender(); toast("Couldn't save. Check your connection and try again."); }
+  }
+}
+function mtClose() { if ($("mtw")) $("mtw").hidden = true; document.documentElement.classList.remove("bw-on"); mtw = null; renderMaint(); }
+
+/* ---------- Maintenance summary ---------- */
+let msBus = "", msOld = false;
+function renderMsum() {
+  const keys = [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])];
+  $("msBusF").innerHTML = `<option value="">All vehicles</option>` + keys.map(k => `<option value="${esc(k)}">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</option>`).join("");
+  $("msBusF").value = keys.includes(msBus) ? msBus : ""; msBus = $("msBusF").value;
+  $("msGaps").hidden = !canMt();
+  // Vehicles not in the vehicle master (sold, old records from Excel) are shown only when asked for.
+  const old = keys.filter(k => !mtVehOf(k)), show = msBus ? [msBus] : keys.filter(k => msOld || mtVehOf(k)), all = show.map(k => ({ k, due: mtDue(k), now: mtNow(k) }));
+  const cnt = st => all.reduce((a, x) => a + x.due.filter(d => d.st === st).length, 0);
+  $("msSum").innerHTML = ostat("Overdue", nf(cnt("over")), "jobs past their km", cnt("over") ? "var(--danger)" : "") + ostat("Due soon", nf(cnt("soon")), "within 5,000 km", cnt("soon") ? "var(--warn)" : "") +
+    ostat("Vehicles", nf(all.length), "with maintenance entered");
+  $("msList").innerHTML = (all.length ? all.map(({ k, due, now }) => `<section class="panel msbus"><div class="msh"><h2 class="sec"><span class="plate psv">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</span></h2>` +
+    `<span class="sub">${now ? `Now about <b>${nf(now.km)} km</b> (${now.src}, ${fmtDate(now.date)})${now.perDay ? ` · about ${nf(Math.round(now.perDay))} km a day` : ""}` : "No km reading"}</span></div>` +
+    `<div class="tscroll"><table class="ctable mstable"><thead><tr><th>Maintenance</th><th>Last done</th><th class="n">Kms</th><th class="n">Next service at</th><th class="n">Km left</th><th>Expected around</th><th>Status</th></tr></thead><tbody>` +
+    due.map(d => `<tr class="ms-${d.st}" data-msentry="${d.e.id}" tabindex="0" style="cursor:pointer"><td>${esc(mtItemName(d.it))}</td><td class="num">${fmtDate(d.e.date)}</td><td class="n">${nf(num(d.e.km))}</td><td class="n">${d.next ? nf(d.next) : "—"}</td>` +
+      `<td class="n">${esc(mtLeftTxt(d))}</td><td class="num">${d.st === "over" ? "Now" : d.when ? fmtDate(d.when) : "—"}</td><td><span class="pill ${MT_ST[d.st][1]}">${MT_ST[d.st][0]}</span></td></tr>`).join("") +
+    `</tbody></table></div>` +
+    // On a phone each job is a small card instead of a wide table.
+    `<div class="mscards">${due.map(d => `<button type="button" class="mscard ms-${d.st}" data-msentry="${d.e.id}"><span class="mscn"><b>${esc(mtItemName(d.it))}</b><span class="pill ${MT_ST[d.st][1]}">${MT_ST[d.st][0]}</span></span>` +
+      `<span>Last: ${fmtDate(d.e.date)} · ${nf(num(d.e.km))} km</span>${d.next ? `<span>Next at <b>${nf(d.next)} km</b> · ${esc(mtLeftTxt(d))}${d.st !== "over" && d.when ? ` · around ${fmtDate(d.when)}` : ""}</span>` : `<span>No service gap set</span>`}</button>`).join("")}</div>` +
+    `</section>`).join("") : `<section class="panel"><p class="sub" style="margin:0">No maintenance entered yet. Use Maintenance entry, or load your Excel in Utility › Data upload.</p></section>`) +
+    (!msBus && old.length ? `<button type="button" class="btn" id="msOldBtn" style="align-self:flex-start">${msOld ? "Hide" : "Show"} ${old.length} vehicle${old.length === 1 ? "" : "s"} not in the vehicle master</button>` : "");
+}
+$("msBusF").onchange = () => { msBus = $("msBusF").value; renderMsum(); };
+$("msList").addEventListener("click", e => { if (e.target.id === "msOldBtn") { msOld = !msOld; renderMsum(); return; } const r = e.target.closest("[data-msentry]"); if (r) mtOpen(ops.maintLog.find(x => x.id === r.dataset.msentry)); });
+// Service gaps: the default km for each job, and a vehicle's own figure where it differs.
+let msgEd = null;
+$("msGaps").onclick = () => { const d = mtGapsDoc(); msgEd = { bus: msBus, gaps: { ...(d.gaps || {}) }, per: JSON.parse(JSON.stringify(d.bus || {})) }; msgRender(); };
+function msgRender() {
+  if (!$("msgw")) { document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="msgw" role="dialog" aria-modal="true" aria-labelledby="msgTitle" hidden></div>');
+    $("msgw").addEventListener("click", msgClick); $("msgw").addEventListener("input", e => { const k = e.target.dataset.gk; if (!k || !msgEd) return; const v = e.target.value === "" ? null : Math.round(num(e.target.value));
+      if (msgEd.bus) { (msgEd.per[msgEd.bus] ||= {})[k] = v; if (v == null) delete msgEd.per[msgEd.bus][k]; } else { msgEd.gaps[k] = v; if (v == null) delete msgEd.gaps[k]; } });
+    $("msgw").addEventListener("change", e => { if (e.target.id === "msgBus") { msgEd.bus = e.target.value; msgRender(); } }); }
+  const keys = [...new Set([...mtFleet().map(v => v.id), ...ops.maintLog.map(mtKeyOf)])], b = msgEd.bus;
+  $("msgw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="msgTitle">Service gaps</b><span>Km from one service to the next</span></div></header><div class="bwb tws">` +
+    `<label class="bwf1"><span>Gaps for</span><select id="msgBus"><option value="">Every vehicle (default)</option>${keys.map(k => `<option value="${esc(k)}"${k === b ? " selected" : ""}>${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))} only</option>`).join("")}</select></label>` +
+    `<p class="bwnote">${b ? "Leave a box empty to use the default for every vehicle." : "Leave a box empty when the job has no fixed gap."}</p>` +
+    `<table class="ctable msgtable"><thead><tr><th>Maintenance</th><th class="n">${b ? "This vehicle (km)" : "Every vehicle (km)"}</th>${b ? '<th class="n">Default</th>' : ""}</tr></thead><tbody>` +
+    MT_TYPES.filter(t => t.k !== "other").map(t => { const def = msgEd.gaps[t.k] !== undefined ? msgEd.gaps[t.k] : t.gap, v = b ? msgEd.per[b]?.[t.k] : def;
+      return `<tr><td>${esc(t.name)}</td><td class="n"><input type="number" inputmode="numeric" min="0" step="1000" data-gk="${t.k}" value="${v ?? ""}" aria-label="${esc(t.name)} gap in km"></td>${b ? `<td class="n sub">${def ? nf(def) : "—"}</td>` : ""}</tr>`; }).join("") +
+    `</tbody></table></div><footer class="bwf two"><button type="button" class="bwalt" data-msg="close">Cancel</button><button type="button" class="bwgo" data-msg="save">${BW_ICON.ok} Save</button></footer>`;
+  $("msgw").hidden = false; document.documentElement.classList.add("bw-on");
+}
+async function msgClick(e) {
+  const b = e.target.closest("button[data-msg]"); if (!b) return;
+  if (b.dataset.msg === "save") { b.disabled = true;
+    try { await opsSave("maintTypes", { id: "gaps", gaps: msgEd.gaps, bus: msgEd.per, ...rxStamp() }); toast("Service gaps saved"); } catch { b.disabled = false; toast("Couldn't save. Try again."); return; } }
+  $("msgw").hidden = true; document.documentElement.classList.remove("bw-on"); msgEd = null; renderMsum();
+}
+
+/* ---------- Loading the Excel workbook (Utility › Data upload) ----------
+   Sheets: "Expense List" (Date, Description, Vehicle Number, Category, Payment Type, Amount), "Maintenance Details" (one block per
+   vehicle: Maintenance Type, Last Maintenance Date, Kms, Remarks, Next KMS) and "Maintenance Summary" (the latest of each, per vehicle).
+   The many spellings of a job ("HUB Grease(Back Left)", "Back wheel Hub grease (Left)") become one job and wheel. */
+function mtParseType(raw) {
+  const s = upText(raw), t = s.toLowerCase();
+  const k = /batter/.test(t) ? "battery" : /air ?filter/.test(t) ? "air" : /hub|grease/.test(t) ? "hub" : /lining/.test(t) ? "lining" : /drum/.test(t) ? "drum" : /oil service/.test(t) ? "oil"
+    : /gear ?box/.test(t) ? "gear" : /housing oil/.test(t) ? "housing" : /clutch kit/.test(t) ? "clutchkit" : /clutch/.test(t) ? "clutch" : /tapit|tappet/.test(t) ? "tappet" : /king ?pin/.test(t) ? "kingpin"
+    : /st(e|ea)ring/.test(t) ? "steer" : /alignment/.test(t) ? "align" : /nozzle|pump/.test(t) ? "nozzle" : /rachet|ratchet/.test(t) ? "ratchet" : /dynamo/.test(t) ? "dynamo" : /engine/.test(t) ? "engine" : "other";
+  let pos = [];
+  if (mtType(k).pos) {
+    const L = /left/.test(t), R = /right/.test(t), sides = L && !R ? ["l"] : R && !L ? ["r"] : ["l", "r"];
+    const axles = /all 4|all wheel|all four/.test(t) ? (/front all 4/.test(t) ? ["f", "s"] : ["f", "b"]) : /second axle/.test(t) ? ["s"] : /dummy/.test(t) ? ["d"] : /front/.test(t) ? ["f"] : /back|housing|rear/.test(t) ? ["b"] : ["f", "b"];
+    pos = axles.flatMap(a => sides.map(sd => a + sd));
+  }
+  let note = "";
+  if (k === "battery") note = s.replace(/^.*?batter(y|ies)\s*\d*\s*-?\s*/i, "").trim();
+  else if (k === "other" || k === "engine" || k === "dynamo" || k === "ratchet") note = s;
+  else if (/- *black/i.test(s)) note = "Black";
+  else if (/new|installed/i.test(s)) note = s;
+  // "New Air Filter Installed on 16/10/2022 at Vellore Kms : 207103": the date and km written in the text.
+  const dm = /on\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(s), km = /kms?\s*:?\s*(\d{4,7})/i.exec(s);
+  return { k, pos, note, date: dm ? upIso(+dm[3], +dm[2], +dm[1]) : "", km: km ? +km[1] : null };
+}
+function mtParseBook(sheets) {
+  const byName = re => sheets.find(s => re.test(s.name));
+  const vehOf = plate => vehicles.find(v => plateKey(v.plateNo) === plateKey(plate));
+  const out = { expenses: [], entries: new Map(), gaps: {}, map: new Map(), plates: new Map(), skipped: 0, swapped: 0 };
+  const plateUse = (p, n = 1) => { const k = plateKey(p); if (!k) return; const v = vehOf(p), x = out.plates.get(k) || { plate: v ? plateOf(v) : upText(p), v, xp: 0, mt: 0 }; out.plates.set(k, x); return x; };
+  // Expenses: rows are in date order, so a date Excel may have read as month/day takes the reading closest to the row before.
+  const xs = byName(/expense/i);
+  if (xs) { let prev = "";
+    const firstText = xs.rows.slice(2).map(r => r?.[0]).find(v => typeof v === "string" && upDate(v).a); if (firstText) prev = upDate(firstText).a;
+    xs.rows.forEach((r, i) => { if (i < 2 || !r) return;
+      const desc = upText(r[1]), amt = upNum(r[5]); if (!desc && !amt) return;
+      const d = upDate(r[0]); let date = d.a;
+      if (d.b && prev) { const da = Math.abs(dayDiff(prev, d.a)), db = Math.abs(dayDiff(prev, d.b)); if (db < da) { date = d.b; out.swapped++; } }
+      if (!date) { out.skipped++; return; } prev = date;
+      const p = upText(r[2]), v = p ? vehOf(p) : null; if (p) plateUse(p).xp++;
+      out.expenses.push({ row: i + 1, date, desc, vehicleId: v?.id || "", plate: v ? plateOf(v) : p, category: xpCat(r[3] || "Other"), pay: xpPay(r[4] || ""), amount: Math.round(amt || 0) }); });
+  }
+  // Maintenance: blocks start with a title holding the vehicle number, then a heading row. The blocks are not all laid out the same,
+  // so each one is read by its headings: the job, the date it was done (Completion date, else Last maintenance date), the Kms
+  // (a Kms column, else "Kms - 162929" written in the row), Remarks and the Next KMS (which gives that vehicle's service gap).
+  const add = (plate, type, date, km, remark, nx, src) => {
+    const p = mtParseType(type); date = date || p.date; km = km || p.km;
+    out.map.set(upText(type), { ...p, n: (out.map.get(upText(type))?.n || 0) + 1 });
+    if (!date) { out.skipped++; return; }
+    const v = vehOf(plate), key = v ? v.id : "p:" + plateKey(plate), eid = `${key}|${date}|${km || ""}`;
+    const e = out.entries.get(eid) || { key, vehicleId: v?.id || "", plate: v ? plateOf(v) : upText(plate), date, km: km || 0, items: [], notes: [], src };
+    (p.pos.length ? p.pos : [""]).forEach(pos => { if (!e.items.some(it => it.k === p.k && (it.pos || "") === pos)) e.items.push(pos ? { k: p.k, pos } : { k: p.k }); });
+    if (p.note && !e.notes.includes(p.note)) e.notes.push(p.note); if (remark && !e.notes.includes(remark)) e.notes.push(remark);
+    out.entries.set(eid, e); const pu = plateUse(plate); if (pu && src === "details") pu.mt++;
+    if (nx && km && nx > km && nx - km <= 300000) (out.gaps[key] ||= {})[p.k] = nx - km;
+  };
+  const dateOf = v => typeof v === "number" ? upDate(v).a : typeof v === "string" && !/kms?/i.test(v) ? upDate(v).a : "";
+  const kmIn = r => { for (const c of r) if (typeof c === "string") { const m = /kms?\s*[-:]?\s*(\d{4,7})/i.exec(c); if (m) return +m[1]; } return null; };
+  const blocks = (sh, src) => { let plate = "", C = null;
+    sh.rows.forEach(r => { if (!r) return;
+      const cells = r.map(upText), first = cells.findIndex(Boolean); if (first < 0) return;
+      const a = cells[first];
+      if (/^maintenance\s*-/i.test(a)) { plate = a.replace(/^maintenance\s*-\s*/i, "").replace(/\s*-\s*\d{4}\s*$/, "").trim(); C = null; return; }
+      if (/^[a-z]{2}\s*\d{1,2}\s*[a-z]{0,3}\s*\d{3,4}$/i.test(a) && !cells.slice(first + 1).some(Boolean)) { plate = a; C = null; return; }
+      if (/^maintenance type$/i.test(a)) { const h = cells.map(x => x.toLowerCase()), at = re => h.findIndex((x, i) => i >= first && i < first + 7 && re.test(x));
+        C = { type: first, last: at(/last maintenance date/), done: at(/completion date/), km: at(/^kms?$/), rem: at(/remark/), next: at(/next kms/) }; return; }
+      if (!plate || !C || first !== C.type) return;
+      const date = (C.done >= 0 && dateOf(r[C.done])) || (C.last >= 0 && dateOf(r[C.last])) || "";
+      const kmc = C.km >= 0 ? upNum(r[C.km]) : null, km = kmc && kmc < 3e6 ? Math.round(kmc) : kmIn(r);
+      const rem = C.rem >= 0 && typeof r[C.rem] === "string" ? upText(r[C.rem]) : "";
+      add(plate, a, date, km, rem, C.next >= 0 ? upNum(r[C.next]) : null, src); }); };
+  const md = byName(/maintenance details/i), ms = byName(/maintenance summary/i);
+  if (md) blocks(md, "details");
+  if (ms) blocks(ms, "summary");
+  out.future = out.expenses.filter(x => x.date > todayISO()).map(x => `${fmtDate(x.date)} · ${x.desc}`);
+  // A job written without its km on a day that has a km reading for the same vehicle joins that visit.
+  for (const [id, e] of [...out.entries]) if (!e.km) { const to = [...out.entries.values()].find(o => o !== e && o.key === e.key && o.date === e.date && o.km);
+    if (to) { e.items.forEach(it => { if (!to.items.some(x => x.k === it.k && (x.pos || "") === (it.pos || ""))) to.items.push(it); }); e.notes.forEach(n => { if (!to.notes.includes(n)) to.notes.push(n); }); out.entries.delete(id); } }
+  // Ids from the content, so loading the same file again finds the rows already loaded.
+  out.entries = [...out.entries.values()].map(e => ({ id: "mt_" + mtHash(`${e.key}|${e.date}|${e.km}`), ...e, notes: e.notes.join(" · ") }));
+  const seen = {}; out.expenses.forEach(x => { const h = mtHash(`${x.date}|${x.desc}|${plateKey(x.plate)}|${x.amount}`); seen[h] = (seen[h] || 0) + 1; x.id = `xp_${h}${seen[h] > 1 ? "_" + seen[h] : ""}`; });
+  return out;
+}
+const mtHash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = (h * 33 ^ s.charCodeAt(i)) >>> 0; return h.toString(36); };
+function emPreview(res) {
+  const R = res.em, have = new Set(ops.expenses.map(x => x.id)), haveM = new Set(ops.maintLog.map(x => x.id));
+  const newX = R.expenses.filter(x => !have.has(x.id)), newM = R.entries.filter(x => !haveM.has(x.id));
+  const types = [...R.map.entries()].sort((a, b) => b[1].n - a[1].n);
+  return `<div class="upsum"><span><b>${R.expenses.length}</b> expenses (${newX.length} new)</span><span><b>${R.entries.length}</b> maintenance visits (${newM.length} new)</span><span><b>${R.entries.reduce((a, e) => a + e.items.length, 0)}</b> jobs</span><span><b>${R.skipped}</b> empty rows left out</span></div>` +
+    (R.future.length ? `<p class="err" style="margin:0">Dates in the future, please check in the Excel: ${R.future.map(esc).join("; ")}.</p>` : "") +
+    (R.swapped ? `<p class="sub" style="margin:0">${R.swapped} expense date${R.swapped === 1 ? " was" : "s were"} read by Excel as month/day (e.g. 7 April as 4 July). They have been put back to day/month from the rows around them: please check them after loading.</p>` : "") +
+    `<h3 class="sec" style="margin:4px 0 0">Vehicles</h3><div class="tscroll"><table class="ctable"><thead><tr><th>In the Excel</th><th>Vehicle master</th><th class="n">Expenses</th><th class="n">Maintenance rows</th></tr></thead><tbody>` +
+    [...R.plates.values()].map(p => `<tr><td class="num">${esc(p.plate)}</td><td>${p.v ? `✓ ${esc(plateOf(p.v))}` : '<span class="pill d30">Not in the vehicle master · kept by its number</span>'}</td><td class="n">${p.xp}</td><td class="n">${p.mt}</td></tr>`).join("") + `</tbody></table></div>` +
+    `<h3 class="sec" style="margin:4px 0 0">How the maintenance names are read</h3><p class="sub" style="margin:0">Each name in the Excel on the left becomes the job and wheels on the right. Wheels written without a side (e.g. "Front HUB Grease") count for both sides.</p>` +
+    `<div class="tscroll"><table class="ctable"><thead><tr><th>Name in the Excel</th><th class="n">Rows</th><th>Becomes</th><th>Note kept</th></tr></thead><tbody>` +
+    types.map(([n, p]) => `<tr><td>${esc(n)}</td><td class="n">${p.n}</td><td>${esc(mtType(p.k).name)}${p.pos.length ? ` · ${esc(p.pos.map(mtPosName).join(", "))}` : ""}</td><td class="sub">${esc(p.note || "")}</td></tr>`).join("") + `</tbody></table></div>` +
+    (Object.keys(R.gaps).length ? `<p class="sub" style="margin:0">Service gaps from the "Next KMS" column are saved for each vehicle (e.g. ${esc(Object.entries(R.gaps).slice(0, 1).map(([k, g]) => `${mtPlateOf(R.entries.find(e => e.key === k) || { vehicleId: k })}: ${Object.entries(g).slice(0, 2).map(([t, km]) => `${mtType(t).name} ${nf(km)} km`).join(", ")}`).join(""))}).</p>` : "") +
+    `<div class="upgo"><button class="btn primary" type="button" id="emGo"${!upState.emBusy && (newX.length || newM.length || Object.keys(R.gaps).length) ? "" : " disabled"}>${upState.emBusy || `Load ${newX.length} expenses and ${newM.length} maintenance visits`}</button>` +
+    `<span class="sub">Rows already loaded before are left as they are, so loading the same file again adds nothing twice.</span></div>`;
+}
+async function emImport() {
+  const R = upState.rows?.em; if (!R || upState.emBusy) return;
+  const have = new Set(ops.expenses.map(x => x.id)), haveM = new Set(ops.maintLog.map(x => x.id)), stamp = { createdOn: new Date().toISOString(), byName: whoAmI(), src: "excel" };
+  const xs = R.expenses.filter(x => !have.has(x.id)), ms = R.entries.filter(x => !haveM.has(x.id)), all = xs.length + ms.length;
+  let n = 0, m = 0, failed = 0;
+  const busy = () => { upState.emBusy = `Loading… ${n + m + failed} of ${all}`; renderUpload(); };
+  busy();
+  for (const x of xs) { const { row, ...doc } = x; try { await opsSave("expenses", { ...doc, ...stamp }); n++; } catch { failed++; } if ((n + failed) % 10 === 0) busy(); }
+  for (const e of ms) { const { key, ...doc } = e; try { await opsSave("maintLog", { ...doc, by: "", ...stamp }); m++; } catch { failed++; } if ((n + m + failed) % 10 === 0) busy(); }
+  if (Object.keys(R.gaps).length) { const d = mtGapsDoc(), bus = JSON.parse(JSON.stringify(d.bus || {}));
+    Object.entries(R.gaps).forEach(([k, g]) => { bus[k] = { ...g, ...(bus[k] || {}) }; });
+    try { await opsSave("maintTypes", { id: "gaps", gaps: d.gaps || {}, bus, ...rxStamp() }); } catch { failed++; } }
+  upState.emBusy = ""; upState.rows = null; $("upFile").value = "";
+  upState.emDone = `<div class="upok"><b>${n} expenses and ${m} maintenance visits loaded</b>${failed ? `, ${failed} could not be saved: load the file again to add them` : ""}. See them in <a href="#expenses">Expenses</a>, <a href="#maintenance">Maintenance entry</a> and <a href="#maintenance-summary">Maintenance summary</a>.</div>`;
+  renderUpload();
+}
+
 /* ================= Utility · data upload (admin only) =================
    Reads an Excel (.xlsx) or CSV file in the browser, shows every row as it will be saved, and imports the rows that are ready.
    No outside library: an .xlsx file is a zip of XML files, unzipped here with the browser's own DecompressionStream.
@@ -6189,6 +6735,11 @@ function upDate(v) {
 
 // ---- kinds of upload
 const UP_KINDS = {
+  em: {
+    label: "Expenses and maintenance (Excel workbook)",
+    note: "The workbook with the sheets Expense List, Maintenance Details and Maintenance Summary. Nothing is saved until you check the list and press Load.",
+    em: true
+  },
   spare: {
     label: "Spare bus trips (one row per booking)",
     note: "Use the template, or your own sheet with these headings: From Date, To Date, Days, Total Rent, Driver, Cleaner, Driver padi, Cleaner padi, Permit Exp., Toll Gate, Litres, Diesel Amount (or Fuel Price), Other Exp., Start KMs, End KMs, Remarks, Places (or Other Remarks) and Status (Completed, Closed, Cancelled, Booked or On trip; blank is Completed). Totals worked out in the sheet (Total Expense, Collection, Balance, Kms Run, Mileage) are worked out again by the app.",
@@ -6534,17 +7085,18 @@ function renderUpload() {
   const buses = K.route ? routeBuses() : spareBuses(), cur = $("upBus").value;
   $("upBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))}</option>`).join("");
   $("upBus").value = buses.some(v => v.id === cur) ? cur : "";
-  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route; $("upFyRow").hidden = !K.needsFy;
+  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route || !!K.em; $("upFyRow").hidden = !K.needsFy; $("upTpl").hidden = !!K.em;
   if (!$("upFy").options.length) { const y = fyOf(todayISO()); $("upFy").innerHTML = `<option value="">Choose</option>` + [0, 1, 2, 3, 4, 5].map(i => `<option value="${y - i}">FY ${fyLabel(y - i)}</option>`).join(""); }
   $("upMonth").max = todayISO().slice(0, 7);
   const res = S.rows, list = res?.rows || [];
   if (S.done) { const d = S.done, u = K.route ? "day" : "trip";
     $("upOut").innerHTML = `<div class="upok"><b>${d.n} new ${u}${d.n === 1 ? "" : "s"} added, ${d.u} updated</b> in ${esc(d.bus)}${d.mon ? ` for ${esc(d.mon)}` : ""}${d.failed ? `, ${d.failed} could not be saved${d.why ? ` (${esc(d.why)})` : ""}. Upload the same file again: rows already saved show as No change` : ""}. ${K.route ? "They are in the route trip sheet (Day sheet and Monthly entry)." : "They are in the Booking planner and in Reports."}</div>`; return; }
-  if (!res) { $("upOut").innerHTML = ""; return; }
+  if (!res) { $("upOut").innerHTML = K.em && S.emDone ? S.emDone : ""; return; }
   if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
   if (res.loading) { $("upOut").innerHTML = `<p class="sub" style="margin:0">Loading the days already in the app for this month…</p>`; return; }
   list.forEach((x, i) => x.i = i);
   if (K.route) { $("upOut").innerHTML = upRouteTable(res); return; }
+  if (K.em) { $("upOut").innerHTML = res.em ? emPreview(res) : ""; return; }
   const C = upCounts(list), sel = upSelected(list);
   const tot = k => sel.filter(x => x.st !== "Cancelled").reduce((a, x) => a + num(x.c[k]), 0);
   $("upOut").innerHTML = `<div class="upsum"><span><b>${C.new}</b> new</span><span><b>${C.change}</b> with changes</span><span><b>${C.same}</b> no change</span><span><b>${C.skip}</b> clash with another booking</span><span><b>${C.bad}</b> with a problem</span>` +
@@ -6562,6 +7114,13 @@ async function upLoad() {
   const K = UP_KINDS[upState.kind];
   if (K.needsBus && !$("upBus").value) { upState.rows = { error: K.route ? "Choose the route bus of this sheet first." : "Choose the bus these trips belong to first." }; renderUpload(); return; }
   if (K.needsMonth && !$("upMonth").value) { upState.rows = { error: "Choose the month of this sheet first." }; renderUpload(); return; }
+  if (K.em) {
+    try {
+      if (!/\.xlsx$/i.test(f.name)) { upState.rows = { error: "Choose the Excel workbook (.xlsx)." }; renderUpload(); return; }
+      upState.emDone = ""; upState.rows = { em: mtParseBook(await upReadXlsx(await f.arrayBuffer(), true)) };
+    } catch { upState.rows = { error: "This file could not be read. Open it in Excel, save it as .xlsx and try again." }; }
+    renderUpload(); return;
+  }
   if (K.year) {
     try {
       const buf = await f.arrayBuffer();
@@ -6595,6 +7154,7 @@ $("upFile").addEventListener("change", () => {
   upLoad();
 });
 ["upBus", "upPaid", "upMonth", "upFy"].forEach(id => $(id).addEventListener("change", upLoad));
+$("upOut").addEventListener("click", e => { if (e.target.id === "emGo") emImport(); });
 $("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; $("upBus").value = ""; renderUpload(); upLoad(); });
 $("upOut").addEventListener("change", e => {
   const list = upState.rows?.rows; if (!list) return;
@@ -7953,6 +8513,9 @@ function renderOps() {
   if (view === "trexp") { renderRxp(); return; }
   if (view === "tpadi") { renderPadi(); return; }
   if (view === "tutil") { renderUpload(); return; }
+  if (view === "texp") { if (!$("xpw") || $("xpw").hidden) renderExp(); return; }
+  if (view === "tmaint") { renderMaint(); return; }
+  if (view === "tmsum") { renderMsum(); return; }
   const ro = !canTrips;
   ["dbRoTag", "kRoTag"].forEach(id => $(id).hidden = !ro); $("sRoTag").hidden = canBookings;
   if (view === "thub") renderHub();
