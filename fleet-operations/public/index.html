@@ -1462,7 +1462,12 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xsheet { background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-radius: 10px; overflow: hidden; }
 .xsc { position: relative; max-height: max(240px, calc(100vh - 230px)); overflow: auto; outline: none; scroll-padding-top: 40px; scroll-padding-bottom: 6px; }
 .xgrid { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-.xgrid col.g0 { width: 44px; } .xgrid col.g1 { width: 100px; } .xgrid col.g3 { width: 150px; } .xgrid col.g4 { width: 180px; } .xgrid col.g5 { width: 112px; } .xgrid col.g6 { width: 150px; } .xgrid col.g7 { width: 56px; }
+.xgrid col.g0 { width: 40px; } .xgrid col.g7 { width: 44px; } .xgrid { min-width: 100%; }
+.xrs { position: absolute; top: 0; right: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 3; } .xrs:hover, .xrs.on { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.xgrid td.xc-category, .xgrid td.xc-pay { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .xgrid td.xc-category .xptag { max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: top; }
+.xgrid tr.rsel td { background: color-mix(in srgb, var(--accent) 16%, var(--surface)) !important; } .xgrid tr.rsel td.rn { background: var(--accent) !important; color: var(--accent-ink); font-weight: 700; }
+.xgrid td.rn { cursor: pointer; user-select: none; } .xgrid td.rn:hover { color: var(--accent); font-weight: 700; } .xgrid th[data-xall] { cursor: pointer; }
+.xfoot .btn.xdelsel { background: var(--danger); border-color: var(--danger); color: #fff; }
 .xgrid th { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--accent) 6%, var(--surface)); font: 600 11.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 7px 8px; border-right: 1px solid var(--line); border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); }
 .xgrid td { height: 30px; padding: 5px 8px; border-right: 1px solid color-mix(in srgb, var(--line) 70%, var(--surface)); border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, var(--surface)); font-size: 13.5px; line-height: 19px; vertical-align: top; word-break: break-word; cursor: cell; box-sizing: border-box; }
 .xgrid td.rn, .xgrid th.rn { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); color: var(--muted); font: 12px/19px var(--mono); text-align: center; padding: 5px 0; cursor: default; }
@@ -1482,7 +1487,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xlist div { padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; } .xlist div.h { background: var(--accent-soft); font-weight: 700; } .xlist p { margin: 4px 8px; color: var(--muted); font-size: 13px; }
 .xe-veh .xlist div { font-family: var(--mono); font-size: 13px; }
 .xfoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 12px; border-top: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); font-size: 13.5px; color: var(--muted); }
-.xftot { display: flex; align-items: center; gap: 18px; } .xftot b { color: var(--ink); font: 700 16px var(--mono); } .xfoot .btn { min-width: 110px; padding-block: 6px; } .xbadtxt { color: var(--danger); font-weight: 600; }
+.xftot { display: flex; align-items: center; gap: 18px; } .xfl { display: flex; align-items: center; gap: 12px; } .xftot b { color: var(--ink); font: 700 16px var(--mono); } .xfoot .btn { min-width: 110px; padding-block: 6px; } .xbadtxt { color: var(--danger); font-weight: 600; }
 .xpsfoot { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--accent-soft); font-weight: 700; } .xpsfoot b { font-family: var(--mono); padding-right: 218px; }
 .xpvtab table { width: 100%; border-collapse: collapse; } .xpvtab th, .xpvtab td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13.5px; }
 .xpvtab th { font: 600 11.5px var(--mono); text-transform: uppercase; color: var(--muted); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); } .xpvtab .n { text-align: right; font-family: var(--mono); }
@@ -6410,7 +6415,12 @@ $("xpBusF").onchange = () => { xpBus = $("xpBusF").value; xpScrollEnd = true; re
 const xpWhere = (veh, old) => veh === "p:" ? { vehicleId: "", plate: "" } : veh.startsWith("p:") ? { vehicleId: "", plate: old?.plate || veh.slice(2) } : { vehicleId: veh, plate: "" };
 const xpGrow = el => { if (!el) return; el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; };
 var xpAct = null, xpEdit = null, xpRowsNow = [], xpScrollEnd = true, xpNews = [], xpDeferred = false;
-const XP_BLANK = 10, XP_COLS = ["date", "desc", "veh", "category", "amount", "pay"];
+const XP_BLANK = 10, XP_COLS = ["date", "desc", "veh", "category", "pay", "amount"]; // the order of the Excel sheet
+// Column widths: chosen to fit their contents; each can be dragged wider or narrower and is remembered.
+const XP_W = { date: 82, veh: 118, category: 132, pay: 120, amount: 96 };
+var xpW = {}, xpRowSel = new Set(), xpRowAnchor = null;
+try { xpW = JSON.parse(localStorage.getItem("fleet-xpcols") || "{}") || {}; } catch {}
+const xpColW = c => xpW[c] || XP_W[c] || 0;
 const XP_NAMES = { date: "date", desc: "description", veh: "vehicle", category: "details for Other", amount: "amount", pay: "paid by" };
 const xpBlank = () => ({ k: Math.random().toString(36).slice(2, 9), date: "", desc: "", veh: "", category: "", catNote: "", pay: "", amount: "", used: false, miss: false });
 const xpFill = () => { while (xpNews.length < XP_BLANK) xpNews.push(xpBlank()); };
@@ -6437,13 +6447,14 @@ function xpCellInner(c, v, d) {
 }
 function xpCell(r, c, v, d) {
   const bad = d?.used && d.miss && xpMissing(d).includes(c);
-  return `<td data-r="${r}" data-c="${c}" class="xc-${c}${bad ? " xbad" : ""}${xpAct?.r === r && xpAct.c === c ? " sel" : ""}">${xpCellInner(c, v, d)}</td>`;
+  const tip = (c === "category" || c === "pay" || c === "veh") && (v[c] || v.veh) ? ` title="${esc(c === "category" ? (v.category === "Other" && v.catNote ? "Other: " + v.catNote : v.category) : c === "veh" ? (v.veh !== "" ? xpKeyName(v.veh, v.x) : "") : v.pay)}"` : "";
+  return `<td data-r="${r}" data-c="${c}"${tip} class="xc-${c}${bad ? " xbad" : ""}${xpAct?.r === r && xpAct.c === c ? " sel" : ""}">${xpCellInner(c, v, d)}</td>`;
 }
 function xpRowHtml(r, i, can) {
   const v = xpValOf(r), d = xpDraftOf(r); if (!v) return "";
   const st = d ? (d.used ? `<span class="xdot${d.miss ? " bad" : ""}" title="${d.miss ? "Not saved yet" : "Being typed"}">●</span><button type="button" class="xclr" data-xclr="${d.k}" title="Clear this line" aria-label="Clear this line">✕</button>` : "")
     : `<span class="xok" title="Saved">✓</span>${can ? `<button type="button" class="xdel" data-xdel="${v.x.id}" title="Delete this expense" aria-label="Delete this expense">${TW_BIN}</button>` : ""}`;
-  return `<tr data-r="${r}"${d ? ` class="xd${d.used ? " used" : ""}${d.miss ? " miss" : ""}"` : ""}><td class="rn">${i + 1}</td>${XP_COLS.map(c => xpCell(r, c, v, d)).join("")}<td class="xst">${st}</td></tr>`;
+  return `<tr data-r="${r}" class="${d ? `xd${d.used ? " used" : ""}${d.miss ? " miss" : ""}` : ""}${xpRowSel.has(r) ? " rsel" : ""}"><td class="rn">${i + 1}</td>${XP_COLS.map(c => xpCell(r, c, v, d)).join("")}<td class="xst">${st}</td></tr>`;
 }
 function xpRefreshRow(r) {
   const tr = $("xpBody").querySelector(`tr[data-r="${r}"]`); if (!tr) return;
@@ -6462,7 +6473,7 @@ function xpGridRender(o) {
   xpRowsNow = [...[...list].reverse().map(x => "e:" + x.id), ...(can ? xpNews.map(d => "n:" + d.k) : [])];
   const strip = `<div class="xsum"><div class="t"><small>Total · ${esc(P.label)}</small><b>${rs(sum(all))}</b></div>` +
     VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpBus === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>`;
-  const foot = `<div class="xfoot"><span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span><span class="xftot">Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
+  const foot = `<div class="xfoot"><span class="xfl"><span id="xpSelAct">${xpSelHtml()}</span><span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot">Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
   // While a cell is open for typing, only the totals are refreshed; the sheet is redrawn when it closes.
   if (!force && xpEdit && $("xpSc")) {
     xpDeferred = true; const t = document.createElement("div"); t.innerHTML = strip + foot;
@@ -6471,9 +6482,10 @@ function xpGridRender(o) {
   }
   xpDeferred = false; xpEdit = null;
   if (xpAct && !xpRowsNow.includes(xpAct.r)) xpAct = null;
+  xpRowSel.forEach(r => { if (!xpRowsNow.includes(r)) xpRowSel.delete(r); });
   const old = $("xpSc"), top = old ? old.scrollTop : 0, had = document.activeElement === old;
-  $("xpBody").innerHTML = strip + `<section class="xsheet"><div class="xsc" id="xpSc"${can ? ' tabindex="0"' : ""}><table class="xgrid"><colgroup><col class="g0"><col class="g1"><col><col class="g3"><col class="g4"><col class="g5"><col class="g6"><col class="g7"></colgroup>` +
-    `<thead><tr><th class="rn"></th><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
+  $("xpBody").innerHTML = strip + `<section class="xsheet"><div class="xsc" id="xpSc"${can ? ' tabindex="0"' : ""}><table class="xgrid"${xpW.desc ? ` style="width:${40 + 44 + XP_COLS.reduce((a, c) => a + xpColW(c), 0)}px"` : ""}><colgroup><col class="g0">${XP_COLS.map(c => `<col data-col="${c}"${xpColW(c) ? ` style="width:${xpColW(c)}px"` : ""}>`).join("")}<col class="g7"></colgroup>` +
+    `<thead><tr><th class="rn"${can ? ' title="Select all lines" data-xall' : ""}></th>` + XP_COLS.map(c => `<th data-col="${c}"${c === "amount" ? ' class="n"' : ""}>${{ date: "Date", desc: "Expense description", veh: "Vehicle", category: "Category", pay: "Paid by", amount: "Amount" }[c]}<span class="xrs" data-rs="${c}" title="Drag to change the width · double-click to reset"></span></th>`).join("") + `<th></th></tr></thead><tbody>` +
     xpRowsNow.map((r, i) => xpRowHtml(r, i, can)).join("") + `</tbody></table>` +
     (list.length || can ? "" : `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.</p>`) +
     `<div class="xed" id="xpEdBox" hidden></div></div>` + foot + `</section>`;
@@ -6489,6 +6501,47 @@ function xpFit() {
   sc.style.maxHeight = Math.max(240, Math.floor(innerHeight - (sc.getBoundingClientRect().top + root.scrollTop) - sc.nextElementSibling.offsetHeight - padB - 2)) + "px";
 }
 addEventListener("resize", () => xpFit());
+/* Choosing whole lines (click the line number; Shift for a range, Ctrl for one more) and deleting them */
+function xpPickRow(r, shift, ctrl) {
+  if (xpAct) { const prev = xpAct.r; xpAct = null; $("xpBody").querySelectorAll(".xgrid td.sel").forEach(t => t.classList.remove("sel")); if (prev !== r) xpLeaveRow(prev); }
+  if (shift && xpRowAnchor && xpRowsNow.includes(xpRowAnchor)) {
+    const a = xpRowsNow.indexOf(xpRowAnchor), b = xpRowsNow.indexOf(r);
+    if (!ctrl) xpRowSel.clear(); xpRowsNow.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(k => xpRowSel.add(k));
+  } else if (ctrl) { xpRowSel.has(r) ? xpRowSel.delete(r) : xpRowSel.add(r); xpRowAnchor = r; }
+  else { const only = xpRowSel.size === 1 && xpRowSel.has(r); xpRowSel.clear(); if (!only) xpRowSel.add(r); xpRowAnchor = r; }
+  xpSelUpd(); $("xpSc")?.focus({ preventScroll: true });
+}
+function xpSelectAll() {
+  const saved = xpRowsNow.filter(k => k.startsWith("e:")), all = saved.length && saved.every(k => xpRowSel.has(k));
+  xpRowSel.clear(); if (!all) saved.forEach(k => xpRowSel.add(k)); xpSelUpd();
+}
+function xpSelHtml() {
+  const n = [...xpRowSel].filter(k => xpDocOf(k) || xpDraftOf(k)?.used).length;
+  return n ? `<button type="button" class="btn xdelsel" data-xdelsel>Delete ${n} selected</button> ` : "";
+}
+function xpSelUpd() {
+  $("xpBody").querySelectorAll(".xgrid tbody tr").forEach(tr => tr.classList.toggle("rsel", xpRowSel.has(tr.dataset.r)));
+  if ($("xpSelAct")) $("xpSelAct").innerHTML = xpSelHtml();
+}
+async function xpDeleteSel() {
+  const docs = [...xpRowSel].map(xpDocOf).filter(Boolean), drafts = [...xpRowSel].map(xpDraftOf).filter(d => d?.used);
+  if (!docs.length && !drafts.length) return;
+  const tot = docs.reduce((a, x) => a + num(x.amount), 0);
+  if (docs.length && !await askYesNo(`Delete ${docs.length} expense${docs.length > 1 ? "s" : ""} (${rs(tot)})? This cannot be undone.`, { yes: "Yes, delete", danger: true })) return;
+  drafts.forEach(d => { const i = xpNews.indexOf(d); if (i >= 0) xpNews[i] = xpBlank(); });
+  let ok = 0; for (const x of docs) { try { await opsDelete("expenses", x.id); ok++; } catch {} }
+  xpRowSel.clear(); renderExp(true);
+  toast(ok === docs.length ? `${ok ? `${ok} expense${ok > 1 ? "s" : ""} deleted` : "Lines cleared"}` : `${ok} deleted, ${docs.length - ok} could not be deleted. Try again.`);
+}
+// Dragging the edge of a column heading changes its width.
+function xpResize(h, e) {
+  const c = h.dataset.rs, th = h.closest("th"), col = $("xpBody").querySelector(`col[data-col="${c}"]`), tbl = th.closest("table"), x0 = e.clientX, w0 = th.getBoundingClientRect().width;
+  const fixAll = () => { if (c === "desc" || xpW.desc) { XP_COLS.forEach(k => { if (!xpW[k]) xpW[k] = Math.round($("xpBody").querySelector(`th[data-col="${k}"]`).getBoundingClientRect().width); }); } };
+  fixAll(); h.classList.add("on"); document.body.style.cursor = "col-resize";
+  const mv = ev => { const w = Math.max(c === "desc" ? 120 : 48, Math.round(w0 + ev.clientX - x0)); xpW[c] = w; col.style.width = w + "px"; if (xpW.desc) tbl.style.width = 40 + 44 + XP_COLS.reduce((a, k) => a + xpColW(k), 0) + "px"; };
+  const up = () => { removeEventListener("mousemove", mv); removeEventListener("mouseup", up); h.classList.remove("on"); document.body.style.cursor = ""; try { localStorage.setItem("fleet-xpcols", JSON.stringify(xpW)); } catch {} };
+  addEventListener("mousemove", mv); addEventListener("mouseup", up);
+}
 /* Selecting and moving */
 function xpSel(r, c) {
   const prev = xpAct; xpAct = { r, c };
@@ -6651,12 +6704,15 @@ $("xpBody").addEventListener("keydown", e => {
     }
     return;
   }
-  if (e.target.id !== "xpSc" || !xpAct) return;
+  if (e.target.id !== "xpSc") return;
   const k = e.key;
+  if (!xpAct && !(xpRowSel.size && ["Delete", "Backspace", "Escape"].includes(k))) return;
   if (/^Arrow/.test(k)) { e.preventDefault(); xpMove(k === "ArrowDown" ? 1 : k === "ArrowUp" ? -1 : 0, k === "ArrowRight" ? 1 : k === "ArrowLeft" ? -1 : 0); return; }
   if (k === "Tab") { e.preventDefault(); xpMove(0, e.shiftKey ? -1 : 1); return; }
   if (k === "Enter") { e.preventDefault(); xpMove(1, 0); return; }
   if (k === "F2") { e.preventDefault(); xpOpen("edit"); return; }
+  if (xpRowSel.size && (k === "Delete" || k === "Backspace")) { e.preventDefault(); xpDeleteSel(); return; }
+  if (k === "Escape" && xpRowSel.size) { xpRowSel.clear(); xpSelUpd(); return; }
   if (k === "Delete" || k === "Backspace") {
     e.preventDefault(); const d = xpDraftOf(xpAct.r);
     if (d) { if (d.used) xpApply(xpAct.r, xpAct.c, ""); } else if (["category", "pay"].includes(xpAct.c)) toast("Choose another value instead."); else toast(`The ${XP_NAMES[xpAct.c]} cannot be empty.`);
@@ -6669,14 +6725,20 @@ $("xpBody").addEventListener("mousedown", e => {
   const it = e.target.closest(".xlist [data-i]");
   if (it) { e.preventDefault(); xpEdit.hi = +it.dataset.i; const r = xpCommit(); if (r === true) xpMove(0, 0); return; }
   if (e.target.closest("#xpEdBox")) return;
+  const rs = e.target.closest(".xrs"); if (rs) { e.preventDefault(); xpResize(rs, e); return; }
+  if (e.target.closest("th[data-xall]")) { e.preventDefault(); xpSelectAll(); return; }
   const td = e.target.closest(".xgrid td[data-c]"), rn = e.target.closest(".xgrid td.rn");
   if (!td && !rn) return;
   if (!canXp()) return;
   e.preventDefault();
   if (xpEdit && xpCommit() === false) return;
-  const tr = (td || rn).closest("tr"); xpSel(tr.dataset.r, td ? td.dataset.c : "desc");
+  const tr = (td || rn).closest("tr");
+  if (rn) { xpPickRow(tr.dataset.r, e.shiftKey, e.ctrlKey || e.metaKey); return; }
+  if (xpRowSel.size) { xpRowSel.clear(); xpSelUpd(); }
+  xpSel(tr.dataset.r, td.dataset.c);
 });
-$("xpBody").addEventListener("dblclick", e => { const td = e.target.closest(".xgrid td[data-c]"); if (td && canXp() && !xpEdit) { xpSel(td.closest("tr").dataset.r, td.dataset.c); xpOpen("edit"); } });
+$("xpBody").addEventListener("dblclick", e => {
+  const rs = e.target.closest(".xrs"); if (rs) { delete xpW[rs.dataset.rs]; try { localStorage.setItem("fleet-xpcols", JSON.stringify(xpW)); } catch {} renderExp(true); return; } const td = e.target.closest(".xgrid td[data-c]"); if (td && canXp() && !xpEdit) { xpSel(td.closest("tr").dataset.r, td.dataset.c); xpOpen("edit"); } });
 $("xpBody").addEventListener("paste", e => {
   if (!xpAct || xpEdit || !canXp()) return;
   const text = e.clipboardData?.getData("text/plain") || ""; if (!text) return;
@@ -6711,6 +6773,7 @@ document.addEventListener("mousedown", e => {
 });
 const xpGo = () => { $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus({ preventScroll: true }), 300); };
 $("xpBody").addEventListener("click", async e => {
+  if (e.target.closest("[data-xdelsel]")) { xpDeleteSel(); return; }
   if (e.target.closest("[data-xsaveall]")) {
     if (xpEdit && xpCommit() === false) return;
     const used = xpNews.filter(d => d.used); let ok = 0, bad = 0;
