@@ -1467,6 +1467,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xpedit tr.xpnew td { background: color-mix(in srgb, #f5c400 14%, var(--surface)) !important; border-top: 2px solid color-mix(in srgb, #f5c400 50%, var(--line)); }
 .xpedit tr.xpnew input, .xpedit tr.xpnew select { border-color: var(--line); background-color: var(--surface); } .xpedit tr.xpnew input::placeholder { color: var(--muted); }
 .xpclr { border: 0; background: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 8px; } .xpclr:hover { color: var(--danger); }
+.xpedit tr.xpnew:not(.used):not(:focus-within) :is(select, input[type=date]) { color: var(--muted); }
+.xpsbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line); } .xpsbar .btn { min-width: 120px; }
+.xpedit tr.xpnew + tr.xpnew td { border-top: 1px solid var(--line); } .xpedit tr.xpnew .xpclr { opacity: .35; } .xpedit tr.xpnew:hover .xpclr, .xpedit tr.xpnew:focus-within .xpclr { opacity: 1; }
 .xpmiss { padding: 4px 9px 6px; font: 600 12.5px var(--body); color: var(--danger); }
 .xpgridt.xpedit col.c1 { width: 132px; } .xpgridt.xpedit col.c3 { width: 152px; } .xpgridt.xpedit col.c4 { width: 152px; } .xpgridt.xpedit col.c5 { width: 96px; } .xpgridt.xpedit col.c6 { width: 152px; } .xpgridt.xpedit col.c7 { width: 74px; }
 .xpsheet:has(.xpedit) .xpsfoot b { padding-right: 238px; }
@@ -6368,9 +6371,9 @@ function renderExp(force) {
     const wide = !xpNarrow(1000), rows = wide ? [...list].reverse() : list, ed = wide && can;
     h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet"><div class="tscroll"><table class="ctable xptable xpgridt${ed ? " xpedit" : ""}"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
       `<thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
-      (ed ? rows.map(x => xpEditRow(x)).join("") + xpEditRow(null) :
+      (ed ? (xpFill(), rows.map(x => xpEditRow(x)).join("") + xpNews.map((d, i) => xpEditRow(null, d, i === 0)).join("")) :
       rows.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category, x.catNote)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("")) +
-      `</tbody></table></div>${rows.length || ed ? "" : none}<div data-slot="row"></div><div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
+      `</tbody></table></div>${rows.length || ed ? "" : none}<div data-slot="row"></div>${ed ? `<div class="xpsbar"><span class="sub">Type in any empty line. It saves by itself when you move to another line.</span><button type="button" class="btn primary" data-xsaveall>Save</button></div>` : ""}<div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
       `<aside class="panel xpvtab"><table><thead><tr><th>Vehicle</th><th class="n">Expense</th></tr></thead><tbody>` +
       VS.map(([k, v]) => `<tr data-xpveh="${esc(k)}" class="${xpBus === k ? "on" : ""}"><td class="num">${esc(xpKeyName(k))}</td><td class="n">${nf(v)}</td></tr>`).join("") +
       `<tr class="tot"><td>TOTAL</td><td class="n">${nf(sum(all))}</td></tr></tbody></table></aside></div>`;
@@ -6404,28 +6407,33 @@ $("xpNext").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") + 1}-04` : mon
 $("xpSeg").onclick = e => { const b = e.target.closest("button[data-v]"); if (!b) return; xpFy = b.dataset.v === "fy"; renderExp(); };
 $("xpBusF").onchange = () => { xpBus = $("xpBusF").value; renderExp(); };
 /* ---------- The sheet on a computer: every cell can be changed in place ---------- */
-let xpDeferred = false, xpNew = null, xpNewMiss = null; // xpNewMiss: why the empty row was not saved, kept across redraws
+// Ten empty lines always wait at the bottom, as in an Excel sheet. Each keeps what was typed in it, which
+// cells were chosen by hand (set) and why it was not saved (miss), so a redraw never loses anything.
+let xpDeferred = false, xpNews = [];
+const XP_BLANK = 10;
+const xpFresh = () => ({ k: Math.random().toString(36).slice(2, 9), date: xfLast.date || todayISO(), desc: "", veh: xfLast.veh, category: xfLast.category, catNote: "", pay: xfLast.pay, amount: "", set: {}, miss: null });
+const xpFill = () => { while (xpNews.length < XP_BLANK) xpNews.push(xpFresh()); };
+const xpDraft = tr => xpNews.find(d => d.k === tr?.dataset.xnew);
 const xpOpts = (list, cur) => (cur && !list.includes(cur) ? [cur, ...list] : list).map(o => `<option${o === cur ? " selected" : ""}>${esc(o)}</option>`).join("");
 function xpVehOpts(cur, x, blank) {
   const fleet = mtFleet(), extra = cur && cur.startsWith("p:") && cur !== "p:" && !fleet.some(v => v.id === cur) ? [[cur, xpKeyName(cur, x)]] : [];
   return (blank ? `<option value="">Choose…</option>` : "") + [...fleet.map(v => [v.id, plateOf(v)]), ...extra, ["p:", "Office / general"]].map(([k, n]) => `<option value="${esc(k)}"${k === cur ? " selected" : ""}>${esc(n)}</option>`).join("");
 }
-// One row of the sheet; with no expense it is the blank row at the bottom for a new one.
-function xpEditRow(x) {
-  if (!x && !xpNew) xpNew = { date: xfLast.date || todayISO(), desc: "", veh: xfLast.veh, category: xfLast.category, pay: xfLast.pay, amount: "" };
-  const v = x ? { date: x.date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "Other", catNote: x.catNote || "", pay: x.pay || "", amount: String(num(x.amount) || "") } : xpNew;
-  const bad = k => !x && xpNewMiss?.bad[k] ? " bad" : "";
-  return `<tr ${x ? `data-xe="${x.id}"` : `data-xnew class="xpnew"`}>` +
+// One line of the sheet: a saved expense, or (with a draft) one of the empty lines at the bottom.
+function xpEditRow(x, d, first) {
+  const v = x ? { date: x.date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "Other", catNote: x.catNote || "", pay: x.pay || "", amount: String(num(x.amount) || "") } : d;
+  const bad = k => !x && d.miss?.bad[k] ? " bad" : "";
+  return `<tr ${x ? `data-xe="${x.id}"` : `data-xnew="${d.k}" class="xpnew${d.desc || d.amount || d.catNote ? " used" : ""}"`}>` +
     `<td><input type="date" data-f="date" class="${bad("date")}" value="${esc(v.date)}" max="${todayISO()}" aria-label="Date"></td>` +
-    `<td><textarea data-f="desc" rows="1" class="${bad("desc")}" ${x ? "" : 'placeholder="Type a new expense here…" '}aria-label="Expense description">${esc(v.desc)}</textarea>${x ? "" : `<div class="xpmiss"${xpNewMiss ? "" : " hidden"}>${xpNewMiss ? esc(xpNewMiss.text) : ""}</div>`}</td>` +
+    `<td><textarea data-f="desc" rows="1" class="${bad("desc")}" ${first ? 'placeholder="Type a new expense here…" ' : ""}aria-label="Expense description">${esc(v.desc)}</textarea>${x ? "" : `<div class="xpmiss"${d.miss ? "" : " hidden"}>${d.miss ? esc(d.miss.text) : ""}</div>`}</td>` +
     `<td><select data-f="veh" class="${bad("veh")}" aria-label="Vehicle">${xpVehOpts(v.veh, x, !x)}</select></td>` +
-    `<td><select data-f="category" aria-label="Category">${xpOpts(XP_CATS, v.category)}</select>${xpNoteIn(v, !x)}</td>` +
+    `<td><select data-f="category" aria-label="Category">${xpOpts(XP_CATS, v.category)}</select>${xpNoteIn(v, d)}</td>` +
     `<td><input type="number" data-f="amount" class="${bad("amount")}" inputmode="numeric" min="0" value="${esc(v.amount)}" placeholder="0" aria-label="Amount"></td>` +
     `<td><select data-f="pay" aria-label="Paid by">${xpOpts(XP_PAY, v.pay)}</select></td>` +
     `<td class="xpact">${x ? `<button type="button" class="xpdel" data-xdel="${x.id}" title="Delete this expense" aria-label="Delete this expense">${TW_BIN}</button>` : `<button type="button" class="xpclr" data-xclr tabindex="-1" title="Clear this row" aria-label="Clear this row">✕</button>`}</td></tr>`;
 }
 // With "Other", a box under the category for what it was.
-const xpNoteIn = (v, isNew) => v.category === "Other" ? `<input type="text" data-f="catNote" class="xpnote${isNew && xpNewMiss?.bad.catNote ? " bad" : ""}" value="${esc(v.catNote || "")}" placeholder="Other: what was it?" aria-label="Details for Other">` : "";
+const xpNoteIn = (v, d) => v.category === "Other" ? `<input type="text" data-f="catNote" class="xpnote${d?.miss?.bad.catNote ? " bad" : ""}" value="${esc(v.catNote || "")}" placeholder="Other: what was it?" aria-label="Details for Other">` : "";
 const xpGrow = el => { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; };
 // What a row says, checked; marks the cells that need fixing.
 function xpRowVals(tr, old) {
@@ -6446,53 +6454,67 @@ async function xpCellSave(tr) {
   try { await opsSave("expenses", { ...doc, ...rxStamp() }); toast("Saved"); } catch { toast("Couldn't save. Check your connection and try again."); }
 }
 // The empty row at the bottom saves itself once it is complete and the cursor leaves it (Tab, Enter or a click elsewhere).
-const xpFresh = () => ({ date: xfLast.date || todayISO(), desc: "", veh: xfLast.veh, category: xfLast.category, catNote: "", pay: xfLast.pay, amount: "" });
 const xpTouched = tr => ["desc", "amount", "catNote"].some(k => upText(tr.querySelector(`[data-f="${k}"]`)?.value));
-function xpNewReset(tr, keep) {
-  if (!keep) { xpNew = xpFresh(); xpNewMiss = null; }
-  const t = document.createElement("tbody"); t.innerHTML = xpEditRow(null); const nr = t.firstElementChild;
-  tr.replaceWith(nr); nr.querySelectorAll("textarea").forEach(xpGrow); return nr;
+const xpRowEl = html => { const t = document.createElement("tbody"); t.innerHTML = html; const r = t.firstElementChild; requestAnimationFrame(() => r.querySelectorAll("textarea").forEach(xpGrow)); return r; }; // sized once it is on the page
+function xpNewReset(tr) {
+  const i = xpNews.findIndex(d => d.k === tr.dataset.xnew), d = xpFresh(); if (i >= 0) xpNews[i] = d;
+  const nr = xpRowEl(xpEditRow(null, d)); tr.replaceWith(nr); return nr;
 }
+// After a line is saved, the empty lines not yet used take its date, vehicle, category and paid by (unless chosen by hand).
+function xpSticky() {
+  const map = { date: xfLast.date, veh: xfLast.veh, category: xfLast.category, pay: xfLast.pay };
+  $("xpBody").querySelectorAll(".xpedit tr[data-xnew]").forEach(tr => {
+    const d = xpDraft(tr); if (!d || xpTouched(tr)) return;
+    Object.entries(map).forEach(([f, v]) => {
+      const el = tr.querySelector(`[data-f="${f}"]`); if (d.set[f] || v == null || d[f] === v || !el || el === document.activeElement) return;
+      d[f] = v; el.value = v;
+      if (f === "category") { const td = el.closest("td"), box = td.querySelector(".xpnote"); if (v === "Other" && !box) td.insertAdjacentHTML("beforeend", xpNoteIn(d, d)); if (v !== "Other" && box) box.remove(); }
+    });
+  });
+}
+// Saves one empty line when it is complete. how: "leave" (the cursor left it), "enter" or "all" (the Save button).
 async function xpNewSave(tr, how) {
-  const note = tr.querySelector(".xpmiss");
-  if (!xpTouched(tr)) { tr.querySelectorAll(".bad").forEach(e => e.classList.remove("bad")); note.hidden = true; xpNewMiss = null; return; }
+  const d = xpDraft(tr), note = tr.querySelector(".xpmiss"); if (!d || tr.dataset.saving) return "skip";
+  if (!xpTouched(tr)) { tr.querySelectorAll(".bad").forEach(e => e.classList.remove("bad")); note.hidden = true; d.miss = null; return "empty"; }
   const { v, miss, bad } = xpRowVals(tr);
   if (miss) {
-    xpNewMiss = { text: `Not saved: ${miss.replace(/^the /, "").replace(/^what the Other expense was$/, "details for Other")} missing`, bad };
-    note.textContent = xpNewMiss.text; note.hidden = false;
+    d.miss = { text: `Not saved: ${miss.replace(/^the /, "").replace(/^what the Other expense was$/, "details for Other")} missing`, bad };
+    note.textContent = d.miss.text; note.hidden = false;
     if (how === "enter") tr.querySelector(".bad")?.focus();
-    return;
+    return "missing";
   }
-  if (tr.dataset.saving) return; tr.dataset.saving = "1"; note.hidden = true; xpNewMiss = null;
+  tr.dataset.saving = "1"; note.hidden = true; d.miss = null;
   const doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: v.date, desc: v.desc, ...xpWhere(v.veh), category: v.category, ...(v.category === "Other" ? { catNote: v.catNote } : {}), pay: v.pay, amount: v.amount, createdOn: new Date().toISOString(), byName: whoAmI(), ...rxStamp() };
-  const was = { ...xpNew };
-  xfLast = { veh: v.veh, category: v.category, pay: v.pay, date: v.date }; xpNew = xpFresh(); // the next row starts like this one, as in the sheet
+  const at = xpNews.indexOf(d), last = xfLast;
+  xpNews.splice(at, 1); const fresh = xpFresh(); xpNews.push(fresh);
+  xfLast = { veh: v.veh, category: v.category, pay: v.pay, date: v.date };
   try { await opsSave("expenses", doc); }
-  catch { xpNew = was; delete tr.dataset.saving; toast("Couldn't save. Check your connection and try again."); return; }
-  toast(`Saved · ${rs(v.amount)}`);
-  // Show the saved row above and a fresh empty row, without disturbing the cell being worked on.
-  const cur = $("xpBody").querySelector(".xpedit tr[data-xnew]"); if (!cur) return;
-  if (!$("xpBody").querySelector(`tr[data-xe="${doc.id}"]`)) {
+  catch { xpNews.splice(xpNews.indexOf(fresh), 1); xpNews.splice(at, 0, d); xfLast = last; delete tr.dataset.saving; toast("Couldn't save. Check your connection and try again."); return "error"; }
+  if (how !== "all") toast(`Saved · ${rs(v.amount)}`);
+  // Move the saved line up into the list and add a fresh empty line at the end, without disturbing the cell in use.
+  const body = $("xpBody").querySelector(".xpedit tbody"); if (!body) return "saved";
+  const cur = body.querySelector(`tr[data-xnew="${d.k}"]`), next = cur?.nextElementSibling;
+  if (!body.querySelector(`tr[data-xe="${doc.id}"]`)) {
     const P = xpPeriod();
-    if (doc.date >= P.from && doc.date <= P.to && (!xpBus || mtKeyOf(doc) === xpBus)) {
-      const t = document.createElement("tbody"); t.innerHTML = xpEditRow(doc); const row = t.firstElementChild;
-      cur.before(row); row.querySelectorAll("textarea").forEach(xpGrow);
-    } else toast(`Saved in ${new Date(doc.date + "T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })} · ${rs(v.amount)}`);
+    if (doc.date >= P.from && doc.date <= P.to && (!xpBus || mtKeyOf(doc) === xpBus)) body.querySelector("tr[data-xnew]")?.before(xpRowEl(xpEditRow(doc)));
+    else toast(`Saved in ${new Date(doc.date + "T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })} · ${rs(v.amount)}`);
   }
-  const nr = cur.contains(document.activeElement) && how !== "enter" ? cur : xpNewReset(cur, true);
+  if (cur) { cur.remove(); if (!body.querySelector(`tr[data-xnew="${fresh.k}"]`)) body.append(xpRowEl(xpEditRow(null, fresh))); }
+  xpSticky();
   const away = !document.activeElement || document.activeElement === document.body || !$("xpBody").contains(document.activeElement);
-  if (how === "enter" || (away && how === "leave")) nr.querySelector('[data-f="desc"]')?.focus();
+  if (how === "enter" || (how === "leave" && away)) (next?.matches("[data-xnew]") ? next : body.querySelector("tr[data-xnew]"))?.querySelector('[data-f="desc"]')?.focus();
+  return "saved";
 }
 $("xpBody").addEventListener("change", e => {
   const tr = e.target.closest(".xpedit tr"); if (!tr || !e.target.dataset.f) return;
   if (e.target.dataset.f === "category") {
     const td = e.target.closest("td"), box = td.querySelector(".xpnote");
     if (e.target.value === "Other" && !box) { td.insertAdjacentHTML("beforeend", xpNoteIn({ category: "Other", catNote: "" })); td.querySelector(".xpnote").focus(); if (tr.dataset.xe) return; }
-    if (e.target.value !== "Other" && box) { box.remove(); if (xpNew && tr.matches("[data-xnew]")) xpNew.catNote = ""; }
+    if (e.target.value !== "Other" && box) { box.remove(); const d = xpDraft(tr); if (d) d.catNote = ""; }
   }
   if (tr.dataset.xe) xpCellSave(tr);
 });
-$("xpBody").addEventListener("input", e => { if (e.target.matches("textarea")) xpGrow(e.target); const f = e.target.dataset.f; if (f && e.target.closest("tr[data-xnew]") && xpNew) { xpNew[f] = e.target.value; e.target.classList.remove("bad"); if (xpNewMiss) delete xpNewMiss.bad[f]; } });
+$("xpBody").addEventListener("input", e => { if (e.target.matches("textarea")) xpGrow(e.target); const f = e.target.dataset.f; const d = f && xpDraft(e.target.closest("tr[data-xnew]")); if (d) { d[f] = e.target.value; d.set[f] = true; e.target.closest("tr").classList.add("used"); e.target.classList.remove("bad"); if (d.miss) delete d.miss.bad[f]; } });
 $("xpBody").addEventListener("keydown", e => {
   const tr = e.target.closest?.(".xpedit tr"); if (!tr || !e.target.dataset.f) return;
   if (e.key === "Escape" && tr.matches("[data-xnew]")) { xpNewReset(tr).querySelector('[data-f="desc"]').focus(); return; }
@@ -6511,6 +6533,13 @@ $("xpBody").addEventListener("focusout", e => {
 });
 const xpGo = () => { $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus({ preventScroll: true }), 300); };
 $("xpBody").addEventListener("click", async e => {
+  if (e.target.closest("[data-xsaveall]")) {
+    document.activeElement?.blur?.(); await new Promise(r => setTimeout(r, 30)); // finishes the cell being typed in
+    const rows = [...$("xpBody").querySelectorAll(".xpedit tr[data-xnew]")]; let ok = 0, bad = 0;
+    for (const tr of rows) { const r = await xpNewSave(tr, "all"); if (r === "saved") ok++; if (r === "missing") bad++; }
+    toast(bad ? `${ok ? `${ok} saved. ` : ""}${bad} line${bad > 1 ? "s" : ""} not saved: fill the red cells.` : ok ? `${ok} expense${ok > 1 ? "s" : ""} saved` : "Everything is saved.");
+    return;
+  }
   const clr = e.target.closest("[data-xclr]"); if (clr) { xpNewReset(clr.closest("tr")).querySelector('[data-f="desc"]').focus(); return; }
   const del = e.target.closest("[data-xdel]");
   if (del) {
