@@ -1449,6 +1449,20 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xps > .xpsheet { grid-column: 1; grid-row: 2; overflow: hidden; } .xps > .xpvtab { grid-column: 2; grid-row: 2; overflow: hidden; }
 .xpgridt { table-layout: fixed; } .xpgridt col.c1 { width: 112px; } .xpgridt col.c3 { width: 128px; } .xpgridt col.c4 { width: 136px; } .xpgridt col.c5 { width: 96px; } .xpgridt col.c6 { width: 128px; } .xpgridt col.c7 { width: 80px; } .xpgridt td:nth-child(2) { min-width: 0; }
 .xpgridt th, .xpgridt td { border-right: 1px solid var(--line); } .xpgridt tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--accent) 3%, var(--surface)); } .xpgridt tbody tr.on td { background: var(--accent-soft); }
+/* Editable sheet */
+.xpedit td { padding: 0 !important; } .xpedit tbody tr:hover td { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+.xpedit input, .xpedit select { width: 100%; height: 40px; box-sizing: border-box; padding: 0 9px; border: 1px solid transparent; border-radius: 0; background: transparent; color: var(--ink); font: 14px var(--body); }
+.xpedit select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 22px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 13px) 18px, calc(100% - 8px) 18px; background-size: 5px 5px; background-repeat: no-repeat; }
+.xpedit input[type=date] { font: 13px var(--mono); padding: 0 6px; } .xpedit input[type=number] { text-align: right; font-family: var(--mono); } .xpedit input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.xpedit input:hover, .xpedit select:hover { border-color: var(--line); }
+.xpedit input:focus, .xpedit select:focus { outline: none; border-color: var(--accent); background-color: var(--surface); box-shadow: inset 0 0 0 1px var(--accent); }
+.xpedit .bad { border-color: var(--danger) !important; box-shadow: inset 0 0 0 1px var(--danger); }
+.xpedit .xpact { text-align: center; } .xpdel { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 6px; display: inline-grid; place-items: center; } .xpdel:hover { color: var(--danger); } .xpdel svg { width: 18px; height: 18px; }
+.xpedit tr.xpnew td { background: color-mix(in srgb, #f5c400 14%, var(--surface)) !important; border-top: 2px solid color-mix(in srgb, #f5c400 50%, var(--line)); }
+.xpedit tr.xpnew input, .xpedit tr.xpnew select { border-color: var(--line); background-color: var(--surface); } .xpedit tr.xpnew input::placeholder { color: var(--muted); }
+.xpadd { height: 34px; padding: 0 10px; margin: 0 4px; font-size: 13px; white-space: nowrap; }
+.xpgridt.xpedit col.c1 { width: 132px; } .xpgridt.xpedit col.c3 { width: 152px; } .xpgridt.xpedit col.c4 { width: 152px; } .xpgridt.xpedit col.c5 { width: 96px; } .xpgridt.xpedit col.c6 { width: 152px; } .xpgridt.xpedit col.c7 { width: 74px; }
+.xpsheet:has(.xpedit) .xpsfoot b { padding-right: 238px; }
 .xpsfoot { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--accent-soft); font-weight: 700; } .xpsfoot b { font-family: var(--mono); padding-right: 218px; }
 .xpvtab table { width: 100%; border-collapse: collapse; } .xpvtab th, .xpvtab td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13.5px; }
 .xpvtab th { font: 600 11.5px var(--mono); text-transform: uppercase; color: var(--muted); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); } .xpvtab .n { text-align: right; font-family: var(--mono); }
@@ -6325,7 +6339,7 @@ const xpPeriod = () => xpFy ? { from: `${fyOf(xpYm + "-01")}-04-01`, to: `${fyOf
 const XP_CC = { "Maintenance": "xc1", "Loan repayment": "xc2", "Quarter tax": "xc3", "Insurance": "xc4", "Permit / FC": "xc6", "Salary / padi": "xc7", "Other": "xc5" };
 const xpTag = c => `<span class="xptag ${XP_CC[c] || "xc5"}">${esc(c || "Other")}</span>`;
 const xpNarrow = w => matchMedia(`(max-width: ${w}px)`).matches;
-function renderExp() {
+function renderExp(force) {
   const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to), can = canXp();
   const list = all.filter(x => !xpBus || mtKeyOf(x) === xpBus).sort((a, b) => b.date.localeCompare(a.date) || String(b.createdOn || "").localeCompare(String(a.createdOn || "")));
   $("xpPer").textContent = P.label; $("xpRoTag").hidden = can;
@@ -6343,21 +6357,29 @@ function renderExp() {
   let h, slot;
   {
     // Like the Excel sheet: oldest first, the new row at the bottom, vehicle totals at the side.
-    const wide = !xpNarrow(1000), rows = wide ? [...list].reverse() : list;
-    h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet"><div class="tscroll"><table class="ctable xptable xpgridt"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
+    const wide = !xpNarrow(1000), rows = wide ? [...list].reverse() : list, ed = wide && can;
+    h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet"><div class="tscroll"><table class="ctable xptable xpgridt${ed ? " xpedit" : ""}"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
       `<thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
-      rows.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("") +
-      `</tbody></table></div>${rows.length ? "" : none}<div data-slot="row"></div><div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
+      (ed ? rows.map(x => xpEditRow(x)).join("") + xpEditRow(null) :
+      rows.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("")) +
+      `</tbody></table></div>${rows.length || ed ? "" : none}<div data-slot="row"></div>${ed ? `<datalist id="xpDescs">${[...new Set(ops.expenses.map(e => e.desc).filter(Boolean))].slice(-300).map(d => `<option value="${esc(d)}">`).join("")}</datalist>` : ""}<div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
       `<aside class="panel xpvtab"><table><thead><tr><th>Vehicle</th><th class="n">Expense</th></tr></thead><tbody>` +
       VS.map(([k, v]) => `<tr data-xpveh="${esc(k)}" class="${xpBus === k ? "on" : ""}"><td class="num">${esc(xpKeyName(k))}</td><td class="n">${nf(v)}</td></tr>`).join("") +
       `<tr class="tot"><td>TOTAL</td><td class="n">${nf(sum(all))}</td></tr></tbody></table></aside></div>`;
-    slot = wide ? "row" : "top";
+    slot = ed ? "" : wide ? "row" : "top";
   }
+  // While a cell is being edited, only the totals are refreshed; the sheet is redrawn when the cursor leaves it.
+  if (!force && document.activeElement?.closest?.("#xpBody .xpedit")) {
+    const t = document.createElement("div"); t.innerHTML = h; xpDeferred = true;
+    ["xpvtab", "xpsfoot"].forEach(c => $("xpBody").querySelector("." + c)?.replaceWith(t.querySelector("." + c)));
+    return;
+  }
+  xpDeferred = false;
   // The entry form is one element moved into place, so whatever is being typed stays.
   const F = $("xpForm"), act = F.contains(document.activeElement) ? document.activeElement : null;
   $("xpBody").innerHTML = h;
-  F.className = `panel xpform xpyel f-${slot}${xpEd ? " ed" : ""}`; F.hidden = !can;
-  if (can) {
+  F.className = `panel xpform xpyel f-${slot}${xpEd ? " ed" : ""}`; F.hidden = !can || !slot;
+  if (can && slot) {
     $("xpBody").querySelector(`[data-slot="${slot}"]`).appendChild(F);
     if (!$("xfDate")) xfRender(null); else if (document.activeElement !== $("xfVeh")) xfVehOpts();
     if (act && document.contains(act)) act.focus({ preventScroll: true });
@@ -6372,8 +6394,72 @@ $("xpPrev").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") - 1}-04` : mon
 $("xpNext").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") + 1}-04` : monthShift(xpYm, 1); renderExp(); };
 $("xpSeg").onclick = e => { const b = e.target.closest("button[data-v]"); if (!b) return; xpFy = b.dataset.v === "fy"; renderExp(); };
 $("xpBusF").onchange = () => { xpBus = $("xpBusF").value; renderExp(); };
+/* ---------- The sheet on a computer: every cell can be changed in place ---------- */
+let xpDeferred = false, xpNew = null;
+const xpOpts = (list, cur) => (cur && !list.includes(cur) ? [cur, ...list] : list).map(o => `<option${o === cur ? " selected" : ""}>${esc(o)}</option>`).join("");
+function xpVehOpts(cur, x, blank) {
+  const fleet = mtFleet(), extra = cur && cur.startsWith("p:") && cur !== "p:" && !fleet.some(v => v.id === cur) ? [[cur, xpKeyName(cur, x)]] : [];
+  return (blank ? `<option value="">Choose…</option>` : "") + [...fleet.map(v => [v.id, plateOf(v)]), ...extra, ["p:", "Office / general"]].map(([k, n]) => `<option value="${esc(k)}"${k === cur ? " selected" : ""}>${esc(n)}</option>`).join("");
+}
+// One row of the sheet; with no expense it is the blank row at the bottom for a new one.
+function xpEditRow(x) {
+  if (!x && !xpNew) xpNew = { date: xfLast.date || todayISO(), desc: "", veh: xfLast.veh, category: xfLast.category, pay: xfLast.pay, amount: "" };
+  const v = x ? { date: x.date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "Other", pay: x.pay || "", amount: String(num(x.amount) || "") } : xpNew;
+  return `<tr ${x ? `data-xe="${x.id}"` : `data-xnew class="xpnew"`}>` +
+    `<td><input type="date" data-f="date" value="${esc(v.date)}" max="${todayISO()}" aria-label="Date"></td>` +
+    `<td><input type="text" data-f="desc" list="xpDescs" maxlength="160" value="${esc(v.desc)}" ${x ? `title="${esc(v.desc)}" ` : 'placeholder="Type a new expense here…" '}autocomplete="off" aria-label="Expense description"></td>` +
+    `<td><select data-f="veh" aria-label="Vehicle">${xpVehOpts(v.veh, x, !x)}</select></td>` +
+    `<td><select data-f="category" aria-label="Category">${xpOpts(XP_CATS, v.category)}</select></td>` +
+    `<td><input type="number" data-f="amount" inputmode="numeric" min="0" value="${esc(v.amount)}" placeholder="0" aria-label="Amount"></td>` +
+    `<td><select data-f="pay" aria-label="Paid by">${xpOpts(XP_PAY, v.pay)}</select></td>` +
+    `<td class="xpact">${x ? `<button type="button" class="xpdel" data-xdel="${x.id}" title="Delete this expense" aria-label="Delete this expense">${TW_BIN}</button>` : `<button type="button" class="btn primary xpadd" data-xadd title="Add this expense">+ Add</button>`}</td></tr>`;
+}
+// What a row says, checked; marks the cells that need fixing.
+function xpRowVals(tr) {
+  const g = k => tr.querySelector(`[data-f="${k}"]`), v = { date: g("date").value, desc: upText(g("desc").value), veh: g("veh").value, category: g("category").value, pay: g("pay").value, amount: Math.round(num(g("amount").value)) };
+  const bad = { date: !v.date, desc: !v.desc, veh: !v.veh, amount: !v.amount };
+  Object.entries(bad).forEach(([k, b]) => g(k).classList.toggle("bad", b));
+  const miss = bad.date ? "the date" : bad.desc ? "the expense description" : bad.veh ? "the vehicle" : bad.amount ? "the amount" : "";
+  return { v, miss };
+}
+const xpWhere = (veh, old) => veh === "p:" ? { vehicleId: "", plate: "" } : veh.startsWith("p:") ? { vehicleId: "", plate: old?.plate || veh.slice(2) } : { vehicleId: veh, plate: "" };
+async function xpCellSave(tr) {
+  const old = ops.expenses.find(x => x.id === tr.dataset.xe); if (!old) return;
+  const { v, miss } = xpRowVals(tr); if (miss) { toast(`Type ${miss} — this row is not saved yet.`); return; }
+  const doc = { ...old, date: v.date, desc: v.desc, ...xpWhere(v.veh, old), category: v.category, pay: v.pay, amount: v.amount };
+  if (["date", "desc", "vehicleId", "plate", "category", "pay", "amount"].every(k => (doc[k] ?? "") === (old[k] ?? ""))) return;
+  try { await opsSave("expenses", { ...doc, ...rxStamp() }); toast("Saved"); } catch { toast("Couldn't save. Check your connection and try again."); }
+}
+async function xpNewAdd(tr) {
+  const { v, miss } = xpRowVals(tr); if (miss) { toast(`Type ${miss}.`); tr.querySelector(".bad")?.focus(); return; }
+  const doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: v.date, desc: v.desc, ...xpWhere(v.veh), category: v.category, pay: v.pay, amount: v.amount, createdOn: new Date().toISOString(), byName: whoAmI(), ...rxStamp() };
+  const b = tr.querySelector("[data-xadd]"); if (b) b.disabled = true;
+  try {
+    await opsSave("expenses", doc); toast(`Expense added · ${rs(v.amount)}`);
+    xfLast = { veh: v.veh, category: v.category, pay: v.pay, date: v.date }; xpNew = null; // the next row starts like this one, as in the sheet
+    if (!xpFy) xpYm = v.date.slice(0, 7);
+    renderExp(true); $("xpBody").querySelector('[data-xnew] [data-f="desc"]')?.focus();
+  } catch { if (b) b.disabled = false; toast("Couldn't save. Check your connection and try again."); }
+}
+$("xpBody").addEventListener("change", e => { const tr = e.target.closest("tr[data-xe]"); if (tr && e.target.dataset.f) xpCellSave(tr); });
+$("xpBody").addEventListener("input", e => { const f = e.target.dataset.f; if (f && e.target.closest("tr[data-xnew]") && xpNew) { xpNew[f] = e.target.value; e.target.classList.remove("bad"); } });
+$("xpBody").addEventListener("keydown", e => {
+  const tr = e.target.closest?.(".xpedit tr"); if (!tr || e.key !== "Enter" || !e.target.dataset.f) return;
+  e.preventDefault();
+  if (tr.matches("[data-xnew]")) { xpNewAdd(tr); return; }
+  // Enter moves down to the same column, as in Excel.
+  const next = tr.nextElementSibling?.querySelector(`[data-f="${e.target.dataset.f}"]`); next ? next.focus() : e.target.blur();
+});
+$("xpBody").addEventListener("focusout", () => setTimeout(() => { if (xpDeferred && !document.activeElement?.closest?.("#xpBody .xpedit")) renderExp(true); }, 0));
 const xpGo = () => { $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus({ preventScroll: true }), 300); };
-$("xpBody").addEventListener("click", e => {
+$("xpBody").addEventListener("click", async e => {
+  const add = e.target.closest("[data-xadd]"); if (add) { xpNewAdd(add.closest("tr")); return; }
+  const del = e.target.closest("[data-xdel]");
+  if (del) {
+    const x = ops.expenses.find(y => y.id === del.dataset.xdel); if (!x) return;
+    if (!await askYesNo(`Delete "${x.desc}" (${rs(num(x.amount))})?`, { yes: "Yes, delete", danger: true })) return;
+    try { await opsDelete("expenses", x.id); toast("Expense deleted"); renderExp(true); } catch { toast("Couldn't delete. Try again."); } return;
+  }
   const vb = e.target.closest("[data-xpveh]"); if (vb) { xpBus = xpBus === vb.dataset.xpveh ? "" : vb.dataset.xpveh; renderExp(); return; }
   const r = e.target.closest("[data-xp]"), x = r && ops.expenses.find(y => y.id === r.dataset.xp);
   if (x && canXp()) { xfRender(x); renderExp(); xpGo(); }
