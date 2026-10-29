@@ -1453,7 +1453,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 #view-texp { padding-block: 16px 14px; gap: 12px; }
 @media (min-width: 1001px) { html:has(#view-texp:not([hidden])) { overflow: hidden; } } /* only the sheet scrolls */
 #view-texp .xphead { align-items: center; justify-content: flex-start; gap: 10px 22px; } #view-texp .xphead h1 { margin: 0; }
-#view-texp .xphead .tcontrols { align-items: center; } #view-texp .xphead .mclose { margin-left: auto; }
+#view-texp .xphead .tcontrols { align-items: center; } #view-texp .xphead .xpviewbtn { margin-left: auto; } @media (max-width: 1000px) { #view-texp .xpviewbtn { display: none; } #view-texp .xphead .mclose { margin-left: auto; } }
 .xsum { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
 .xsum > * { min-width: 140px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; }
 .xsum button { cursor: pointer; } .xsum button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
@@ -1494,6 +1494,18 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xlist { position: absolute; left: 0; top: 100%; min-width: 100%; width: max-content; max-width: 280px; max-height: 240px; overflow: auto; margin-top: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
 .xlist div { padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; } .xlist div.h { background: var(--accent-soft); font-weight: 700; } .xlist p { margin: 4px 8px; color: var(--muted); font-size: 13px; }
 .xe-veh .xlist div { font-family: var(--mono); font-size: 13px; }
+.xmon { color: var(--accent); font-weight: 700; margin-right: 5px; } .xdupt { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 99px; background: color-mix(in srgb, #f5a400 22%, var(--surface)); color: var(--ink); font: 600 11.5px var(--body); white-space: nowrap; }
+.xbill { border: 0; background: none; cursor: pointer; padding: 0 2px; margin-left: 6px; font-size: 13px; opacity: 0; vertical-align: baseline; color: var(--ink); } .xgrid tr:hover .xbill { opacity: .45; } .xgrid .xbill:hover { opacity: 1 !important; } .xbill.on { opacity: 1 !important; font-weight: 700; }
+.xbillpop { width: 300px; } .xbh { display: block; padding: 2px 4px 8px; font-size: 13.5px; } .xblist { display: grid; gap: 6px; margin-bottom: 8px; max-height: 260px; overflow: auto; }
+.xbrow { display: flex; align-items: center; gap: 8px; } .xbrow .filelink { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
+.xbthumb { width: 40px; height: 40px; flex: none; border-radius: 6px; overflow: hidden; display: grid; place-items: center; background: var(--accent-soft); font: 700 11px var(--mono); color: var(--accent); } .xbthumb img { width: 100%; height: 100%; object-fit: cover; }
+.xbrm { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 15px; } .xbrm:hover { color: var(--danger); } .xbadd { display: flex; justify-content: center; }
+.xmonbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: -2px 0 10px; padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 10px; background: var(--accent-soft); font-size: 13.5px; }
+.xmonbar .xmonl { color: var(--muted); flex: 1; min-width: 160px; } .xmonbar .btn { padding: 5px 12px; }
+.xundo { border-color: var(--accent); color: var(--accent); font-weight: 700; } .xdupb { border-color: #f5a400; } .xdupb.on { background: color-mix(in srgb, #f5a400 22%, var(--surface)); }
+.xftot .btn { padding-block: 6px; } .xftot { flex-wrap: nowrap; }
+.xsumview { overflow: auto; display: grid; gap: 12px; align-content: start; } .xsumtab { margin: 0; } table.ctable.xmtab td, table.ctable.xmtab th { padding: 6px 4px; } table.ctable.xmtab td.n { font-size: 11.5px; } table.ctable.xmtab td:first-child, table.ctable.xmtab th:first-child { padding-left: 8px; } table.ctable.xmtab td:last-child, table.ctable.xmtab th:last-child { padding-right: 8px; } .xneg { color: var(--danger); }
+.xcm { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; text-decoration: underline dotted color-mix(in srgb, var(--accent) 50%, transparent); } .xcm:hover { color: var(--accent); }
 .xfoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 12px; border-top: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); font-size: 13.5px; color: var(--muted); }
 .xftot { display: flex; align-items: center; gap: 18px; } .xfl { display: flex; align-items: center; gap: 12px; } .xftot b { color: var(--ink); font: 700 16px var(--mono); } .xfoot .btn { min-width: 110px; padding-block: 6px; } .xbadtxt { color: var(--danger); font-weight: 600; }
 .xpsfoot { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--accent-soft); font-weight: 700; } .xpsfoot b { font-family: var(--mono); padding-right: 218px; }
@@ -2476,6 +2488,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tcontrols">
           <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous year">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next year">›</button></div>
         </div>
+        <button class="btn xpviewbtn" type="button" id="xpViewBtn">📊 Summary</button>
         <a class="btn mclose" href="#home" aria-label="Close">Close ✕</a>
       </header>
       <div class="xpbody" id="xpBody"></div>
@@ -6367,10 +6380,12 @@ let xpYm = todayISO().slice(0, 7), xpEd = null;
 const xpFy = true;
 const xpPeriod = () => ({ from: `${fyOf(xpYm + "-01")}-04-01`, to: `${fyOf(xpYm + "-01") + 1}-03-31`, label: `FY ${fyLabel(fyOf(xpYm + "-01"))}` });
 var xpSort = { c: "date", dir: 1 }, xpFilt = {};
-const xpFiltOn = () => Object.values(xpFilt).some(v => v && (v.size || (typeof v === "string" && v)));
+const xpFiltOn = () => Object.values(xpFilt).some(v => v === true || (v && (v.size || (typeof v === "string" && v))));
+const xpDupKey = x => `${x.date}|${mtKeyOf(x)}|${num(x.amount)}`;
+var xpDups = new Set();
 function xpPass(x) {
   const f = xpFilt;
-  return (!f.date || f.date.has(x.date.slice(0, 7))) && (!f.veh || f.veh.has(mtKeyOf(x))) && (!f.category || f.category.has(x.category || "")) && (!f.pay || f.pay.has(x.pay || "")) &&
+  return (!f.dup || xpDups.has(xpDupKey(x))) && (!f.date || f.date.has(x.date.slice(0, 7))) && (!f.veh || f.veh.has(mtKeyOf(x))) && (!f.category || f.category.has(x.category || "")) && (!f.pay || f.pay.has(x.pay || "")) &&
     (!f.desc || String(x.desc || "").toLowerCase().includes(f.desc.toLowerCase()));
 }
 const xpOnlyVeh = () => xpFilt.veh?.size === 1 ? [...xpFilt.veh][0] : "";
@@ -6380,6 +6395,8 @@ const xpCatTxt = x => x.category === "Other" && x.catNote ? `Other: ${x.catNote}
 const xpNarrow = w => matchMedia(`(max-width: ${w}px)`).matches;
 function renderExp(force) {
   const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to), can = canXp();
+  { const n = new Map(); all.forEach(x => { const k = xpDupKey(x); n.set(k, (n.get(k) || 0) + 1); }); xpDups = new Set([...n].filter(([, c]) => c > 1).map(([k]) => k)); }
+  if (!xpDups.size) delete xpFilt.dup;
   const list = all.filter(xpPass).sort((a, b) => b.date.localeCompare(a.date) || String(b.createdOn || "").localeCompare(String(a.createdOn || "")));
   $("xpPer").textContent = P.label; $("xpRoTag").hidden = can;
   const sum = a => a.reduce((s, x) => s + num(x.amount), 0), byVeh = new Map();
@@ -6391,6 +6408,8 @@ function renderExp(force) {
   const tip = can ? ' title="Tap to change" style="cursor:pointer"' : "";
   if (!xpNarrow(1000)) {
     const F = $("xpForm"); if (F) { F.hidden = true; $("view-texp").appendChild(F); }
+    $("xpViewBtn").textContent = xpView === "summary" ? "▦ Back to the sheet" : "📊 Summary";
+    if (xpView === "summary") { xpSummaryRender({ P, all, VS, sum }); return; }
     xpGridRender({ P, all, list, VS, sum, can, force }); return;
   }
   // Phone and narrow windows: the list, with the entry box on top.
@@ -6416,6 +6435,7 @@ function xpKeyName(k, x) {
   const v = mtVehOf(k); if (v) return plateOf(v);
   const r = x || ops.expenses.find(e => mtKeyOf(e) === k); return r?.plate || (k === "p:" ? "Office / general" : k.replace(/^p:/, ""));
 }
+$("xpViewBtn").onclick = () => { xpView = xpView === "summary" ? "sheet" : "summary"; xpScrollEnd = true; xpMenuClose(); renderExp(true); };
 $("xpPrev").onclick = () => { xpScrollEnd = true; xpYm = `${fyOf(xpYm + "-01") - 1}-04`; delete xpFilt.date; renderExp(); };
 $("xpNext").onclick = () => { xpScrollEnd = true; xpYm = `${fyOf(xpYm + "-01") + 1}-04`; delete xpFilt.date; renderExp(); };
 /* ---------- The sheet on a computer: works like an Excel sheet ----------
@@ -6447,7 +6467,12 @@ function xpCellInner(c, v, d) {
   if (d && !d.used && c === "desc" && xpNews.find(y => !y.used) === d) return `<span class="xghost">Start typing a new expense…</span>`;
   let t = "";
   if (c === "date") t = v.date ? esc(xpDateTxt(v.date)) : "";
-  else if (c === "desc") t = esc(v.desc || "");
+  else if (c === "desc") {
+    const x = v.x;
+    t = (x?.monthly ? `<span class="xmon" title="Repeats every month">↻</span>` : d?.monthly ? `<span class="xmon" title="Monthly payment">↻</span>` : "") + esc(v.desc || "") +
+      (x && xpDups.has(xpDupKey(x)) ? ` <span class="xdupt" title="Another line has the same date, vehicle and amount">⚠ duplicate?</span>` : "") +
+      (x ? `<button type="button" class="xbill${x.bills?.length ? " on" : ""}" data-xbill="${x.id}" title="${x.bills?.length ? `${x.bills.length} bill${x.bills.length > 1 ? "s" : ""} attached` : "Attach a bill"}">📎${x.bills?.length > 1 ? x.bills.length : ""}</button>` : "");
+  }
   else if (c === "veh") t = v.veh !== "" && v.veh != null ? esc(xpKeyName(v.veh, v.x)) : "";
   else if (c === "category") t = v.category ? xpTag(v.category, v.catNote) : "";
   else if (c === "amount") t = v.amount !== "" && v.amount != null ? nf(num(v.amount)) : "";
@@ -6480,12 +6505,14 @@ function xpGridRender(o) {
   if (can) xpFill();
   xpRowsNow = [...xpSorted(list).map(x => "e:" + x.id), ...(can ? xpNews.map(d => "n:" + d.k) : [])];
   const strip = `<div class="xsum"><button type="button" class="t${xpFilt.veh ? " off" : ""}" data-xpveh="" title="Show all vehicles"><small>${xpFilt.veh ? "◂ All vehicles" : `All vehicles · ${esc(P.label)}`}</small><b>${rs(sum(all))}</b></button>` +
-    VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpOnlyVeh() === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>`;
-  const foot = `<div class="xfoot"><span class="xfl"><span id="xpSelAct">${xpSelHtml()}</span><span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot">Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
+    VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpOnlyVeh() === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>` + (can ? xpMonBar(P) : "");
+  const dupB = xpDups.size ? `<button type="button" class="btn xdupb${xpFilt.dup ? " on" : ""}" data-xdups title="${xpFilt.dup ? "Show all lines again" : "Show only the lines that look like duplicates"}">⚠ ${[...ops.expenses].filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x))).length} possible duplicates${xpFilt.dup ? " ✕" : ""}</button>` : "";
+  const foot = `<div class="xfoot"><span class="xfl"><span id="xpUndo">${xpUndoHtml()}</span><span id="xpSelAct">${xpSelHtml()}</span>${dupB}<span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot"><button type="button" class="btn" data-xexcel title="Download what is shown as an Excel file">⬇ Excel</button>Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
   // While a cell is open for typing, only the totals are refreshed; the sheet is redrawn when it closes.
   if (!force && xpEdit && $("xpSc")) {
     xpDeferred = true; const t = document.createElement("div"); t.innerHTML = strip + foot;
     $("xpBody").querySelector(".xsum")?.replaceWith(t.querySelector(".xsum")); $("xpBody").querySelector(".xfoot")?.replaceWith(t.querySelector(".xfoot"));
+    const mb = $("xpBody").querySelector(".xmonbar"), nb = t.querySelector(".xmonbar"); if (mb && nb) mb.replaceWith(nb); else if (mb) mb.remove();
     return;
   }
   xpDeferred = false; xpEdit = null;
@@ -6495,7 +6522,7 @@ function xpGridRender(o) {
   $("xpBody").innerHTML = strip + `<section class="xsheet"><div class="xsc" id="xpSc"${can ? ' tabindex="0"' : ""}><table class="xgrid"><colgroup><col class="g0">${XP_COLS.map(c => `<col data-col="${c}"${xpColW(c) ? ` style="width:${xpColW(c)}px"` : ""}>`).join("")}</colgroup>` +
     `<thead><tr><th class="rn"${can ? ' title="Select all lines" data-xall' : ""}></th>` + XP_COLS.map(c => `<th data-col="${c}" class="${c === "amount" ? "n " : ""}${xpFilt[c] && (xpFilt[c].size || typeof xpFilt[c] === "string") ? "xfon" : ""}" title="Sort or filter">${XP_HEAD[c]}${xpSort.c === c ? `<span class="xsrt">${xpSort.dir > 0 ? "▲" : "▼"}</span>` : ""}<span class="xfi" aria-hidden="true">${xpFilt[c] ? "⏷" : "▾"}</span>${c === "desc" ? "" : `<span class="xrs" data-rs="${c}" title="Drag to change the width · double-click to reset"></span>`}</th>`).join("") + `</tr></thead><tbody>` +
     xpRowsNow.map((r, i) => xpRowHtml(r, i, can)).join("") + `</tbody></table>` +
-    (list.length || can ? "" : none) +
+    (list.length || can ? "" : `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpFiltOn() ? " match the filter" : ""}.</p>`) +
     `<div class="xed" id="xpEdBox" hidden></div></div>` + foot + `</section>`;
   const sc = $("xpSc"); xpFit();
   if (xpScrollEnd) { sc.scrollTop = sc.scrollHeight; xpScrollEnd = false; } else sc.scrollTop = top;
@@ -6568,6 +6595,135 @@ document.addEventListener("input", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("xpMenu")) { xpMenuClose(); return; } if (e.key === "Enter" && e.target.id === "xpMq") { xpMenuApply(); xpMenuClose(); } });
 document.addEventListener("mousedown", e => { const m = $("xpMenu"); if (m && !m.contains(e.target) && !e.target.closest?.(".xgrid th[data-col]")) xpMenuClose(); });
 addEventListener("hashchange", xpMenuClose);
+var xpView = "sheet", xpUndo = null, xpUndoT = 0, xpInc = null;
+/* Undo: the last delete, change or new line can be taken back for 20 seconds (or with Ctrl+Z). */
+function xpUndoSet(label, run) { xpUndo = { label, run }; clearTimeout(xpUndoT); xpUndoT = setTimeout(() => { xpUndo = null; if ($("xpUndo")) $("xpUndo").innerHTML = ""; }, 20000); if ($("xpUndo")) $("xpUndo").innerHTML = xpUndoHtml(); }
+const xpUndoHtml = () => xpUndo ? `<button type="button" class="btn xundo" data-xundo title="Ctrl+Z">↶ ${esc(xpUndo.label)}</button>` : "";
+async function xpUndoRun() { const u = xpUndo; if (!u) return; xpUndo = null; clearTimeout(xpUndoT); if ($("xpUndo")) $("xpUndo").innerHTML = ""; try { await u.run(); toast("Done: put back as it was"); } catch { toast("Couldn't undo. Check your connection."); } renderExp(true); }
+
+/* Download what the sheet shows (filters and sort included) as an Excel file. */
+async function xpExcel() {
+  const P = xpPeriod(), list = xpSorted(ops.expenses.filter(x => x.date >= P.from && x.date <= P.to && xpPass(x)));
+  if (!list.length) { toast("Nothing to download: no lines are shown."); return; }
+  const S = XL.S, ws = XL.sheet("Expenses"), H = [["Date", 12], ["Description", 46], ["Vehicle Number", 17], ["Category", 22], ["Payment Type", 16], ["Amount", 13]];
+  H.forEach(([h, w], i) => { XL.put(ws, `${XL.col(i)}1`, h, S.head); ws.widths[XL.col(i)] = w; });
+  list.forEach((x, i) => { const r = i + 2; XL.put(ws, `A${r}`, { d: x.date }, S.date); XL.put(ws, `B${r}`, x.desc || "", S.text); XL.put(ws, `C${r}`, xpKeyName(mtKeyOf(x), x), S.text);
+    XL.put(ws, `D${r}`, xpCatTxt(x), S.text); XL.put(ws, `E${r}`, x.pay || "", S.text); XL.put(ws, `F${r}`, num(x.amount), S.int); });
+  const t = list.length + 2; XL.put(ws, `E${t}`, "Total", S.ttext); XL.put(ws, `F${t}`, list.reduce((a, x) => a + num(x.amount), 0), S.tint, `SUM(F2:F${t - 1})`); ws.freeze = 1;
+  const filename = `expenses-FY${fyLabel(fyOf(P.from))}${xpFiltOn() ? "-filtered" : ""}.xlsx`;
+  try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } await dl.save({ filename, data: XL.build([ws]) }); toast(`Saved ${filename} · ${list.length} lines`); }
+  catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."); }
+}
+
+/* Monthly payments: lines marked ↻ are offered again each new month. */
+function xpMonDue(P) {
+  const ym = todayISO().slice(0, 7); if (!(ym + "-01" >= P.from && ym + "-01" <= P.to)) return [];
+  let skip = ""; try { skip = localStorage.getItem("fleet-xpmon-skip") || ""; } catch {}
+  if (skip === ym) return [];
+  const last = new Map(); ops.expenses.filter(x => x.monthly || x.series).forEach(x => { const k = x.series || x.id, c = last.get(k); if (!c || x.date > c.date) last.set(k, x); });
+  const open = new Set(xpNews.filter(d => d.series).map(d => d.series));
+  return [...last.entries()].filter(([k, x]) => x.monthly && x.date.slice(0, 7) < ym && !open.has(k)).map(([k, x]) => ({ k, x }));
+}
+function xpMonBar(P) {
+  const due = xpMonDue(P); if (!due.length) return "";
+  const ym = todayISO().slice(0, 7), tot = due.reduce((a, d) => a + num(d.x.amount), 0);
+  return `<div class="xmonbar">↻ <b>${due.length} monthly payment${due.length > 1 ? "s" : ""}</b> not entered yet for ${new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })} (${rs(tot)}): ` +
+    `<span class="xmonl">${due.slice(0, 4).map(d => esc(d.x.desc)).join(", ")}${due.length > 4 ? ` and ${due.length - 4} more` : ""}</span>` +
+    `<button type="button" class="btn primary" data-xmonadd>Add them to the sheet</button><button type="button" class="btn" data-xmonno>Not this month</button></div>`;
+}
+function xpMonAdd() {
+  const due = xpMonDue(xpPeriod()), today = todayISO(), ym = today.slice(0, 7);
+  due.forEach(({ k, x }) => {
+    const day = Math.min(+x.date.slice(8, 10), daysIn(ym)), date = `${ym}-${pad2(day)}` > today ? today : `${ym}-${pad2(day)}`;
+    const d = Object.assign(xpBlank(), { date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "", catNote: x.catNote || "", pay: x.pay || "", amount: num(x.amount) || "", used: true, monthly: true, series: k });
+    const i = xpNews.findIndex(y => !y.used); if (i >= 0) xpNews[i] = d; else xpNews.push(d);
+  });
+  xpFill(); xpScrollEnd = true; renderExp(true);
+  toast(`${due.length} line${due.length > 1 ? "s" : ""} added at the bottom (yellow). Check the dates and amounts, then press Save.`);
+}
+
+/* Bills: photos or PDFs attached to a line (📎 in the description). */
+function xpBillClose() { $("xpBillPop")?.remove(); }
+function xpBillOpen(id, btn) {
+  xpBillClose(); xpMenuClose();
+  const x = ops.expenses.find(y => y.id === id); if (!x) return; const can = canXp(), bills = x.bills || [];
+  const m = document.createElement("div"); m.id = "xpBillPop"; m.className = "xmenu xbillpop"; m.dataset.id = id;
+  m.innerHTML = `<b class="xbh">Bills · ${esc(x.desc)}</b>` + (bills.length ? `<div class="xblist">${bills.map((b, i) => `<div class="xbrow">${/^image\//.test(b.type || "") ? `<a href="/_blob/${encodeURIComponent(b.id)}" target="_blank" rel="noopener" class="xbthumb"><img src="/_blob/${encodeURIComponent(b.id)}" alt="" loading="lazy"></a>` : `<span class="xbthumb">PDF</span>`}` +
+      `<a class="filelink" href="/_blob/${encodeURIComponent(b.id)}" target="_blank" rel="noopener">${esc(b.name || "Bill")}</a>${can ? `<button type="button" class="xbrm" data-xbrm="${i}" title="Remove this bill">✕</button>` : ""}</div>`).join("")}</div>` : `<p class="sub" style="margin:6px 2px">No bill attached yet.</p>`) +
+    (can ? `<label class="btn primary xbadd">+ Attach bill (photo or PDF)<input type="file" accept="${FILE_TYPES.join(",")}" multiple hidden data-xbin></label>` : "") + `<p class="err" data-xberr style="margin:4px 0 0"></p>`;
+  document.body.append(m);
+  const r = btn.getBoundingClientRect(); m.style.top = Math.min(r.bottom + 4, innerHeight - m.offsetHeight - 10) + "px"; m.style.left = Math.max(8, Math.min(r.left - 120, innerWidth - m.offsetWidth - 12)) + "px";
+}
+document.addEventListener("change", async e => {
+  const inp = e.target.closest?.("#xpBillPop [data-xbin]"); if (!inp) return;
+  const pop = $("xpBillPop"), err = pop.querySelector("[data-xberr]"), files = [...inp.files]; inp.value = "";
+  const x = ops.expenses.find(y => y.id === pop.dataset.id); if (!x || !files.length) return;
+  const bad = files.filter(f => !FILE_TYPES.includes(f.type) || f.size > 20 * 1024 * 1024); if (bad.length) err.textContent = `Left out ${bad.map(f => f.name).join(", ")}: attach PDF, JPG or PNG up to 20 MB.`;
+  if (!assetsCap) { err.textContent = "Attaching files isn't available here."; return; }
+  const add = []; let n = 0;
+  for (const f of files.filter(f => !bad.includes(f))) { err.textContent = `Uploading ${++n}…`; try { const u = await assetsCap.upload(f, { type: f.type }); add.push({ id: u.id, name: f.name, type: f.type, at: new Date().toISOString(), byName: whoAmI() }); } catch { err.textContent = `Couldn't upload ${f.name}.`; } }
+  if (!add.length) return;
+  const cur = ops.expenses.find(y => y.id === x.id) || x;
+  try { await opsSave("expenses", { ...cur, bills: [...(cur.bills || []), ...add], ...rxStamp() }); toast(`${add.length} bill${add.length > 1 ? "s" : ""} attached`); xpBillClose(); }
+  catch { err.textContent = "Couldn't save. Check your connection and try again."; }
+});
+document.addEventListener("click", async e => {
+  const pop = $("xpBillPop"); if (!pop || !pop.contains(e.target)) return;
+  const rm = e.target.closest("[data-xbrm]"); if (!rm) return;
+  const x = ops.expenses.find(y => y.id === pop.dataset.id); if (!x) return;
+  if (!await askYesNo("Remove this bill from the line?", { yes: "Remove", danger: true })) return;
+  const bills = [...(x.bills || [])]; bills.splice(+rm.dataset.xbrm, 1); const d = { ...x, bills, ...rxStamp() }; if (!bills.length) delete d.bills;
+  try { await opsSave("expenses", d); xpBillClose(); toast("Bill removed"); } catch { toast("Couldn't save. Try again."); }
+});
+document.addEventListener("mousedown", e => { const m = $("xpBillPop"); if (m && !m.contains(e.target) && !e.target.closest?.("[data-xbill]")) xpBillClose(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") xpBillClose(); });
+addEventListener("hashchange", xpBillClose);
+
+/* Summary: profit for each bus, and expenses by category, month by month. */
+async function xpLoadIncome(P) {
+  const key = P.from; if (xpInc?.key === key && (xpInc.list || xpInc.err)) return;
+  xpInc = { key, loading: true };
+  try {
+    const list = tripDb ? (await tripDb.collection("trips").where("date", ">=", P.from).where("date", "<=", P.to).get()).docs.map(d => ({ id: d.id, ...d.data() }))
+      : tripsLocal.filter(t => t.date >= P.from && t.date <= P.to);
+    xpInc = { key, list };
+  } catch { xpInc = { key, err: true, list: [] }; }
+  if (!$("view-texp").hidden && xpView === "summary") renderExp(true);
+}
+function xpSummaryRender({ P, all, VS, sum }) {
+  const months = MON_FY.map(m => `${m >= 4 ? fyOf(P.from) : fyOf(P.from) + 1}-${pad2(m)}`), mShort = ym => new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "short" });
+  if (xpInc?.key !== P.from || !(xpInc.list || xpInc.err)) xpLoadIncome(P);
+  const strip = `<div class="xsum"><button type="button" class="t${xpFilt.veh ? " off" : ""}" data-xpveh="" title="Show all vehicles"><small>${xpFilt.veh ? "◂ All vehicles" : `All vehicles · ${esc(P.label)}`}</small><b>${rs(sum(all))}</b></button>` +
+    VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpOnlyVeh() === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>`;
+  // Profit: income and running costs from bookings and trip sheets, less the expenses on this screen.
+  const B = new Map(), at = (k, ym) => { if (!B.has(k)) B.set(k, {}); const o = B.get(k); return o[ym] ||= { inc: 0, run: 0, exp: 0 }; };
+  ops.bookings.filter(b => ["booked", "ontrip", "completed"].includes(b.status) && b.from && b.from >= P.from && b.from <= P.to && b.vehicleId).forEach(b => { const c = bkCalc(b), o = at(b.vehicleId, b.from.slice(0, 7)); o.inc += c.due; if (b.status === "completed") o.run += c.exp; });
+  (xpInc?.list || []).filter(t => !t.notRun && t.vehicleId).forEach(t => { const o = at(t.vehicleId, t.date.slice(0, 7)); o.inc += tripCollection(t); o.run += tripExpense(t); });
+  all.forEach(x => { at(mtKeyOf(x), x.date.slice(0, 7)).exp += num(x.amount); });
+  const keys = [...B.keys()].filter(k => !xpFilt.veh || xpFilt.veh.has(k)).sort((a, b) => (a.startsWith("p:") ? 1 : 0) - (b.startsWith("p:") ? 1 : 0) || xpKeyName(a).localeCompare(xpKeyName(b)));
+  const tot = (k, f) => Object.values(B.get(k) || {}).reduce((a, o) => a + f(o), 0), pr = o => o.inc - o.run - o.exp;
+  const money = v => `<span class="${v < 0 ? "xneg" : ""}">${v < 0 ? "− " : ""}${nf(Math.abs(Math.round(v)))}</span>`;
+  const G = keys.reduce((a, k) => { a.inc += tot(k, o => o.inc); a.run += tot(k, o => o.run); a.exp += tot(k, o => o.exp); return a; }, { inc: 0, run: 0, exp: 0 });
+  const note = xpInc?.loading || !xpInc?.list && !xpInc?.err ? `<p class="sub" style="margin:0 0 8px">Loading the trip sheets of ${esc(P.label)}…</p>` : xpInc?.err ? `<p class="err" style="margin:0 0 8px">The route and truck trip sheets could not be loaded for your login, so their income is not counted below.</p>` : "";
+  const profit = `<section class="panel xsumtab"><h2 class="sec">Profit by bus · ${esc(P.label)}</h2>${note}<p class="sub" style="margin:0 0 8px">Income: spare bus bookings (by the month they start) and route / truck trip sheets. Trip costs: diesel, padi and other expenses written in those sheets. Expenses: the lines on this screen.</p>` +
+    `<div class="tscroll"><table class="ctable"><thead><tr><th>Vehicle</th><th class="n">Income</th><th class="n">Trip costs</th><th class="n">Expenses</th><th class="n">Profit</th></tr></thead><tbody>` +
+    keys.map(k => { const o = { inc: tot(k, o => o.inc), run: tot(k, o => o.run), exp: tot(k, o => o.exp) }; return `<tr><td class="num" style="white-space:nowrap">${esc(xpKeyName(k))}</td><td class="n">${nf(o.inc)}</td><td class="n">${nf(o.run)}</td><td class="n">${nf(o.exp)}</td><td class="n"><b>${money(pr(o))}</b></td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><td>Total</td><td class="n">${nf(G.inc)}</td><td class="n">${nf(G.run)}</td><td class="n">${nf(G.exp)}</td><td class="n">${money(pr(G))}</td></tr></tfoot></table></div>` +
+    `<h3 class="sec" style="margin:14px 0 6px">Profit month by month</h3><div class="tscroll"><table class="ctable xmtab"><thead><tr><th>Vehicle</th>${months.map(m => `<th class="n">${mShort(m)}</th>`).join("")}<th class="n">Total</th></tr></thead><tbody>` +
+    keys.map(k => `<tr><td class="num" style="white-space:nowrap">${esc(xpKeyName(k))}</td>${months.map(m => { const o = B.get(k)?.[m]; return o ? `<td class="n" title="Income ${nf(o.inc)} − trip costs ${nf(o.run)} − expenses ${nf(o.exp)}">${money(pr(o))}</td>` : `<td class="n sub">—</td>`; }).join("")}<td class="n"><b>${money(tot(k, pr))}</b></td></tr>`).join("") +
+    `</tbody><tfoot><tr><td>Total</td>${months.map(m => keys.some(k => B.get(k)?.[m]) ? `<td class="n">${money(keys.reduce((a, k) => a + (B.get(k)?.[m] ? pr(B.get(k)[m]) : 0), 0))}</td>` : `<td class="n sub">—</td>`).join("")}<td class="n">${money(pr(G))}</td></tr></tfoot></table></div></section>`;
+  // Expenses by category: click a figure to see those lines in the sheet.
+  const rows = all.filter(x => !xpFilt.veh || xpFilt.veh.has(mtKeyOf(x))), C = new Map();
+  rows.forEach(x => { const c = x.category || "Other"; if (!C.has(c)) C.set(c, {}); const o = C.get(c), m = x.date.slice(0, 7); o[m] = (o[m] || 0) + num(x.amount); });
+  const cats = [...C.keys()].sort((a, b) => (XP_CATS.indexOf(a) + 1 || 99) - (XP_CATS.indexOf(b) + 1 || 99) || a.localeCompare(b)), ct = c => Object.values(C.get(c)).reduce((a, v) => a + v, 0);
+  const catT = `<section class="panel xsumtab"><h2 class="sec">Expenses by category · ${esc(P.label)}${xpFilt.veh ? ` · ${[...xpFilt.veh].map(k => esc(xpKeyName(k))).join(", ")}` : ""}</h2><p class="sub" style="margin:0 0 8px">Click any figure to see those lines in the sheet.</p>` +
+    `<div class="tscroll"><table class="ctable xmtab"><thead><tr><th>Category</th>${months.map(m => `<th class="n">${mShort(m)}</th>`).join("")}<th class="n">Total</th></tr></thead><tbody>` +
+    cats.map(c => `<tr><td>${xpTag(c)}</td>${months.map(m => C.get(c)[m] ? `<td class="n"><button type="button" class="xcm" data-xcm="${esc(c)}|${m}">${nf(C.get(c)[m])}</button></td>` : `<td class="n sub">—</td>`).join("")}<td class="n"><button type="button" class="xcm" data-xcm="${esc(c)}|"><b>${nf(ct(c))}</b></button></td></tr>`).join("") +
+    `</tbody><tfoot><tr><td>Total</td>${months.map(m => { const v = rows.filter(x => x.date.startsWith(m)).reduce((a, x) => a + num(x.amount), 0); return `<td class="n">${v ? `<button type="button" class="xcm" data-xcm="|${m}">${nf(v)}</button>` : "—"}</td>`; }).join("")}<td class="n">${nf(rows.reduce((a, x) => a + num(x.amount), 0))}</td></tr></tfoot></table></div></section>`;
+  $("xpBody").innerHTML = strip + `<div class="xsumview">${profit}${catT}</div>`;
+  const v = $("xpBody").querySelector(".xsumview"); v.style.maxHeight = Math.max(300, innerHeight - v.getBoundingClientRect().top - 20) + "px";
+}
+
 /* Choosing whole lines (click the line number; Shift for a range, Ctrl for one more) and deleting them */
 function xpPickRow(r, shift, ctrl) {
   if (xpAct) { const prev = xpAct.r; xpAct = null; $("xpBody").querySelectorAll(".xgrid td.sel").forEach(t => t.classList.remove("sel")); if (prev !== r) xpLeaveRow(prev); }
@@ -6583,8 +6739,8 @@ function xpSelectAll() {
   xpRowSel.clear(); if (!all) saved.forEach(k => xpRowSel.add(k)); xpSelUpd();
 }
 function xpSelHtml() {
-  const n = [...xpRowSel].filter(k => xpDocOf(k) || xpDraftOf(k)?.used).length;
-  return n ? `<button type="button" class="btn xdelsel" data-xdelsel>Delete ${n} selected</button> ` : "";
+  const n = [...xpRowSel].filter(k => xpDocOf(k) || xpDraftOf(k)?.used).length, docs = [...xpRowSel].map(xpDocOf).filter(Boolean), allMon = docs.length && docs.every(x => x.monthly);
+  return n ? `<button type="button" class="btn xdelsel" data-xdelsel>Delete ${n} selected</button> ` + (docs.length ? `<button type="button" class="btn" data-xmonset="${allMon ? "off" : "on"}" title="${allMon ? "These lines will no longer be offered each month" : "Each new month, the sheet offers to add these lines again"}">${allMon ? "Stop repeating" : "↻ Repeat monthly"}</button> ` : "") : "";
 }
 function xpSelUpd() {
   $("xpBody").querySelectorAll(".xgrid tbody tr").forEach(tr => tr.classList.toggle("rsel", xpRowSel.has(tr.dataset.r)));
@@ -6596,7 +6752,8 @@ async function xpDeleteSel() {
   const tot = docs.reduce((a, x) => a + num(x.amount), 0);
   if (docs.length && !await askYesNo(`Delete ${docs.length} expense${docs.length > 1 ? "s" : ""} (${rs(tot)})? This cannot be undone.`, { yes: "Yes, delete", danger: true })) return;
   drafts.forEach(d => { const i = xpNews.indexOf(d); if (i >= 0) xpNews[i] = xpBlank(); });
-  let ok = 0; for (const x of docs) { try { await opsDelete("expenses", x.id); ok++; } catch {} }
+  let ok = 0; const gone = []; for (const x of docs) { try { await opsDelete("expenses", x.id); ok++; gone.push(x); } catch {} }
+  if (gone.length) xpUndoSet(`Undo delete${gone.length > 1 ? ` (${gone.length})` : ""}`, async () => { for (const x of gone) await opsSave("expenses", x); });
   xpRowSel.clear(); renderExp(true);
   toast(ok === docs.length ? `${ok ? `${ok} expense${ok > 1 ? "s" : ""} deleted` : "Lines cleared"}` : `${ok} deleted, ${docs.length - ok} could not be deleted. Try again.`);
 }
@@ -6715,7 +6872,8 @@ function xpApply(r, c, val) {
     const doc = { ...x, ...ch }; if (doc.category !== "Other") delete doc.catNote;
     if (["date", "desc", "vehicleId", "plate", "category", "catNote", "pay", "amount"].every(k => (doc[k] ?? "") === (x[k] ?? ""))) return;
     const td = xpTd(r, c === "catNote" ? "category" : c); if (td) td.innerHTML = xpCellInner(c === "catNote" ? "category" : c, { ...cur, ...(c === "veh" ? { veh: val } : c === "catNote" ? { category: "Other", catNote: val } : { [c]: val }) });
-    opsSave("expenses", { ...doc, ...rxStamp() }).then(() => toast("Saved")).catch(() => { toast("Couldn't save. Check your connection and try again."); renderExp(true); });
+    const before = { ...x };
+    opsSave("expenses", { ...doc, ...rxStamp() }).then(() => { toast("Saved"); xpUndoSet("Undo change", () => opsSave("expenses", before)); }).catch(() => { toast("Couldn't save. Check your connection and try again."); renderExp(true); });
     return;
   }
   const d = xpDraftOf(r); if (!d) return;
@@ -6742,7 +6900,7 @@ async function xpSaveDraft(d, how) {
   if (d.saving) return "skip";
   if (xpMissing(d).length) { d.miss = true; xpRefreshRow("n:" + d.k); xpStatus(); return "missing"; }
   d.saving = true; d.miss = false;
-  const doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: d.date, desc: d.desc, ...xpWhere(d.veh), category: d.category, ...(d.category === "Other" ? { catNote: d.catNote } : {}), pay: d.pay, amount: d.amount, createdOn: new Date().toISOString(), byName: whoAmI(), ...rxStamp() };
+  const doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ...(d.monthly ? { monthly: true, series: d.series } : {}), date: d.date, desc: d.desc, ...xpWhere(d.veh), category: d.category, ...(d.category === "Other" ? { catNote: d.catNote } : {}), pay: d.pay, amount: d.amount, createdOn: new Date().toISOString(), byName: whoAmI(), ...rxStamp() };
   const at = xpNews.indexOf(d), last = xfLast; xpNews.splice(at, 1); xpFill();
   xfLast = { veh: d.veh, category: d.category, pay: d.pay, date: d.date };
   try { await opsSave("expenses", doc); }
@@ -6751,6 +6909,9 @@ async function xpSaveDraft(d, how) {
   if (!(doc.date >= P.from && doc.date <= P.to)) toast(`Saved in FY ${fyLabel(fyOf(doc.date))} · ${rs(doc.amount)}`);
   else if (!xpPass(doc)) toast(`Saved · ${rs(doc.amount)} (hidden by the filter)`);
   else if (how !== "all") toast(`Saved · ${rs(doc.amount)}`);
+  if (ops.expenses.some(y => y.id !== doc.id && xpDupKey(y) === xpDupKey(doc))) toast(`Saved · ${rs(doc.amount)} — another line has the same date, vehicle and amount. Check it is not a duplicate.`);
+  const adds = how === "all" && xpUndo?.adds ? [...xpUndo.adds, doc.id] : [doc.id];
+  xpUndoSet(`Undo add${adds.length > 1 ? ` (${adds.length})` : ""}`, async () => { for (const id of adds) await opsDelete("expenses", id); }); xpUndo.adds = adds;
   renderExp();
   return "saved";
 }
@@ -6774,6 +6935,7 @@ $("xpBody").addEventListener("keydown", e => {
   }
   if (e.target.id !== "xpSc") return;
   const k = e.key;
+  if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === "z" && xpUndo) { e.preventDefault(); xpUndoRun(); return; }
   if (!xpAct && !(xpRowSel.size && ["Delete", "Backspace", "Escape"].includes(k))) return;
   if (/^Arrow/.test(k)) { e.preventDefault(); xpMove(k === "ArrowDown" ? 1 : k === "ArrowUp" ? -1 : 0, k === "ArrowRight" ? 1 : k === "ArrowLeft" ? -1 : 0); return; }
   if (k === "Tab") { e.preventDefault(); xpMove(0, e.shiftKey ? -1 : 1); return; }
@@ -6793,6 +6955,7 @@ $("xpBody").addEventListener("mousedown", e => {
   const it = e.target.closest(".xlist [data-i]");
   if (it) { e.preventDefault(); xpEdit.hi = +it.dataset.i; const r = xpCommit(); if (r === true) xpMove(0, 0); return; }
   if (e.target.closest("#xpEdBox")) return;
+  const bl = e.target.closest("[data-xbill]"); if (bl) { e.preventDefault(); e.stopPropagation(); if (xpEdit && xpCommit() === false) return; xpBillOpen(bl.dataset.xbill, bl); return; }
   const rs = e.target.closest(".xrs"); if (rs) { e.preventDefault(); xpResize(rs, e); return; }
   const hd = e.target.closest(".xgrid th[data-col]"); if (hd) { e.preventDefault(); if (xpEdit && xpCommit() === false) return; xpMenuOpen(hd.dataset.col, hd); return; }
   if (e.target.closest("th[data-xall]")) { e.preventDefault(); xpSelectAll(); return; }
@@ -6843,6 +7006,17 @@ document.addEventListener("mousedown", e => {
 const xpGo = () => { $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus({ preventScroll: true }), 300); };
 $("xpBody").addEventListener("click", async e => {
   if (e.target.closest("[data-xdelsel]")) { xpDeleteSel(); return; }
+  if (e.target.closest("[data-xundo]")) { xpUndoRun(); return; }
+  if (e.target.closest("[data-xdups]")) { if (xpFilt.dup) delete xpFilt.dup; else xpFilt.dup = true; xpScrollEnd = true; renderExp(true); return; }
+  if (e.target.closest("[data-xexcel]")) { xpExcel(); return; }
+  const ms = e.target.closest("[data-xmonset]");
+  if (ms) { const on = ms.dataset.xmonset === "on", docs = [...xpRowSel].map(xpDocOf).filter(Boolean);
+    for (const x of docs) { const d = { ...x, ...rxStamp() }; if (on) { d.monthly = true; d.series = x.series || x.id; } else delete d.monthly; try { await opsSave("expenses", d); } catch {} }
+    toast(on ? `${docs.length} line${docs.length > 1 ? "s" : ""} will be offered again each month` : "No longer repeated each month"); xpRowSel.clear(); renderExp(true); return; }
+  if (e.target.closest("[data-xmonadd]")) { xpMonAdd(); return; }
+  if (e.target.closest("[data-xmonno]")) { try { localStorage.setItem("fleet-xpmon-skip", todayISO().slice(0, 7)); } catch {} renderExp(true); return; }
+  const cm = e.target.closest("[data-xcm]");
+  if (cm) { const [c, ym] = cm.dataset.xcm.split("|"); xpFilt = { ...(xpFilt.veh ? { veh: xpFilt.veh } : {}) }; if (c) xpFilt.category = new Set([c]); if (ym) xpFilt.date = new Set([ym]); xpView = "sheet"; xpScrollEnd = true; renderExp(true); return; }
   if (e.target.closest("[data-xsaveall]")) {
     if (xpEdit && xpCommit() === false) return;
     const used = xpNews.filter(d => d.used); let ok = 0, bad = 0;
