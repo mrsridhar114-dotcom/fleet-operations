@@ -1449,30 +1449,35 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xps > .xpsheet { grid-column: 1; grid-row: 2; overflow: hidden; } .xps > .xpvtab { grid-column: 2; grid-row: 2; overflow: hidden; }
 .xpgridt { table-layout: fixed; } .xpgridt col.c1 { width: 112px; } .xpgridt col.c3 { width: 128px; } .xpgridt col.c4 { width: 136px; } .xpgridt col.c5 { width: 96px; } .xpgridt col.c6 { width: 128px; } .xpgridt col.c7 { width: 80px; } .xpgridt td:nth-child(2) { min-width: 0; }
 .xpgridt th, .xpgridt td { border-right: 1px solid var(--line); } .xpgridt tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--accent) 3%, var(--surface)); } .xpgridt tbody tr.on td { background: var(--accent-soft); }
-/* Editable sheet */
-.xpedit td { padding: 0 !important; } .xpedit tbody tr:hover td { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
-.xpedit input, .xpedit select { width: 100%; height: 40px; box-sizing: border-box; padding: 0 9px; border: 1px solid transparent; border-radius: 0; background: transparent; color: var(--ink); font: 14px var(--body); }
-.xpedit select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 22px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 13px) 18px, calc(100% - 8px) 18px; background-size: 5px 5px; background-repeat: no-repeat; }
-.xpedit textarea { display: block; width: 100%; min-height: 40px; box-sizing: border-box; padding: 9px; border: 1px solid transparent; background: transparent; color: var(--ink); font: 14px/20px var(--body); resize: none; overflow: hidden; white-space: pre-wrap; word-break: break-word; }
-.xpedit textarea:hover { border-color: var(--line); } .xpedit textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: inset 0 0 0 1px var(--accent); }
-.xpedit tr.xpnew textarea { border-color: var(--line); background: var(--surface); }
-.xpedit td { vertical-align: top !important; } .xpedit input, .xpedit select { display: block; } .xpedit .xpnote { height: 34px; font-size: 13px; border-color: var(--line); border-top-style: dashed; background: var(--surface); }
-.xpgrid textarea { width: 100%; box-sizing: border-box; min-height: 46px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 15.5px/20px var(--body); resize: none; overflow: hidden; }
-.xpgrid .xpnotef { grid-column: 1 / -1; }
-.xpedit input[type=date] { font: 13px var(--mono); padding: 0 6px; } .xpedit input[type=number] { text-align: right; font-family: var(--mono); } .xpedit input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-.xpedit input:hover, .xpedit select:hover { border-color: var(--line); }
-.xpedit input:focus, .xpedit select:focus { outline: none; border-color: var(--accent); background-color: var(--surface); box-shadow: inset 0 0 0 1px var(--accent); }
-.xpedit .bad { border-color: var(--danger) !important; box-shadow: inset 0 0 0 1px var(--danger); }
-.xpedit .xpact { text-align: center; } .xpdel { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 6px; display: inline-grid; place-items: center; } .xpdel:hover { color: var(--danger); } .xpdel svg { width: 18px; height: 18px; }
-.xpedit tr.xpnew td { background: color-mix(in srgb, #f5c400 14%, var(--surface)) !important; border-top: 2px solid color-mix(in srgb, #f5c400 50%, var(--line)); }
-.xpedit tr.xpnew input, .xpedit tr.xpnew select { border-color: var(--line); background-color: var(--surface); } .xpedit tr.xpnew input::placeholder { color: var(--muted); }
-.xpclr { border: 0; background: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 8px; } .xpclr:hover { color: var(--danger); }
-.xpedit tr.xpnew:not(.used):not(:focus-within) :is(select, input[type=date]) { color: var(--muted); }
-.xpsbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line); } .xpsbar .btn { min-width: 120px; }
-.xpedit tr.xpnew + tr.xpnew td { border-top: 1px solid var(--line); } .xpedit tr.xpnew .xpclr { opacity: .35; } .xpedit tr.xpnew:hover .xpclr, .xpedit tr.xpnew:focus-within .xpclr { opacity: 1; }
-.xpmiss { padding: 4px 9px 6px; font: 600 12.5px var(--body); color: var(--danger); }
-.xpgridt.xpedit col.c1 { width: 132px; } .xpgridt.xpedit col.c3 { width: 152px; } .xpgridt.xpedit col.c4 { width: 152px; } .xpgridt.xpedit col.c5 { width: 96px; } .xpgridt.xpedit col.c6 { width: 152px; } .xpgridt.xpedit col.c7 { width: 74px; }
-.xpsheet:has(.xpedit) .xpsfoot b { padding-right: 238px; }
+/* The sheet on a computer (works like Excel) */
+.xsum { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.xsum > * { min-width: 150px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; }
+.xsum button { cursor: pointer; } .xsum button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.xsum .t { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.xsum small { display: block; font: 600 11px var(--mono); text-transform: uppercase; opacity: .78; } .xsum b { font: 700 18px var(--mono); }
+.xsheet { background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-radius: 10px; overflow: hidden; }
+.xsc { position: relative; max-height: max(320px, calc(100vh - 310px)); overflow: auto; outline: none; scroll-padding-top: 40px; scroll-padding-bottom: 6px; }
+.xgrid { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+.xgrid col.g0 { width: 44px; } .xgrid col.g1 { width: 100px; } .xgrid col.g3 { width: 150px; } .xgrid col.g4 { width: 180px; } .xgrid col.g5 { width: 112px; } .xgrid col.g6 { width: 150px; } .xgrid col.g7 { width: 56px; }
+.xgrid th { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--accent) 6%, var(--surface)); font: 600 11.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 10px; border-right: 1px solid var(--line); border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); }
+.xgrid td { height: 38px; padding: 8px 10px; border-right: 1px solid color-mix(in srgb, var(--line) 70%, var(--surface)); border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, var(--surface)); font-size: 14px; line-height: 20px; vertical-align: top; word-break: break-word; cursor: cell; box-sizing: border-box; }
+.xgrid td.rn, .xgrid th.rn { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); color: var(--muted); font: 12px var(--mono); text-align: center; padding: 8px 0; cursor: default; }
+.xgrid th.n, .xgrid td.xc-amount { text-align: right; font-family: var(--mono); } .xgrid td.xc-date, .xgrid td.xc-veh { font: 13px/20px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xgrid td.sel { box-shadow: inset 0 0 0 2px var(--accent); background: var(--surface); }
+.xsc:not(:focus-within) td.sel { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.xgrid tr.xd.used td { background: color-mix(in srgb, #f5c400 11%, var(--surface)); } .xgrid tr.xd.used td.rn { background: color-mix(in srgb, #f5c400 30%, var(--surface)); color: var(--ink); font-weight: 700; }
+.xgrid td.xbad { background: color-mix(in srgb, var(--danger) 9%, var(--surface)) !important; }
+.xghost { color: var(--muted); opacity: .6; font-style: italic; } .xreq { color: var(--danger); opacity: .55; font-style: italic; font-size: 12.5px; } .xc-amount .xreq { font-family: var(--body); }
+.xgrid td.xst { text-align: center; cursor: default; padding: 8px 2px; white-space: nowrap; } .xok { color: #3b9a1e; font-weight: 700; } .xdot { color: #c99a00; font-size: 12px; } .xdot.bad { color: var(--danger); }
+.xdel, .xclr { display: none; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 14px; vertical-align: middle; } .xdel svg { width: 16px; height: 16px; }
+.xgrid tr:hover .xdel, .xgrid tr:hover .xclr { display: inline-block; } .xgrid tr:hover .xok, .xgrid tr:hover .xdot { display: none; } .xdel:hover, .xclr:hover { color: var(--danger); }
+.xed { position: absolute; z-index: 5; } .xed > input, .xed > textarea { display: block; width: 100%; min-height: var(--h); box-sizing: border-box; margin: 0; padding: 8px 10px; border: 2px solid var(--accent); border-radius: 0; background: var(--surface); color: var(--ink); font: 14px/20px var(--body); outline: none; resize: none; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+.xed.xe-amount > input { text-align: right; font-family: var(--mono); } .xed.xe-date > input, .xed.xe-veh > input { font-family: var(--mono); font-size: 13px; } .xed.bad > * { border-color: var(--danger) !important; }
+.xlist { position: absolute; left: 0; top: 100%; min-width: 100%; width: max-content; max-width: 280px; max-height: 240px; overflow: auto; margin-top: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
+.xlist div { padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; } .xlist div.h { background: var(--accent-soft); font-weight: 700; } .xlist p { margin: 4px 8px; color: var(--muted); font-size: 13px; }
+.xe-veh .xlist div { font-family: var(--mono); font-size: 13px; }
+.xfoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; border-top: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); font-size: 13.5px; color: var(--muted); }
+.xftot { display: flex; align-items: center; gap: 18px; } .xftot b { color: var(--ink); font: 700 16px var(--mono); } .xfoot .btn { min-width: 110px; } .xbadtxt { color: var(--danger); font-weight: 600; }
 .xpsfoot { display: flex; justify-content: space-between; padding: 9px 12px; background: var(--accent-soft); font-weight: 700; } .xpsfoot b { font-family: var(--mono); padding-right: 218px; }
 .xpvtab table { width: 100%; border-collapse: collapse; } .xpvtab th, .xpvtab td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13.5px; }
 .xpvtab th { font: 600 11.5px var(--mono); text-transform: uppercase; color: var(--muted); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); } .xpvtab .n { text-align: right; font-family: var(--mono); }
@@ -2457,6 +2462,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next">›</button></div>
           <div class="seg xpsegs" id="xpSeg" role="group" aria-label="Period"><button type="button" data-v="month">Month</button><button type="button" data-v="fy">Year</button></div>
           <div class="hf"><label for="xpBusF">Vehicle</label><select id="xpBusF"></select></div>
+          <a class="btn mclose" href="#home" aria-label="Close">Close ✕</a>
         </div>
       </header>
       <div class="xpbody" id="xpBody"></div>
@@ -3672,7 +3678,7 @@ function showView() {
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
   if (view === "tutil") renderUpload();
-  if (view === "texp") renderExp(); if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum();
+  if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
 }
@@ -6365,34 +6371,24 @@ function renderExp(force) {
   const totTxt = `Total · ${list.length} payment${list.length === 1 ? "" : "s"}${xpBus ? ` · ${esc(xpKeyName(xpBus))}` : ""}`;
   const none = `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.</p>`;
   const tip = can ? ' title="Tap to change" style="cursor:pointer"' : "";
-  let h, slot;
-  {
-    // Like the Excel sheet: oldest first, the new row at the bottom, vehicle totals at the side.
-    const wide = !xpNarrow(1000), rows = wide ? [...list].reverse() : list, ed = wide && can;
-    h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet"><div class="tscroll"><table class="ctable xptable xpgridt${ed ? " xpedit" : ""}"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
-      `<thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
-      (ed ? (xpFill(), rows.map(x => xpEditRow(x)).join("") + xpNews.map((d, i) => xpEditRow(null, d, i === 0)).join("")) :
-      rows.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category, x.catNote)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("")) +
-      `</tbody></table></div>${rows.length || ed ? "" : none}<div data-slot="row"></div>${ed ? `<div class="xpsbar"><span class="sub">Type in any empty line. It saves by itself when you move to another line.</span><button type="button" class="btn primary" data-xsaveall>Save</button></div>` : ""}<div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
-      `<aside class="panel xpvtab"><table><thead><tr><th>Vehicle</th><th class="n">Expense</th></tr></thead><tbody>` +
-      VS.map(([k, v]) => `<tr data-xpveh="${esc(k)}" class="${xpBus === k ? "on" : ""}"><td class="num">${esc(xpKeyName(k))}</td><td class="n">${nf(v)}</td></tr>`).join("") +
-      `<tr class="tot"><td>TOTAL</td><td class="n">${nf(sum(all))}</td></tr></tbody></table></aside></div>`;
-    slot = ed ? "" : wide ? "row" : "top";
+  if (!xpNarrow(1000)) {
+    const F = $("xpForm"); if (F) { F.hidden = true; $("view-texp").appendChild(F); }
+    xpGridRender({ P, all, list, VS, sum, can, force }); return;
   }
-  // While a cell is being edited, only the totals are refreshed; the sheet is redrawn when the cursor leaves it.
-  if (!force && document.activeElement?.closest?.("#xpBody .xpedit")) {
-    const t = document.createElement("div"); t.innerHTML = h; xpDeferred = true;
-    ["xpvtab", "xpsfoot"].forEach(c => $("xpBody").querySelector("." + c)?.replaceWith(t.querySelector("." + c)));
-    return;
-  }
-  xpDeferred = false;
+  // Phone and narrow windows: the list, with the entry box on top.
+  const h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet"><div class="tscroll"><table class="ctable xptable xpgridt"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
+    `<thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
+    list.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category, x.catNote)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("") +
+    `</tbody></table></div>${list.length ? "" : none}<div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
+    `<aside class="panel xpvtab"><table><thead><tr><th>Vehicle</th><th class="n">Expense</th></tr></thead><tbody>` +
+    VS.map(([k, v]) => `<tr data-xpveh="${esc(k)}" class="${xpBus === k ? "on" : ""}"><td class="num">${esc(xpKeyName(k))}</td><td class="n">${nf(v)}</td></tr>`).join("") +
+    `<tr class="tot"><td>TOTAL</td><td class="n">${nf(sum(all))}</td></tr></tbody></table></aside></div>`;
   // The entry form is one element moved into place, so whatever is being typed stays.
   const F = $("xpForm"), act = F.contains(document.activeElement) ? document.activeElement : null;
   $("xpBody").innerHTML = h;
-  $("xpBody").querySelectorAll(".xpedit textarea").forEach(xpGrow);
-  F.className = `panel xpform xpyel f-${slot}${xpEd ? " ed" : ""}`; F.hidden = !can || !slot;
-  if (can && slot) {
-    $("xpBody").querySelector(`[data-slot="${slot}"]`).appendChild(F);
+  F.className = `panel xpform xpyel f-top${xpEd ? " ed" : ""}`; F.hidden = !can;
+  if (can) {
+    $("xpBody").querySelector('[data-slot="top"]').appendChild(F);
     if (!$("xfDate")) xfRender(null); else if (document.activeElement !== $("xfVeh")) xfVehOpts();
     if (act && document.contains(act)) act.focus({ preventScroll: true });
   }
@@ -6402,152 +6398,326 @@ function xpKeyName(k, x) {
   const v = mtVehOf(k); if (v) return plateOf(v);
   const r = x || ops.expenses.find(e => mtKeyOf(e) === k); return r?.plate || (k === "p:" ? "Office / general" : k.replace(/^p:/, ""));
 }
-$("xpPrev").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") - 1}-04` : monthShift(xpYm, -1); renderExp(); };
-$("xpNext").onclick = () => { xpYm = xpFy ? `${fyOf(xpYm + "-01") + 1}-04` : monthShift(xpYm, 1); renderExp(); };
-$("xpSeg").onclick = e => { const b = e.target.closest("button[data-v]"); if (!b) return; xpFy = b.dataset.v === "fy"; renderExp(); };
-$("xpBusF").onchange = () => { xpBus = $("xpBusF").value; renderExp(); };
-/* ---------- The sheet on a computer: every cell can be changed in place ---------- */
-// Ten empty lines always wait at the bottom, as in an Excel sheet. Each keeps what was typed in it, which
-// cells were chosen by hand (set) and why it was not saved (miss), so a redraw never loses anything.
-let xpDeferred = false, xpNews = [];
-const XP_BLANK = 10;
-const xpFresh = () => ({ k: Math.random().toString(36).slice(2, 9), date: xfLast.date || todayISO(), desc: "", veh: xfLast.veh, category: xfLast.category, catNote: "", pay: xfLast.pay, amount: "", set: {}, miss: null });
-const xpFill = () => { while (xpNews.length < XP_BLANK) xpNews.push(xpFresh()); };
-const xpDraft = tr => xpNews.find(d => d.k === tr?.dataset.xnew);
-const xpOpts = (list, cur) => (cur && !list.includes(cur) ? [cur, ...list] : list).map(o => `<option${o === cur ? " selected" : ""}>${esc(o)}</option>`).join("");
-function xpVehOpts(cur, x, blank) {
-  const fleet = mtFleet(), extra = cur && cur.startsWith("p:") && cur !== "p:" && !fleet.some(v => v.id === cur) ? [[cur, xpKeyName(cur, x)]] : [];
-  return (blank ? `<option value="">Choose…</option>` : "") + [...fleet.map(v => [v.id, plateOf(v)]), ...extra, ["p:", "Office / general"]].map(([k, n]) => `<option value="${esc(k)}"${k === cur ? " selected" : ""}>${esc(n)}</option>`).join("");
-}
-// One line of the sheet: a saved expense, or (with a draft) one of the empty lines at the bottom.
-function xpEditRow(x, d, first) {
-  const v = x ? { date: x.date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "Other", catNote: x.catNote || "", pay: x.pay || "", amount: String(num(x.amount) || "") } : d;
-  const bad = k => !x && d.miss?.bad[k] ? " bad" : "";
-  return `<tr ${x ? `data-xe="${x.id}"` : `data-xnew="${d.k}" class="xpnew${d.desc || d.amount || d.catNote ? " used" : ""}"`}>` +
-    `<td><input type="date" data-f="date" class="${bad("date")}" value="${esc(v.date)}" max="${todayISO()}" aria-label="Date"></td>` +
-    `<td><textarea data-f="desc" rows="1" class="${bad("desc")}" ${first ? 'placeholder="Type a new expense here…" ' : ""}aria-label="Expense description">${esc(v.desc)}</textarea>${x ? "" : `<div class="xpmiss"${d.miss ? "" : " hidden"}>${d.miss ? esc(d.miss.text) : ""}</div>`}</td>` +
-    `<td><select data-f="veh" class="${bad("veh")}" aria-label="Vehicle">${xpVehOpts(v.veh, x, !x)}</select></td>` +
-    `<td><select data-f="category" aria-label="Category">${xpOpts(XP_CATS, v.category)}</select>${xpNoteIn(v, d)}</td>` +
-    `<td><input type="number" data-f="amount" class="${bad("amount")}" inputmode="numeric" min="0" value="${esc(v.amount)}" placeholder="0" aria-label="Amount"></td>` +
-    `<td><select data-f="pay" aria-label="Paid by">${xpOpts(XP_PAY, v.pay)}</select></td>` +
-    `<td class="xpact">${x ? `<button type="button" class="xpdel" data-xdel="${x.id}" title="Delete this expense" aria-label="Delete this expense">${TW_BIN}</button>` : `<button type="button" class="xpclr" data-xclr tabindex="-1" title="Clear this row" aria-label="Clear this row">✕</button>`}</td></tr>`;
-}
-// With "Other", a box under the category for what it was.
-const xpNoteIn = (v, d) => v.category === "Other" ? `<input type="text" data-f="catNote" class="xpnote${d?.miss?.bad.catNote ? " bad" : ""}" value="${esc(v.catNote || "")}" placeholder="Other: what was it?" aria-label="Details for Other">` : "";
-const xpGrow = el => { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; };
-// What a row says, checked; marks the cells that need fixing.
-function xpRowVals(tr, old) {
-  const g = k => tr.querySelector(`[data-f="${k}"]`), v = { date: g("date").value, desc: upText(g("desc").value), veh: g("veh").value, category: g("category").value, catNote: upText(g("catNote")?.value), pay: g("pay").value, amount: Math.round(num(g("amount").value)) };
-  // Details are needed for a new "Other"; old rows already saved as Other may stay without.
-  const bad = { date: !v.date, desc: !v.desc, veh: !v.veh, catNote: v.category === "Other" && !v.catNote && old?.category !== "Other", amount: !v.amount };
-  Object.entries(bad).forEach(([k, b]) => g(k)?.classList.toggle("bad", b));
-  const miss = bad.date ? "the date" : bad.desc ? "the expense description" : bad.veh ? "the vehicle" : bad.catNote ? "what the Other expense was" : bad.amount ? "the amount" : "";
-  return { v, miss, bad };
-}
+$("xpPrev").onclick = () => { xpScrollEnd = true; xpYm = xpFy ? `${fyOf(xpYm + "-01") - 1}-04` : monthShift(xpYm, -1); renderExp(); };
+$("xpNext").onclick = () => { xpScrollEnd = true; xpYm = xpFy ? `${fyOf(xpYm + "-01") + 1}-04` : monthShift(xpYm, 1); renderExp(); };
+$("xpSeg").onclick = e => { const b = e.target.closest("button[data-v]"); if (!b) return; xpFy = b.dataset.v === "fy"; xpScrollEnd = true; renderExp(); };
+$("xpBusF").onchange = () => { xpBus = $("xpBusF").value; xpScrollEnd = true; renderExp(); };
+/* ---------- The sheet on a computer: works like an Excel sheet ----------
+   Plain cells; one cell is selected at a time and only that cell opens an editor. Ten empty lines wait at the
+   bottom; a line saves by itself once it is complete and the selection moves to another line. */
 const xpWhere = (veh, old) => veh === "p:" ? { vehicleId: "", plate: "" } : veh.startsWith("p:") ? { vehicleId: "", plate: old?.plate || veh.slice(2) } : { vehicleId: veh, plate: "" };
-async function xpCellSave(tr) {
-  const old = ops.expenses.find(x => x.id === tr.dataset.xe); if (!old) return;
-  const { v, miss } = xpRowVals(tr, old); if (miss) { toast(`Type ${miss} — this row is not saved yet.`); return; }
-  const doc = { ...old, date: v.date, desc: v.desc, ...xpWhere(v.veh, old), category: v.category, catNote: v.category === "Other" ? v.catNote : "", pay: v.pay, amount: v.amount };
-  if (!doc.catNote) delete doc.catNote;
-  if (["date", "desc", "vehicleId", "plate", "category", "catNote", "pay", "amount"].every(k => (doc[k] ?? "") === (old[k] ?? ""))) return;
-  try { await opsSave("expenses", { ...doc, ...rxStamp() }); toast("Saved"); } catch { toast("Couldn't save. Check your connection and try again."); }
+const xpGrow = el => { if (!el) return; el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; };
+var xpAct = null, xpEdit = null, xpRowsNow = [], xpScrollEnd = true, xpNews = [], xpDeferred = false;
+const XP_BLANK = 10, XP_COLS = ["date", "desc", "veh", "category", "amount", "pay"];
+const XP_NAMES = { date: "date", desc: "description", veh: "vehicle", category: "details for Other", amount: "amount", pay: "paid by" };
+const xpBlank = () => ({ k: Math.random().toString(36).slice(2, 9), date: "", desc: "", veh: "", category: "", catNote: "", pay: "", amount: "", used: false, miss: false });
+const xpFill = () => { while (xpNews.length < XP_BLANK) xpNews.push(xpBlank()); };
+const xpDraftOf = r => r?.startsWith("n:") ? xpNews.find(d => d.k === r.slice(2)) : null;
+const xpDocOf = r => r?.startsWith("e:") ? ops.expenses.find(x => x.id === r.slice(2)) : null;
+const xpValOf = r => { const x = xpDocOf(r); return x ? { date: x.date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "", catNote: x.catNote || "", pay: x.pay || "", amount: num(x.amount) || "", x } : xpDraftOf(r); };
+const xpTd = (r, c) => $("xpBody").querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+const xpDMY = iso => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+const xpDateTxt = iso => xpFy ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(2, 4)}` : `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+// What a line still needs (Other needs its details).
+const xpMissing = d => [...["date", "desc", "veh", "amount"].filter(c => d[c] === "" || d[c] == null), ...(d.category === "Other" && !d.catNote ? ["category"] : [])];
+
+function xpCellInner(c, v, d) {
+  if (d && !d.used && c === "desc" && xpNews.find(y => !y.used) === d) return `<span class="xghost">Start typing a new expense…</span>`;
+  let t = "";
+  if (c === "date") t = v.date ? esc(xpDateTxt(v.date)) : "";
+  else if (c === "desc") t = esc(v.desc || "");
+  else if (c === "veh") t = v.veh !== "" && v.veh != null ? esc(xpKeyName(v.veh, v.x)) : "";
+  else if (c === "category") t = v.category ? xpTag(v.category, v.catNote) : "";
+  else if (c === "amount") t = v.amount !== "" && v.amount != null ? nf(num(v.amount)) : "";
+  else if (c === "pay") t = esc(v.pay || "");
+  if (d?.used && xpMissing(d).includes(c)) t += `<span class="xreq">${c === "category" ? " details needed" : "required"}</span>`;
+  return t;
 }
-// The empty row at the bottom saves itself once it is complete and the cursor leaves it (Tab, Enter or a click elsewhere).
-const xpTouched = tr => ["desc", "amount", "catNote"].some(k => upText(tr.querySelector(`[data-f="${k}"]`)?.value));
-const xpRowEl = html => { const t = document.createElement("tbody"); t.innerHTML = html; const r = t.firstElementChild; requestAnimationFrame(() => r.querySelectorAll("textarea").forEach(xpGrow)); return r; }; // sized once it is on the page
-function xpNewReset(tr) {
-  const i = xpNews.findIndex(d => d.k === tr.dataset.xnew), d = xpFresh(); if (i >= 0) xpNews[i] = d;
-  const nr = xpRowEl(xpEditRow(null, d)); tr.replaceWith(nr); return nr;
+function xpCell(r, c, v, d) {
+  const bad = d?.used && d.miss && xpMissing(d).includes(c);
+  return `<td data-r="${r}" data-c="${c}" class="xc-${c}${bad ? " xbad" : ""}${xpAct?.r === r && xpAct.c === c ? " sel" : ""}">${xpCellInner(c, v, d)}</td>`;
 }
-// After a line is saved, the empty lines not yet used take its date, vehicle, category and paid by (unless chosen by hand).
-function xpSticky() {
-  const map = { date: xfLast.date, veh: xfLast.veh, category: xfLast.category, pay: xfLast.pay };
-  $("xpBody").querySelectorAll(".xpedit tr[data-xnew]").forEach(tr => {
-    const d = xpDraft(tr); if (!d || xpTouched(tr)) return;
-    Object.entries(map).forEach(([f, v]) => {
-      const el = tr.querySelector(`[data-f="${f}"]`); if (d.set[f] || v == null || d[f] === v || !el || el === document.activeElement) return;
-      d[f] = v; el.value = v;
-      if (f === "category") { const td = el.closest("td"), box = td.querySelector(".xpnote"); if (v === "Other" && !box) td.insertAdjacentHTML("beforeend", xpNoteIn(d, d)); if (v !== "Other" && box) box.remove(); }
-    });
-  });
+function xpRowHtml(r, i, can) {
+  const v = xpValOf(r), d = xpDraftOf(r); if (!v) return "";
+  const st = d ? (d.used ? `<span class="xdot${d.miss ? " bad" : ""}" title="${d.miss ? "Not saved yet" : "Being typed"}">●</span><button type="button" class="xclr" data-xclr="${d.k}" title="Clear this line" aria-label="Clear this line">✕</button>` : "")
+    : `<span class="xok" title="Saved">✓</span>${can ? `<button type="button" class="xdel" data-xdel="${v.x.id}" title="Delete this expense" aria-label="Delete this expense">${TW_BIN}</button>` : ""}`;
+  return `<tr data-r="${r}"${d ? ` class="xd${d.used ? " used" : ""}${d.miss ? " miss" : ""}"` : ""}><td class="rn">${i + 1}</td>${XP_COLS.map(c => xpCell(r, c, v, d)).join("")}<td class="xst">${st}</td></tr>`;
 }
-// Saves one empty line when it is complete. how: "leave" (the cursor left it), "enter" or "all" (the Save button).
-async function xpNewSave(tr, how) {
-  const d = xpDraft(tr), note = tr.querySelector(".xpmiss"); if (!d || tr.dataset.saving) return "skip";
-  if (!xpTouched(tr)) { tr.querySelectorAll(".bad").forEach(e => e.classList.remove("bad")); note.hidden = true; d.miss = null; return "empty"; }
-  const { v, miss, bad } = xpRowVals(tr);
-  if (miss) {
-    d.miss = { text: `Not saved: ${miss.replace(/^the /, "").replace(/^what the Other expense was$/, "details for Other")} missing`, bad };
-    note.textContent = d.miss.text; note.hidden = false;
-    if (how === "enter") tr.querySelector(".bad")?.focus();
-    return "missing";
+function xpRefreshRow(r) {
+  const tr = $("xpBody").querySelector(`tr[data-r="${r}"]`); if (!tr) return;
+  const t = document.createElement("tbody"); t.innerHTML = xpRowHtml(r, xpRowsNow.indexOf(r), canXp()); tr.replaceWith(t.firstElementChild);
+}
+function xpStatusHtml() {
+  const used = xpNews.filter(d => d.used), miss = used.find(d => d.miss);
+  if (miss) return `<span class="xbadtxt">Line ${xpRowsNow.indexOf("n:" + miss.k) + 1} not saved: ${xpMissing(miss).map(c => XP_NAMES[c]).join(", ")} missing</span>`;
+  return used.length ? `${used.length} line${used.length > 1 ? "s" : ""} being typed · each saves by itself when complete` : "Everything is saved";
+}
+const xpStatus = () => { if ($("xpStat")) $("xpStat").innerHTML = xpStatusHtml(); };
+
+function xpGridRender(o) {
+  const { P, all, list, VS, sum, can, force } = o;
+  if (can) xpFill();
+  xpRowsNow = [...[...list].reverse().map(x => "e:" + x.id), ...(can ? xpNews.map(d => "n:" + d.k) : [])];
+  const strip = `<div class="xsum"><div class="t"><small>Total · ${esc(P.label)}</small><b>${rs(sum(all))}</b></div>` +
+    VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpBus === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>`;
+  const foot = `<div class="xfoot"><span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span><span class="xftot">Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
+  // While a cell is open for typing, only the totals are refreshed; the sheet is redrawn when it closes.
+  if (!force && xpEdit && $("xpSc")) {
+    xpDeferred = true; const t = document.createElement("div"); t.innerHTML = strip + foot;
+    $("xpBody").querySelector(".xsum")?.replaceWith(t.querySelector(".xsum")); $("xpBody").querySelector(".xfoot")?.replaceWith(t.querySelector(".xfoot"));
+    return;
   }
-  tr.dataset.saving = "1"; note.hidden = true; d.miss = null;
-  const doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: v.date, desc: v.desc, ...xpWhere(v.veh), category: v.category, ...(v.category === "Other" ? { catNote: v.catNote } : {}), pay: v.pay, amount: v.amount, createdOn: new Date().toISOString(), byName: whoAmI(), ...rxStamp() };
-  const at = xpNews.indexOf(d), last = xfLast;
-  xpNews.splice(at, 1); const fresh = xpFresh(); xpNews.push(fresh);
-  xfLast = { veh: v.veh, category: v.category, pay: v.pay, date: v.date };
+  xpDeferred = false; xpEdit = null;
+  if (xpAct && !xpRowsNow.includes(xpAct.r)) xpAct = null;
+  const old = $("xpSc"), top = old ? old.scrollTop : 0, had = document.activeElement === old;
+  $("xpBody").innerHTML = strip + `<section class="xsheet"><div class="xsc" id="xpSc"${can ? ' tabindex="0"' : ""}><table class="xgrid"><colgroup><col class="g0"><col class="g1"><col><col class="g3"><col class="g4"><col class="g5"><col class="g6"><col class="g7"></colgroup>` +
+    `<thead><tr><th class="rn"></th><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
+    xpRowsNow.map((r, i) => xpRowHtml(r, i, can)).join("") + `</tbody></table>` +
+    (list.length || can ? "" : `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpBus ? " for this vehicle" : ""}.</p>`) +
+    `<div class="xed" id="xpEdBox" hidden></div></div>` + foot + `</section>`;
+  const sc = $("xpSc");
+  if (xpScrollEnd) { sc.scrollTop = sc.scrollHeight; xpScrollEnd = false; } else sc.scrollTop = top;
+  if (had) sc.focus({ preventScroll: true });
+}
+
+/* Selecting and moving */
+function xpSel(r, c) {
+  const prev = xpAct; xpAct = { r, c };
+  $("xpBody").querySelectorAll(".xgrid td.sel").forEach(t => t.classList.remove("sel"));
+  const td = xpTd(r, c); if (td) { td.classList.add("sel"); td.scrollIntoView({ block: "nearest", inline: "nearest" }); }
+  $("xpSc")?.focus({ preventScroll: true });
+  if (prev && prev.r !== r) xpLeaveRow(prev.r);
+}
+function xpMove(dr, dc) {
+  if (!xpAct) return;
+  let ri = xpRowsNow.indexOf(xpAct.r), ci = XP_COLS.indexOf(xpAct.c) + dc;
+  if (ci >= XP_COLS.length) { ci = 0; ri++; } else if (ci < 0) { ci = XP_COLS.length - 1; ri--; }
+  ri = Math.max(0, Math.min(xpRowsNow.length - 1, ri + dr));
+  xpSel(xpRowsNow[ri], XP_COLS[Math.max(0, ci)]);
+}
+const xpLeaveRow = r => { const d = xpDraftOf(r); if (d?.used) xpSaveDraft(d, "leave"); };
+
+/* Reading what was typed */
+function xpParseDate(s) {
+  const t = upText(s).toLowerCase(), today = todayISO(); if (!t) return "";
+  if (t === "t" || t === "today") return today; if (t === "y" || t === "yesterday") return shiftDay(today, -1);
+  const mk = (y, m, d) => { const iso = `${y}-${pad2(m)}-${pad2(d)}`, dt = new Date(iso + "T00:00:00"); return m >= 1 && m <= 12 && dt.getDate() === d ? iso : null; };
+  let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return mk(+m[1], +m[2], +m[3]);
+  m = t.match(/^(\d{1,2})(?:[\/\-. ](\d{1,2})(?:[\/\-. ](\d{2,4}))?)?$/);
+  if (m) {
+    const mo = m[2] ? +m[2] : +xpYm.slice(5, 7); let y = m[3] ? +m[3] : xpFy ? (mo >= 4 ? fyOf(xpYm + "-01") : fyOf(xpYm + "-01") + 1) : +xpYm.slice(0, 4);
+    if (y < 100) y += 2000; return mk(y, mo, +m[1]);
+  }
+  const p = new Date(s); return isNaN(p) ? null : mk(p.getFullYear(), p.getMonth() + 1, p.getDate());
+}
+function xpChoices(c, v) {
+  if (c === "veh") { const cur = v?.veh, extra = cur && cur.startsWith("p:") && cur !== "p:" && !mtVehOf(cur) ? [[cur, xpKeyName(cur, v.x)]] : []; return [...mtFleet().map(x => [x.id, plateOf(x)]), ...extra, ["p:", "Office / general"]]; }
+  return (c === "category" ? XP_CATS : XP_PAY).map(x => [x, x]);
+}
+function xpMatch(c, q, v) {
+  const n = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, ""), t = n(q), all = xpChoices(c, v);
+  if (!t) return all;
+  return all.filter(([, l]) => n(l).includes(t)).sort((a, b) => (n(a[1]).startsWith(t) ? 0 : 1) - (n(b[1]).startsWith(t) ? 0 : 1));
+}
+// A value pasted from Excel, read for one column ("" when it cannot be read).
+function xpReadPasted(c, s) {
+  const t = upText(s); if (!t) return "";
+  if (c === "date") return xpParseDate(t) || "";
+  if (c === "amount") { const n = num(t.replace(/[,₹\s]/g, "")); return n > 0 ? Math.round(n) : ""; }
+  if (c === "veh") { const k = plateKey(t); if (/office|general/i.test(t)) return "p:"; const v = mtFleet().find(x => plateKey(plateOf(x)) === k) || mtFleet().find(x => k.length >= 3 && plateKey(plateOf(x)).includes(k)); return v ? v.id : ""; }
+  if (c === "category") { const m = t.match(/^other\s*[:\-]\s*(.+)$/i); if (m) return { category: "Other", catNote: m[1] }; const f = XP_CATS.find(x => x.toLowerCase() === t.toLowerCase()) || XP_CATS.find(x => x.toLowerCase().startsWith(t.toLowerCase())); return f ? { category: f } : { category: "Other", catNote: t }; }
+  if (c === "pay") { const p = xpPay(t); return XP_PAY.includes(p) ? p : t; }
+  return t;
+}
+
+/* The editor that opens over the selected cell */
+function xpOpen(mode, ch, note) {
+  if (!xpAct || !canXp()) return;
+  const { r } = xpAct, c = note ? "catNote" : xpAct.c, v = xpValOf(r), td = xpTd(r, xpAct.c), sc = $("xpSc"), box = $("xpEdBox"); if (!v || !td) return;
+  const cur = c === "date" ? (v.date ? xpDMY(v.date) : "") : c === "veh" ? (v.veh !== "" ? xpKeyName(v.veh, v.x) : "") : c === "amount" ? String(v.amount ?? "") : String(v[c] ?? "");
+  xpEdit = { r, c, mode, hi: 0, items: null };
+  box.innerHTML = (c === "desc" ? `<textarea rows="1" aria-label="Expense description"></textarea>` : `<input type="text" autocomplete="off" aria-label="${c === "catNote" ? "Details for Other" : XP_NAMES[c]}"${c === "catNote" ? ' placeholder="Other: what was it?"' : ""}${c === "amount" ? ' inputmode="decimal"' : ""}>`) + `<div class="xlist" hidden></div>`;
+  const el = box.firstElementChild; el.value = mode === "type" ? ch : cur;
+  const a = td.getBoundingClientRect(), b = sc.getBoundingClientRect();
+  box.style.left = a.left - b.left + sc.scrollLeft + "px"; box.style.top = a.top - b.top + sc.scrollTop + (note ? a.height : 0) + "px";
+  box.style.width = Math.max(a.width, c === "catNote" ? 220 : 0) + "px"; box.style.setProperty("--h", a.height + "px");
+  box.className = `xed xe-${c}`; box.hidden = false;
+  el.focus(); el.setSelectionRange?.(el.value.length, el.value.length); if (c === "desc") xpGrow(el);
+  xpListUpd(mode === "edit");
+}
+function xpListUpd(showAll) {
+  const E = xpEdit, box = $("xpEdBox"), lst = box?.querySelector(".xlist"); if (!E || !lst) return;
+  if (!["veh", "category", "pay"].includes(E.c)) { lst.hidden = true; return; }
+  const el = box.firstElementChild, v = xpValOf(E.r), q = showAll ? "" : el.value;
+  E.items = xpMatch(E.c, q, v);
+  if (showAll) { const curKey = E.c === "veh" ? v.veh : v[E.c]; E.hi = Math.max(0, E.items.findIndex(([k]) => k === curKey)); } else E.hi = 0;
+  const n = String(q).toLowerCase().replace(/[^a-z0-9]/g, "");
+  lst.innerHTML = E.items.length ? E.items.map(([k, l], i) => `<div data-i="${i}" class="${i === E.hi ? "h" : ""}">${esc(l)}</div>`).join("") : `<p>No match. Try fewer letters.</p>`;
+  lst.hidden = false; lst.querySelector(".h")?.scrollIntoView({ block: "nearest" });
+}
+function xpListMove(n) { const E = xpEdit, lst = $("xpEdBox")?.querySelector(".xlist"); if (!E?.items?.length) return; E.hi = (E.hi + n + E.items.length) % E.items.length; lst.querySelectorAll("div").forEach((x, i) => x.classList.toggle("h", i === E.hi)); lst.querySelector(".h")?.scrollIntoView({ block: "nearest" }); }
+function xpEdErr(m) { $("xpEdBox")?.classList.add("bad"); toast(m); return false; }
+function xpCancel() { xpEdit = null; const box = $("xpEdBox"); if (box) { box.hidden = true; box.innerHTML = ""; } $("xpSc")?.focus({ preventScroll: true }); if (xpDeferred) renderExp(true); }
+// Closes the editor and keeps the value; false when it cannot be read (the editor stays open).
+function xpCommit() {
+  const E = xpEdit; if (!E) return true;
+  const box = $("xpEdBox"), raw = box.firstElementChild.value, c = E.c; let val;
+  if (c === "date") { val = xpParseDate(raw); if (val === null) return xpEdErr("Type the date like 29/10 or 29/10/2026."); if (val > todayISO()) return xpEdErr("That date is in the future."); }
+  else if (c === "amount") { if (!upText(raw)) val = ""; else { const n = num(String(raw).replace(/[,₹\s]/g, "")); if (!(n > 0)) return xpEdErr("Type the amount as a number."); val = Math.round(n); } }
+  else if (["veh", "category", "pay"].includes(c)) { if (!upText(raw)) val = ""; else { const m = E.items?.[E.hi]; if (!m) return xpEdErr("Pick one from the list."); val = m[0]; } }
+  else val = upText(raw);
+  xpEdit = null; box.hidden = true; box.innerHTML = "";
+  const next = xpApply(E.r, c, val);
+  if (xpDeferred) renderExp(true);
+  $("xpSc")?.focus({ preventScroll: true });
+  if (next === "note") { xpOpen("edit", "", true); return "note"; }
+  return true;
+}
+// Puts a value into a line: saved lines are saved straight away, empty lines fill in.
+function xpApply(r, c, val) {
+  const x = xpDocOf(r);
+  if (x) {
+    const cur = xpValOf(r);
+    if (["date", "desc", "veh", "amount"].includes(c) && (val === "" || val == null)) { toast(`The ${XP_NAMES[c]} cannot be empty.`); return; }
+    if (c === "category" && val === "Other" && !x.catNote) { xpPendingOther = r; return "note"; }
+    const ch = c === "catNote" ? { category: "Other", catNote: val } : c === "veh" ? xpWhere(val, x) : c === "category" ? { category: val } : { [c]: val };
+    if (c === "catNote" && !val) { xpPendingOther = null; return; }
+    xpPendingOther = null;
+    const doc = { ...x, ...ch }; if (doc.category !== "Other") delete doc.catNote;
+    if (["date", "desc", "vehicleId", "plate", "category", "catNote", "pay", "amount"].every(k => (doc[k] ?? "") === (x[k] ?? ""))) return;
+    const td = xpTd(r, c === "catNote" ? "category" : c); if (td) td.innerHTML = xpCellInner(c === "catNote" ? "category" : c, { ...cur, ...(c === "veh" ? { veh: val } : c === "catNote" ? { category: "Other", catNote: val } : { [c]: val }) });
+    opsSave("expenses", { ...doc, ...rxStamp() }).then(() => toast("Saved")).catch(() => { toast("Couldn't save. Check your connection and try again."); renderExp(true); });
+    return;
+  }
+  const d = xpDraftOf(r); if (!d) return;
+  if (!d.used && val !== "" && val != null) xpDefaults(d);
+  if (c === "catNote") d.catNote = val; else d[c] = val;
+  if (c === "category" && val !== "Other") d.catNote = "";
+  if (d.miss && !xpMissing(d).length) d.miss = false;
+  xpRefreshRow(r); xpStatus();
+  if (c === "category" && val === "Other" && !d.catNote) return "note";
+}
+var xpPendingOther = null;
+// The first value in an empty line brings the date, vehicle, category and paid by from the line above.
+function xpDefaults(d) {
+  const P = xpPeriod(), y = xpDocOf(xpRowsNow.filter(k => k.startsWith("e:")).pop());
+  const last = xfLast.date ? xfLast : y ? { date: y.date, veh: mtKeyOf(y), category: y.category, pay: y.pay } : {};
+  const inP = s => s && s >= P.from && s <= P.to, today = todayISO();
+  d.used = true;
+  if (!d.date) d.date = inP(last.date) ? last.date : inP(today) ? today : (P.to < today ? P.to : P.from);
+  if (d.veh === "" && last.veh != null) d.veh = last.veh;
+  if (!d.category) d.category = last.category || "Maintenance";
+  if (!d.pay) d.pay = last.pay || "Online transfer";
+}
+async function xpSaveDraft(d, how) {
+  if (d.saving) return "skip";
+  if (xpMissing(d).length) { d.miss = true; xpRefreshRow("n:" + d.k); xpStatus(); return "missing"; }
+  d.saving = true; d.miss = false;
+  const doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: d.date, desc: d.desc, ...xpWhere(d.veh), category: d.category, ...(d.category === "Other" ? { catNote: d.catNote } : {}), pay: d.pay, amount: d.amount, createdOn: new Date().toISOString(), byName: whoAmI(), ...rxStamp() };
+  const at = xpNews.indexOf(d), last = xfLast; xpNews.splice(at, 1); xpFill();
+  xfLast = { veh: d.veh, category: d.category, pay: d.pay, date: d.date };
   try { await opsSave("expenses", doc); }
-  catch { xpNews.splice(xpNews.indexOf(fresh), 1); xpNews.splice(at, 0, d); xfLast = last; delete tr.dataset.saving; toast("Couldn't save. Check your connection and try again."); return "error"; }
-  if (how !== "all") toast(`Saved · ${rs(v.amount)}`);
-  // Move the saved line up into the list and add a fresh empty line at the end, without disturbing the cell in use.
-  const body = $("xpBody").querySelector(".xpedit tbody"); if (!body) return "saved";
-  const cur = body.querySelector(`tr[data-xnew="${d.k}"]`), next = cur?.nextElementSibling;
-  if (!body.querySelector(`tr[data-xe="${doc.id}"]`)) {
-    const P = xpPeriod();
-    if (doc.date >= P.from && doc.date <= P.to && (!xpBus || mtKeyOf(doc) === xpBus)) body.querySelector("tr[data-xnew]")?.before(xpRowEl(xpEditRow(doc)));
-    else toast(`Saved in ${new Date(doc.date + "T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })} · ${rs(v.amount)}`);
-  }
-  if (cur) { cur.remove(); if (!body.querySelector(`tr[data-xnew="${fresh.k}"]`)) body.append(xpRowEl(xpEditRow(null, fresh))); }
-  xpSticky();
-  const away = !document.activeElement || document.activeElement === document.body || !$("xpBody").contains(document.activeElement);
-  if (how === "enter" || (how === "leave" && away)) (next?.matches("[data-xnew]") ? next : body.querySelector("tr[data-xnew]"))?.querySelector('[data-f="desc"]')?.focus();
+  catch { xpNews.splice(at, 0, d); xpNews.pop(); xfLast = last; d.saving = false; toast("Couldn't save. Check your connection and try again."); renderExp(); return "error"; }
+  const P = xpPeriod();
+  if (!(doc.date >= P.from && doc.date <= P.to)) toast(`Saved in ${new Date(doc.date + "T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })} · ${rs(doc.amount)}`);
+  else if (how !== "all") toast(`Saved · ${rs(doc.amount)}`);
+  renderExp();
   return "saved";
 }
-$("xpBody").addEventListener("change", e => {
-  const tr = e.target.closest(".xpedit tr"); if (!tr || !e.target.dataset.f) return;
-  if (e.target.dataset.f === "category") {
-    const td = e.target.closest("td"), box = td.querySelector(".xpnote");
-    if (e.target.value === "Other" && !box) { td.insertAdjacentHTML("beforeend", xpNoteIn({ category: "Other", catNote: "" })); td.querySelector(".xpnote").focus(); if (tr.dataset.xe) return; }
-    if (e.target.value !== "Other" && box) { box.remove(); const d = xpDraft(tr); if (d) d.catNote = ""; }
-  }
-  if (tr.dataset.xe) xpCellSave(tr);
-});
-$("xpBody").addEventListener("input", e => { if (e.target.matches("textarea")) xpGrow(e.target); const f = e.target.dataset.f; const d = f && xpDraft(e.target.closest("tr[data-xnew]")); if (d) { d[f] = e.target.value; d.set[f] = true; e.target.closest("tr").classList.add("used"); e.target.classList.remove("bad"); if (d.miss) delete d.miss.bad[f]; } });
+
+/* Keyboard, mouse and paste */
 $("xpBody").addEventListener("keydown", e => {
-  const tr = e.target.closest?.(".xpedit tr"); if (!tr || !e.target.dataset.f) return;
-  if (e.key === "Escape" && tr.matches("[data-xnew]")) { xpNewReset(tr).querySelector('[data-f="desc"]').focus(); return; }
-  if (e.key !== "Enter") return;
-  e.preventDefault();
-  if (tr.matches("[data-xnew]")) { xpNewSave(tr, "enter"); return; }
-  // Enter moves down to the same column, as in Excel.
-  const next = tr.nextElementSibling?.querySelector(`[data-f="${e.target.dataset.f}"]`); next ? next.focus() : e.target.blur();
+  const box = $("xpEdBox");
+  if (box && box.contains(e.target)) { // typing in a cell
+    const E = xpEdit, list = E?.items && !box.querySelector(".xlist").hidden;
+    if (e.key === "Escape") { e.preventDefault(); xpCancel(); return; }
+    if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault(); const r = xpCommit(); if (r === false || r === "note") return;
+      e.key === "Enter" ? xpMove(1, 0) : xpMove(0, e.shiftKey ? -1 : 1); return;
+    }
+    if ((e.key === "ArrowDown" || e.key === "ArrowUp") && list) { e.preventDefault(); xpListMove(e.key === "ArrowDown" ? 1 : -1); return; }
+    if (E?.mode === "type" && /^Arrow/.test(e.key)) {
+      e.preventDefault(); const r = xpCommit(); if (r === false || r === "note") return;
+      xpMove(e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0, e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0);
+    }
+    return;
+  }
+  if (e.target.id !== "xpSc" || !xpAct) return;
+  const k = e.key;
+  if (/^Arrow/.test(k)) { e.preventDefault(); xpMove(k === "ArrowDown" ? 1 : k === "ArrowUp" ? -1 : 0, k === "ArrowRight" ? 1 : k === "ArrowLeft" ? -1 : 0); return; }
+  if (k === "Tab") { e.preventDefault(); xpMove(0, e.shiftKey ? -1 : 1); return; }
+  if (k === "Enter") { e.preventDefault(); xpMove(1, 0); return; }
+  if (k === "F2") { e.preventDefault(); xpOpen("edit"); return; }
+  if (k === "Delete" || k === "Backspace") {
+    e.preventDefault(); const d = xpDraftOf(xpAct.r);
+    if (d) { if (d.used) xpApply(xpAct.r, xpAct.c, ""); } else if (["category", "pay"].includes(xpAct.c)) toast("Choose another value instead."); else toast(`The ${XP_NAMES[xpAct.c]} cannot be empty.`);
+    return;
+  }
+  if (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); xpOpen("type", k); }
 });
-$("xpBody").addEventListener("focusout", e => {
-  const nr = e.target.closest?.("tr[data-xnew]");
-  setTimeout(() => {
-    if (nr && document.contains(nr) && !nr.contains(document.activeElement)) xpNewSave(nr, "leave");
-    else if (xpDeferred && !document.activeElement?.closest?.("#xpBody .xpedit")) renderExp(true);
-  }, 0);
+$("xpBody").addEventListener("input", e => { if (e.target.closest("#xpEdBox")) { $("xpEdBox").classList.remove("bad"); if (e.target.matches("textarea")) xpGrow(e.target); xpListUpd(false); } });
+$("xpBody").addEventListener("mousedown", e => {
+  const it = e.target.closest(".xlist [data-i]");
+  if (it) { e.preventDefault(); xpEdit.hi = +it.dataset.i; const r = xpCommit(); if (r === true) xpMove(0, 0); return; }
+  if (e.target.closest("#xpEdBox")) return;
+  const td = e.target.closest(".xgrid td[data-c]"), rn = e.target.closest(".xgrid td.rn");
+  if (!td && !rn) return;
+  if (!canXp()) return;
+  e.preventDefault();
+  if (xpEdit && xpCommit() === false) return;
+  const tr = (td || rn).closest("tr"); xpSel(tr.dataset.r, td ? td.dataset.c : "desc");
+});
+$("xpBody").addEventListener("dblclick", e => { const td = e.target.closest(".xgrid td[data-c]"); if (td && canXp() && !xpEdit) { xpSel(td.closest("tr").dataset.r, td.dataset.c); xpOpen("edit"); } });
+$("xpBody").addEventListener("paste", e => {
+  if (!xpAct || xpEdit || !canXp()) return;
+  const text = e.clipboardData?.getData("text/plain") || ""; if (!text) return;
+  e.preventDefault(); xpPaste(text);
+});
+async function xpPaste(text) {
+  const lines = text.replace(/\r/g, "").split("\n").filter((l, i, a) => l.trim() || i < a.length - 1).map(l => l.split("\t"));
+  if (!lines.length) return;
+  if (lines.length === 1 && lines[0].length === 1) { xpOpen("type", lines[0][0]); if (xpCommit() === true) xpMove(0, 0); return; }
+  const ci = Math.max(0, XP_COLS.indexOf(xpAct.c)); let d0 = xpDraftOf(xpAct.r), at = d0 ? xpNews.indexOf(d0) : 0;
+  const fill = [];
+  for (const cells of lines) {
+    while (xpNews[at]?.used) at++;
+    while (xpNews.length <= at) xpNews.push(xpBlank());
+    const d = xpNews[at++], got = {};
+    cells.forEach((s, j) => { const c = XP_COLS[ci + j]; if (c) got[c] = s; });
+    // Excel sheets often have "Payment type" before "Amount": take whichever of the two is a number as the amount.
+    if (got.amount != null && got.pay != null && !(num(String(got.amount).replace(/[,₹\s]/g, "")) > 0) && num(String(got.pay).replace(/[,₹\s]/g, "")) > 0) [got.amount, got.pay] = [got.pay, got.amount];
+    Object.entries(got).forEach(([c, s]) => { const v = xpReadPasted(c, s); if (c === "category" && v) { d.category = v.category; d.catNote = v.catNote || ""; } else if (v !== "") d[c] = v; });
+    if (Object.keys(got).length) { xpDefaults(d); fill.push(d); }
+  }
+  xpFill(); renderExp(true);
+  let ok = 0, bad = 0;
+  for (const d of fill) { const r = await xpSaveDraft(d, "all"); if (r === "saved") ok++; if (r === "missing") bad++; }
+  toast(`${fill.length} line${fill.length > 1 ? "s" : ""} pasted${ok ? ` · ${ok} saved` : ""}${bad ? ` · ${bad} need${bad > 1 ? "" : "s"} attention (red cells)` : ""}`);
+}
+// Clicking anywhere outside the sheet finishes the cell and the line being typed.
+document.addEventListener("mousedown", e => {
+  if (!xpAct || $("view-texp").hidden || e.target.closest?.(".xsheet")) return;
+  if (xpEdit && xpCommit() === false) xpCancel();
+  const r = xpAct.r; xpAct = null; $("xpBody").querySelectorAll(".xgrid td.sel").forEach(t => t.classList.remove("sel")); xpLeaveRow(r);
 });
 const xpGo = () => { $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus({ preventScroll: true }), 300); };
 $("xpBody").addEventListener("click", async e => {
   if (e.target.closest("[data-xsaveall]")) {
-    document.activeElement?.blur?.(); await new Promise(r => setTimeout(r, 30)); // finishes the cell being typed in
-    const rows = [...$("xpBody").querySelectorAll(".xpedit tr[data-xnew]")]; let ok = 0, bad = 0;
-    for (const tr of rows) { const r = await xpNewSave(tr, "all"); if (r === "saved") ok++; if (r === "missing") bad++; }
+    if (xpEdit && xpCommit() === false) return;
+    const used = xpNews.filter(d => d.used); let ok = 0, bad = 0;
+    for (const d of used) { const r = await xpSaveDraft(d, "all"); if (r === "saved") ok++; if (r === "missing") bad++; }
     toast(bad ? `${ok ? `${ok} saved. ` : ""}${bad} line${bad > 1 ? "s" : ""} not saved: fill the red cells.` : ok ? `${ok} expense${ok > 1 ? "s" : ""} saved` : "Everything is saved.");
     return;
   }
-  const clr = e.target.closest("[data-xclr]"); if (clr) { xpNewReset(clr.closest("tr")).querySelector('[data-f="desc"]').focus(); return; }
+  const clr = e.target.closest("[data-xclr]");
+  if (clr) { const i = xpNews.findIndex(d => d.k === clr.dataset.xclr); if (i >= 0) xpNews[i] = xpBlank(); if (xpEdit) xpCancel(); renderExp(true); return; }
   const del = e.target.closest("[data-xdel]");
   if (del) {
     const x = ops.expenses.find(y => y.id === del.dataset.xdel); if (!x) return;
     if (!await askYesNo(`Delete "${x.desc}" (${rs(num(x.amount))})?`, { yes: "Yes, delete", danger: true })) return;
-    try { await opsDelete("expenses", x.id); toast("Expense deleted"); renderExp(true); } catch { toast("Couldn't delete. Try again."); } return;
+    try { await opsDelete("expenses", x.id); toast("Expense deleted"); } catch { toast("Couldn't delete. Try again."); } return;
   }
-  const vb = e.target.closest("[data-xpveh]"); if (vb) { xpBus = xpBus === vb.dataset.xpveh ? "" : vb.dataset.xpveh; renderExp(); return; }
+  const vb = e.target.closest("[data-xpveh]"); if (vb) { xpBus = xpBus === vb.dataset.xpveh ? "" : vb.dataset.xpveh; xpScrollEnd = true; renderExp(); return; }
   const r = e.target.closest("[data-xp]"), x = r && ops.expenses.find(y => y.id === r.dataset.xp);
   if (x && canXp()) { xfRender(x); renderExp(); xpGo(); }
 });
