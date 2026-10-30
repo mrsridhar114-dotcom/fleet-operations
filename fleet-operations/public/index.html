@@ -810,6 +810,15 @@ table.ttable tr.grp .rbtn { font-size: 12px; }
 table.ttable tbody tr[data-hid], table.ttable tbody tr[data-lid] { cursor: pointer; }
 table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 #lgDrawer { width: min(940px, 100%); }
+.lgfuels { display: flex; flex-direction: column; gap: 8px; } .lgfuel { display: grid; grid-template-columns: 1.3fr .8fr .9fr 1fr auto; gap: 6px 8px; align-items: end; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.lgfuel label { display: grid; gap: 3px; font-size: 11.5px; color: var(--muted); font-weight: 600; min-width: 0; } .lgfuel input { font: inherit; font-size: 13.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px; width: 100%; min-width: 0; }
+.lgfuel .seg input { width: auto; } .lgfuel .lgfpay { display: grid; gap: 3px; font-size: 11.5px; color: var(--muted); font-weight: 600; grid-column: 1; grid-row: 2; } .lgfuel .lgfpay .seg { font-size: 13px; }
+.lgfuel .wide { grid-column: 2 / 4; grid-row: 2; } .lgfuel > label:last-of-type { grid-column: 4; grid-row: 2; } .lgfuel [data-frm] { grid-column: 5; grid-row: 1; align-self: end; }
+.lgfuelfoot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
+@media (max-width: 600px) { .lgfuel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; }
+  .lgfuel > :nth-child(1) { grid-column: 1; grid-row: 1; } .lgfuel > :nth-child(2) { grid-column: 2; grid-row: 1; } .lgfuel > :nth-child(8) { grid-column: 3; grid-row: 1; }
+  .lgfuel > :nth-child(3) { grid-column: 1; grid-row: 2; } .lgfuel > :nth-child(4) { grid-column: 2 / 4; grid-row: 2; } .lgfuel > :nth-child(5) { grid-column: 1 / 4; grid-row: 3; }
+  .lgfuel > :nth-child(6) { grid-column: 1 / 4; grid-row: 4; } .lgfuel > label:last-of-type { grid-column: 1 / 4; grid-row: 5; } }
 .payrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .paylist { display: flex; flex-direction: column; gap: 8px; }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
@@ -3297,19 +3306,21 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="field"><label for="lgPadi">Driver padi</label><input id="lgPadi" type="number" inputmode="numeric" min="0"></div>
       </div>
       <div class="three">
-        <div class="field"><label for="lgLitres">Diesel litres</label><input id="lgLitres" type="number" inputmode="decimal" min="0" step="0.01"><span class="err" id="e-lgLitres"></span></div>
-        <div class="field"><label for="lgFuel">Diesel cost</label><input id="lgFuel" type="number" inputmode="numeric" min="0"></div>
         <div class="field"><label for="lgToll">Toll gate</label><input id="lgToll" type="number" inputmode="numeric" min="0"></div>
-      </div>
-      <div class="three">
         <div class="field"><label for="lgRto">RTO</label><input id="lgRto" type="number" inputmode="numeric" min="0"></div>
         <div class="field"><label for="lgLoading">Loading</label><input id="lgLoading" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="lgBridge">Weighbridge</label><input id="lgBridge" type="number" inputmode="numeric" min="0"></div>
       </div>
-      <div class="two">
+      <div class="three">
+        <div class="field"><label for="lgBridge">Weighbridge</label><input id="lgBridge" type="number" inputmode="numeric" min="0"></div>
         <div class="field"><label for="lgOther">Other expenses</label><input id="lgOther" type="number" inputmode="numeric" min="0"></div>
         <div class="field"><label for="lgBill">Bill expenses</label><input id="lgBill" type="number" inputmode="numeric" min="0"></div>
       </div>
+    </fieldset>
+    <fieldset class="docs"><legend>Diesel</legend>
+      <p class="sub" style="margin:0 0 4px">One line for each fill. The amount is litres × rate unless you change it.</p>
+      <div class="lgfuels" id="lgFuels"></div><datalist id="lgBunks"></datalist>
+      <div class="lgfuelfoot"><button class="btn" type="button" id="lgAddFuel" style="padding:6px 12px;font-size:13px">+ Add diesel fill</button><span class="sub" id="lgFuelTot"></span></div>
+      <span class="err" id="e-lgFuels"></span>
     </fieldset>
     <fieldset class="docs"><legend>Kilometres</legend>
       <div class="two">
@@ -13891,7 +13902,7 @@ $("bkPrint").onclick = () => slipPrint(slipForm(), $("bkPrint"));
 
 /* ---------- truck trips ---------- */
 let kBusId = "", kFy = 0, lgEditId = null, lgDaysTouched = false;
-const LG_NUM = { lgRent: "rent", lgCommission: "commission", lgFuel: "fuelCost", lgToll: "toll", lgPadi: "padi", lgRto: "rto", lgLoading: "loading", lgBridge: "bridge", lgOther: "otherExp", lgBill: "billExp", lgStartKm: "startKm", lgEndKm: "endKm" };
+const LG_NUM = { lgRent: "rent", lgCommission: "commission", lgToll: "toll", lgPadi: "padi", lgRto: "rto", lgLoading: "loading", lgBridge: "bridge", lgOther: "otherExp", lgBill: "billExp", lgStartKm: "startKm", lgEndKm: "endKm" };
 const LG_EXP = ["commission", "fuelCost", "toll", "padi", "rto", "loading", "bridge", "otherExp", "billExp"];
 const legCalc = l => {
   const exp = LG_EXP.reduce((a, k) => a + num(l[k]), 0), km = l.endKm && l.startKm && l.endKm > l.startKm ? l.endKm - l.startKm : 0;
@@ -13980,11 +13991,14 @@ function openLeg(id, roundId) {
   const dv = (idk, nk, x) => x?.[idk] ? "id:" + x[idk] : x?.[nk] ? "name:" + x[nk].toUpperCase() : "";
   $("lgDriver1").value = dv("driver1Id", "driver1Name", l || last); $("lgDriver2").value = dv("driver2Id", "driver2Name", l);
   Object.entries(LG_NUM).forEach(([el, k]) => $(el).value = src[k] ?? "");
-  $("lgLitres").value = l?.litres ?? "";
+  // Diesel fills: older trips (and the Excel upload) hold only the totals; they open as one fill.
+  const fills = l?.fuels?.length ? l.fuels : l && (num(l.litres) || num(l.fuelCost)) ? [{ date: l.from, litres: l.litres || "", amount: l.fuelCost || "", rate: num(l.litres) && num(l.fuelCost) ? Math.round(l.fuelCost / l.litres * 100) / 100 : "", pay: "Card" }] : [];
+  $("lgFuels").innerHTML = fills.map(lgFuelRow).join(""); lgFuelTot();
+  $("lgBunks").innerHTML = [...new Set(ops.truckTrips.flatMap(x => (x.fuels || []).map(f => f.place)).filter(Boolean))].sort().map(p => `<option value="${esc(p)}">`).join("");
   if (!l && last?.endKm) $("lgStartKm").value = last.endKm;
   $("lgRemarks").value = l?.remarks || "";
   $("lgPays").innerHTML = (l?.payments || []).map(payRow).join("");
-  $("lgForm").querySelectorAll("input, select, #lgPays button").forEach(el => el.disabled = !canTrips); $("lgAddPay").hidden = !canTrips;
+  $("lgForm").querySelectorAll("input, select, #lgPays button, #lgFuels button").forEach(el => el.disabled = !canTrips); $("lgAddPay").hidden = !canTrips; $("lgAddFuel").hidden = !canTrips;
   $("lgForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("lgForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
   $("lgSave").hidden = !canTrips; $("lgDelete").hidden = !(canTrips && l); $("lgDelete").textContent = "Delete trip"; delete $("lgDelete").dataset.confirm;
   lgCalcRender();
@@ -13995,11 +14009,39 @@ function closeLgDrawer() { $("lgDrawer").hidden = true; lgEditId = null; if (!an
 function lgRead() {
   const l = {};
   Object.entries(LG_NUM).forEach(([el, k]) => { const v = $(el).value; if (v !== "" && +v >= 0) l[k] = Math.round(+v); });
-  if ($("lgLitres").value !== "" && +$("lgLitres").value >= 0) l.litres = Math.round(+$("lgLitres").value * 100) / 100;
+  const f = lgFuelRead(); if (f.length) { l.fuels = f; l.litres = Math.round(f.reduce((a, x) => a + x.litres, 0) * 100) / 100; l.fuelCost = Math.round(f.reduce((a, x) => a + num(x.amount), 0)); }
   l.days = num($("lgDays").value);
   l.payments = [...$("lgPays").querySelectorAll(".payrow")].map(r => ({ date: r.querySelector("[data-pd]").value, amount: Math.round(num(r.querySelector("[data-pa]").value)) })).filter(p => p.amount > 0);
   return l;
 }
+// Diesel fills of a truck trip, like the spare bus trip sheet: date, litres, rate per litre, amount, paid by (card or cash), place, odometer.
+function lgFuelRow(f = {}) {
+  const pay = f.pay === "Cash" ? "Cash" : "Card", k = Math.random().toString(36).slice(2, 7);
+  return `<div class="lgfuel"><label>Date<input type="date" data-fd value="${esc(f.date || "")}"></label><label>Litres<input type="number" inputmode="decimal" min="0" step="0.01" data-fl value="${f.litres ?? ""}"></label>` +
+    `<label>Rate / L (₹)<input type="number" inputmode="decimal" min="0" step="0.01" data-fr value="${f.rate ?? ""}"></label><label>Amount (₹)<input type="number" inputmode="decimal" min="0" step="0.01" data-fa value="${f.amount ?? ""}"${f.amount ? ' data-typed="1"' : ""}></label>` +
+    `<span class="lgfpay"><span>Paid by</span><span class="seg" role="radiogroup" aria-label="Paid by"><label><input type="radio" name="fp${k}" value="Card"${pay === "Card" ? " checked" : ""}><span>Card</span></label><label><input type="radio" name="fp${k}" value="Cash"${pay === "Cash" ? " checked" : ""}><span>Cash</span></label></span></span>` +
+    `<label class="wide">Place<input data-fp list="lgBunks" autocomplete="off" maxlength="80" placeholder="e.g. IOCL, Nellore" value="${esc(f.place || "")}"></label><label>Odometer (km)<input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}"></label>` +
+    `<button class="icon" type="button" data-frm aria-label="Remove this fill">✕</button></div>`;
+}
+function lgFuelRead() {
+  return [...$("lgFuels").querySelectorAll(".lgfuel")].map(r => { const v = s => r.querySelector(s).value, litres = Math.round(num(v("[data-fl]")) * 100) / 100, amount = Math.round(num(v("[data-fa]")) * 100) / 100, rate = Math.round(num(v("[data-fr]")) * 100) / 100;
+    const f = { date: v("[data-fd]"), litres, pay: r.querySelector('input[type="radio"]:checked')?.value || "Card" };
+    if (rate > 0) f.rate = rate; if (amount > 0) f.amount = amount; const pl = v("[data-fp]").trim().replace(/\s+/g, " "); if (pl) f.place = pl; const o = Math.round(num(v("[data-fo]"))); if (o > 0) f.odo = o;
+    return f; }).filter(f => f.litres > 0 || f.amount > 0);
+}
+function lgFuelTot() { const f = lgFuelRead(), L = f.reduce((a, x) => a + x.litres, 0), A = f.reduce((a, x) => a + num(x.amount), 0), card = f.filter(x => x.pay === "Card").reduce((a, x) => a + num(x.amount), 0);
+  $("lgFuelTot").textContent = f.length ? `${f.length} fill${f.length > 1 ? "s" : ""} · ${nf(L, 2)} L · ${rs(Math.round(A))}${card && card < A ? ` (card ${rs(Math.round(card))}, cash ${rs(Math.round(A - card))})` : ""}` : "No diesel entered"; }
+$("lgAddFuel").onclick = () => { const rows = $("lgFuels").querySelectorAll(".lgfuel"), last = rows[rows.length - 1];
+  $("lgFuels").insertAdjacentHTML("beforeend", lgFuelRow({ date: last?.querySelector("[data-fd]").value || $("lgFrom").value || todayISO(), rate: last?.querySelector("[data-fr]").value || "" }));
+  $("lgFuels").lastElementChild.querySelector("[data-fl]").focus(); };
+$("lgFuels").addEventListener("click", e => { const b = e.target.closest("[data-frm]"); if (b) { b.closest(".lgfuel").remove(); lgFuelTot(); lgCalcRender(); } });
+// Amount follows litres × rate until it is typed; a typed amount sets the rate (amount ÷ litres).
+$("lgFuels").addEventListener("input", e => {
+  const r = e.target.closest(".lgfuel"); if (!r) return; const L = num(r.querySelector("[data-fl]").value), R = r.querySelector("[data-fr]"), A = r.querySelector("[data-fa]");
+  if (e.target === A) { A.dataset.typed = A.value ? "1" : ""; if (L && num(A.value)) R.value = Math.round(num(A.value) / L * 100) / 100; }
+  else if ((e.target.matches("[data-fl]") || e.target === R) && !A.dataset.typed) A.value = L && num(R.value) ? Math.round(L * num(R.value) * 100) / 100 : "";
+  lgFuelTot();
+});
 function lgCalcRender() {
   if (!lgDaysTouched) { const d = inclDays($("lgFrom").value, $("lgTo").value); if (d) $("lgDays").value = d; }
   const l = lgRead(), c = legCalc(l);
@@ -14025,7 +14067,7 @@ $("lgForm").addEventListener("submit", async e => {
   if (!l.origin) err("lgOrigin", "Enter where the load was picked up."); if (!l.dest) err("lgDest", "Enter the destination.");
   if (!l.rent) err("lgRent", "Enter the trip rent.");
   if (l.startKm && l.endKm && l.endKm <= l.startKm) err("lgEndKm", "Must be more than the start km.");
-  if (l.litres > 2000) err("lgLitres", "Check the litres.");
+  if ((l.fuels || []).some(f => f.litres > 1000)) { $("e-lgFuels").textContent = "Check the litres: more than 1,000 L in one fill."; ok = false; }
   const setD = (n, sel) => { const v = $(sel).value; if (v.startsWith("id:")) { l[`driver${n}Id`] = v.slice(3); l[`driver${n}Name`] = drivers.find(d => d.id === v.slice(3))?.name || ""; } else if (v) l[`driver${n}Name`] = v.slice(5); };
   setD(1, "lgDriver1"); setD(2, "lgDriver2");
   const rem = $("lgRemarks").value.trim(); if (rem) l.remarks = rem;
