@@ -396,6 +396,7 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .tscard, .tscrew { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
 .tscard h3, .tscrew h3 { margin: 0 0 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
 .tsl { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 14px; } .tsl:first-of-type { border-top: 0; }
+.tkmwarn { margin: 2px 0 4px; font-size: 12px; color: var(--warn); font-weight: 600; } .mein.odobad { background: color-mix(in srgb, #f2c200 30%, var(--surface)); outline: 1.5px solid var(--warn); } .rsdg .kmodd { color: var(--warn); }
 .tsl .tkmsrc { display: block; font-size: 11.5px; color: var(--muted); } .tsl .tkmbtn { margin-left: 8px; font: 600 12px var(--body); color: var(--accent); padding: 0 4px; }
 .tkmed { flex-wrap: wrap; align-items: center; } .tkmed label { font-weight: 600; } .tkmed > span { display: flex; gap: 6px; align-items: center; } .tkmed input { width: 9em; padding: 4px 8px; } .tkmed .btn { padding: 4px 10px; }
 .tsl b { font-family: var(--mono); font-variant-numeric: tabular-nums; } .tsl.pos b { color: var(--ok); } .tsl.neg b { color: var(--danger); } .tsl.pos, .tsl.neg { font-weight: 700; }
@@ -442,12 +443,6 @@ table.metable { border-collapse: collapse; width: 100%; min-width: 1180px; font-
 .melock { display: block; text-align: right; font-family: var(--mono); color: var(--muted); padding-right: 4px; }
 .metable .open { box-sizing: border-box; height: 24px; padding: 0 6px; border: 1.5px solid var(--accent); border-radius: 5px; background: var(--surface); color: var(--accent); font: 600 11px var(--body); cursor: pointer; white-space: nowrap; } .metable .open:hover { background: var(--accent); color: var(--accent-ink); }
 .mesave { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin-top: 10px; box-shadow: 0 -4px 16px rgba(0, 0, 0, .06); } .mesave[hidden] { display: none; }
-.mecalg { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; } .mecalg .dow { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; }
-.mecd { min-height: 86px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 7px 9px; display: flex; flex-direction: column; align-items: stretch; gap: 2px; font: inherit; font-size: 12px; text-align: left; cursor: pointer; color: var(--ink); }
-.mecd .d { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; } .mecd .d small { font-weight: 500; font-size: 11px; color: var(--muted); } .mecd .cf { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; line-height: 1.35; } .mecd .cf i { font-style: normal; color: var(--muted); white-space: nowrap; } .mecd .cf b { font: 600 11px var(--mono); text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .mecd .cf.crew b { font-family: var(--body); } .mecd .cf.bal b { font-size: 12.5px; color: var(--ok); } .mecd .cf.neg b { color: var(--danger); } .mecd .cf.bal { margin-bottom: 2px; } .mecd .l { font-size: 11px; font-weight: 600; }
-.mecd.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); } .mecd.part, .mecd.review { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); } .mecd.part .l, .mecd.review .l { color: var(--warn); }
-.mecd.idle { background: var(--bg); color: var(--muted); } .mecd.todo { border: 1.5px dashed color-mix(in srgb, var(--danger) 70%, var(--line)); } .mecd.todo .l { color: var(--danger); } .mecd.future { opacity: .45; cursor: default; }
-.mecd:hover:not(:disabled) { outline: 2px solid var(--accent); }
 table.ttable th, table.ctable th { font-family: var(--mono); font-weight: 600; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 8px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; background: var(--bg); }
 table.ttable td, table.ctable td { padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: middle; }
 table.ttable th.n, table.ttable td.n, table.ctable th.n, table.ctable td.n { text-align: right; font-variant-numeric: tabular-nums; }
@@ -728,8 +723,6 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 .ocard .oc-big { font-family: var(--display); font-size: 36px; font-weight: 700; line-height: 1; margin-top: 12px; font-variant-numeric: tabular-nums; }
 .ocard .oc-big small { font-size: 17px; color: var(--muted); font-weight: 600; margin-left: 3px; }
 .ocard .oc-cap { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
-.ocard .oc-act { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 12px; }
-.ocard .oc-act .btn { padding: 7px 12px; font-size: 13px; }
 .otodo .orow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .otodo .orow:last-child { border-bottom: 0; }
 .otodo .orow .what { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; }
@@ -2066,7 +2059,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tcontrols">
           <div class="hf" id="tBusF"><label for="tBus">Bus</label><select id="tBus"></select></div>
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
-          <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="month"><span>Month view</span></label><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
+          <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="month"><span>Month view</span></label><label><input type="radio" name="tView" value="table"><span>Table</span></label></div>
           <button class="btn" type="button" id="tPrint" title="Monthly sheet in Excel">Print</button>
           <a class="btn primary" href="#trips-day" id="tDayLink">Day sheet</a>
           <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
@@ -2090,7 +2083,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
               <tfoot id="tFoot"></tfoot>
             </table>
           </div>
-          <div class="mecal" id="tCal" hidden></div>
           <div class="mesave" id="tSaveBar" hidden><span class="dot" aria-hidden="true"></span><b id="tSaveN"></b><span class="hint">Type straight into the table. Grey boxes are worked out (rate copied down, diesel = litres × rate, padi from the rules) and can be overtyped. Open day ↗ shows the full day sheet.</span><span style="flex:1"></span><button class="btn" type="button" id="tUndo">Undo changes</button><button class="btn primary" type="button" id="tSaveAll">Save</button></div>
           <div class="tpanels">
             <section class="panel"><div class="sechead"><h2 class="sec">Diesel mileage by day</h2><p id="tMileNote"></p></div><div class="tchart" id="tMileage"></div></section>
@@ -5523,14 +5515,20 @@ async function saveOpeningKm(ym, km) {
 }
 
 /* odometer chain */
+// More than this in one day is most likely a typing mistake: flagged (not refused) so it can be checked.
+const KM_DAY_MAX = 800;
+const kmOdd = run => run != null && (run <= 0 || run > KM_DAY_MAX);
+const kmOddTitle = run => run <= 0 ? "⚠ Not more than the reading before. Check it." : `⚠ ${nf(run)} km in a day. Check the reading.`;
 const KM_SRC = { set: "", prev: "from last month's final reading", vehicle: "from the vehicle record", none: "" };
 // "Kilometer starting" in the Kilometres card: the month's opening reading (1 April's for April), which the office can type in.
 function tKmStartHtml(ym, open) {
   const day1 = new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long" });
   if ($("tKm").dataset.editing === "1") return `<div class="tsl tkmed"><label for="tKmInput">Kilometer starting on ${day1}</label><span><input id="tKmInput" type="number" inputmode="numeric" min="0" value="${open.km ?? ""}">` +
     `<button class="btn primary" type="button" data-km="save">Save</button><button class="icon" type="button" data-km="cancel">Cancel</button></span></div>`;
+  const first = monthTrips(ym).find(t => t.odo), gap = first && open.km != null ? first.odo - open.km : null;
+  const odd = gap != null && kmOdd(gap) ? `<p class="tkmwarn">⚠ The first reading this month (${nf(first.odo)} on ${fmtShort(first.date)}) is ${gap <= 0 ? "not more than" : `${nf(gap)} km more than`} the starting km. Check it.</p>` : "";
   return `<div class="tsl"><span>Kilometer starting${KM_SRC[open.src] ? `<small class="tkmsrc">${KM_SRC[open.src]}</small>` : ""}</span><b>${open.km != null ? nf(open.km) : "—"}` +
-    `${canTrips ? `<button class="icon tkmbtn" type="button" data-km="edit" title="Type the odometer reading at the start of ${day1}">${open.km != null ? "Change" : "Set"}</button>` : ""}</b></div>`;
+    `${canTrips ? `<button class="icon tkmbtn" type="button" data-km="edit" title="Type the odometer reading at the start of ${day1}">${open.km != null ? "Change" : "Set"}</button>` : ""}</b></div>` + odd;
 }
 function monthTrips(ym) { return trips.filter(t => t.date.startsWith(ym)).sort((a, b) => a.date.localeCompare(b.date)); }
 function openingKm(ym) {
@@ -5584,6 +5582,8 @@ function buildTripSheet() {
     if (b.dataset.km === "cancel") { delete $("tKm").dataset.editing; renderTrips(); return; }
     const v = $("tKmInput").value;
     if (v === "" || !(+v >= 0)) { toast("Enter the odometer reading in km."); return; }
+    const ym = monthYM(tFyStart, tMonthIdx), first = monthTrips(ym).find(t => t.odo), gap = first ? first.odo - Math.round(+v) : null;
+    if (gap != null && kmOdd(gap) && !await askYesNo(`The first reading this month is ${nf(first.odo)} km on ${fmtShort(first.date)}, which is ${gap <= 0 ? "not more than" : `${nf(gap)} km more than`} ${nf(Math.round(+v))}. Save this starting km anyway?`, { yes: "Save anyway", no: "Check again" })) return;
     try { await saveOpeningKm(monthYM(tFyStart, tMonthIdx), Math.round(+v)); delete $("tKm").dataset.editing; toast("Opening km saved"); renderTrips(); }
     catch { toast("Couldn't save. Try again."); }
   });
@@ -5593,7 +5593,7 @@ function buildTripSheet() {
    meDraft["bus|date"] = { f: {field: text}, touched: {field: true} } holds what was typed until Save. Fields: start, drv, cond,
    s1–s5, tot (the day's total when the singles are not all known), lit, rate, dsl, pd, pc, pk (padi), route, exp (total expense), odo.
    Grey boxes (rate, diesel amount, padi) are worked out until typed over. */
-let meDraft = {}, meWaiting = false, tView = (() => { try { return localStorage.getItem("fleet-tview") || "table"; } catch { return "table"; } })();
+let meDraft = {}, meWaiting = false, tView = (() => { try { const v = localStorage.getItem("fleet-tview"); return v === "table" || v === "month" ? v : "month"; } catch { return "month"; } })();
 const ME_NUM = ["s1", "s2", "s3", "s4", "s5", "tot", "lit", "rate", "dsl", "pd", "pc", "pk", "route", "exp", "odo"], ME_AUTO = ["rate", "dsl", "pd", "pc", "pk"];
 const meKey0 = date => `${tBusId}|${date}`;
 // The route expenses of a day as one number, and whether it can be typed here (a list of several is changed in the day sheet).
@@ -5641,11 +5641,10 @@ function meCrewOpts(kind, val) {
   return `<option value="">—</option>` + opts.map(([v, n]) => `<option value="${esc(v)}"${v === val ? " selected" : ""}>${esc(n)}</option>`).join("");
 }
 function renderMonthEntry(ym, M) {
-  $("tTableWrap").hidden = tView !== "table"; $("tCal").hidden = tView !== "cal"; $("tRsDays").hidden = tView !== "month";
+  $("tTableWrap").hidden = tView !== "table"; $("tRsDays").hidden = tView !== "month";
   // Month view: the same month summary, then the days as cards in place of the table.
   $("tMonthView").classList.toggle("mv", tView === "month");
   meSaveBar();
-  if (tView === "cal") { renderMeCal(ym); return; }
   if (tView === "month") { $("tRsDays").innerHTML = rsDaysHtml(tBusId, ym, rsSrc(tBusId, ym)) + (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : ""); return; }
   if ($("tRows").contains(document.activeElement)) { meWaiting = true; return; }  // don't redraw under someone typing
   const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(k === "start" ? r.auto[k] ?? r.f[k] ?? "" : blank0(r.auto[k] ?? r.f[k]))}" aria-label="${k}"${extra}${ro}>`;
@@ -5667,7 +5666,7 @@ function renderMonthEntry(ym, M) {
       [1, 2, 3, 4, 5].map(i => `<td>${inp(r, "s" + i)}</td>`).join("") + `<td>${inp(r, "tot", " tot" + totCls, ` placeholder="${r.sum || ""}" title="${r.notSplit > 0 ? `${rs(r.notSplit)} not split into singles` : r.notSplit < 0 ? `Singles are ${rs(-r.notSplit)} more than the total` : "Adds up S1–S5; type the total when the singles are not all known"}"`)}</td>` +
       `<td>${inp(r, "exp", " expt", ` placeholder="${r.parts || ""}" title="${meExpTitle(r)}"`)}</td>` +
       `<td class="n mec mebal${r.bal < 0 ? " neg" : ""}" data-c="bal">${r.has ? nf(r.bal) : ""}</td><td class="n mec mecum${cum < 0 ? " neg" : ""}" data-c="cum">${r.has ? nf(cum) : ""}</td>` +
-      `<td>${inp(r, "odo", "", ` title="${r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day"}"`)}</td><td>${open}</td></tr>`;
+      `<td>${inp(r, "odo", kmOdd(r.run) ? " odobad" : "", ` title="${kmOdd(r.run) ? kmOddTitle(r.run) : r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day"}"`)}</td><td>${open}</td></tr>`;
   }).join("");
   const ran = days.filter(r => r.has && !r.idle), sumK = k => ran.reduce((a, r) => a + num(r.auto[k] ?? r.f[k]), 0);
   const totCol = ran.reduce((a, r) => a + r.col, 0), totExp = ran.reduce((a, r) => a + r.exp, 0), km = M.km;
@@ -5697,7 +5696,7 @@ function meRefresh() {
     ME_AUTO.forEach(k => { const el = tr.querySelector(`[data-k="${k}"]`); if (el && el !== document.activeElement && !r.touched[k]) { el.value = blank0(r.auto[k]); el.classList.toggle("auto", !(k === "rate" && r.f.rate)); } });
     const tot = tr.querySelector('[data-k="tot"]'); if (tot) { tot.placeholder = r.sum || ""; tot.classList.toggle("part", r.notSplit > 0); tot.classList.toggle("over", r.notSplit < 0); }
     const ex = tr.querySelector('[data-k="exp"]'); if (ex) { ex.placeholder = r.parts || ""; ex.title = meExpTitle(r); }
-    const od = tr.querySelector('[data-k="odo"]'); if (od) od.title = r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day";
+    const od = tr.querySelector('[data-k="odo"]'); if (od) { od.title = kmOdd(r.run) ? kmOddTitle(r.run) : r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day"; od.classList.toggle("odobad", kmOdd(r.run)); }
     const c = n => tr.querySelector(`[data-c="${n}"]`);
     c("bal").textContent = r.has ? nf(r.bal) : ""; c("bal").classList.toggle("neg", r.bal < 0);
     tr.classList.toggle("chg", r.changed); tr.classList.toggle("empty", !r.has); const tone = meRowTone(r); tr.classList.toggle("loss", tone === "loss"); tr.classList.toggle("part", tone === "part"); tr.title = tone === "loss" ? "Balance is negative" : tone === "part" ? `Ran ${meSg(r)} of ${SINGLES_PER_DAY} singles` : "";
@@ -5751,23 +5750,6 @@ async function meOpenDay(date) {
   if (n && canTrips) { const ok = await askYesNo(`Save the ${n} changed day${n === 1 ? "" : "s"} first?`, { yes: "Save and open", no: "Open without saving" }); if (ok) await meSaveAll(); }
   if (bwIsPhone()) { rsOpen(tBusId, date); return; }
   dbBus = tBusId; opDate = date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day";
-}
-// The figures of a day that ran, the same as on its card in Month view.
-function meCalFigs(r) {
-  const T = r.t, col = tripCollection(T), bal = col - tripExpense(T), km = rsDayKm(tBusId, r.date, T, [...winTrips(), ...trips]), lit = num(T.litres);
-  const f = (k, v, cls = "") => `<span class="cf${cls ? " " + cls : ""}"><i>${k}</i><b>${v}</b></span>`;
-  return f("Balance", `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`, bal < 0 ? "neg bal" : "bal") + f("Collection", rs(col)) + f("Expense", rs(col - bal)) +
-    f("Kms", km != null ? nf(km) : "—") + f("Diesel", num(T.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—") +
-    f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—") + f("Driver", esc(crewName("driver", T) || "—"), "crew") + f("Conductor", esc(crewName("conductor", T) || "—"), "crew");
-}
-// Calendar: each day of the month with its state; a click opens the day sheet.
-function renderMeCal(ym) {
-  const days = meDays(ym), first = (new Date(ym + "-01T00:00:00").getDay() + 6) % 7;
-  $("tCal").innerHTML = `<div class="mecalg">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => `<span class="dow">${d}</span>`).join("")}${"<span></span>".repeat(first)}` +
-    days.map(r => { const sh = rsDoc(tBusId, r.date), st = r.future ? "future" : r.idle ? "idle" : sh?.status === "submitted" ? "review" : !r.t ? "todo" : totalOnly(r.t) ? "part" : "ok";
-      const lbl = { future: "", idle: `Did not run${r.t?.idleReason ? ` · ${r.t.idleReason}` : ""}`, review: "Conductor sent · to approve", todo: "Not entered", part: "Total only", ok: "" }[st];
-      return `<button type="button" class="mecd ${st}" data-open="${r.date}"${r.future ? " disabled" : ""}><span class="d">${r.d}<small>${r.t?.start || plannedStart(r.date) || ""}</small></span>${r.t && !r.idle ? meCalFigs(r) : ""}${lbl ? `<span class="l">${esc(lbl)}</span>` : ""}</button>`; }).join("") + `</div>` +
-    `<p class="hint" style="margin:8px 0 0">Click a day to open its day sheet.</p>`;
 }
 
 /* render */
@@ -9107,7 +9089,7 @@ function rsDaysHtml(bus, ym, src) {
         // The day's balance on the first line, like the month's total balance at the top.
         `${S.money ? `<span class="rsdbal${S.bal < 0 ? " neg" : ""}"><i>Balance</i>${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}</span>` : ""}</span>` +
         (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Starting", esc(T?.start || "—"))}` +
-          `${f("Kms", km != null ? nf(km) : "—")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
+          `${f("Kms", km != null ? `${km > KM_DAY_MAX ? "⚠ " : ""}${nf(km)}` : "—", km > KM_DAY_MAX ? "kmodd" : "")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
           `<span class="rsdc">${f("Driver", esc(crewName("driver", T) || "—"))}${f("Conductor", esc(crewName("conductor", T) || "—"))}</span>` : "") +
         `${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
     `</div></section>`;
@@ -9380,10 +9362,10 @@ function renderHub() {
       <div class="oc-big">${todo}<small>to fill</small></div><p class="oc-cap">${L.sent.length} waiting for approval</p>
       <div>${L.back.length ? `<span class="pill d30">${L.back.length} sent back</span>` : todo ? `<span class="pill d30">${todo} trip sheet${todo === 1 ? "" : "s"} to fill</span>` : '<span class="pill ok">Nothing to fill</span>'}</div>
       <span class="oc-go">Open ›</span></a>`; })() : ""}
-    <article class="ocard"><div class="oc-top">${ICONS.truck}<div><h3>Trucks</h3><div class="oc-kind">Per load, grouped into round trips</div></div></div>
+    <a class="ocard oclink" href="#trips-truck" aria-label="Open Trucks"><div class="oc-top">${ICONS.truck}<div><h3>Trucks</h3><div class="oc-kind">Per load, grouped into round trips</div></div></div>
       <div class="oc-big">${tl.length}<small>trip${tl.length === 1 ? "" : "s"}</small></div><p class="oc-cap">in ${mLabel} · ${rs(tl.reduce((a, l) => a + num(l.rent), 0))} freight</p>
       <div>${openR.length ? `<span class="pill d30">${openR.length} round trip${openR.length === 1 ? "" : "s"} not settled</span>` : `<span class="pill off">${tk.length} truck${tk.length === 1 ? "" : "s"}</span>`}</div>
-      <div class="oc-act"><a class="btn" href="#trips-truck">Open trips</a></div></article>`;
+      <span class="oc-go">Open ›</span></a>`;
   $("oTodoTitle").textContent = `To do · ${fmtDate(opDate)}`;
   const rows = [];
   if (ready) pend.forEach(b => rows.push(`<div class="orow"><div class="what"><span class="plate ${b.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(b))}</span><span>Route bus</span><span class="pill d30">Not entered</span></div>${canTrips ? `<button class="btn primary" type="button" data-go="day" data-id="${b.id}">Enter now</button>` : `<button class="btn" type="button" data-go="day" data-id="${b.id}">View</button>`}</div>`));
@@ -9538,7 +9520,8 @@ function dbCalc() {
   $("dbExpAllHint").className = told && (unsplit || parts > told) ? "hint warn" : "hint";
   const prev = prevOdoFor(dbBus, opDate), odo = num($("dbOdo").value), km = odo && prev != null ? odo - prev : null;
   $("dbOdoStart").textContent = prev != null ? nf(prev) : "—";
-  $("dbOdoHint").textContent = prev == null ? "No earlier reading" : km > 0 ? `${nf(km)} km run${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}` : "Start is the last day's end reading.";
+  $("dbOdoHint").textContent = prev == null ? "No earlier reading" : km > KM_DAY_MAX ? `⚠ ${nf(km)} km in a day. Check the end km, or the starting km of the month.` : km > 0 ? `${nf(km)} km run${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}` : "Start is the last day's end reading.";
+  $("dbOdoHint").className = km > KM_DAY_MAX ? "hint warn" : "hint";
   $("dbMCol").textContent = rs(col); $("dbMBal").textContent = `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`; $("dbMBal").parentElement.classList.toggle("neg", bal < 0);
   $("dbMBrk").innerHTML = [["Diesel", num($("dbFuel").value)], ["Padi", num($("dbPayD").value) + num($("dbPayC").value) + num($("dbPayK").value)], ["Route expenses", other], ["Other, not split", unsplit, "ns"]]
     .filter(([, v, c]) => !c || v).map(([l, v, c]) => `<div${c ? ` class="${c}"` : ""}><span>${l}</span><b>${rs(v)}</b></div>`).join("");
