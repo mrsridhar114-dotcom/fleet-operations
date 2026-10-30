@@ -1443,6 +1443,22 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xc1 { --h: #3b9a1e; } .xc2 { --h: #2f6fd6; } .xc3 { --h: #e07b12; } .xc4 { --h: #9b3bc0; } .xc5 { --h: #5b6b73; } .xc6 { --h: #0f9a8e; } .xc7 { --h: #c0392b; }
 .xpbody { margin-top: 4px; } .xpbody > .panel { margin-top: 10px; }
 .xpform { margin: 0; } .xpform [hidden] { display: none !important; }
+/* Expense entry lines and the office's review */
+#view-texp.xrmode .xphead .tcontrols, #view-texp.xrmode #xpViewBtn { display: none !important; } #view-texp.xrmode .xphead .mclose { margin-left: auto; }
+#view-texp.xrmode .xpbody { display: flex; flex-direction: column; gap: 12px; }
+.xrchip { display: inline-block; padding: 2px 9px; border-radius: 99px; font: 600 12px var(--body); white-space: nowrap; } .xr-d { background: var(--bg); color: var(--muted); border: 1px solid var(--line); } .xr-s { background: var(--warn-soft); color: var(--warn); } .xr-r { background: var(--danger-soft); color: var(--danger); } .xr-a { background: var(--ok-soft); color: var(--ok); }
+.xrwhy { display: block; color: var(--danger); font-size: 12px; margin-top: 3px; } .xpfh .xrwhy { display: inline; margin: 0; }
+.xrtab td, .xrtab th { padding: 8px 10px; } .xrtab tr.xropen { cursor: pointer; } .xrtab tr.xropen:hover td { background: var(--accent-soft); } .xrtab tr.on td { background: var(--accent-soft); }
+.xrcard { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 10px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 3px 10px; align-items: start; margin-top: 8px; }
+.xrcard.rv { grid-template-columns: minmax(0, 1fr) auto; } .xrcard.rv .s { grid-column: 1 / -1; } .xrcard.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.xrcard input[type=checkbox] { width: 20px; height: 20px; margin: 2px 0 0; } .xrcard .t { font-weight: 600; min-width: 0; } .xrcard .a { font: 700 15px var(--mono); text-align: right; } .xrcard .s { grid-column: 2 / -1; color: var(--muted); font-size: 13px; } .xrcard .st { grid-column: 2 / -1; } .xrcard.xropen { cursor: pointer; }
+.xrsend { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: 12px -16px -16px; padding: 10px 16px; background: var(--surface); border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; }
+.xrsend .btn { min-width: 170px; } .xrsend .btn:disabled { opacity: .5; }
+#xrRev { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; } #xrRev[hidden] { display: none; }
+.xrbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--line)); background: var(--warn-soft); border-radius: 10px; font-size: 14px; } .xrbar .sub { flex: 1; } .xrbar .btn { padding: 6px 14px; }
+.xrrev { margin: 0; } .xrrev .xpform { margin-top: 12px; } .xrtab .xracts { flex-wrap: nowrap; } .xracts, .xrbk { display: flex; gap: 6px; flex-wrap: wrap; } .xracts .btn, .xrbk .btn { padding: 5px 10px; font-size: 13px; min-height: 0; white-space: nowrap; } .xrbk input { flex: 1; min-width: 180px; padding: 6px 9px; }
+.xrcard .xracts, .xrcard .xrbk { grid-column: 1 / -1; margin-top: 6px; } .xrcard .xracts .btn, .xrcard .xrbk .btn { flex: 1; padding: 8px 6px; font-size: 14px; }
+@media (max-width: 700px) { .xrsend { margin: 12px -14px -14px; } .xrsend .btn { min-width: 0; flex: 1; } }
 /* Sheet */
 .xps { display: grid; grid-template-columns: minmax(0, 1fr) 250px; column-gap: 14px; align-items: start; }
 .xps > [data-slot="top"] { grid-column: 1 / -1; grid-row: 1; } .xps > [data-slot="top"]:not(:empty) { margin-bottom: 10px; }
@@ -1866,7 +1882,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
             Trip sheet<span class="badge" id="tsBadge" hidden></span></a></li>
           <li data-mod="expenses"><a class="nav" href="#expenses" data-view="texp">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
-            Expenses</a></li>
+            Expenses<span class="badge" id="xrBadge" hidden></span></a></li>
           <li data-mod="maintenance"><a class="nav" href="#maintenance" data-view="tmaint">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>
             Maintenance entry</a></li>
@@ -2490,13 +2506,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <!-- ================= Expenses ================= -->
     <section class="wrap twrap" id="view-texp" hidden>
       <header class="top xphead">
-        <h1>Expenses<span class="ro-tag" id="xpRoTag" hidden>View only</span></h1>
+        <h1><span id="xpTitle">Expenses</span><span class="ro-tag" id="xpRoTag" hidden>View only</span></h1>
         <div class="tcontrols">
           <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous year">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next year">›</button></div>
         </div>
         <button class="btn xpviewbtn" type="button" id="xpViewBtn">📊 Summary</button>
         <a class="btn mclose" href="#home" aria-label="Close">Close ✕</a>
       </header>
+      <div id="xrRev" hidden></div>
       <div class="xpbody" id="xpBody"></div>
       <section class="panel xpform" id="xpForm" hidden></section>
     </section>
@@ -3391,7 +3408,7 @@ const MODULES = [
   { id: "trips", name: "Trip sheet", abbr: "TS", levels: ["none", "view", "update", "edit"] },
   { id: "bookings", name: "Booking planner", abbr: "BP", levels: ["none", "view", "request", "edit"] },
   { id: "tripsheets", name: "Spare bus trip sheet", abbr: "ST", levels: ["none", "view", "update", "edit"] },
-  { id: "expenses", name: "Expenses", abbr: "EX" },
+  { id: "expenses", name: "Expenses", abbr: "EX", levels: ["none", "view", "request", "edit"], lab: { request: "Enter and send" } },
   { id: "maintenance", name: "Maintenance", abbr: "MT", levels: ["none", "view", "update", "edit"], lab: { update: "Add entries" } },
   { id: "users", name: "User master", abbr: "UM" }
 ];
@@ -3411,6 +3428,8 @@ const ROLES = {
   "Conductor": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "update", bookings: "none", tripsheets: "none", expenses: "none", maintenance: "none", users: "none" },
   // Maintenance entry: adds what was done to a vehicle (km, date, jobs) and sees the maintenance summary. Nothing else.
   "Maintenance entry": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "none", expenses: "none", maintenance: "update", users: "none" },
+  // Expense entry: enters his own expenses (with the bill) and sends them to the office, which approves them into Expenses. Nothing else.
+  "Expense entry": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "none", expenses: "request", maintenance: "none", users: "none" },
   "Booking planner + Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "update", expenses: "none", maintenance: "none", users: "none" },
 };
 const fullAccess = () => ({ ...ROLES.Admin });
@@ -5953,8 +5972,8 @@ let tt; function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidde
 /* ================= Trip sheet home · route bus daily entry · spare bus bookings · truck trips ================= */
 // Spare bus bookings live in "bookings", truck trips in "truckTrips" (grouped into round trips by roundId),
 // and the open / closed state of each round trip in "truckRounds".
-const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1", routeSheets: "fleet-routesheets.v1", expenses: "fleet-expenses.v1", maintLog: "fleet-maintlog.v1", maintTypes: "fleet-mainttypes.v1" };
-const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [], routeSheets: [], expenses: [], maintLog: [], maintTypes: [] };
+const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1", routeSheets: "fleet-routesheets.v1", expenses: "fleet-expenses.v1", maintLog: "fleet-maintlog.v1", maintTypes: "fleet-mainttypes.v1" , expenseReqs: "fleet-expreqs.v1"};
+const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [], routeSheets: [], expenses: [], expenseReqs: [], maintLog: [], maintTypes: [] };
 let opsUnsubs = [], allTripMonths = [], allTripYears = [], dayTrips = [], dayUnsub = null, dayKey = "", dayLoaded = "";
 let opDate = todayISO();
 const genId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6389,6 +6408,9 @@ const xpTag = (c, note) => `<span class="xptag ${XP_CC[c] || "xc5"}">${esc(c || 
 const xpCatTxt = x => x.category === "Other" && x.catNote ? `Other: ${x.catNote}` : x.category || "";
 const xpNarrow = w => matchMedia(`(max-width: ${w}px)`).matches;
 function renderExp(force) {
+  $("view-texp").classList.toggle("xrmode", xrMine()); $("xpTitle").textContent = xrMine() ? "My expenses" : "Expenses";
+  if (xrMine()) { renderXr(); return; }
+  renderXrRev();
   const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to), can = canXp();
   { const n = new Map(); all.forEach(x => { const k = xpDupKey(x); n.set(k, (n.get(k) || 0) + 1); }); xpDups = new Set([...n].filter(([, c]) => c > 1).map(([k]) => k)); }
   if (!xpDups.size) delete xpFilt.dup;
@@ -6402,7 +6424,7 @@ function renderExp(force) {
   const none = `<p class="sub" style="margin:0;padding:14px">No expenses in ${esc(P.label)}${xpFiltOn() ? " match the filter" : ""}.</p>`;
   const tip = can ? ' title="Tap to change" style="cursor:pointer"' : "";
   if (!xpNarrow(1000)) {
-    const F = $("xpForm"); if (F) { F.hidden = true; $("view-texp").appendChild(F); }
+    const F = $("xpForm"); if (F && xfMode !== "review") { F.hidden = true; $("view-texp").appendChild(F); }
     $("xpViewBtn").textContent = xpView === "summary" ? "▦ Back to the sheet" : "📊 Summary";
     if (xpView === "summary") { xpSummaryRender({ P, all, VS, sum }); return; }
     xpGridRender({ P, all, list, VS, sum, can, force }); return;
@@ -6418,13 +6440,105 @@ function renderExp(force) {
   // The entry form is one element moved into place, so whatever is being typed stays.
   const F = $("xpForm"), act = F.contains(document.activeElement) ? document.activeElement : null;
   $("xpBody").innerHTML = h;
+  if (xfMode === "review") return;
   F.className = `panel xpform xpyel f-top${xpEd ? " ed" : ""}`; F.hidden = !can;
   if (can) {
     $("xpBody").querySelector('[data-slot="top"]').appendChild(F);
-    if (!$("xfDate")) xfRender(null); else if (document.activeElement !== $("xfVeh")) xfVehOpts();
+    if (!$("xfDate") || xfMode === "mine") xfRender(null); else if (document.activeElement !== $("xfVeh")) xfVehOpts();
     if (act && document.contains(act)) act.focus({ preventScroll: true });
   }
 }
+/* ---------- Expense entry: lines sent to the office for approval ("expenseReqs") ----------
+   A line: the expense fields + status ("draft", "submitted", "rejected", "approved"), byAcct (his sign-in), byName, submittedOn,
+   rejectReason / rejectedByName (sent back), approvedOn / approvedByName / expenseId (the line it became in Expenses). */
+const xrMine = () => acc.expenses === "request";
+const xrCan = () => platformWrite && xrMine();
+const xrMyList = () => ops.expenseReqs.filter(r => r.byAcct && r.byAcct === myId());
+const XR_ST = { draft: ["Draft", "xr-d"], submitted: ["Sent to office", "xr-s"], rejected: ["Sent back", "xr-r"], approved: ["Approved", "xr-a"] };
+const xrChip = r => `<span class="xrchip ${XR_ST[r.status]?.[1] || "xr-d"}">${XR_ST[r.status]?.[0] || "Draft"}</span>${r.status === "rejected" && r.rejectReason ? `<span class="xrwhy">${esc(r.rejectReason)}</span>` : ""}`;
+const xrBill = r => r.bills?.length ? ` <span class="xrclip" title="${r.bills.length} bill${r.bills.length > 1 ? "s" : ""}">📎${r.bills.length > 1 ? r.bills.length : ""}</span>` : "";
+let xrSel = new Set(), xrOpenRev = false, xrBackId = null;
+function renderXr() {
+  const F = $("xpForm"), mine = xrMyList(), can = xrCan(), wide = !xpNarrow(700), act = F.contains(document.activeElement) ? document.activeElement : null;
+  const rank = { rejected: 0, draft: 1, submitted: 2, approved: 3 };
+  const list = mine.filter(r => r.status !== "approved").concat(mine.filter(r => r.status === "approved").sort((a, b) => String(b.approvedOn || "").localeCompare(String(a.approvedOn || ""))).slice(0, 30))
+    .sort((a, b) => (rank[a.status] ?? 1) - (rank[b.status] ?? 1) || String(b.date).localeCompare(String(a.date)));
+  [...xrSel].forEach(id => { const r = mine.find(x => x.id === id); if (!r || !["draft", "rejected"].includes(r.status)) xrSel.delete(id); });
+  const open = r => can && ["draft", "rejected"].includes(r.status), tick = r => open(r) ? `<input type="checkbox" data-xrsel="${r.id}"${xrSel.has(r.id) ? " checked" : ""} aria-label="Send this line">` : "";
+  const line = r => [fmtShort(r.date), `${esc(r.desc || "")}${xrBill(r)}`, esc(xpKeyName(mtKeyOf(r), r)), xpTag(r.category, r.catNote), esc(r.pay || "")];
+  const rows = wide
+    ? `<div class="tscroll"><table class="ctable xrtab"><thead><tr><th></th><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th>Paid by</th><th class="n">Amount</th><th>Status</th></tr></thead><tbody>` +
+      list.map(r => { const c = line(r); return `<tr data-xrid="${r.id}"${open(r) ? ' class="xropen" title="Click to change"' : ""}><td>${tick(r)}</td><td class="num">${c[0]}</td><td>${c[1]}</td><td class="num" style="white-space:nowrap">${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td><td class="n">${nf(num(r.amount))}</td><td>${xrChip(r)}</td></tr>`; }).join("") + `</tbody></table></div>`
+    : list.map(r => { const c = line(r); return `<div class="xrcard${open(r) ? " xropen" : ""}" data-xrid="${r.id}">${tick(r) || "<span></span>"}<span class="t">${c[1]}</span><b class="a">${rs(num(r.amount))}</b><span class="s">${c[0]} · ${c[2]} · ${esc(r.category || "")}${r.catNote ? `: ${esc(r.catNote)}` : ""} · ${c[4]}</span><span class="st">${xrChip(r)}</span></div>`; }).join("");
+  const selTot = [...xrSel].reduce((a, id) => a + num(mine.find(r => r.id === id)?.amount), 0);
+  $("xpBody").innerHTML = `<div data-slot="top"></div><section class="panel xrmy"><div class="sechead"><h2 class="sec">My lines</h2><p>Drafts and lines sent back can be changed: ${wide ? "click" : "tap"} one. Tick them and send them to the office.</p></div>` +
+    (list.length ? rows : `<p class="sub" style="margin:8px 0 0">No expenses yet. Add one above.</p>`) +
+    (can && mine.some(open) ? `<div class="xrsend"><span class="sub">${xrSel.size ? `${xrSel.size} ticked · ${rs(selTot)}` : "Tick the lines to send"}</span><button type="button" class="btn primary" data-xrsend${xrSel.size ? "" : " disabled"}>Send ${xrSel.size || ""} to office →</button></div>` : "") + `</section>`;
+  F.className = `panel xpform xpyel f-top${xpEd ? " ed" : ""}`; F.hidden = !can;
+  if (can) { $("xpBody").querySelector('[data-slot="top"]').appendChild(F); if (!$("xfDate") || xfMode !== "mine") xfRender(null, "mine"); else if (document.activeElement !== $("xfVeh")) xfVehOpts(); if (act && document.contains(act)) act.focus({ preventScroll: true }); }
+  $("xrRev").hidden = true; $("xrRev").innerHTML = "";
+}
+async function xrSend() {
+  const mine = xrMyList(), go = [...xrSel].map(id => mine.find(r => r.id === id)).filter(r => r && ["draft", "rejected"].includes(r.status));
+  if (!go.length) return;
+  let n = 0;
+  for (const r of go) { const d = { ...r, status: "submitted", submittedOn: new Date().toISOString(), submitCount: (r.submitCount || 0) + 1, updatedOn: new Date().toISOString() }; delete d.rejectReason;
+    try { await opsSave("expenseReqs", d); n++; xrSel.delete(r.id); } catch {} }
+  toast(n === go.length ? `${n} line${n > 1 ? "s" : ""} sent to the office` : `${n} of ${go.length} sent. Check your connection and send the rest again.`); renderExp();
+}
+// Approve: the line goes into Expenses as the office's own line (with its bill), and the sent line is marked approved.
+async function xrApprove(r, f = r) {
+  if (!r) return false;
+  const now = new Date().toISOString(), doc = { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: f.date, desc: f.desc, vehicleId: f.vehicleId || "", plate: f.plate || "", category: f.category, ...(f.catNote ? { catNote: f.catNote } : {}),
+    pay: f.pay, amount: num(f.amount), ...(f.bills?.length ? { bills: f.bills } : {}), createdOn: r.createdOn || now, byName: r.byName || "", fromReq: r.id, approvedByName: whoAmI(), approvedOn: now, ...rxStamp() };
+  try {
+    await opsSave("expenses", doc);
+    const keep = { date: doc.date, desc: doc.desc, vehicleId: doc.vehicleId, plate: doc.plate, category: doc.category, pay: doc.pay, amount: doc.amount };
+    const d = { ...r, ...keep, status: "approved", approvedOn: now, approvedByName: whoAmI(), expenseId: doc.id }; if (doc.catNote) d.catNote = doc.catNote; else delete d.catNote; if (doc.bills) d.bills = doc.bills; else delete d.bills;
+    await opsSave("expenseReqs", d);
+    toast(`Approved · ${rs(doc.amount)} added to Expenses${doc.date < xpPeriod().from || doc.date > xpPeriod().to ? ` (FY ${fyLabel(fyOf(doc.date))})` : ""}`); return true;
+  } catch { toast("Couldn't approve. Check your connection and try again."); return false; }
+}
+// The office: a bar with the lines waiting, and the list to approve, change or send back (above the sheet).
+function renderXrRev() {
+  const el = $("xrRev"), w = canXp() ? ops.expenseReqs.filter(r => r.status === "submitted").sort((a, b) => String(a.submittedOn || "").localeCompare(String(b.submittedOn || ""))) : [];
+  const F = $("xpForm"), reviewing = xfMode === "review" && w.some(r => r.id === xpEd);
+  if (el.contains(F)) { F.hidden = true; $("view-texp").appendChild(F); }  // the form is one element: keep it out of what is redrawn
+  if (xfMode === "review" && !reviewing) xfMode = "";
+  if (!w.length) { el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  const who = [...new Set(w.map(r => r.byName).filter(Boolean))], wide = !xpNarrow(700), tot = w.reduce((a, r) => a + num(r.amount), 0);
+  const acts = r => xrBackId === r.id
+    ? `<div class="xrbk"><input id="xrWhy" maxlength="200" placeholder="Why it is sent back (he will see this)" aria-label="Reason for sending back"><button type="button" class="btn danger" data-xrbkgo="${r.id}">Send back</button><button type="button" class="btn" data-xrbkno>Cancel</button></div>`
+    : `<div class="xracts"><button type="button" class="btn primary" data-xrok="${r.id}">✓ Approve</button><button type="button" class="btn" data-xrch="${r.id}">Change</button><button type="button" class="btn" data-xrbk="${r.id}">Send back</button></div>`;
+  const bills = r => r.bills?.length ? r.bills.map(b => `<a class="filelink" href="/_blob/${encodeURIComponent(b.id)}" target="_blank" rel="noopener" title="${esc(b.name || "Bill")}">📎</a>`).join(" ") : "";
+  const by = r => `${esc(r.byName || "")}${r.submittedOn ? ` · ${fmtStamp(r.submittedOn)}` : ""}`;
+  const list = !xrOpenRev ? "" : wide
+    ? `<section class="panel xrrev"><div class="sechead"><h2 class="sec">Waiting for approval (${w.length})</h2><p>Approve adds the line to Expenses below. Change any box first if needed, or send it back with a reason.</p></div><div class="tscroll"><table class="ctable xrtab"><thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th>Paid by</th><th class="n">Amount</th><th>Bill</th><th>Sent by</th><th></th></tr></thead><tbody>` +
+      w.map(r => `<tr${r.id === xpEd && reviewing ? ' class="on"' : ""}><td class="num">${fmtShort(r.date)}</td><td>${esc(r.desc || "")}</td><td class="num" style="white-space:nowrap">${esc(xpKeyName(mtKeyOf(r), r))}</td><td>${xpTag(r.category, r.catNote)}</td><td>${esc(r.pay || "")}</td><td class="n">${nf(num(r.amount))}</td><td>${bills(r)}</td><td class="sub">${by(r)}</td><td>${acts(r)}</td></tr>`).join("") + `</tbody></table></div><div data-slot="rev"></div></section>`
+    : `<section class="panel xrrev"><h2 class="sec" style="margin:0 0 8px">Waiting for approval (${w.length})</h2>` +
+      w.map(r => `<div class="xrcard rv${r.id === xpEd && reviewing ? " on" : ""}"><span class="t">${esc(r.desc || "")} ${bills(r)}</span><b class="a">${rs(num(r.amount))}</b><span class="s">${fmtShort(r.date)} · ${esc(xpKeyName(mtKeyOf(r), r))} · ${esc(r.category || "")}${r.catNote ? `: ${esc(r.catNote)}` : ""} · ${esc(r.pay || "")}</span><span class="s">Sent by ${by(r)}</span>${acts(r)}</div>`).join("") + `<div data-slot="rev"></div></section>`;
+  el.innerHTML = `<div class="xrbar"><b>⏳ ${w.length} expense${w.length > 1 ? "s" : ""} waiting for approval</b><span class="sub">${rs(tot)}${who.length ? ` · sent by ${esc(who.join(", "))}` : ""}</span><button type="button" class="btn ${xrOpenRev ? "" : "primary"}" data-xrtoggle>${xrOpenRev ? "Hide" : "Review"}</button></div>` + list;
+  if (reviewing && xrOpenRev) { el.querySelector('[data-slot="rev"]').appendChild(F); F.className = "panel xpform xpyel ed"; F.hidden = false; }
+}
+document.addEventListener("click", async e => {
+  if (!e.target.closest?.("#view-texp")) return;
+  const g = (sel) => e.target.closest(sel);
+  if (g("[data-xrtoggle]")) { xrOpenRev = !xrOpenRev; if (!xrOpenRev && xfMode === "review") xfRender(null, ""); renderExp(true); return; }
+  const ok = g("[data-xrok]"); if (ok) { ok.disabled = true; const r = ops.expenseReqs.find(x => x.id === ok.dataset.xrok); if (await xrApprove(r)) renderExp(true); else ok.disabled = false; return; }
+  const ch = g("[data-xrch]"); if (ch) { const r = ops.expenseReqs.find(x => x.id === ch.dataset.xrch); xrBackId = null; xfRender(r, "review"); renderExp(true); $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
+  const bk = g("[data-xrbk]"); if (bk) { xrBackId = bk.dataset.xrbk; renderExp(true); setTimeout(() => $("xrWhy")?.focus(), 30); return; }
+  if (g("[data-xrbkno]")) { xrBackId = null; renderExp(true); return; }
+  const go = g("[data-xrbkgo]"); if (go) { const why = $("xrWhy").value.trim(); if (!why) { toast("Type why it is sent back. He will see it."); $("xrWhy").focus(); return; }
+    const r = ops.expenseReqs.find(x => x.id === go.dataset.xrbkgo); if (!r) return;
+    try { await opsSave("expenseReqs", { ...r, status: "rejected", rejectReason: why, rejectedByName: whoAmI(), rejectedOn: new Date().toISOString() }); xrBackId = null; if (xpEd === r.id) xfRender(null, ""); toast(`Sent back to ${r.byName || "him"}`); renderExp(true); }
+    catch { toast("Couldn't save. Check your connection and try again."); } return; }
+  // Expense entry: tick, send, or open a line to change it
+  if (g("[data-xrsend]")) { xrSend(); return; }
+  const tk = g("[data-xrsel]"); if (tk) { tk.checked ? xrSel.add(tk.dataset.xrsel) : xrSel.delete(tk.dataset.xrsel); renderExp(); return; }
+  const op = g(".xropen[data-xrid]"); if (op && xrCan()) { const r = xrMyList().find(x => x.id === op.dataset.xrid); if (r) { xfRender(r, "mine"); renderExp(); $("xpForm").scrollIntoView({ block: "start", behavior: "smooth" }); } }
+});
+document.addEventListener("keydown", e => { if (e.target.id === "xrWhy" && e.key === "Enter") { e.preventDefault(); document.querySelector("[data-xrbkgo]")?.click(); } });
 // A vehicle's number for a key: the master's number, the number kept on old rows, or "Office / general".
 function xpKeyName(k, x) {
   const v = mtVehOf(k); if (v) return plateOf(v);
@@ -7040,11 +7154,16 @@ function monthShift(ym, n) { const d = new Date(ym + "-01T00:00:00"); d.setMonth
 
 // The entry row, in the order of the Excel sheet: date, description, vehicle, category, amount and paid by.
 let xfLast = { veh: "", category: "Maintenance", pay: "Online transfer", date: "" };
-function xfRender(x) {
-  xpEd = x?.id || null;
+// The entry form. xfMode: "" the office's own expense, "mine" an Expense entry person's line (saved for approval),
+// "review" the office checking a line sent for approval (Approve adds it to Expenses).
+let xfMode = "";
+function xfRender(x, mode = "") {
+  xpEd = x?.id || null; xfMode = mode;
   const v = x || { date: xfLast.date || todayISO(), desc: "", category: xfLast.category, pay: xfLast.pay, amount: "" };
   const opt = (list, cur) => (cur && !list.includes(cur) ? [cur, ...list] : list).map(o => `<option${o === cur ? " selected" : ""}>${esc(o)}</option>`).join("");
-  $("xpForm").innerHTML = `<div class="xpfh"><b>${x ? "Change expense" : "New expense"}</b><span class="sub">${x ? "Make the change and tap Save." : "Fill in the details and tap Add (or press Enter)."}</span></div>` +
+  const head = mode === "review" ? [`Check expense from ${esc(x?.byName || "staff")}`, "Correct any box, then Approve. It is added to Expenses."] : mode === "mine" ? (x ? [x.status === "rejected" ? "Correct the expense" : "Change expense", x.status === "rejected" ? `Sent back: ${esc(x.rejectReason || "")}. Correct it, Save, then send it again.` : "Make the change and tap Save."] : ["New expense", "Fill in and tap Add. Then tick your lines below and send them to the office."])
+    : x ? ["Change expense", "Make the change and tap Save."] : ["New expense", "Fill in the details and tap Add (or press Enter)."];
+  $("xpForm").innerHTML = `<div class="xpfh"><b>${head[0]}</b><span class="sub${mode === "mine" && x?.status === "rejected" ? " xrwhy" : ""}">${head[1]}</span></div>` +
     `<div class="xpgrid">` +
     `<label class="xpdt"><span>Date</span><input type="date" id="xfDate" value="${esc(v.date)}" max="${todayISO()}"></label>` +
     `<label class="xpd"><span>Expense description</span><textarea id="xfDesc" rows="1" placeholder="e.g. Tyre rebuilt (2 nos)">${esc(v.desc || "")}</textarea></label>` +
@@ -7054,7 +7173,8 @@ function xfRender(x) {
     `<label class="xpnotef" id="xfNoteL"${v.category === "Other" ? "" : " hidden"}><span>Other: what was it?</span><input type="text" id="xfNote" value="${esc(v.catNote || "")}" placeholder="e.g. Office stationery"></label>` +
     `<label class="xphalf"><span>Paid by</span><select id="xfPay">${opt(XP_PAY, v.pay)}</select></label>` +
     `<label class="xphalf"><span>Amount (₹)</span><input type="number" id="xfAmt" inputmode="numeric" min="0" value="${esc(String(v.amount ?? ""))}" placeholder="0"></label>` +
-    `<div class="xpbtns"><button type="button" class="btn primary" id="xfSave">${x ? "Save" : "+ Add"}</button>${x ? `<button type="button" class="btn" id="xfDel">Delete</button><button type="button" class="btn" id="xfCancel">Cancel</button>` : ""}</div>` +
+    `<div class="xpbtns">${mode === "review" ? `<button type="button" class="btn primary" id="xfSave">✓ Approve</button><button type="button" class="btn" id="xfBack">Send back</button><button type="button" class="btn" id="xfCancel">Cancel</button>`
+      : `<button type="button" class="btn primary" id="xfSave">${x ? "Save" : "+ Add"}</button>${x ? `<button type="button" class="btn" id="xfDel">Delete</button><button type="button" class="btn" id="xfCancel">Cancel</button>` : ""}`}</div>` +
     `</div><p class="err" id="xpErr" style="margin:6px 0 0"></p>`;
   xfVehOpts(x ? mtKeyOf(x) : xfLast.veh, x); xpGrow($("xfDesc"));
   xfBills = x?.bills ? [...x.bills] : []; xfBillDraw();
@@ -7087,10 +7207,12 @@ $("xpForm").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   const err = m => { $("xpErr").textContent = m; };
   if (b.dataset.xfbrm != null) { xfBills.splice(+b.dataset.xfbrm, 1); xfBillDraw(); return; }
-  if (b.id === "xfCancel") { xfRender(null); renderExp(); return; }
+  if (b.id === "xfCancel") { const m = xfMode === "mine" ? "mine" : ""; xfRender(null, m); renderExp(); return; }
+  if (b.id === "xfBack") { xrBackId = xpEd; xrOpenRev = true; xfRender(null, ""); renderExp(); setTimeout(() => $("xrWhy")?.focus(), 30); return; }
   if (b.id === "xfDel") {
     if (!await askYesNo("Delete this expense?", { yes: "Yes, delete", danger: true })) return;
-    try { await opsDelete("expenses", xpEd); toast("Expense deleted"); xfRender(null); renderExp(); } catch { toast("Couldn't delete. Try again."); } return;
+    const m = xfMode === "mine" ? "mine" : "";
+    try { await opsDelete(m ? "expenseReqs" : "expenses", xpEd); toast("Expense deleted"); xfRender(null, m); renderExp(); } catch { toast("Couldn't delete. Try again."); } return;
   }
   if (b.id !== "xfSave") return;
   const date = $("xfDate").value, desc = upText($("xfDesc").value), veh = $("xfVeh").value, amt = Math.round(num($("xfAmt").value));
@@ -7098,12 +7220,21 @@ $("xpForm").addEventListener("click", async e => {
   if (!desc) return err("Type the expense description.");
   if (!veh) return err("Choose the vehicle (or Office / general).");
   if (!amt) return err("Type the amount.");
-  const old = xpEd ? ops.expenses.find(x => x.id === xpEd) : null, cat = $("xfCat").value, note = upText($("xfNote").value);
+  const old = xpEd ? (xfMode ? ops.expenseReqs : ops.expenses).find(x => x.id === xpEd) : null, cat = $("xfCat").value, note = upText($("xfNote").value);
   if (cat === "Other" && !note && old?.category !== "Other") return err("Type what the Other expense was.");
   const where = veh === "p:" ? { vehicleId: "", plate: "" } : veh.startsWith("p:") ? { vehicleId: "", plate: old?.plate || veh.slice(2) } : { vehicleId: veh, plate: "" };
   const doc = { ...(old || {}), date, desc, ...where, category: cat, catNote: cat === "Other" ? note : "", pay: $("xfPay").value, amount: amt, ...rxStamp() };
   if (!doc.catNote) delete doc.catNote;
   if (xfBills.length) doc.bills = xfBills; else delete doc.bills;
+  if (xfMode === "review") { b.disabled = true; const ok = await xrApprove(old, doc); b.disabled = false; if (ok) { xfRender(null, ""); renderExp(); } return; }
+  if (xfMode === "mine") {
+    Object.assign(doc, { status: old?.status === "rejected" ? "rejected" : "draft", byAcct: old?.byAcct || myId() || "", byName: old?.byName || whoAmI(), updatedOn: new Date().toISOString() });
+    if (!doc.id) Object.assign(doc, { id: "xr_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdOn: new Date().toISOString() });
+    b.disabled = true;
+    try { await opsSave("expenseReqs", doc); toast(`${old ? "Saved" : "Added"} · ${rs(amt)}. Tick it below and send it to the office.`); if (!old) xfLast = { veh, category: doc.category, pay: doc.pay, date }; xrSel.add(doc.id); xfRender(null, "mine"); renderExp(); $("xfDesc")?.focus(); }
+    catch { b.disabled = false; toast("Couldn't save. Check your connection and try again."); }
+    return;
+  }
   if (!doc.id) Object.assign(doc, { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdOn: new Date().toISOString(), byName: whoAmI() });
   b.disabled = true;
   try {
@@ -8071,7 +8202,9 @@ function autoOnTrip() {
 }
 setInterval(() => { try { autoOnTrip(); } catch {} }, 10 * 60 * 1000);
 function updRemBadge() { try { const n = remDue().filter(x => !x.sent).length; $("remBadge").hidden = !n || !canBookings; $("remBadge").textContent = n; } catch {} }
-function updApprBadge() { updRemBadge(); updTsBadge(); const n = ops.bookings.filter(b => b.status === "pending" || b.tsStatus === "submitted").length + (canTrips ? ops.routeSheets.filter(x => x.status === "submitted").length : 0); $("apprBadge").hidden = !n || !canBookings; $("apprBadge").textContent = n; }
+// Expenses menu: lines waiting for the office's approval, or (Expense entry) his lines sent back.
+function updXrBadge() { const n = canXp() ? ops.expenseReqs.filter(r => r.status === "submitted").length : xrMine() ? xrMyList().filter(r => r.status === "rejected").length : 0; $("xrBadge").hidden = !n; $("xrBadge").textContent = n; }
+function updApprBadge() { updRemBadge(); updTsBadge(); updXrBadge(); const n = ops.bookings.filter(b => b.status === "pending" || b.tsStatus === "submitted").length + (canTrips ? ops.routeSheets.filter(x => x.status === "submitted").length : 0); $("apprBadge").hidden = !n || !canBookings; $("apprBadge").textContent = n; }
 function renderApprovals() {
   const pl = id => plateOf(vehicles.find(v => v.id === id));
   const pend = ops.bookings.filter(b => b.status === "pending").sort((a, c) => String(a.submittedOn || "").localeCompare(String(c.submittedOn || "")) || a.from.localeCompare(c.from));
@@ -8119,9 +8252,9 @@ async function auDownloads() {
 }
 const AUDIT_SKIP = /History$|^audit|^appMeta$/;
 const AUDIT_MOD = { vehicles: "Vehicle", drivers: "Driver", conductors: "Conductor", appUsers: "User master", accessRequests: "User master", trips: "Trip sheet", tripMonths: "Trip sheet", tripYears: "Trip sheet",
-  truckTrips: "Truck trips", truckRounds: "Truck trips", bookings: "Bookings", fuelLog: "Spare bus diesel" };
+  truckTrips: "Truck trips", truckRounds: "Truck trips", bookings: "Bookings", fuelLog: "Spare bus diesel", expenseReqs: "Expenses" };
 const AUDIT_THING = { vehicles: "Vehicle", drivers: "Driver", conductors: "Conductor", appUsers: "User", accessRequests: "Access request", trips: "Route trip sheet", tripMonths: "Route month sheet", tripYears: "Route year sheet",
-  truckTrips: "Truck trip", truckRounds: "Truck round trip", bookings: "Booking", fuelLog: "Fuel fill" };
+  truckTrips: "Truck trip", truckRounds: "Truck round trip", bookings: "Booking", fuelLog: "Fuel fill", expenseReqs: "Expense sent for approval" };
 function auditFind(c, id) {
   const src = { vehicles, drivers, conductors, appUsers: users, bookings: ops.bookings, fuelLog: ops.fuelLog, truckTrips: ops.truckTrips, truckRounds: ops.truckRounds, trips: [...trips, ...dayTrips], accessRequests: requests }[c];
   return src ? src.find(x => x.id === id) : undefined;
@@ -8304,7 +8437,7 @@ const stAreas = () => [
   ["appUsers", "Users", "fleet-users.v1"], ["accessRequests", "Access requests", ""],
   ["trips", "Route bus trip sheets (daily)", TLS], ["tripMonths", "Route bus monthly sheets", TMLS], ["tripYears", "Route bus yearly sheets", TYLS],
   ["bookings", "Spare bus bookings", OPS_LS.bookings], ["bookingHistory", "Booking change history", BHLS],
-  ["truckTrips", "Truck trips", OPS_LS.truckTrips], ["truckRounds", "Truck rounds", OPS_LS.truckRounds], ["fuelLog", "Spare bus diesel fills", OPS_LS.fuelLog], ["routeExpenses", "Route expenses (by starting place)", OPS_LS.routeExpenses], ["padiSlabs", "Padi calculation rules", OPS_LS.padiSlabs], ["auditSessions", "Sign-in records", ""], ["auditLog", "Activity log", ""],
+  ["truckTrips", "Truck trips", OPS_LS.truckTrips], ["truckRounds", "Truck rounds", OPS_LS.truckRounds], ["fuelLog", "Spare bus diesel fills", OPS_LS.fuelLog], ["routeExpenses", "Route expenses (by starting place)", OPS_LS.routeExpenses], ["padiSlabs", "Padi calculation rules", OPS_LS.padiSlabs], ["expenseReqs", "Expenses sent for approval", OPS_LS.expenseReqs], ["auditSessions", "Sign-in records", ""], ["auditLog", "Activity log", ""],
   ["appMeta", "App settings", ""]
 ];
 let stData = null, stBusy = false;
