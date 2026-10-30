@@ -10920,7 +10920,7 @@ function bwHomeHtml(b) {
     `</div><div class="bhbtns">` + (canBookings ? bwApprCard(b) : "") +
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
-      (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : TS_STAGES[b.tsStatus] || "Not started", b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
+      (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : tsStageTxt(b), b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
       (canBookings && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", "Driver advance", b.drvSettle ? "Settled" : !d.total && !d.ext ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle", b.drvSettle ? "ok" : (d.total || d.ext) && d.net ? "due" : ""))(drvCalc(b)) : "") +
       (bw.driver ? "" : tile('data-bw="slipprint"', "🖨️", "Booking slip", "Image or PDF to print or share")) +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
@@ -11632,7 +11632,10 @@ function tsOpenDate(b) {
   return bkEnd(b);
 }
 const tsIsOpen = b => canBookings || b.status === "completed" || (!!b.from && tsOpenDate(b) <= todayISO());
-const tsTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ts-${b.tsStatus || "none"}">${TS_STAGES[b.tsStatus] || "Not started"}</span>`;
+// A trip sheet not started yet reads On trip while a confirmed trip is running (start date to last day), else Not started.
+const tsOnTrip = b => !b.tsStatus && ["booked", "ontrip"].includes(b.status) && !!b.from && b.from <= todayISO() && bkEnd(b) >= todayISO();
+const tsStageTxt = b => TS_STAGES[b.tsStatus] || (tsOnTrip(b) ? "On trip" : "Not started");
+const tsTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ${tsOnTrip(b) ? "ontrip" : `ts-${b.tsStatus || "none"}`}">${tsStageTxt(b)}</span>`;
 // The trip sheet as it is on screen, laid over the saved booking; nothing else on the booking changes.
 function tripFromForm(cur) {
   const f = bkRead(), next = { ...cur };
