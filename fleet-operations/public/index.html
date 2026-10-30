@@ -1934,7 +1934,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <div class="foot"><div class="who" id="who"></div><div id="sync">Connecting to saved records…</div>
       <div class="preview" id="previewWrap" hidden>
         <label for="previewSel">Preview app as</label>
-        <select id="previewSel"><option value="">Myself (Admin)</option><option>Fleet manager</option><option>Operator</option><option>Viewer</option><option>Booking planner</option><option>Trip update</option><option>Booking planner + Trip update</option><option>Conductor</option></select>
+        <select id="previewSel"><option value="">Myself (Admin)</option></select>
       </div>
     </div>
   </aside>
@@ -4417,6 +4417,7 @@ function renderUsers() {
 function buildUserForm() {
   $("uRole").innerHTML = Object.keys(ROLES).map(r => `<option>${r}</option>`).join("") + `<option>Custom</option>`;
   $("uRoleF").innerHTML += Object.keys(ROLES).map(r => `<option>${r}</option>`).join("") + `<option>Custom</option>`;
+  $("previewSel").innerHTML += Object.keys(ROLES).filter(r => r !== "Admin").map(r => `<option>${r}</option>`).join("");  // every role, so a new one can be previewed
   $("uMatrix").innerHTML = MODULES.map(m => `<tr><td>${esc(m.name)}${m.soon ? '<span class="soonmod">· coming soon</span>' : ""}</td><td><div class="seg" role="radiogroup" aria-label="${esc(m.name)} access">${levelsOf(m).map(l =>
     `<label><input type="radio" name="acc-${m.id}" id="acc-${m.id}-${l}" value="${l}"><span>${l === "none" ? "None" : m.lab?.[l] || LEVELS[l]}</span></label>`).join("")}</div></td></tr>`).join("");
   $("accLegend").innerHTML = `<span class="acc"><b class="edit">Ed</b></span>Edit <span class="acc"><b class="view">Vw</b></span>View only <span class="acc"><b class="request">Rq</b></span>Add for approval / Fill &amp; submit <span class="acc"><b class="none">No</b></span>No access <span>· ${MODULES.map(m => `${m.abbr} ${esc(m.name)}`).join(" · ")}</span>`;
