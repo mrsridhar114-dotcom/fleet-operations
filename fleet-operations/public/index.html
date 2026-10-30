@@ -1711,7 +1711,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsbus select { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); padding: 0 8px; }
 .rsdays { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 #view-trsheet .rstop { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; } .rstop h1 { margin: 0; font-size: 20px; } .rsacts { display: flex; gap: 6px; flex: none; } .rsacts .btn { padding: 6px 10px; min-height: 0; font-size: 14px; }
-.rsmsum .sec { font-size: 17px; }
+.rsmsum .sec { font-size: 17px; } #tRsDays { display: flex; flex-direction: column; gap: 12px; } #tRsDays .rsmg { grid-template-columns: repeat(6, minmax(0, 1fr)); } #tRsDays .rsmnav { justify-content: center; gap: 18px; }
 .rsmnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; } .rsmnav .sec { margin: 0; text-align: center; } .rsmnav .sec small { font: 500 12px var(--body); color: var(--muted); }
 .rsmnav .btn, #rsMonthBtn { padding: 6px 12px; min-height: 0; font-size: 14px; font-weight: 600; white-space: nowrap; background: var(--accent-soft); color: var(--accent); border: 1.5px solid var(--accent); }
 .rsmnav .btn:disabled { opacity: .3; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -2065,6 +2065,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="empty panel" id="tNoBus" hidden><strong>No route buses yet</strong>Add a vehicle with class Bus and operation type Route under Masters › Vehicle. It will appear here.</div>
       <div id="tBody">
         <nav class="ttabs" id="tTabs" role="tablist" aria-label="Month"></nav>
+        <div class="tmdays" id="tRsDays" hidden></div>
         <div id="tMonthView">
           <section class="tsumwrap" id="tSummary" aria-label="Month summary"></section>
           <div class="tentry" id="tEntryBar"></div>
@@ -2079,7 +2080,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
             </table>
           </div>
           <div class="mecal" id="tCal" hidden></div>
-          <div class="tmdays" id="tRsDays" hidden></div>
           <div class="mesave" id="tSaveBar" hidden><span class="dot" aria-hidden="true"></span><b id="tSaveN"></b><span class="hint">Type straight into the table. Grey boxes are worked out (rate copied down, diesel = litres × rate, padi from the rules) and can be overtyped. Open day ↗ shows the full day sheet.</span><span style="flex:1"></span><button class="btn" type="button" id="tUndo">Undo changes</button><button class="btn primary" type="button" id="tSaveAll">Save</button></div>
           <div class="tpanels">
             <section class="panel"><div class="sechead"><h2 class="sec">Diesel mileage by day</h2><p id="tMileNote"></p></div><div class="tchart" id="tMileage"></div></section>
@@ -5618,10 +5618,9 @@ function meCrewOpts(kind, val) {
   return `<option value="">—</option>` + opts.map(([v, n]) => `<option value="${esc(v)}"${v === val ? " selected" : ""}>${esc(n)}</option>`).join("");
 }
 function renderMonthEntry(ym, M) {
-  $("tTableWrap").hidden = tView !== "table"; $("tCal").hidden = tView !== "cal"; $("tRsDays").hidden = tView !== "month";
+  $("tTableWrap").hidden = tView !== "table"; $("tCal").hidden = tView !== "cal";
   meSaveBar();
   if (tView === "cal") { renderMeCal(ym); return; }
-  if (tView === "month") { $("tRsDays").innerHTML = rsDaysHtml(tBusId, ym, rsSrc(tBusId, ym)) + (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : ""); return; }
   if ($("tRows").contains(document.activeElement)) { meWaiting = true; return; }  // don't redraw under someone typing
   const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(k === "start" ? r.auto[k] ?? r.f[k] ?? "" : blank0(r.auto[k] ?? r.f[k]))}" aria-label="${k}"${extra}${ro}>`;
   // Columns in the order of the office sheet: Date, Starting, Day, crew, diesel, padi, S1–S5, Collection, Expense, Balance, Total Balance, KMS.
@@ -5751,6 +5750,16 @@ function renderTrips() {
   if (!buses.length) return;
   // On a phone the day is filled in the phone trip sheet, so the button goes there.
   $("tDayLink").textContent = bwIsPhone() ? "Trip sheet" : "Day sheet"; $("tDayLink").href = bwIsPhone() ? "#route-sheet" : "#trips-day";
+  // Month view: the month's figures as tiles with ‹ › to change month, then its days as cards (no month tabs or full summary).
+  const mv = tView === "month"; $("tTabs").hidden = mv; $("tRsDays").hidden = !mv;
+  if (mv) {
+    $("tMonthView").hidden = true; $("tYearView").hidden = true;
+    document.querySelectorAll('#tViewSeg input[name="tView"]').forEach(i => i.checked = i.value === tView);
+    if (tMonthIdx === 12) tMonthIdx = (+todayISO().slice(5, 7) + 8) % 12;
+    const ym = monthYM(tFyStart, tMonthIdx), src = rsSrc(tBusId, ym);
+    $("tRsDays").innerHTML = rsMonthHtml(tBusId, ym, src) + rsDaysHtml(tBusId, ym, src) + (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
+    return;
+  }
 
   const has = new Set(trips.map(t => t.date.slice(0, 7)));
   $("tTabs").innerHTML = MONTHS.map((m, i) => { const ym = monthYM(tFyStart, i);
@@ -9098,6 +9107,9 @@ document.addEventListener("click", e => {
     else { dbFrom = { hash: location.hash, y: scrollY }; dbBus = bus; opDate = o.dataset.rsopen; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; }
     return; }
   const ny = e.target.closest("[data-rsym]"); if (ny && $("rsHome")?.contains(ny)) { rsYm = ny.dataset.rsym; renderRsList(); scrollTo(0, 0); return; }
+  if (ny && $("tRsDays")?.contains(ny)) { const ym = ny.dataset.rsym, fy = fyOf(ym + "-01");
+    if (fy !== tFyStart) { tFyStart = fy; if ($("tFy")) $("tFy").value = String(fy); tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); }
+    tMonthIdx = (+ym.slice(5, 7) + 8) % 12; renderTrips(); return; }
   // The monthly screen opens on the bus and month being viewed.
   const mo = e.target.closest("[data-rsmonth]"); if (mo) { const ym = mo.dataset.ym || todayISO().slice(0, 7);
     if (tBusId !== mo.dataset.rsmonth || tFyStart !== fyOf(ym + "-01")) { tBusId = mo.dataset.rsmonth; tFyStart = fyOf(ym + "-01"); tSubKey = ""; trips = []; tripMonths = []; }
