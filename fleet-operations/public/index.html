@@ -1149,6 +1149,10 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .cdocs[disabled] { opacity: .5; }
 .duepop .dlist li { justify-content: flex-start; align-items: center; }
 .duepop .dlist .fn .exppill { display: inline-block; margin: 3px 4px 0 0; font-size: 12px; padding: 1px 6px; }
+.xoutpop { width: min(340px, calc(100vw - 24px)); } .xoutpop .dlist { margin-top: 8px; gap: 6px; } .xoutpop .dlist li { padding-top: 6px; }
+.xofmt { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 4px 0 10px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.xofmt button { border: 0; background: var(--surface); color: var(--ink); padding: 8px; font: 600 14px var(--body); cursor: pointer; } .xofmt button + button { border-left: 1px solid var(--line); }
+.xofmt button[aria-pressed="true"] { background: var(--accent); color: #fff; } .xoutb { display: inline-flex; gap: 6px; align-items: center; }
 .duepop .dlist li.off { opacity: .55; } .duepop .dlist li.off label { cursor: default; }
 /* Padi calculation pop-up on the trip sheets */
 .padibtn { display: inline-grid; place-items: center; width: 28px; height: 28px; margin-left: 8px; vertical-align: middle; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--accent); cursor: pointer; padding: 0; }
@@ -6630,7 +6634,7 @@ function xpGridRender(o) {
   const strip = `<div class="xsum"><button type="button" class="t${xpFilt.veh ? " off" : ""}" data-xpveh="" title="Show all vehicles"><small>${xpFilt.veh ? "◂ All vehicles" : `All vehicles · ${esc(P.label)}`}</small><b>${rs(sum(all))}</b></button>` +
     VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpOnlyVeh() === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>` + (can ? xpMonBar(P) : "");
   const dupB = xpDups.size ? `<button type="button" class="btn xdupb${xpFilt.dup ? " on" : ""}" data-xdups title="${xpFilt.dup ? "Show all lines again" : "Show only the lines that look like duplicates"}">⚠ ${[...ops.expenses].filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x))).length} possible duplicates${xpFilt.dup ? " ✕" : ""}</button>${xpFilt.dup && can ? `<button type="button" class="btn" data-xdupall title="Mark all these lines as checked: they are not duplicates">✓ Not duplicates, keep all</button>` : ""}` : "";
-  const foot = `<div class="xfoot"><span class="xfl"><span id="xpUndo">${xpUndoHtml()}</span><span id="xpSelAct">${xpSelHtml()}</span>${dupB}<span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot"><button type="button" class="btn" data-xexcel title="Download what is shown as an Excel file">⬇ Excel</button>Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
+  const foot = `<div class="xfoot"><span class="xfl"><span id="xpUndo">${xpUndoHtml()}</span><span id="xpSelAct">${xpSelHtml()}</span>${dupB}<span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot"><button type="button" class="btn xoutb" data-xexcel title="Print or download what is shown, as Excel or as an image">${ICON_PRINT}<span>Print</span></button>Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
   // While a cell is open for typing, only the totals are refreshed; the sheet is redrawn when it closes.
   if (!force && xpEdit && $("xpSc")) {
     xpDeferred = true; const t = document.createElement("div"); t.innerHTML = strip + foot;
@@ -6725,17 +6729,97 @@ const xpUndoHtml = () => xpUndo ? `<button type="button" class="btn xundo" data-
 async function xpUndoRun() { const u = xpUndo; if (!u) return; xpUndo = null; clearTimeout(xpUndoT); if ($("xpUndo")) $("xpUndo").innerHTML = ""; try { await u.run(); toast("Done: put back as it was"); } catch { toast("Couldn't undo. Check your connection."); } renderExp(true); }
 
 /* Download what the sheet shows (filters and sort included) as an Excel file. */
-async function xpExcel() {
-  const P = xpPeriod(), list = xpSorted(ops.expenses.filter(x => x.date >= P.from && x.date <= P.to && xpPass(x)));
-  if (!list.length) { toast("Nothing to download: no lines are shown."); return; }
-  const S = XL.S, ws = XL.sheet("Expenses"), H = [["Date", 12], ["Description", 46], ["Vehicle Number", 17], ["Category", 22], ["Payment Type", 16], ["Amount", 13]];
-  H.forEach(([h, w], i) => { XL.put(ws, `${XL.col(i)}1`, h, S.head); ws.widths[XL.col(i)] = w; });
-  list.forEach((x, i) => { const r = i + 2; XL.put(ws, `A${r}`, { d: x.date }, S.date); XL.put(ws, `B${r}`, x.desc || "", S.text); XL.put(ws, `C${r}`, xpKeyName(mtKeyOf(x), x), S.text);
-    XL.put(ws, `D${r}`, xpCatTxt(x), S.text); XL.put(ws, `E${r}`, x.pay || "", S.text); XL.put(ws, `F${r}`, num(x.amount), S.int); });
-  const t = list.length + 2; XL.put(ws, `E${t}`, "Total", S.ttext); XL.put(ws, `F${t}`, list.reduce((a, x) => a + num(x.amount), 0), S.tint, `SUM(F2:F${t - 1})`); ws.freeze = 1;
-  const filename = `expenses-FY${fyLabel(fyOf(P.from))}${xpFiltOn() ? "-filtered" : ""}.xlsx`;
-  try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } await dl.save({ filename, data: XL.build([ws]) }); toast(`Saved ${filename} · ${list.length} lines`); }
-  catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."); }
+/* Print / download: what the sheet shows (filters and sort), with the columns the user keeps, as Excel or as an image. */
+const XP_OUT = [["date", "Date", 12], ["desc", "Description", 46], ["veh", "Vehicle", 17], ["category", "Category", 22], ["pay", "Paid by", 16], ["amount", "Amount", 13]];
+const xpOutList = () => { const P = xpPeriod(); return xpSorted(ops.expenses.filter(x => x.date >= P.from && x.date <= P.to && xpPass(x))); };
+const xpOutVal = (x, c) => c === "date" ? xpDateTxt(x.date) : c === "desc" ? x.desc || "" : c === "veh" ? xpKeyName(mtKeyOf(x), x) : c === "category" ? xpCatTxt(x) : c === "pay" ? x.pay || "" : nf(num(x.amount));
+// The filters in words, for the top of the image.
+function xpFiltTxt() {
+  const f = xpFilt, out = [], mon = ym => new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+  if (f.date?.size) out.push([...f.date].sort().map(mon).join(", "));
+  if (f.veh?.size) out.push([...f.veh].map(k => xpKeyName(k)).join(", "));
+  if (f.category?.size) out.push([...f.category].map(c => c || "No category").join(", "));
+  if (f.pay?.size) out.push([...f.pay].map(c => c || "No payment type").join(", "));
+  if (f.desc) out.push(`"${f.desc}"`);
+  if (f.dup) out.push("possible duplicates");
+  return out.join(" · ");
+}
+const xpOutName = ext => { const d = new Date(), p2 = n => String(n).padStart(2, "0"); return `expenses-FY${fyLabel(fyOf(xpPeriod().from))}${xpFiltOn() ? "-filtered" : ""}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.${ext}`; };
+function xpExcelFile(list, cols) {
+  const S = XL.S, ws = XL.sheet("Expenses"), H = XP_OUT.filter(([c]) => cols.includes(c));
+  H.forEach(([, h, w], i) => { XL.put(ws, `${XL.col(i)}1`, h, S.head); ws.widths[XL.col(i)] = w; });
+  list.forEach((x, n) => { const r = n + 2; H.forEach(([c], i) => { const a = `${XL.col(i)}${r}`;
+    if (c === "date") XL.put(ws, a, { d: x.date }, S.date); else if (c === "amount") XL.put(ws, a, num(x.amount), S.int); else XL.put(ws, a, xpOutVal(x, c), S.text); }); });
+  const ai = H.findIndex(([c]) => c === "amount");
+  if (ai >= 0) { const t = list.length + 2, A = XL.col(ai); if (ai > 0) XL.put(ws, `${XL.col(ai - 1)}${t}`, "Total", S.ttext); XL.put(ws, `${A}${t}`, list.reduce((a, x) => a + num(x.amount), 0), S.tint, `SUM(${A}2:${A}${t - 1})`); }
+  ws.freeze = 1;
+  return { filename: xpOutName("xlsx"), data: XL.build([ws]) };
+}
+async function xpImageFile(list, cols) {
+  try { await document.fonts?.ready; } catch {}
+  const H = XP_OUT.filter(([c]) => cols.includes(c)), F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  const PX = { date: 120, desc: 0, veh: 150, category: 170, pay: 140, amount: 130 }, M = 36, RH = 34, W = Math.max(900, 120 + H.reduce((a, [c]) => a + (PX[c] || 380), 0));
+  const fixed = H.reduce((a, [c]) => a + PX[c], 0); H.forEach(h => h.w = PX[h[0]] || Math.max(260, W - 2 * M - fixed));
+  const c = document.createElement("canvas"), g = c.getContext("2d"), dw = H.find(h => h[0] === "desc")?.w - 20;
+  // Long descriptions wrap onto more lines; each row is as tall as its description.
+  const wrap = t => { g.font = `400 15px ${F}`; const out = []; let cur = ""; String(t).split(/\s+/).forEach(w => { const n = cur ? cur + " " + w : w; if (cur && g.measureText(n).width > dw) { out.push(cur); cur = w; } else cur = n; }); out.push(cur); return out; };
+  const lines = list.map(r => dw ? wrap(r.desc || "") : [""]), rh = l => RH + (l.length - 1) * 20;
+  const hasAmt = cols.includes("amount"), Ht = M + 92 + RH + lines.reduce((a, l) => a + rh(l), 0) + (hasAmt ? RH + 8 : 0) + 44;
+  c.width = W; c.height = Ht;
+  const fit = (t, w) => { let s = String(t); if (g.measureText(s).width <= w) return s; while (s && g.measureText(s + "…").width > w) s = s.slice(0, -1); return s + "…"; };
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, Ht);
+  g.fillStyle = "#18212b"; g.font = `700 26px ${F}`; g.fillText(`Expenses · ${xpPeriod().label}`, M, M + 22);
+  g.font = `400 15px ${F}`; g.fillStyle = "#5b6672";
+  g.fillText(fit(`${list.length} line${list.length === 1 ? "" : "s"}${xpFiltOn() ? ` · Filter: ${xpFiltTxt()}` : " · All lines"}`, W - 2 * M), M, M + 50);
+  let y = M + 72; g.fillStyle = "#eef1f4"; g.fillRect(M, y, W - 2 * M, RH);
+  g.font = `700 14px ${F}`; g.fillStyle = "#18212b"; let x = M;
+  H.forEach(([k, h, , ], i) => { const w = H[i].w; if (k === "amount") { g.textAlign = "right"; g.fillText(h, x + w - 10, y + 22); g.textAlign = "left"; } else g.fillText(h, x + 10, y + 22); x += w; });
+  y += RH;
+  list.forEach((r, n) => {
+    const h = rh(lines[n]); if (n % 2) { g.fillStyle = "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
+    x = M; H.forEach(([k], i) => { const w = H[i].w, v = xpOutVal(r, k);
+      g.fillStyle = "#18212b"; g.font = k === "amount" || k === "date" ? `400 14px ${MONO}` : `400 15px ${F}`;
+      if (k === "amount") { g.textAlign = "right"; g.fillText(v, x + w - 10, y + 22); g.textAlign = "left"; }
+      else if (k === "desc") lines[n].forEach((t, j) => g.fillText(t, x + 10, y + 22 + j * 20));
+      else g.fillText(fit(v, w - 20), x + 10, y + 22);
+      x += w; });
+    g.strokeStyle = "#dde2e7"; g.lineWidth = 1; g.beginPath(); g.moveTo(M, y + h - 0.5); g.lineTo(W - M, y + h - 0.5); g.stroke(); y += h;
+  });
+  if (hasAmt) { y += 8; g.fillStyle = "#e3efe0"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 15px ${F}`; g.fillText("Total", M + 10, y + 22);
+    g.textAlign = "right"; g.font = `700 15px ${MONO}`; g.fillText(rs(list.reduce((a, r) => a + num(r.amount), 0)), W - M - 10, y + 22); g.textAlign = "left"; y += RH; }
+  g.font = `400 13px ${F}`; g.fillStyle = "#8a949e"; g.fillText(`Printed by ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, M, y + 28);
+  return { filename: xpOutName("jpg"), data: await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92)) };
+}
+const XP_IMG_MAX = 900;
+function xpOutOpen(btn) {
+  if (document.querySelector(".duepop")) { closeDuePop(); return; }
+  const list = xpOutList(); if (!list.length) { toast("Nothing to download: no lines are shown."); return; }
+  let fmt = "xlsx"; try { fmt = localStorage.getItem("fleet-xpout") === "jpg" ? "jpg" : "xlsx"; } catch {}
+  const pop = document.createElement("div"); pop.className = "duepop xoutpop"; pop.setAttribute("role", "dialog");
+  pop.innerHTML = `<h4>Print / download · ${list.length} line${list.length === 1 ? "" : "s"}</h4><p class="dnote">${xpFiltOn() ? `Only the lines shown by your filters: ${esc(xpFiltTxt())}.` : "All lines of " + esc(xpPeriod().label) + ". Set filters on the columns first to print fewer."}</p>` +
+    `<div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
+    `<label class="dall"><input type="checkbox" data-all> All columns</label><ul class="dlist">${XP_OUT.map(([c, h]) => `<li><label><input type="checkbox" data-c="${c}" checked><span><b>${h}</b></span></label></li>`).join("")}</ul>` +
+    `<p class="err" data-xoerr style="margin:8px 0 0"></p>` + popActsHtml();
+  const cols = () => [...pop.querySelectorAll("input[data-c]:checked")].map(i => i.dataset.c);
+  const make = async () => fmt === "jpg" ? await xpImageFile(xpOutList(), cols()) : xpExcelFile(xpOutList(), cols());
+  const sync = () => {
+    const n = cols().length, all = pop.querySelector("input[data-all]"), big = fmt === "jpg" && list.length > XP_IMG_MAX;
+    all.checked = n === XP_OUT.length; all.indeterminate = n > 0 && n < XP_OUT.length;
+    pop.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
+    const sv = pop.querySelector(".duesave"), sh = pop.querySelector(".dshare"); sv.disabled = !n || big; if (sh) sh.disabled = !n || big;
+    sv.lastChild.textContent = !n ? "Choose a column" : fmt === "jpg" ? "Save as image" : "Save as Excel";
+    pop.querySelector("[data-xoerr]").textContent = big ? `Too many lines for one image (${list.length}). Filter to ${XP_IMG_MAX} or fewer, or use Excel.` : "";
+  };
+  pop.addEventListener("change", e => { if (e.target.dataset.all != null) pop.querySelectorAll("input[data-c]").forEach(i => i.checked = e.target.checked); sync(); });
+  pop.addEventListener("click", e => { const b = e.target.closest("[data-fmt]"); if (!b) return; fmt = b.dataset.fmt; try { localStorage.setItem("fleet-xpout", fmt); } catch {} sync(); });
+  pop.querySelector(".duesave").onclick = async ev => {
+    ev.stopPropagation(); const b = ev.currentTarget; b.disabled = true;
+    try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } const f = await make(); await dl.save(f); toast(`Saved ${f.filename} · ${list.length} lines`); closeDuePop(); }
+    catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."); }
+    finally { if (b.isConnected) b.disabled = false; }
+  };
+  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); popShare(ev.currentTarget, async () => [await make()], "Expenses"); };
+  placePop(pop, btn); sync();
 }
 
 /* Monthly payments: lines marked ↻ are offered again each new month. */
@@ -7188,7 +7272,7 @@ $("xpBody").addEventListener("click", async e => {
   if (e.target.closest("[data-xundo]")) { xpUndoRun(); return; }
   if (e.target.closest("[data-xdups]")) { if (xpFilt.dup) delete xpFilt.dup; else xpFilt.dup = true; xpScrollEnd = true; renderExp(true); return; }
   if (e.target.closest("[data-xdupall]")) { const P = xpPeriod(); xpDupKeep(ops.expenses.filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x)))); return; }
-  if (e.target.closest("[data-xexcel]")) { xpExcel(); return; }
+  const xo = e.target.closest("[data-xexcel]"); if (xo) { xpOutOpen(xo); return; }
   const ms = e.target.closest("[data-xmonset]");
   if (ms) { const on = ms.dataset.xmonset === "on", docs = [...xpRowSel].map(xpDocOf).filter(Boolean);
     for (const x of docs) { const d = { ...x, ...rxStamp() }; if (on) { d.monthly = true; d.series = x.series || x.id; } else delete d.monthly; try { await opsSave("expenses", d); } catch {} }
@@ -12708,7 +12792,7 @@ function closeDuePop() { document.querySelector(".duepop")?.remove(); }
 // While the popup is open, a tap outside it only closes it: the tap is caught here and goes no further.
 document.addEventListener("click", e => {
   // Only real taps count: the hidden link the app clicks to start a download must not be stopped here.
-  if (!e.isTrusted || !document.querySelector(".duepop") || e.target.closest(".duepop, .cdue, .cdocs, .cprint")) return;
+  if (!e.isTrusted || !document.querySelector(".duepop") || e.target.closest(".duepop, .cdue, .cdocs, .cprint, .xoutb")) return;
   closeDuePop(); e.preventDefault(); e.stopPropagation();
 }, true);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDuePop(); });
