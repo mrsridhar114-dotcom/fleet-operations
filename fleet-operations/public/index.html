@@ -1152,7 +1152,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .xodlg { width: min(1040px, calc(100vw - 32px)); height: min(780px, calc(100vh - 32px)); background: var(--surface); color: var(--ink); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.3); display: flex; flex-direction: column; overflow: hidden; }
 .xohd { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); } .xohd h2 { margin: 0; font-size: 19px; }
 .xobody { flex: 1; min-height: 0; display: grid; grid-template-columns: 290px 1fr; }
-.xoleft { padding: 16px 18px; border-right: 1px solid var(--line); overflow: auto; display: flex; flex-direction: column; gap: 10px; } .xoleft .dnote { margin: 0; font-size: 12.5px; color: var(--muted); }
+.xoleft { padding: 16px 18px; border-right: 1px solid var(--line); overflow: auto; display: flex; flex-direction: column; gap: 10px; } .xoleft > * { flex: none; } .xoleft .xocols { grid-template-columns: 1fr 1fr; gap: 8px 10px; } .xoleft .dnote { margin: 0; font-size: 12.5px; color: var(--muted); }
 .xosub { font-weight: 700; font-size: 13.5px; margin-top: 6px; } .xosub span { font-weight: 400; color: var(--muted); }
 .xotl { display: grid; gap: 4px; font-size: 13px; font-weight: 700; } .xotl input { font: 600 14px var(--body); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--surface); }
 .xofmt { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
@@ -1165,11 +1165,12 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .xolt td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .xolt tr[data-row] { cursor: pointer; } .xolt tr[data-row]:hover td { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
 .xolt tr.off td { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); } .xolt tr.off td:first-child { text-decoration: none; }
 .xolt .n { text-align: right; } .xolt .nw { white-space: nowrap; } .xolt th:first-child, .xolt td:first-child { width: 28px; padding-left: 14px; }
-.xolsub { display: none; }
+.xolsub { display: none; } #view-ttsheet > header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; } #tsPrint { flex: none; margin-top: 30px; }
+.xoextra { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); display: grid; gap: 6px; } .xoextra .btn { width: 100%; } .xoextra p { margin: 0; font-size: 12.5px; color: var(--muted); }
 @media (max-width: 700px) {
   #xpOutBox, .xpmbox { padding: 0; } .xodlg, .xpmdlg { width: 100vw; height: 100dvh; max-height: none; border-radius: 0; }
   .xobody { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); overflow: auto; } .xoleft { border-right: 0; border-bottom: 1px solid var(--line); overflow: visible; padding: 12px 14px; gap: 8px; }
-  .xocols { grid-template-columns: 1fr 1fr; } .xoright { min-height: 340px; } .xolt th:nth-child(4), .xolt td:nth-child(4), .xolt th:nth-child(5), .xolt td:nth-child(5) { display: none; }
+  .xocols { grid-template-columns: 1fr 1fr; } .xoright { min-height: 340px; } .xolt .xohide { display: none; }
   .xolsub { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; } .xoft { padding: 10px 14px; } .xoft .duesave { min-width: 0; flex: 1; } .xohd { padding: 10px 14px; }
 }
 .xpmbar { display: flex; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); } .xpmbar .btn { flex: 1; padding: 8px 6px; font-size: 14px; white-space: nowrap; } .xpmbar .btn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
@@ -1482,6 +1483,14 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 #view-texp.xrmode .xphead .tcontrols, #view-texp.xrmode #xpViewBtn, #view-texp.xrmode #xpPrintBtn { display: none !important; } #view-texp.xrmode .xphead .mclose { margin-left: auto; }
 #view-texp.xrmode .xpbody { display: flex; flex-direction: column; gap: 12px; }
 .xrchip { display: inline-block; padding: 2px 9px; border-radius: 99px; font: 600 12px var(--body); white-space: nowrap; } .xr-d { background: var(--bg); color: var(--muted); border: 1px solid var(--line); } .xr-s { background: var(--warn-soft); color: var(--warn); } .xr-r { background: var(--danger-soft); color: var(--danger); } .xr-a { background: var(--ok-soft); color: var(--ok); }
+.dtodo { margin-bottom: 16px; border-left: 5px solid var(--warn, #e0a100); } .dtlist { display: grid; gap: 8px; margin-top: 10px; }
+.dtodo .orow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.dtodo .orow .what { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 0; } .dtodo .orow .what .sub { flex-basis: 100%; color: var(--muted); font-size: 13px; } .dtodo .orow .btn { flex: none; }
+@media (max-width: 700px) { .dtodo .orow { flex-direction: column; align-items: stretch; } .dtodo .orow .btn { width: 100%; } }
+.xrback { display: grid; gap: 8px; margin-bottom: 12px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); border-left: 5px solid var(--danger); border-radius: 10px; background: color-mix(in srgb, var(--danger) 7%, var(--surface)); }
+.xrback > b { color: var(--danger); font-size: 15px; } .xrback .sub { margin: -4px 0 2px; font-size: 13px; }
+.xrback button { display: grid; gap: 2px; text-align: left; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 14px var(--body); cursor: pointer; } .xrback button:hover { border-color: var(--danger); }
+.xrback .why { color: var(--danger); font-size: 13px; } .xrback .why i { color: var(--muted); font-style: normal; } table.ctable.xrtab tr.xrrej td { background: color-mix(in srgb, var(--danger) 6%, var(--surface)); }
 .xrwhy { display: block; color: var(--danger); font-size: 12px; margin-top: 3px; } .xpfh .xrwhy { display: inline; margin: 0; }
 .xrtab td, .xrtab th { padding: 8px 10px; } table.ctable.xrtab td.xrdesc { white-space: normal; min-width: 180px; overflow-wrap: anywhere; } .xrbyl { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
 table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-direction: column; flex-wrap: nowrap; } .xrtab .xract .xracts .btn { width: 100%; }
@@ -1991,6 +2000,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
       </header>
 
+      <section class="panel dtodo" id="dashTodo" hidden></section>
       <div class="kpis" id="kpis"></div>
 
       <div class="dashgrid">
@@ -2127,7 +2137,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf" id="tBusF"><label for="tBus">Bus</label><select id="tBus"></select></div>
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
           <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="month"><span>Month view</span></label><label><input type="radio" name="tView" value="table"><span>Table</span></label></div>
-          <button class="btn" type="button" id="tPrint" title="Monthly sheet in Excel">Print</button>
+          <button class="btn" type="button" id="tPrint" title="Print or download the month, as Excel or as an image">Print</button>
           <a class="btn primary" href="#trips-day" id="tDayLink">Day sheet</a>
           <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
         </div>
@@ -2421,6 +2431,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <h1>Spare bus · trip sheets</h1>
           <p class="sync" id="tsNote">Fill in the expenses once the trip is over, then submit the trip sheet for approval.</p>
         </div>
+        <button class="btn" type="button" id="tsPrint" title="Print or download the trip sheets listed, as Excel or as an image">🖨 Print</button>
       </header>
       <section class="summary tsum" id="tsStats" aria-label="Trip sheet summary"></section>
       <div id="tsGroups" style="display:flex;flex-direction:column;gap:16px"></div>
@@ -3872,6 +3883,7 @@ const rCan = kind => kind === "vehicle" ? canWrite : kind === "driver" ? canDriv
 let rEdit = "";
 
 function renderDash() {
+  renderDashTodo();
   const items = allItems(), vItems = items.filter(i => i.kind === "vehicle");
   const total = inService().reduce((s, v) => s + DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).length, 0);
   const c = { expired: 0, d7: 0, d30: 0, ok: 0 };
@@ -6572,10 +6584,14 @@ function renderXr() {
   const line = r => [fmtShort(r.date), `${esc(r.desc || "")}${xrBill(r)}`, esc(xpKeyName(mtKeyOf(r), r)), xpTag(r.category, r.catNote), esc(r.pay || "")];
   const rows = wide
     ? `<div class="tscroll"><table class="ctable xrtab"><thead><tr><th></th><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th>Paid by</th><th class="n">Amount</th><th>Status</th></tr></thead><tbody>` +
-      list.map(r => { const c = line(r); return `<tr data-xrid="${r.id}"${open(r) ? ' class="xropen" title="Click to change"' : ""}><td>${tick(r)}</td><td class="num">${c[0]}</td><td class="xrdesc">${c[1]}</td><td class="num" style="white-space:nowrap">${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td><td class="n">${nf(num(r.amount))}</td><td>${xrChip(r)}</td></tr>`; }).join("") + `</tbody></table></div>`
+      list.map(r => { const c = line(r); return `<tr data-xrid="${r.id}"${open(r) ? ` class="xropen${r.status === "rejected" ? " xrrej" : ""}" title="Click to change"` : ""}><td>${tick(r)}</td><td class="num">${c[0]}</td><td class="xrdesc">${c[1]}</td><td class="num" style="white-space:nowrap">${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td><td class="n">${nf(num(r.amount))}</td><td>${xrChip(r)}</td></tr>`; }).join("") + `</tbody></table></div>`
     : list.map(r => { const c = line(r); return `<div class="xrcard${open(r) ? " xropen" : ""}" data-xrid="${r.id}">${tick(r) || "<span></span>"}<span class="t">${c[1]}</span><b class="a">${rs(num(r.amount))}</b><span class="s">${c[0]} · ${c[2]} · ${esc(r.category || "")}${r.catNote ? `: ${esc(r.catNote)}` : ""} · ${c[4]}</span><span class="st">${xrChip(r)}</span></div>`; }).join("");
   const selTot = [...xrSel].reduce((a, id) => a + num(mine.find(r => r.id === id)?.amount), 0);
-  $("xpBody").innerHTML = `<div data-slot="top"></div><section class="panel xrmy"><div class="sechead"><h2 class="sec">My lines</h2><p>Drafts and lines sent back can be changed: ${wide ? "click" : "tap"} one. Tick them and send them to the office.</p></div>` +
+  // Lines the office sent back: first thing he sees, with the reason, until he corrects and sends them again.
+  const back = mine.filter(r => r.status === "rejected");
+  const backBox = back.length ? `<section class="xrback" role="alert"><b>⚠ ${back.length} line${back.length > 1 ? "s" : ""} sent back by the office</b><span class="sub">${can ? `${wide ? "Click" : "Tap"} one to correct it, then tick it and send it again.` : "Correct and send again."}</span>` +
+    back.map(r => `<button type="button" class="xropen" data-xrid="${r.id}"><span><b>${esc(r.desc || "")}</b> · ${rs(num(r.amount))} · ${fmtShort(r.date)}</span><span class="why">${esc(r.rejectReason || "No reason given")}${r.rejectedByName ? ` <i>— ${esc(r.rejectedByName)}</i>` : ""}</span></button>`).join("") + `</section>` : "";
+  $("xpBody").innerHTML = `${backBox}<div data-slot="top"></div><section class="panel xrmy"><div class="sechead"><h2 class="sec">My lines</h2><p>Drafts and lines sent back can be changed: ${wide ? "click" : "tap"} one. Tick them and send them to the office.</p></div>` +
     (list.length ? rows : `<p class="sub" style="margin:8px 0 0">No expenses yet. Add one above.</p>`) +
     (can && mine.some(open) ? `<div class="xrsend"><span class="sub">${xrSel.size ? `${xrSel.size} ticked · ${rs(selTot)}` : "Tick the lines to send"}</span><button type="button" class="btn primary" data-xrsend${xrSel.size ? "" : " disabled"}>Send ${xrSel.size || ""} to office →</button></div>` : "") + `</section>`;
   F.className = `panel xpform xpyel f-top${xpEd ? " ed" : ""}`; F.hidden = !can;
@@ -6826,10 +6842,126 @@ const xpUndoHtml = () => xpUndo ? `<button type="button" class="btn xundo" data-
 async function xpUndoRun() { const u = xpUndo; if (!u) return; xpUndo = null; clearTimeout(xpUndoT); if ($("xpUndo")) $("xpUndo").innerHTML = ""; try { await u.run(); toast("Done: put back as it was"); } catch { toast("Couldn't undo. Check your connection."); } renderExp(true); }
 
 /* Download what the sheet shows (filters and sort included) as an Excel file. */
-/* Print / download: what the sheet shows (filters and sort), with the columns the user keeps, as Excel or as an image. */
-const XP_OUT = [["date", "Date", 12], ["desc", "Description", 46], ["veh", "Vehicle", 17], ["category", "Category", 22], ["pay", "Paid by", 16], ["amount", "Amount", 13]];
+/* Print / download window, shared by Expenses, Route bus and Spare bus trip sheets: a title, Excel or image, the columns
+   to keep and every line to tick or untick, then Save or Share.
+   spec: { id, title0, sub (image subtitle), note (html), cols: [{ k, h, xl, px, kind: "date"|"num"|"text"|"wrap", total }],
+           rows, val(row, k) → text, raw(row, k) → number or ISO date for Excel, picked (Set of row indexes, or null),
+           lineCols (keys shown in the line list), lineSub(row) → small text under the first text column, sumKey, extra: { html, onClick(box) } } */
+const PB_IMG_MAX = 900;
+const pbName = (ext, title) => { const d = new Date(), p2 = n => String(n).padStart(2, "0"), base = String(title || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "report"; return `${base}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.${ext}`; };
+function pbExcel(spec, list, keys, title) {
+  const S = XL.S, ws = XL.sheet((spec.sheet || "Report").slice(0, 30)), H = spec.cols.filter(c => keys.includes(c.k));
+  XL.put(ws, "A1", title, S.title);
+  H.forEach((c, i) => { XL.put(ws, `${XL.col(i)}3`, c.h, S.head); ws.widths[XL.col(i)] = c.xl || 14; });
+  list.forEach((x, n) => { const r = n + 4; H.forEach((c, i) => { const a = `${XL.col(i)}${r}`, raw = spec.raw ? spec.raw(x, c.k) : null;
+    if (c.kind === "date" && raw) XL.put(ws, a, { d: raw }, S.date); else if (c.kind === "num" && raw != null && raw !== "") XL.put(ws, a, raw, Number.isInteger(raw) ? S.int : S.dec); else XL.put(ws, a, spec.val(x, c.k), S.text); }); });
+  const tot = H.map((c, i) => c.total ? i : -1).filter(i => i >= 0);
+  if (tot.length) { const t = list.length + 4; XL.put(ws, `${XL.col(Math.max(0, tot[0] - 1))}${t}`, "Total", S.ttext);
+    tot.forEach(i => { const A = XL.col(i), s = list.reduce((a, x) => a + num(spec.raw(x, H[i].k)), 0); XL.put(ws, `${A}${t}`, s, Number.isInteger(s) ? S.tint : S.tint, `SUM(${A}4:${A}${t - 1})`); }); }
+  ws.freeze = 3;
+  return { filename: pbName("xlsx", title), data: XL.build([ws]) };
+}
+async function pbImage(spec, list, keys, title, png) {
+  try { await document.fonts?.ready; } catch {}
+  const H = spec.cols.filter(c => keys.includes(c.k)).map(c => ({ ...c })), F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  const M = 36, RH = 34, fixed = H.reduce((a, c) => a + (c.px || 0), 0), flex = H.filter(c => !c.px).length, W = Math.max(900, 2 * M + fixed + flex * 300);
+  H.forEach(c => c.w = c.px || Math.max(220, (W - 2 * M - fixed) / flex));
+  const cv = document.createElement("canvas"), g = cv.getContext("2d"), wc = H.find(c => c.kind === "wrap");
+  const wrap = t => { g.font = `400 15px ${F}`; const out = []; let cur = ""; String(t).split(/\s+/).forEach(w => { const n = cur ? cur + " " + w : w; if (cur && g.measureText(n).width > wc.w - 20) { out.push(cur); cur = w; } else cur = n; }); out.push(cur); return out; };
+  const lines = list.map(r => wc ? wrap(spec.val(r, wc.k)) : [""]), rh = l => RH + (l.length - 1) * 20, hasTot = H.some(c => c.total);
+  const Ht = M + 92 + RH + lines.reduce((a, l) => a + rh(l), 0) + (hasTot ? RH + 8 : 0) + 44;
+  cv.width = W; cv.height = Ht;
+  const fit = (t, w) => { let s = String(t); if (g.measureText(s).width <= w) return s; while (s && g.measureText(s + "…").width > w) s = s.slice(0, -1); return s + "…"; };
+  const cell = (c, v, x, y) => { if (c.kind === "num") { g.textAlign = "right"; g.fillText(v, x + c.w - 10, y); g.textAlign = "left"; } else g.fillText(fit(v, c.w - 20), x + 10, y); };
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, Ht);
+  g.fillStyle = "#18212b"; g.font = `700 26px ${F}`; g.fillText(fit(title, W - 2 * M), M, M + 22);
+  g.font = `400 15px ${F}`; g.fillStyle = "#5b6672"; g.fillText(fit([spec.sub, `${list.length} line${list.length === 1 ? "" : "s"}`].filter(Boolean).join(" · "), W - 2 * M), M, M + 50);
+  let y = M + 72, x = M; g.fillStyle = "#eef1f4"; g.fillRect(M, y, W - 2 * M, RH); g.font = `700 14px ${F}`; g.fillStyle = "#18212b";
+  H.forEach(c => { cell(c, c.h, x, y + 22); x += c.w; }); y += RH;
+  list.forEach((r, n) => {
+    const h = rh(lines[n]); if (n % 2) { g.fillStyle = "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
+    x = M; H.forEach(c => { g.fillStyle = "#18212b"; g.font = c.kind === "num" || c.kind === "date" ? `400 14px ${MONO}` : `400 15px ${F}`;
+      if (c === wc) lines[n].forEach((t, j) => g.fillText(t, x + 10, y + 22 + j * 20)); else cell(c, spec.val(r, c.k), x, y + 22); x += c.w; });
+    g.strokeStyle = "#dde2e7"; g.lineWidth = 1; g.beginPath(); g.moveTo(M, y + h - 0.5); g.lineTo(W - M, y + h - 0.5); g.stroke(); y += h;
+  });
+  if (hasTot) { y += 8; g.fillStyle = "#e3efe0"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 15px ${F}`; g.fillText("Total", M + 10, y + 22); x = M;
+    H.forEach(c => { if (c.total) { g.font = `700 14px ${MONO}`; const s = list.reduce((a, r) => a + num(spec.raw(r, c.k)), 0); cell(c, Number.isInteger(s) ? nf(s) : nf(s, 2), x, y + 22); } x += c.w; }); y += RH; }
+  g.font = `400 13px ${F}`; g.fillStyle = "#8a949e"; g.fillText(`Printed by ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, M, y + 28);
+  return { filename: pbName(png ? "png" : "jpg", title), data: await new Promise((ok, fail) => cv.toBlob(b => b ? ok(b) : fail(new Error("image failed")), png ? "image/png" : "image/jpeg", 0.92)) };
+}
+// Share: the device's share screen where the browser has one; otherwise the image is copied (paste it into WhatsApp or email)
+// and an Excel file is saved to attach.
+async function pbShare(btn, fmt, make, title) {
+  let ok = false; try { ok = !!navigator.canShare?.({ files: [new File(["x"], "x.jpg", { type: "image/jpeg" })] }); } catch {}
+  if (ok) { popShare(btn, async () => [await make()], title); return; }
+  btn.disabled = true;
+  try {
+    if (fmt === "jpg" && navigator.clipboard?.write && window.ClipboardItem) {
+      try { const f = await make(true); await navigator.clipboard.write([new ClipboardItem({ "image/png": f.data })]); toast("Image copied. Open WhatsApp or email and paste it (Ctrl+V)."); pbClose(); return; } catch {}
+    }
+    const dl = await auDownloads(); if (!dl) { toast("Sharing isn't available here. Save the file instead."); return; }
+    const f = await make(); await dl.save(f); toast(`This browser can't share directly. Saved ${f.filename}: attach it in WhatsApp or email.`); pbClose();
+  } catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't share. Save the file instead."); }
+  finally { if (btn.isConnected) btn.disabled = false; }
+}
+function pbClose() { $("xpOutBox")?.remove(); }
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("xpOutBox")) pbClose(); });
+addEventListener("hashchange", pbClose);
+// A large window: settings on the left, every line on the right to tick or untick.
+function pbOpen(spec) {
+  pbClose();
+  const list = spec.rows; if (!list.length) { toast("Nothing to download: no lines are shown."); return; }
+  let fmt = "xlsx"; try { fmt = localStorage.getItem("fleet-xpout") === "jpg" ? "jpg" : "xlsx"; } catch {}
+  const LC = spec.lineCols.map(k => spec.cols.find(c => c.k === k)), first = LC.findIndex(c => c.kind === "text" || c.kind === "wrap");
+  const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
+  box.innerHTML = `<div class="xodlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Print / download</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
+    `<div class="xobody"><div class="xoleft"><label class="xotl">Title<input type="text" data-title maxlength="80" value="${esc(spec.title0)}"></label>` +
+    `<p class="dnote">${spec.note || ""}</p>` +
+    `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
+    `<div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${spec.cols.map(c => `<li><label><input type="checkbox" data-c="${c.k}"${c.off ? "" : " checked"}> ${esc(c.h)}</label></li>`).join("")}</ul>` +
+    (spec.extra ? `<div class="xoextra">${spec.extra.html}</div>` : "") + `</div>` +
+    `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
+    `<div class="xolines"><table class="xolt"><thead><tr><th></th>${LC.map((c, i) => `<th class="${c.kind === "num" ? "n" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(c.h)}</th>`).join("")}</tr></thead><tbody>` +
+    list.map((x, n) => `<tr data-row="${n}"><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
+      LC.map((c, i) => `<td class="${c.kind === "num" ? "n num" : c.kind === "date" ? "num" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(spec.val(x, c.k))}${i === first && spec.lineSub ? `<small class="xolsub">${esc(spec.lineSub(x))}</small>` : ""}</td>`).join("") + `</tr>`).join("") +
+    `</tbody></table></div></div></div>` +
+    `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
+  const cols = () => [...box.querySelectorAll("input[data-c]:checked")].map(i => i.dataset.c);
+  const rows = () => [...box.querySelectorAll("input[data-l]:checked")].map(i => list[+i.dataset.l]);
+  const title = () => box.querySelector("[data-title]").value.trim() || spec.title0;
+  const make = async png => fmt === "jpg" ? await pbImage(spec, rows(), cols(), title(), png) : pbExcel(spec, rows(), cols(), title());
+  const tick = (sel, all) => { const n = box.querySelectorAll(sel + ":checked").length, m = box.querySelectorAll(sel).length, a = box.querySelector(`input[data-all="${all}"]`); a.checked = n === m; a.indeterminate = n > 0 && n < m; return [n, m]; };
+  const sync = () => {
+    const [nc, mc] = tick("input[data-c]", "c"), [nl, ml] = tick("input[data-l]", "l"), big = fmt === "jpg" && nl > PB_IMG_MAX;
+    box.querySelector("[data-ccount]").textContent = `· ${nc} of ${mc}`;
+    box.querySelector("[data-lcount]").innerHTML = `<b>${nl}</b> of ${ml} lines${spec.sumKey ? ` · <b>${rs(rows().reduce((a, x) => a + num(spec.raw(x, spec.sumKey)), 0))}</b>` : ""}`;
+    box.querySelectorAll("tr[data-row]").forEach(tr => tr.classList.toggle("off", !tr.querySelector("input").checked));
+    box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
+    const sv = box.querySelector(".duesave"), sh = box.querySelector(".dshare"), off = !nc || !nl || big; sv.disabled = off; sh.disabled = off;
+    sv.lastChild.textContent = !nc ? "Choose a column" : !nl ? "Choose a line" : fmt === "jpg" ? "Save as image" : "Save as Excel";
+    box.querySelector("[data-xoerr]").textContent = big ? `Too many lines for one image (${nl}). Untick some or filter to ${PB_IMG_MAX} or fewer, or use Excel.` : "";
+  };
+  box.addEventListener("change", e => { const a = e.target.dataset.all; if (a) box.querySelectorAll(a === "c" ? "input[data-c]" : "input[data-l]").forEach(i => i.checked = e.target.checked); sync(); });
+  box.addEventListener("click", e => {
+    if (e.target === box || e.target.closest("[data-xoclose]")) { pbClose(); return; }
+    const b = e.target.closest("[data-fmt]"); if (b) { fmt = b.dataset.fmt; try { localStorage.setItem("fleet-xpout", fmt); } catch {} sync(); return; }
+    if (spec.extra && e.target.closest(".xoextra button")) { spec.extra.onClick(e.target.closest(".xoextra button")); return; }
+    // A click anywhere on a line ticks or unticks it.
+    const tr = e.target.closest("tr[data-row]"); if (tr && !e.target.matches("input")) { const i = tr.querySelector("input"); i.checked = !i.checked; sync(); }
+  });
+  box.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-title]")) e.preventDefault(); });
+  box.querySelector(".duesave").onclick = async ev => {
+    const b = ev.currentTarget; b.disabled = true;
+    try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } const f = await make(); await dl.save(f); toast(`Saved ${f.filename} · ${rows().length} lines`); pbClose(); }
+    catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."); }
+    finally { if (b.isConnected) b.disabled = false; }
+  };
+  box.querySelector(".dshare").onclick = ev => pbShare(ev.currentTarget, fmt, make, title());
+  document.body.append(box); sync(); box.querySelector("[data-title]").focus();
+}
+
+/* Expenses: what the sheet shows (filters and sort). */
 const xpOutList = () => { const P = xpPeriod(); return xpSorted(ops.expenses.filter(x => x.date >= P.from && x.date <= P.to && xpPass(x))); };
-const xpOutVal = (x, c) => c === "date" ? xpDateTxt(x.date) : c === "desc" ? x.desc || "" : c === "veh" ? xpKeyName(mtKeyOf(x), x) : c === "category" ? xpCatTxt(x) : c === "pay" ? x.pay || "" : nf(num(x.amount));
 // The filters in words, for the top of the image.
 function xpFiltTxt() {
   const f = xpFilt, out = [], mon = ym => new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "short", year: "numeric" });
@@ -6841,123 +6973,18 @@ function xpFiltTxt() {
   if (f.dup) out.push("possible duplicates");
   return out.join(" · ");
 }
-const xpOutTitle0 = () => `Expenses · ${xpPeriod().label}`;
-// File name from the title, e.g. "Driver salary Oct" → Driver-salary-Oct_30-10-2026.xlsx
-const xpOutName = (ext, title) => { const d = new Date(), p2 = n => String(n).padStart(2, "0"), base = String(title || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "expenses"; return `${base}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.${ext}`; };
-function xpExcelFile(list, cols, title) {
-  const S = XL.S, ws = XL.sheet("Expenses"), H = XP_OUT.filter(([c]) => cols.includes(c));
-  XL.put(ws, "A1", title, S.title);
-  H.forEach(([, h, w], i) => { XL.put(ws, `${XL.col(i)}3`, h, S.head); ws.widths[XL.col(i)] = w; });
-  list.forEach((x, n) => { const r = n + 4; H.forEach(([c], i) => { const a = `${XL.col(i)}${r}`;
-    if (c === "date") XL.put(ws, a, { d: x.date }, S.date); else if (c === "amount") XL.put(ws, a, num(x.amount), S.int); else XL.put(ws, a, xpOutVal(x, c), S.text); }); });
-  const ai = H.findIndex(([c]) => c === "amount");
-  if (ai >= 0) { const t = list.length + 4, A = XL.col(ai); if (ai > 0) XL.put(ws, `${XL.col(ai - 1)}${t}`, "Total", S.ttext); XL.put(ws, `${A}${t}`, list.reduce((a, x) => a + num(x.amount), 0), S.tint, `SUM(${A}4:${A}${t - 1})`); }
-  ws.freeze = 3;
-  return { filename: xpOutName("xlsx", title), data: XL.build([ws]) };
-}
-async function xpImageFile(list, cols, title, png) {
-  try { await document.fonts?.ready; } catch {}
-  const H = XP_OUT.filter(([c]) => cols.includes(c)), F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
-  const PX = { date: 120, desc: 0, veh: 150, category: 170, pay: 140, amount: 130 }, M = 36, RH = 34, W = Math.max(900, 120 + H.reduce((a, [c]) => a + (PX[c] || 380), 0));
-  const fixed = H.reduce((a, [c]) => a + PX[c], 0); H.forEach(h => h.w = PX[h[0]] || Math.max(260, W - 2 * M - fixed));
-  const c = document.createElement("canvas"), g = c.getContext("2d"), dw = H.find(h => h[0] === "desc")?.w - 20;
-  // Long descriptions wrap onto more lines; each row is as tall as its description.
-  const wrap = t => { g.font = `400 15px ${F}`; const out = []; let cur = ""; String(t).split(/\s+/).forEach(w => { const n = cur ? cur + " " + w : w; if (cur && g.measureText(n).width > dw) { out.push(cur); cur = w; } else cur = n; }); out.push(cur); return out; };
-  const lines = list.map(r => dw ? wrap(r.desc || "") : [""]), rh = l => RH + (l.length - 1) * 20;
-  const hasAmt = cols.includes("amount"), Ht = M + 92 + RH + lines.reduce((a, l) => a + rh(l), 0) + (hasAmt ? RH + 8 : 0) + 44;
-  c.width = W; c.height = Ht;
-  const fit = (t, w) => { let s = String(t); if (g.measureText(s).width <= w) return s; while (s && g.measureText(s + "…").width > w) s = s.slice(0, -1); return s + "…"; };
-  g.fillStyle = "#fff"; g.fillRect(0, 0, W, Ht);
-  g.fillStyle = "#18212b"; g.font = `700 26px ${F}`; g.fillText(fit(title, W - 2 * M), M, M + 22);
-  g.font = `400 15px ${F}`; g.fillStyle = "#5b6672";
-  g.fillText(fit(`${xpPeriod().label} · ${list.length} line${list.length === 1 ? "" : "s"}${xpFiltOn() ? ` · Filter: ${xpFiltTxt()}` : ""}`, W - 2 * M), M, M + 50);
-  let y = M + 72; g.fillStyle = "#eef1f4"; g.fillRect(M, y, W - 2 * M, RH);
-  g.font = `700 14px ${F}`; g.fillStyle = "#18212b"; let x = M;
-  H.forEach(([k, h, , ], i) => { const w = H[i].w; if (k === "amount") { g.textAlign = "right"; g.fillText(h, x + w - 10, y + 22); g.textAlign = "left"; } else g.fillText(h, x + 10, y + 22); x += w; });
-  y += RH;
-  list.forEach((r, n) => {
-    const h = rh(lines[n]); if (n % 2) { g.fillStyle = "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
-    x = M; H.forEach(([k], i) => { const w = H[i].w, v = xpOutVal(r, k);
-      g.fillStyle = "#18212b"; g.font = k === "amount" || k === "date" ? `400 14px ${MONO}` : `400 15px ${F}`;
-      if (k === "amount") { g.textAlign = "right"; g.fillText(v, x + w - 10, y + 22); g.textAlign = "left"; }
-      else if (k === "desc") lines[n].forEach((t, j) => g.fillText(t, x + 10, y + 22 + j * 20));
-      else g.fillText(fit(v, w - 20), x + 10, y + 22);
-      x += w; });
-    g.strokeStyle = "#dde2e7"; g.lineWidth = 1; g.beginPath(); g.moveTo(M, y + h - 0.5); g.lineTo(W - M, y + h - 0.5); g.stroke(); y += h;
-  });
-  if (hasAmt) { y += 8; g.fillStyle = "#e3efe0"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 15px ${F}`; g.fillText("Total", M + 10, y + 22);
-    g.textAlign = "right"; g.font = `700 15px ${MONO}`; g.fillText(rs(list.reduce((a, r) => a + num(r.amount), 0)), W - M - 10, y + 22); g.textAlign = "left"; y += RH; }
-  g.font = `400 13px ${F}`; g.fillStyle = "#8a949e"; g.fillText(`Printed by ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, M, y + 28);
-  return { filename: xpOutName(png ? "png" : "jpg", title), data: await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), png ? "image/png" : "image/jpeg", 0.92)) };
-}
-const XP_IMG_MAX = 900;
-// Share: the device's share screen where the browser has one; otherwise the image is copied (paste it into WhatsApp or email)
-// and an Excel file is saved to attach.
-async function xpOutShare(btn, fmt, make, title) {
-  let ok = false; try { ok = !!navigator.canShare?.({ files: [new File(["x"], "x.jpg", { type: "image/jpeg" })] }); } catch {}
-  if (ok) { popShare(btn, async () => [await make()], title); return; }
-  btn.disabled = true;
-  try {
-    if (fmt === "jpg" && navigator.clipboard?.write && window.ClipboardItem) {
-      try { const f = await make(true); await navigator.clipboard.write([new ClipboardItem({ "image/png": f.data })]); toast("Image copied. Open WhatsApp or email and paste it (Ctrl+V)."); xpOutClose(); return; } catch {}
-    }
-    const dl = await auDownloads(); if (!dl) { toast("Sharing isn't available here. Save the file instead."); return; }
-    const f = await make(); await dl.save(f); toast(`This browser can't share directly. Saved ${f.filename}: attach it in WhatsApp or email.`); xpOutClose();
-  } catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't share. Save the file instead."); }
-  finally { if (btn.isConnected) btn.disabled = false; }
-}
-function xpOutClose() { $("xpOutBox")?.remove(); }
-document.addEventListener("keydown", e => { if (e.key === "Escape" && $("xpOutBox")) xpOutClose(); });
-addEventListener("hashchange", xpOutClose);
-// A large window: settings on the left, every line on the right to tick or untick.
 function xpOutOpen() {
-  xpOutClose(); xpMenuClose(); xpBillClose(); xpDupClose(); if (xpEdit && xpCommit() === false) return;
-  const list = xpOutList(); if (!list.length) { toast("Nothing to download: no lines are shown."); return; }
-  let fmt = "xlsx"; try { fmt = localStorage.getItem("fleet-xpout") === "jpg" ? "jpg" : "xlsx"; } catch {}
-  // Lines picked in the sheet (row numbers) start ticked on their own; otherwise every line shown is ticked.
-  const picked = new Set([...xpRowSel].map(xpDocOf).filter(Boolean).map(x => x.id)), some = list.some(x => picked.has(x.id));
-  const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
-  box.innerHTML = `<div class="xodlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Print / download</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
-    `<div class="xobody"><div class="xoleft"><label class="xotl">Title<input type="text" data-title maxlength="80" value="${esc(xpOutTitle0())}"></label>` +
-    `<p class="dnote">${xpFiltOn() ? `Lines shown by your filters: ${esc(xpFiltTxt())}.` : "All lines of " + esc(xpPeriod().label) + "."}</p>` +
-    `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
-    `<div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${XP_OUT.map(([c, h]) => `<li><label><input type="checkbox" data-c="${c}" checked> ${h}</label></li>`).join("")}</ul></div>` +
-    `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
-    `<div class="xolines"><table class="xolt"><thead><tr><th></th><th>Date</th><th>Description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th></tr></thead><tbody>` +
-    list.map((x, i) => `<tr data-row="${i}"><td><input type="checkbox" data-l="${i}"${!some || picked.has(x.id) ? " checked" : ""} aria-label="Include this line"></td><td class="num">${esc(xpDateTxt(x.date))}</td><td>${esc(x.desc || "")}<small class="xolsub">${esc(xpKeyName(mtKeyOf(x), x))} · ${esc(xpCatTxt(x))}</small></td><td class="num nw">${esc(xpKeyName(mtKeyOf(x), x))}</td><td>${esc(xpCatTxt(x))}</td><td class="n num">${nf(num(x.amount))}</td></tr>`).join("") +
-    `</tbody></table></div></div></div>` +
-    `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
-  const cols = () => [...box.querySelectorAll("input[data-c]:checked")].map(i => i.dataset.c);
-  const rows = () => [...box.querySelectorAll("input[data-l]:checked")].map(i => list[+i.dataset.l]);
-  const title = () => box.querySelector("[data-title]").value.trim() || xpOutTitle0();
-  const make = async png => fmt === "jpg" ? await xpImageFile(rows(), cols(), title(), png) : xpExcelFile(rows(), cols(), title());
-  const tick = (sel, all) => { const n = box.querySelectorAll(sel + ":checked").length, m = box.querySelectorAll(sel).length, a = box.querySelector(`input[data-all="${all}"]`); a.checked = n === m; a.indeterminate = n > 0 && n < m; return [n, m]; };
-  const sync = () => {
-    const [nc, mc] = tick("input[data-c]", "c"), [nl, ml] = tick("input[data-l]", "l"), big = fmt === "jpg" && nl > XP_IMG_MAX;
-    box.querySelector("[data-ccount]").textContent = `· ${nc} of ${mc}`;
-    box.querySelector("[data-lcount]").innerHTML = `<b>${nl}</b> of ${ml} lines · <b>${rs(rows().reduce((a, x) => a + num(x.amount), 0))}</b>`;
-    box.querySelectorAll("tr[data-row]").forEach(tr => tr.classList.toggle("off", !tr.querySelector("input").checked));
-    box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
-    const sv = box.querySelector(".duesave"), sh = box.querySelector(".dshare"), off = !nc || !nl || big; sv.disabled = off; sh.disabled = off;
-    sv.lastChild.textContent = !nc ? "Choose a column" : !nl ? "Choose a line" : fmt === "jpg" ? "Save as image" : "Save as Excel";
-    box.querySelector("[data-xoerr]").textContent = big ? `Too many lines for one image (${nl}). Untick some or filter to ${XP_IMG_MAX} or fewer, or use Excel.` : "";
-  };
-  box.addEventListener("change", e => { const a = e.target.dataset.all; if (a) box.querySelectorAll(a === "c" ? "input[data-c]" : "input[data-l]").forEach(i => i.checked = e.target.checked); sync(); });
-  box.addEventListener("click", e => {
-    if (e.target === box || e.target.closest("[data-xoclose]")) { xpOutClose(); return; }
-    const b = e.target.closest("[data-fmt]"); if (b) { fmt = b.dataset.fmt; try { localStorage.setItem("fleet-xpout", fmt); } catch {} sync(); return; }
-    // A click anywhere on a line ticks or unticks it.
-    const tr = e.target.closest("tr[data-row]"); if (tr && !e.target.matches("input")) { const i = tr.querySelector("input"); i.checked = !i.checked; sync(); }
-  });
-  box.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-title]")) e.preventDefault(); });
-  box.querySelector(".duesave").onclick = async ev => {
-    const b = ev.currentTarget; b.disabled = true;
-    try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } const f = await make(); await dl.save(f); toast(`Saved ${f.filename} · ${rows().length} lines`); xpOutClose(); }
-    catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."); }
-    finally { if (b.isConnected) b.disabled = false; }
-  };
-  box.querySelector(".dshare").onclick = ev => xpOutShare(ev.currentTarget, fmt, make, title());
-  document.body.append(box); sync(); box.querySelector("[data-title]").focus();
+  xpMenuClose(); xpBillClose(); xpDupClose(); if (xpEdit && xpCommit() === false) return;
+  const list = xpOutList(), picked = new Set([...xpRowSel].map(xpDocOf).filter(Boolean).map(x => x.id)), P = xpPeriod();
+  pbOpen({ sheet: "Expenses", title0: `Expenses · ${P.label}`, rows: list, sumKey: "amount",
+    sub: `${P.label}${xpFiltOn() ? ` · Filter: ${xpFiltTxt()}` : ""}`,
+    note: xpFiltOn() ? `Lines shown by your filters: ${esc(xpFiltTxt())}.` : `All lines of ${esc(P.label)}.`,
+    picked: list.some(x => picked.has(x.id)) ? new Set(list.map((x, i) => picked.has(x.id) ? i : -1).filter(i => i >= 0)) : null,
+    cols: [{ k: "date", h: "Date", xl: 12, px: 120, kind: "date" }, { k: "desc", h: "Description", xl: 46, px: 0, kind: "wrap" }, { k: "veh", h: "Vehicle", xl: 17, px: 150, kind: "text" },
+      { k: "category", h: "Category", xl: 22, px: 170, kind: "text" }, { k: "pay", h: "Paid by", xl: 16, px: 140, kind: "text" }, { k: "amount", h: "Amount", xl: 13, px: 130, kind: "num", total: true }],
+    lineCols: ["date", "desc", "veh", "category", "amount"], lineSub: x => `${xpKeyName(mtKeyOf(x), x)} · ${xpCatTxt(x)}`,
+    val: (x, c) => c === "date" ? xpDateTxt(x.date) : c === "desc" ? x.desc || "" : c === "veh" ? xpKeyName(mtKeyOf(x), x) : c === "category" ? xpCatTxt(x) : c === "pay" ? x.pay || "" : nf(num(x.amount)),
+    raw: (x, c) => c === "date" ? x.date : c === "amount" ? num(x.amount) : null });
 }
 
 /* Monthly payments: lines marked ↻ are offered again each new month. */
@@ -9770,6 +9797,7 @@ $("view-trep").addEventListener("click", async e => {
 });
 function renderOps() {
   if (!$("oCards")) return;
+  renderDashTodo();
   try { autoOnTrip(); } catch {}
   updApprBadge();
   if (rsh && !rsh.ready) { rsLoad(); if (rsh.ready) rsRender(); }
@@ -9791,6 +9819,57 @@ function renderOps() {
   else if (view === "tspare") renderSpare();
   else if (view === "ttruck") renderTruck();
 }
+
+/* ---------- Dashboard: trip sheet work still to do ----------
+   Route bus days this month (up to yesterday) with no entry, and spare bus trips that ended before today whose trip sheet
+   is not started. Each row opens the place to do it. */
+var dtMonth = [], dtKey = "", dtUnsub = null;
+function dtTrips() {
+  const ym = todayISO().slice(0, 7), y = shiftDay(todayISO(), -1);
+  if (!tripDb) return tripsLocal.filter(t => t.date >= ym + "-01" && t.date <= y);
+  const key = ym + "|" + y;
+  if (dtKey !== key) { dtKey = key; dtUnsub?.(); dtMonth = null;
+    dtUnsub = tripDb.collection("trips").where("date", ">=", ym + "-01").where("date", "<=", y).onSnapshot(q => { dtMonth = q.docs.map(d => ({ id: d.id, ...d.data() })); renderDashTodo(); }, () => {}); }
+  return dtMonth;
+}
+function dashTodoRows() {
+  const out = [], today = todayISO(), y = shiftDay(today, -1), ym = today.slice(0, 7), dm = iso => `${+iso.slice(8, 10)} ${new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { month: "short" })}`;
+  if (canTrips && y >= ym + "-01") {
+    const T = dtTrips(); if (T === null) return null;
+    const days = []; for (let d = ym + "-01"; d <= y; d = shiftDay(d, 1)) days.push(d);
+    routeBuses().forEach(b => {
+      const has = new Set(T.filter(t => t.vehicleId === b.id).map(t => t.date)), miss = days.filter(d => !has.has(d)); if (!miss.length) return;
+      const sent = miss.filter(d => ["submitted"].includes(rsDoc(b.id, d)?.status)).length;
+      out.push({ kind: "route", n: miss.length, html: `<div class="what"><span class="plate ${b.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(b))}</span><span><b>${miss.length} day${miss.length > 1 ? "s" : ""}</b> not entered in ${esc(new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long" }))}</span>` +
+        `<span class="sub">${miss.slice(0, 8).map(dm).join(", ")}${miss.length > 8 ? ` and ${miss.length - 8} more` : ""}${sent ? ` · ${sent} sent by the conductor, waiting for approval` : ""}</span></div>` +
+        `<button class="btn primary" type="button" data-dtday="${b.id}|${miss[0]}">Enter ${esc(dm(miss[0]))}</button>` });
+    });
+  }
+  if (acc.tripsheets && acc.tripsheets !== "none" && (canBookings || canTsUpd)) {
+    ops.bookings.filter(b => ["booked", "ontrip", "completed"].includes(b.status) && !tripClosed(b) && !b.tsStatus && b.from && bkEnd(b) < today)
+      .sort((a, c) => String(bkEnd(a)).localeCompare(String(bkEnd(c)))).forEach(b => {
+        const v = vehicles.find(x => x.id === b.vehicleId);
+        out.push({ kind: "spare", html: `<div class="what"><span class="plate psv">${esc(v ? plateOf(v) : "No bus")}</span><span><b>Trip sheet not started</b> · booking ${esc(b.no || "")}</span>` +
+          `<span class="sub">${esc(b.party || "")}${b.places ? ` · ${esc(b.places)}` : ""} · trip ended ${fmtShort(bkEnd(b))}</span></div><button class="btn primary" type="button" data-dtbk="${b.id}">Fill in</button>` });
+      });
+  }
+  return out;
+}
+function renderDashTodo() {
+  const el = $("dashTodo"); if (!el || view !== "renewals") return;
+  let rows; try { rows = dashTodoRows(); } catch { return; } if (rows === null) return;
+  el.hidden = !rows.length; if (!rows.length) { el.innerHTML = ""; return; }
+  const r = rows.filter(x => x.kind === "route"), sp = rows.filter(x => x.kind === "spare");
+  el.innerHTML = `<div class="sechead"><h2 class="sec">Trip sheets · to do</h2><p>${[r.length ? `${r.reduce((a, x) => a + x.n, 0)} route bus day${r.reduce((a, x) => a + x.n, 0) > 1 ? "s" : ""} not entered` : "", sp.length ? `${sp.length} spare bus trip sheet${sp.length > 1 ? "s" : ""} not started` : ""].filter(Boolean).join(" · ")}</p></div>` +
+    `<div class="dtlist">${rows.map(x => `<div class="orow dt-${x.kind}">${x.html}</div>`).join("")}</div>`;
+}
+$("dashTodo").addEventListener("click", e => {
+  const d = e.target.closest("[data-dtday]");
+  if (d) { const [bus, date] = d.dataset.dtday.split("|");
+    if (bwIsPhone()) { rsBus = bus; rsYm = date.slice(0, 7); location.hash = "#route-sheet"; setTimeout(() => rsOpen(bus, date), 60); return; }
+    opDate = date; dbBus = bus; rsBus = bus; dbFilledKey = ""; dbDirty = false; dbFrom = { hash: location.hash, y: scrollY }; location.hash = "#trips-day"; return; }
+  const k = e.target.closest("[data-dtbk]"); if (k) openBooking(k.dataset.dtbk);
+});
 
 /* ---------- home ---------- */
 const ICONS = {
@@ -12246,6 +12325,24 @@ function renderTsList() {
     : "The trip sheet opens on the trip's last day. Fill in the expenses and km, then submit it for approval.";
 }
 $("tsGroups").addEventListener("click", e => { const r = e.target.closest("[data-bk]"); if (r) openBooking(r.dataset.bk); });
+// Print: every trip sheet listed on the page; rows hidden by a column filter start unticked.
+$("tsPrint").addEventListener("click", () => {
+  const L = tsLists(), seen = new Set(), list = [...L.back, ...L.fill, ...L.sent, ...L.soon, ...L.done].filter(b => !seen.has(b.id) && seen.add(b.id));
+  const shown = new Set([...$("tsGroups").querySelectorAll("tr[data-bk]:not(.tthide)")].map(r => r.dataset.bk)), filtered = list.some(b => !shown.has(b.id));
+  const money = canBookings, C = new Map(list.map(b => [b.id, bkCalc(b)])), st = b => { const d = document.createElement("div"); d.innerHTML = tsTag(b); return d.textContent.trim(); };
+  const pl = b => b.vehicleId ? plateOf(vehicles.find(v => v.id === b.vehicleId)) : "No bus yet", drv = b => (b.driverId ? drivers.find(d => d.id === b.driverId)?.name : b.driverName) || "";
+  const R = (b, c) => c === "from" ? b.from || null : c === "to" ? bkEnd(b) || null : c === "col" ? C.get(b.id).due : c === "exp" ? C.get(b.id).exp : c === "bal" ? C.get(b.id).due - C.get(b.id).exp : c === "km" ? (C.get(b.id).km || null) : null;
+  const V = (b, c) => c === "no" ? String(b.no || "") : c === "status" ? st(b) : c === "from" ? (b.from ? xpDateTxt(b.from) : "") : c === "to" ? (bkEnd(b) ? xpDateTxt(bkEnd(b)) : "") : c === "bus" ? pl(b) : c === "party" ? b.party || ""
+    : c === "places" ? b.places || "" : c === "driver" ? drv(b) : (x => x ? nf(x) : "")(R(b, c));
+  pbOpen({ sheet: "Trip sheets", title0: "Spare bus trip sheets", rows: list, sumKey: money ? "bal" : null, sub: "Spare bus trip sheets",
+    note: filtered ? "Only the trip sheets shown by your column filters are ticked." : "Every trip sheet on this page: to fill, sent back, waiting, coming up and the last approved.",
+    picked: filtered ? new Set(list.map((b, i) => shown.has(b.id) ? i : -1).filter(i => i >= 0)) : null,
+    cols: [{ k: "no", h: "No.", xl: 8, px: 80, kind: "text" }, { k: "status", h: "Trip sheet", xl: 18, px: 170, kind: "text" }, { k: "from", h: "From", xl: 12, px: 120, kind: "date" }, { k: "to", h: "To", xl: 12, px: 120, kind: "date" },
+      { k: "bus", h: "Bus", xl: 16, px: 150, kind: "text" }, { k: "party", h: "Party", xl: 26, px: 0, kind: "text" }, { k: "places", h: "Places", xl: 30, px: 0, kind: "wrap" }, { k: "driver", h: "Driver", xl: 18, px: 160, kind: "text" },
+      ...(money ? [{ k: "col", h: "Collection", xl: 13, px: 130, kind: "num", total: true }, { k: "exp", h: "Expenses", xl: 13, px: 130, kind: "num", total: true }, { k: "bal", h: "Balance", xl: 13, px: 130, kind: "num", total: true }] : []),
+      { k: "km", h: "Km run", xl: 10, px: 100, kind: "num", total: true }],
+    lineCols: ["party", "from", "status", ...(money ? ["bal"] : ["km"])], lineSub: b => `No. ${b.no || "—"} · ${pl(b)}${b.places ? " · " + b.places : ""}`, val: V, raw: R });
+});
 $("tsGroups").addEventListener("keydown", e => { const r = e.target.closest("tr[data-bk]"); if (r && e.key === "Enter") openBooking(r.dataset.bk); });
 
 // The main driver is left out of the cleaner list.
@@ -13608,28 +13705,32 @@ function meXlsx(ym) {
 }
 function meXlsxName(ym) { const v = vehicles.find(x => x.id === tBusId), mon = new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "short" }); return `${plateKey(plateOf(v)).slice(-4) || "0000"}_ROUTE_${mon}-${ym.slice(0, 4)}.xlsx`; }
 $("tPrint").insertAdjacentHTML("afterbegin", ICON_PRINT);
-$("tPrint").addEventListener("click", e => {
-  e.stopPropagation();
-  const open = document.querySelector(".mxpop"); closeDuePop(); if (open) return;
+// Print: the month's days in the shared Print window; the office's monthly sheet in its Excel format is a button inside it.
+async function meSheetSave(btn, ym) {
+  let downloads = null; try { downloads = await auDownloads(); } catch { downloads = null; }
+  if (!downloads) { toast("Saving files isn't available in this view."); return; }
+  btn.disabled = true;
+  try { await downloads.save({ filename: meXlsxName(ym), data: meXlsx(ym) }); toast("Office monthly sheet saved. Look in your Downloads folder."); }
+  catch (er) { toast(er?.code === "declined" ? "File not saved." : er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't make the Excel file. Try again."); }
+  finally { if (btn.isConnected) btn.disabled = false; }
+}
+$("tPrint").addEventListener("click", () => {
   if (tMonthIdx > 11) { toast("Choose a month first: the sheet is for one month."); return; }
-  const ym = monthYM(tFyStart, tMonthIdx), v = vehicles.find(x => x.id === tBusId), unsaved = meChangedKeys().length;
-  const mon = new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long", year: "numeric" }), pop = document.createElement("div");
-  pop.className = "duepop padipop mxpop"; pop.setAttribute("role", "dialog");
-  pop.innerHTML = `<h4>Monthly sheet · ${esc(plateOf(v))}</h4><p class="dnote"><b>${mon}</b> in the office Excel format: the month's figures, drivers and conductors, kilometres, and every day of the month.</p>` +
-    (unsaved ? `<p class="dnote" style="color:var(--warn)">${unsaved} changed day${unsaved === 1 ? " is" : "s are"} not saved yet and won't be in the file. Save first to include ${unsaved === 1 ? "it" : "them"}.</p>` : "") + popActsHtml();
-  const file = () => [{ filename: meXlsxName(ym), data: meXlsx(ym) }];
-  const save = pop.querySelector(".duesave"); save.lastChild.textContent = "Download Excel";
-  save.onclick = async ev => {
-    ev.stopPropagation(); let downloads = null;
-    try { downloads = await auDownloads(); } catch { downloads = null; }
-    if (!downloads) { toast("Saving files isn't available in this view."); return; }
-    save.disabled = true;
-    try { await downloads.save(file()[0]); toast("Excel file saved. Look in your Downloads folder."); closeDuePop(); }
-    catch (er) { toast(er?.code === "declined" ? "File not saved." : er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't make the Excel file. Try again."); }
-    finally { if (save.isConnected) save.disabled = false; }
-  };
-  if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); popShare(ev.currentTarget, async () => file(), `Route bus · ${plateOf(v)} · ${mon}`); };
-  placePop(pop, e.currentTarget);
+  const ym = monthYM(tFyStart, tMonthIdx), v = vehicles.find(x => x.id === tBusId), unsaved = meChangedKeys().length, list = monthTrips(ym);
+  const mon = new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const V = (t, c) => c === "date" ? xpDateTxt(t.date) : c === "status" ? (t.notRun ? "Did not run" : "Ran") : c === "start" ? t.start || "" : c === "driver" ? crewName("driver", t) : c === "conductor" ? crewName("conductor", t)
+    : c === "litres" ? (num(t.litres) ? nf(num(t.litres), 2) : "") : c === "odo" ? (num(t.odo) ? String(t.odo) : "") : (x => x ? nf(x) : "")(R(t, c));
+  const R = (t, c) => c === "date" ? t.date : c === "singles" ? singlesRun(t) : c === "col" ? tripCollection(t) : c === "fuel" ? num(t.fuelCost) : c === "litres" ? num(t.litres) : c === "pay" ? tripPay(t)
+    : c === "other" ? num(t.otherExp) : c === "exp" ? tripExpense(t) : c === "bal" ? tripCollection(t) - tripExpense(t) : c === "odo" ? (num(t.odo) || null) : null;
+  pbOpen({ sheet: "Route bus", title0: `Route bus · ${plateOf(v)} · ${mon}`, rows: list, sumKey: "col", sub: `${plateOf(v)} · ${mon}`,
+    note: `Every day entered for <b>${esc(plateOf(v))}</b> in <b>${esc(mon)}</b>.${unsaved ? ` <span style="color:var(--warn)">${unsaved} changed day${unsaved === 1 ? " is" : "s are"} not saved yet and won't be included.</span>` : ""}`,
+    cols: [{ k: "date", h: "Date", xl: 12, px: 120, kind: "date" }, { k: "status", h: "Status", xl: 12, px: 120, kind: "text" }, { k: "start", h: "Started from", xl: 16, px: 0, kind: "text", off: true },
+      { k: "driver", h: "Driver", xl: 18, px: 0, kind: "text" }, { k: "conductor", h: "Conductor", xl: 18, px: 0, kind: "text" }, { k: "singles", h: "Singles", xl: 9, px: 90, kind: "num", total: true },
+      { k: "col", h: "Collection", xl: 13, px: 130, kind: "num", total: true }, { k: "litres", h: "Diesel (L)", xl: 11, px: 110, kind: "num", total: true, off: true }, { k: "fuel", h: "Diesel ₹", xl: 12, px: 120, kind: "num", total: true },
+      { k: "pay", h: "Crew pay", xl: 12, px: 120, kind: "num", total: true }, { k: "other", h: "Other exp.", xl: 12, px: 120, kind: "num", total: true, off: true }, { k: "exp", h: "Expenses", xl: 12, px: 120, kind: "num", total: true },
+      { k: "bal", h: "Balance", xl: 12, px: 120, kind: "num", total: true }, { k: "odo", h: "Odometer", xl: 11, px: 110, kind: "num", off: true }],
+    lineCols: ["date", "status", "driver", "col", "bal"], lineSub: t => crewName("conductor", t) ? `Conductor: ${crewName("conductor", t)}` : "", val: V, raw: R,
+    extra: { html: `<button type="button" class="btn" data-mesheet>📄 Office monthly sheet (Excel)</button><p>The full month in the office Excel format: figures, drivers and conductors, kilometres, every day.</p>`, onClick: b => meSheetSave(b, ym) } });
 });
 // Phone trip sheet.
 document.addEventListener("click", e => {
