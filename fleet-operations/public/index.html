@@ -396,6 +396,8 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .tscard, .tscrew { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
 .tscard h3, .tscrew h3 { margin: 0 0 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
 .tsl { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 14px; } .tsl:first-of-type { border-top: 0; }
+.tsl .tkmsrc { display: block; font-size: 11.5px; color: var(--muted); } .tsl .tkmbtn { margin-left: 8px; font: 600 12px var(--body); color: var(--accent); padding: 0 4px; }
+.tkmed { flex-wrap: wrap; align-items: center; } .tkmed label { font-weight: 600; } .tkmed > span { display: flex; gap: 6px; align-items: center; } .tkmed input { width: 9em; padding: 4px 8px; } .tkmed .btn { padding: 4px 10px; }
 .tsl b { font-family: var(--mono); font-variant-numeric: tabular-nums; } .tsl.pos b { color: var(--ok); } .tsl.neg b { color: var(--danger); } .tsl.pos, .tsl.neg { font-weight: 700; }
 .tscrew .ctable .neg { color: var(--danger); } .tscrew tr.tsgrp td { background: var(--bg); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 @media (max-width: 900px) { .tscards { grid-template-columns: minmax(0, 1fr); } }
@@ -5512,6 +5514,15 @@ async function saveOpeningKm(ym, km) {
 }
 
 /* odometer chain */
+const KM_SRC = { set: "", prev: "from last month's final reading", vehicle: "from the vehicle record", none: "" };
+// "Kilometer starting" in the Kilometres card: the month's opening reading (1 April's for April), which the office can type in.
+function tKmStartHtml(ym, open) {
+  const day1 = new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long" });
+  if ($("tKm").dataset.editing === "1") return `<div class="tsl tkmed"><label for="tKmInput">Kilometer starting on ${day1}</label><span><input id="tKmInput" type="number" inputmode="numeric" min="0" value="${open.km ?? ""}">` +
+    `<button class="btn primary" type="button" data-km="save">Save</button><button class="icon" type="button" data-km="cancel">Cancel</button></span></div>`;
+  return `<div class="tsl"><span>Kilometer starting${KM_SRC[open.src] ? `<small class="tkmsrc">${KM_SRC[open.src]}</small>` : ""}</span><b>${open.km != null ? nf(open.km) : "—"}` +
+    `${canTrips ? `<button class="icon tkmbtn" type="button" data-km="edit" title="Type the odometer reading at the start of ${day1}">${open.km != null ? "Change" : "Set"}</button>` : ""}</b></div>`;
+}
 function monthTrips(ym) { return trips.filter(t => t.date.startsWith(ym)).sort((a, b) => a.date.localeCompare(b.date)); }
 function openingKm(ym) {
   const stored = tripMonths.find(m => m.month === ym);
@@ -5555,7 +5566,10 @@ function buildTripSheet() {
     try { await saveRoute(ra, rb); delete $("tRoute").dataset.editing; toast(`Route saved · ${ra} on 1 April, ${rb} on 2 April, and so on`); renderTrips(); }
     catch { toast("Couldn't save. Try again."); }
   });
-  $("tKm").addEventListener("click", async e => {
+  // Opening km: changed from the Kilometres card (any view) or the Opening km line under the summary (Table view).
+  $("tMonthView").addEventListener("keydown", e => { if (e.target.id !== "tKmInput") return;
+    if (e.key === "Enter") { e.preventDefault(); $("tMonthView").querySelector('[data-km="save"]')?.click(); } else if (e.key === "Escape") $("tMonthView").querySelector('[data-km="cancel"]')?.click(); });
+  $("tMonthView").addEventListener("click", async e => {
     const b = e.target.closest("button[data-km]"); if (!b) return;
     if (b.dataset.km === "edit") { $("tKm").dataset.editing = "1"; renderTrips(); setTimeout(() => $("tKmInput")?.focus(), 20); return; }
     if (b.dataset.km === "cancel") { delete $("tKm").dataset.editing; renderTrips(); return; }
@@ -5794,7 +5808,7 @@ function renderTrips() {
       stat("Profit per km", perKm(bal, km), km && tot.col ? `${nf(bal / tot.col * 100, 1)}% of collection` : "", bal < 0 ? "var(--danger)" : "") +
     `</div><div class="tscards">` +
       `<section class="tscard"><h3>Money</h3>${line("Total collection", rs(tot.col))}${line("Total expense", rs(tot.exp))}${line("Total balance", rs(bal), bal < 0 ? "neg" : "pos")}</section>` +
-      `<section class="tscard"><h3>Kilometres</h3>${line("Kilometer starting", open.km != null ? nf(open.km) : "—")}${line("Kilometer ending", M.lastOdo ? nf(M.lastOdo) : "—")}${line("Total kilometers", km != null ? nf(km) : "—")}${line("Per day average kms", km != null && days ? nf(km / days) : "—")}${km && tot.lit ? `<p class="hint" style="margin:4px 0 0">Mileage ${nf(km / tot.lit, 2)} km/L</p>` : ""}</section>` +
+      `<section class="tscard"><h3>Kilometres</h3>${tKmStartHtml(ym, open)}${line("Kilometer ending", M.lastOdo ? nf(M.lastOdo) : "—")}${line("Total kilometers", km != null ? nf(km) : "—")}${line("Per day average kms", km != null && days ? nf(km / days) : "—")}${km && tot.lit ? `<p class="hint" style="margin:4px 0 0">Mileage ${nf(km / tot.lit, 2)} km/L</p>` : ""}</section>` +
       `<section class="tscard"><h3>Salary</h3>${line("Driver salary", rs(tot.pd))}${line("Conductor salary", rs(tot.pc))}${line("Checker salary", rs(tot.pk))}${line("Total", rs(crewPay), "pos")}</section>` +
     `</div>` + meCrewTable(M);
 
@@ -5811,11 +5825,8 @@ function renderTrips() {
     : R && R.a && R.b
       ? `<span>Route <b>${esc(R.a)} ⇄ ${esc(R.b)}</b> <span class="hint">· starts ${esc(R.src === "prev" ? plannedStart(`${tFyStart}-04-01`) : R.a)} on 1 April and alternates every day${R.src === "prev" ? ", carried on from last year" : ""}</span></span>${canTrips ? `<button class="icon" type="button" data-route="edit">Change route</button>` : ""}`
       : `<span>Route <b>not set</b> <span class="hint">· enter the starting point for 1 April and every other day is filled in</span></span>${canTrips ? `<button class="icon" type="button" data-route="edit">Set route</button>` : ""}`;
-  const editingKm = $("tKm").dataset.editing === "1";
-  const srcNote = { set: "", prev: "from last month's final reading", vehicle: "from the vehicle record", none: "" }[open.src];
-  $("tKm").innerHTML = editingKm
-    ? `<label for="tKmInput">Opening km for ${MONTHS[tMonthIdx]}</label><input id="tKmInput" type="number" inputmode="numeric" min="0" value="${open.km ?? ""}"><button class="btn" type="button" data-km="save" style="padding:4px 10px">Save</button><button class="icon" type="button" data-km="cancel">Cancel</button>`
-    : `<span>Opening km <b>${open.km != null ? nf(open.km) : "not set"}</b>${srcNote ? ` <span class="hint">(${srcNote})</span>` : ""}</span>${canTrips ? `<button class="icon" type="button" data-km="edit">${open.km != null ? "Change" : "Set opening km"}</button>` : ""}<span>Closing km <b>${M.lastOdo ? nf(M.lastOdo) : "—"}</b></span>`;
+  const srcNote = KM_SRC[open.src];
+  $("tKm").innerHTML = `<span>Opening km <b>${open.km != null ? nf(open.km) : "not set"}</b>${srcNote ? ` <span class="hint">(${srcNote})</span>` : ""}</span>${canTrips ? `<button class="icon" type="button" data-km="edit">${open.km != null ? "Change" : "Set opening km"}</button>` : ""}<span>Closing km <b>${M.lastOdo ? nf(M.lastOdo) : "—"}</b></span>`;
 
   renderMonthEntry(ym, M);
 
@@ -9021,8 +9032,9 @@ function rsDayState(bus, day, src = canTrips ? [...winTrips(), ...trips] : winTr
 // Kilometres for a day: its closing reading less the last reading before it.
 function rsDayKm(bus, day, T, src = winTrips()) {
   if (!T?.odo) return null;
-  const prev = src.filter(y => y.vehicleId === bus && y.date < day && y.odo).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const k = prev ? T.odo - prev.odo : null; return k > 0 && k < 2000 ? k : null;
+  // The office's view of a bus uses the same chain as the monthly table: the reading before this day in the month, else the month's opening km.
+  const before = bus === tBusId && canTrips ? prevOdo(day) : src.filter(y => y.vehicleId === bus && y.date < day && y.odo).sort((a, b) => b.date.localeCompare(a.date))[0]?.odo;
+  const k = before != null ? T.odo - before : null; return k > 0 && k < 2000 ? k : null;
 }
 // The days the phone page reads. The office reads the bus's whole financial year (the same data as the monthly screen),
 // so any month can be shown; a conductor reads the recent days only.
