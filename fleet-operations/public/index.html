@@ -1448,7 +1448,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 #view-texp.xrmode .xpbody { display: flex; flex-direction: column; gap: 12px; }
 .xrchip { display: inline-block; padding: 2px 9px; border-radius: 99px; font: 600 12px var(--body); white-space: nowrap; } .xr-d { background: var(--bg); color: var(--muted); border: 1px solid var(--line); } .xr-s { background: var(--warn-soft); color: var(--warn); } .xr-r { background: var(--danger-soft); color: var(--danger); } .xr-a { background: var(--ok-soft); color: var(--ok); }
 .xrwhy { display: block; color: var(--danger); font-size: 12px; margin-top: 3px; } .xpfh .xrwhy { display: inline; margin: 0; }
-.xrtab td, .xrtab th { padding: 8px 10px; } .xrtab tr.xropen { cursor: pointer; } .xrtab tr.xropen:hover td { background: var(--accent-soft); } .xrtab tr.on td { background: var(--accent-soft); }
+.xrtab td, .xrtab th { padding: 8px 10px; } table.ctable.xrtab td.xrdesc { white-space: normal; min-width: 180px; overflow-wrap: anywhere; } .xrbyl { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-direction: column; flex-wrap: nowrap; } .xrtab .xract .xracts .btn { width: 100%; }
+.xrtab .xract .xrbk { flex-direction: column; min-width: 220px; } .xrtab .xract .xrbk input { min-width: 0; } .xrtab tr.xropen { cursor: pointer; } .xrtab tr.xropen:hover td { background: var(--accent-soft); } .xrtab tr.on td { background: var(--accent-soft); }
 .xrcard { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 10px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 3px 10px; align-items: start; margin-top: 8px; }
 .xrcard.rv { grid-template-columns: minmax(0, 1fr) auto; } .xrcard.rv .s { grid-column: 1 / -1; } .xrcard.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .xrcard input[type=checkbox] { width: 20px; height: 20px; margin: 2px 0 0; } .xrcard .t { font-weight: 600; min-width: 0; } .xrcard .a { font: 700 15px var(--mono); text-align: right; } .xrcard .s { grid-column: 2 / -1; color: var(--muted); font-size: 13px; } .xrcard .st { grid-column: 2 / -1; } .xrcard.xropen { cursor: pointer; }
@@ -1456,7 +1458,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xrsend .btn { min-width: 170px; } .xrsend .btn:disabled { opacity: .5; }
 #xrRev { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; } #xrRev[hidden] { display: none; }
 .xrbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--line)); background: var(--warn-soft); border-radius: 10px; font-size: 14px; } .xrbar .sub { flex: 1; } .xrbar .btn { padding: 6px 14px; }
-.xrrev { margin: 0; } .xrrev .xpform { margin-top: 12px; } .xrtab .xracts { flex-wrap: nowrap; } .xracts, .xrbk { display: flex; gap: 6px; flex-wrap: wrap; } .xracts .btn, .xrbk .btn { padding: 5px 10px; font-size: 13px; min-height: 0; white-space: nowrap; } .xrbk input { flex: 1; min-width: 180px; padding: 6px 9px; }
+.xrrev { margin: 0; } .xrrev .xpform { margin-top: 12px; } .xracts, .xrbk { display: flex; gap: 6px; flex-wrap: wrap; } .xracts .btn, .xrbk .btn { padding: 5px 10px; font-size: 13px; min-height: 0; white-space: nowrap; } .xrbk input { flex: 1; min-width: 180px; padding: 6px 9px; }
 .xrcard .xracts, .xrcard .xrbk { grid-column: 1 / -1; margin-top: 6px; } .xrcard .xracts .btn, .xrcard .xrbk .btn { flex: 1; padding: 8px 6px; font-size: 14px; }
 @media (max-width: 700px) { .xrsend { margin: 12px -14px -14px; } .xrsend .btn { min-width: 0; flex: 1; } }
 /* Sheet */
@@ -1467,7 +1469,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xpgridt th, .xpgridt td { border-right: 1px solid var(--line); } .xpgridt tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--accent) 3%, var(--surface)); } .xpgridt tbody tr.on td { background: var(--accent-soft); }
 /* The sheet on a computer (works like Excel) */
 #view-texp { padding-block: 16px 14px; gap: 12px; }
-@media (min-width: 1001px) { html:has(#view-texp:not([hidden])) { overflow: hidden; } } /* only the sheet scrolls */
+@media (min-width: 1001px) { html:has(#view-texp:not([hidden]):not(.xrmode):not(.xrrevopen)) { overflow: hidden; } } /* only the sheet scrolls (My expenses and the review list scroll the page) */
 #view-texp .xphead { align-items: center; justify-content: flex-start; gap: 10px 22px; } #view-texp .xphead h1 { margin: 0; }
 #view-texp .xphead .tcontrols { align-items: center; }
 @media (max-width: 700px) { #view-texp .xphead { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; }
@@ -6469,7 +6471,7 @@ function renderXr() {
   const line = r => [fmtShort(r.date), `${esc(r.desc || "")}${xrBill(r)}`, esc(xpKeyName(mtKeyOf(r), r)), xpTag(r.category, r.catNote), esc(r.pay || "")];
   const rows = wide
     ? `<div class="tscroll"><table class="ctable xrtab"><thead><tr><th></th><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th>Paid by</th><th class="n">Amount</th><th>Status</th></tr></thead><tbody>` +
-      list.map(r => { const c = line(r); return `<tr data-xrid="${r.id}"${open(r) ? ' class="xropen" title="Click to change"' : ""}><td>${tick(r)}</td><td class="num">${c[0]}</td><td>${c[1]}</td><td class="num" style="white-space:nowrap">${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td><td class="n">${nf(num(r.amount))}</td><td>${xrChip(r)}</td></tr>`; }).join("") + `</tbody></table></div>`
+      list.map(r => { const c = line(r); return `<tr data-xrid="${r.id}"${open(r) ? ' class="xropen" title="Click to change"' : ""}><td>${tick(r)}</td><td class="num">${c[0]}</td><td class="xrdesc">${c[1]}</td><td class="num" style="white-space:nowrap">${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td><td class="n">${nf(num(r.amount))}</td><td>${xrChip(r)}</td></tr>`; }).join("") + `</tbody></table></div>`
     : list.map(r => { const c = line(r); return `<div class="xrcard${open(r) ? " xropen" : ""}" data-xrid="${r.id}">${tick(r) || "<span></span>"}<span class="t">${c[1]}</span><b class="a">${rs(num(r.amount))}</b><span class="s">${c[0]} · ${c[2]} · ${esc(r.category || "")}${r.catNote ? `: ${esc(r.catNote)}` : ""} · ${c[4]}</span><span class="st">${xrChip(r)}</span></div>`; }).join("");
   const selTot = [...xrSel].reduce((a, id) => a + num(mine.find(r => r.id === id)?.amount), 0);
   $("xpBody").innerHTML = `<div data-slot="top"></div><section class="panel xrmy"><div class="sechead"><h2 class="sec">My lines</h2><p>Drafts and lines sent back can be changed: ${wide ? "click" : "tap"} one. Tick them and send them to the office.</p></div>` +
@@ -6506,17 +6508,18 @@ function renderXrRev() {
   const F = $("xpForm"), reviewing = xfMode === "review" && w.some(r => r.id === xpEd);
   if (el.contains(F)) { F.hidden = true; $("view-texp").appendChild(F); }  // the form is one element: keep it out of what is redrawn
   if (xfMode === "review" && !reviewing) xfMode = "";
+  $("view-texp").classList.toggle("xrrevopen", !!w.length && xrOpenRev);
   if (!w.length) { el.hidden = true; el.innerHTML = ""; return; }
   el.hidden = false;
-  const who = [...new Set(w.map(r => r.byName).filter(Boolean))], wide = !xpNarrow(700), tot = w.reduce((a, r) => a + num(r.amount), 0);
+  const who = [...new Set(w.map(r => r.byName).filter(Boolean))], wide = !xpNarrow(1250), tot = w.reduce((a, r) => a + num(r.amount), 0);
   const acts = r => xrBackId === r.id
     ? `<div class="xrbk"><input id="xrWhy" maxlength="200" placeholder="Why it is sent back (he will see this)" aria-label="Reason for sending back"><button type="button" class="btn danger" data-xrbkgo="${r.id}">Send back</button><button type="button" class="btn" data-xrbkno>Cancel</button></div>`
     : `<div class="xracts"><button type="button" class="btn primary" data-xrok="${r.id}">✓ Approve</button><button type="button" class="btn" data-xrch="${r.id}">Change</button><button type="button" class="btn" data-xrbk="${r.id}">Send back</button></div>`;
   const bills = r => r.bills?.length ? r.bills.map(b => `<a class="filelink" href="/_blob/${encodeURIComponent(b.id)}" target="_blank" rel="noopener" title="${esc(b.name || "Bill")}">📎</a>`).join(" ") : "";
   const by = r => `${esc(r.byName || "")}${r.submittedOn ? ` · ${fmtStamp(r.submittedOn)}` : ""}`;
   const list = !xrOpenRev ? "" : wide
-    ? `<section class="panel xrrev"><div class="sechead"><h2 class="sec">Waiting for approval (${w.length})</h2><p>Approve adds the line to Expenses below. Change any box first if needed, or send it back with a reason.</p></div><div class="tscroll"><table class="ctable xrtab"><thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th>Paid by</th><th class="n">Amount</th><th>Bill</th><th>Sent by</th><th></th></tr></thead><tbody>` +
-      w.map(r => `<tr${r.id === xpEd && reviewing ? ' class="on"' : ""}><td class="num">${fmtShort(r.date)}</td><td>${esc(r.desc || "")}</td><td class="num" style="white-space:nowrap">${esc(xpKeyName(mtKeyOf(r), r))}</td><td>${xpTag(r.category, r.catNote)}</td><td>${esc(r.pay || "")}</td><td class="n">${nf(num(r.amount))}</td><td>${bills(r)}</td><td class="sub">${by(r)}</td><td>${acts(r)}</td></tr>`).join("") + `</tbody></table></div><div data-slot="rev"></div></section>`
+    ? `<section class="panel xrrev"><div class="sechead"><h2 class="sec">Waiting for approval (${w.length})</h2><p>Approve adds the line to Expenses below. Change any box first if needed, or send it back with a reason.</p></div><div class="tscroll"><table class="ctable xrtab"><thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th>Paid by</th><th class="n">Amount</th><th>Bill</th><th></th></tr></thead><tbody>` +
+      w.map(r => `<tr${r.id === xpEd && reviewing ? ' class="on"' : ""}><td class="num">${fmtShort(r.date)}</td><td class="xrdesc">${esc(r.desc || "")}<span class="xrbyl">Sent by ${by(r)}</span></td><td class="num" style="white-space:nowrap">${esc(xpKeyName(mtKeyOf(r), r))}</td><td>${xpTag(r.category, r.catNote)}</td><td>${esc(r.pay || "")}</td><td class="n">${nf(num(r.amount))}</td><td>${bills(r)}</td><td class="xract">${acts(r)}</td></tr>`).join("") + `</tbody></table></div><div data-slot="rev"></div></section>`
     : `<section class="panel xrrev"><h2 class="sec" style="margin:0 0 8px">Waiting for approval (${w.length})</h2>` +
       w.map(r => `<div class="xrcard rv${r.id === xpEd && reviewing ? " on" : ""}"><span class="t">${esc(r.desc || "")} ${bills(r)}</span><b class="a">${rs(num(r.amount))}</b><span class="s">${fmtShort(r.date)} · ${esc(xpKeyName(mtKeyOf(r), r))} · ${esc(r.category || "")}${r.catNote ? `: ${esc(r.catNote)}` : ""} · ${esc(r.pay || "")}</span><span class="s">Sent by ${by(r)}</span>${acts(r)}</div>`).join("") + `<div data-slot="rev"></div></section>`;
   el.innerHTML = `<div class="xrbar"><b>⏳ ${w.length} expense${w.length > 1 ? "s" : ""} waiting for approval</b><span class="sub">${rs(tot)}${who.length ? ` · sent by ${esc(who.join(", "))}` : ""}</span><button type="button" class="btn ${xrOpenRev ? "" : "primary"}" data-xrtoggle>${xrOpenRev ? "Hide" : "Review"}</button></div>` + list;
