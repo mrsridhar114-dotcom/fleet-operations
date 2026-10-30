@@ -7157,7 +7157,7 @@ function xpListUpd(showAll) {
 }
 function xpListMove(n) { const E = xpEdit, lst = $("xpEdBox")?.querySelector(".xlist"); if (!E?.items?.length) return; E.hi = (E.hi + n + E.items.length) % E.items.length; lst.querySelectorAll("div").forEach((x, i) => x.classList.toggle("h", i === E.hi)); lst.querySelector(".h")?.scrollIntoView({ block: "nearest" }); }
 function xpEdErr(m) { $("xpEdBox")?.classList.add("bad"); toast(m); return false; }
-function xpCancel() { xpEdit = null; const box = $("xpEdBox"); if (box) { box.hidden = true; box.innerHTML = ""; } $("xpSc")?.focus({ preventScroll: true }); if (xpDeferred) renderExp(true); }
+function xpCancel() { if (xpEdit?.c === "catNote" && xpPendingOther) { const r = xpPendingOther; xpPendingOther = null; xpEdit = null; xpRefreshRow(r); toast("Not changed to Other."); } xpEdit = null; const box = $("xpEdBox"); if (box) { box.hidden = true; box.innerHTML = ""; } $("xpSc")?.focus({ preventScroll: true }); if (xpDeferred) renderExp(true); }
 // Closes the editor and keeps the value; false when it cannot be read (the editor stays open).
 function xpCommit() {
   const E = xpEdit; if (!E) return true;
@@ -7179,9 +7179,9 @@ function xpApply(r, c, val) {
   if (x) {
     const cur = xpValOf(r);
     if (["date", "desc", "veh", "amount"].includes(c) && (val === "" || val == null)) { toast(`The ${XP_NAMES[c]} cannot be empty.`); return; }
-    if (c === "category" && val === "Other" && !x.catNote) { xpPendingOther = r; return "note"; }
+    if (c === "category" && val === "Other" && !x.catNote) { xpPendingOther = r; const td = xpTd(r, "category"); if (td) td.innerHTML = xpTag("Other") + `<span class="xreq"> details needed</span>`; return "note"; }
     const ch = c === "catNote" ? { category: "Other", catNote: val } : c === "veh" ? xpWhere(val, x) : c === "category" ? { category: val } : { [c]: val };
-    if (c === "catNote" && !val) { xpPendingOther = null; return; }
+    if (c === "catNote" && !val) { xpPendingOther = null; xpRefreshRow(r); toast(`Not changed: type what the Other expense was, then it changes to Other.`); return; }
     xpPendingOther = null;
     const doc = { ...x, ...ch }; if (doc.category !== "Other") delete doc.catNote;
     if (["date", "desc", "vehicleId", "plate", "category", "catNote", "pay", "amount"].every(k => (doc[k] ?? "") === (x[k] ?? ""))) return;
@@ -7273,7 +7273,7 @@ $("xpBody").addEventListener("mousedown", e => {
   const dc = e.target.closest("[data-xdcal]");
   if (dc && canXp()) { e.preventDefault(); if (xpEdit && xpCommit() === false) return; xpSel(dc.closest("tr").dataset.r, "date"); xpOpen("edit"); xpPickDate(); return; }
   const it = e.target.closest(".xlist [data-i]");
-  if (it) { e.preventDefault(); xpEdit.hi = +it.dataset.i; const r = xpCommit(); if (r === true) xpMove(0, 0); return; }
+  if (it) { e.preventDefault(); e.stopPropagation(); xpEdit.hi = +it.dataset.i; const r = xpCommit(); if (r === true) xpMove(0, 0); return; }
   if (e.target.closest("#xpEdBox")) return;
   const bl = e.target.closest("[data-xbill]"); if (bl) { e.preventDefault(); e.stopPropagation(); if (xpEdit && xpCommit() === false) return; xpBillOpen(bl.dataset.xbill, bl); return; }
   const dp = e.target.closest("[data-xdup]"); if (dp) { e.preventDefault(); e.stopPropagation(); if (xpEdit && xpCommit() === false) return; xpDupOpen(dp.dataset.xdup, dp); return; }
@@ -7320,7 +7320,7 @@ async function xpPaste(text) {
 }
 // Clicking anywhere outside the sheet finishes the cell and the line being typed.
 document.addEventListener("mousedown", e => {
-  if (!xpAct || $("view-texp").hidden || e.target.closest?.(".xsheet")) return;
+  if (!xpAct || $("view-texp").hidden || !e.target.isConnected || e.target.closest?.(".xsheet")) return;
   if (xpEdit && xpCommit() === false) xpCancel();
   const r = xpAct.r; xpAct = null; $("xpBody").querySelectorAll(".xgrid td.sel").forEach(t => t.classList.remove("sel")); xpLeaveRow(r);
 });
