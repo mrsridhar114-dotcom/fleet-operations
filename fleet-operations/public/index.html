@@ -1149,14 +1149,23 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .cdocs[disabled] { opacity: .5; }
 .duepop .dlist li { justify-content: flex-start; align-items: center; }
 .duepop .dlist .fn .exppill { display: inline-block; margin: 3px 4px 0 0; font-size: 12px; padding: 1px 6px; }
-.xoutpop { width: min(400px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; } .xoutpop .dlist { margin-top: 8px; gap: 6px; } .xoutpop .dlist li { padding-top: 6px; }
-.xotl { display: grid; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; } .xotl input { font: 600 14px var(--body); padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--surface); }
-.xosec { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; } .xosec summary { cursor: pointer; font-weight: 700; font-size: 13.5px; } .xosec summary span { font-weight: 400; color: var(--muted); }
-.xoutpop .xocols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; } .xoutpop .xocols li { border-top: 0; padding-top: 0; }
-.xoutpop .xolines { max-height: 220px; overflow: auto; } .xoln { display: flex; gap: 10px; justify-content: space-between; flex: 1; min-width: 0; font-size: 13px; } .xoln > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .xolines label { display: flex; gap: 8px; align-items: center; width: 100%; }
-.xofmt { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 4px 0 10px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.xofmt button { border: 0; background: var(--surface); color: var(--ink); padding: 8px; font: 600 14px var(--body); cursor: pointer; } .xofmt button + button { border-left: 1px solid var(--line); }
-.xofmt button[aria-pressed="true"] { background: var(--accent); color: #fff; } .xoutb { display: inline-flex; gap: 6px; align-items: center; }
+.xodlg { width: min(1040px, calc(100vw - 32px)); height: min(780px, calc(100vh - 32px)); background: var(--surface); color: var(--ink); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.3); display: flex; flex-direction: column; overflow: hidden; }
+.xohd { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); } .xohd h2 { margin: 0; font-size: 19px; }
+.xobody { flex: 1; min-height: 0; display: grid; grid-template-columns: 290px 1fr; }
+.xoleft { padding: 16px 18px; border-right: 1px solid var(--line); overflow: auto; display: flex; flex-direction: column; gap: 10px; } .xoleft .dnote { margin: 0; font-size: 12.5px; color: var(--muted); }
+.xosub { font-weight: 700; font-size: 13.5px; margin-top: 6px; } .xosub span { font-weight: 400; color: var(--muted); }
+.xotl { display: grid; gap: 4px; font-size: 13px; font-weight: 700; } .xotl input { font: 600 14px var(--body); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--surface); }
+.xofmt { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.xofmt button { border: 0; background: var(--surface); color: var(--ink); padding: 9px; font: 600 14px var(--body); cursor: pointer; } .xofmt button + button { border-left: 1px solid var(--line); }
+.xofmt button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.xocols { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; } .xocols label, .xodlg .dall { display: flex; gap: 8px; align-items: center; cursor: pointer; } .xodlg .dall { font-weight: 600; font-size: 14px; }
+.xoright { display: flex; flex-direction: column; min-height: 0; min-width: 0; } .xolh { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.xolines { flex: 1; min-height: 0; overflow: auto; } .xolt { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.xolt th { position: sticky; top: 0; background: var(--chip-bg, #eef1f4); text-align: left; padding: 7px 8px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); z-index: 1; }
+.xolt td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .xolt tr[data-row] { cursor: pointer; } .xolt tr[data-row]:hover td { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+.xolt tr.off td { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); } .xolt tr.off td:first-child { text-decoration: none; }
+.xolt .n { text-align: right; } .xolt .nw { white-space: nowrap; } .xolt th:first-child, .xolt td:first-child { width: 28px; padding-left: 14px; }
+.xoft { display: flex; gap: 10px; align-items: center; justify-content: flex-end; padding: 12px 18px; border-top: 1px solid var(--line); } .xoft .err { margin: 0 auto 0 0; } .xoft .btn { display: inline-flex; gap: 6px; align-items: center; } .xoft .duesave { min-width: 180px; justify-content: center; }
 .duepop .dlist li.off { opacity: .55; } .duepop .dlist li.off label { cursor: default; }
 /* Padi calculation pop-up on the trip sheets */
 .padibtn { display: inline-grid; place-items: center; width: 28px; height: 28px; margin-left: 8px; vertical-align: middle; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--accent); cursor: pointer; padding: 0; }
@@ -1452,7 +1461,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xpbody { margin-top: 4px; } .xpbody > .panel { margin-top: 10px; }
 .xpform { margin: 0; } .xpform [hidden] { display: none !important; }
 /* Expense entry lines and the office's review */
-#view-texp.xrmode .xphead .tcontrols, #view-texp.xrmode #xpViewBtn { display: none !important; } #view-texp.xrmode .xphead .mclose { margin-left: auto; }
+#view-texp.xrmode .xphead .tcontrols, #view-texp.xrmode #xpViewBtn, #view-texp.xrmode #xpPrintBtn { display: none !important; } #view-texp.xrmode .xphead .mclose { margin-left: auto; }
 #view-texp.xrmode .xpbody { display: flex; flex-direction: column; gap: 12px; }
 .xrchip { display: inline-block; padding: 2px 9px; border-radius: 99px; font: 600 12px var(--body); white-space: nowrap; } .xr-d { background: var(--bg); color: var(--muted); border: 1px solid var(--line); } .xr-s { background: var(--warn-soft); color: var(--warn); } .xr-r { background: var(--danger-soft); color: var(--danger); } .xr-a { background: var(--ok-soft); color: var(--ok); }
 .xrwhy { display: block; color: var(--danger); font-size: 12px; margin-top: 3px; } .xpfh .xrwhy { display: inline; margin: 0; }
@@ -1483,7 +1492,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 @media (max-width: 700px) { #view-texp .xphead { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; }
   #view-texp .xphead h1 { font-size: 24px; margin: 0; flex: none; } #view-texp .xphead .tcontrols { flex: 1; justify-content: center; margin: 0; min-width: 0; }
   #view-texp .xphead .bmonth { gap: 2px; } #view-texp #xpPer { min-width: 0 !important; font-size: 15px; white-space: nowrap; } #view-texp .xphead .bmonth .navbtn { width: 32px; height: 32px; min-width: 32px; padding: 0; }
-  #view-texp .xphead .mclose { margin: 0 !important; padding: 6px 9px; font-size: 13px; flex: none; } } #view-texp .xphead .xpviewbtn { margin-left: auto; } @media (max-width: 1000px) { #view-texp .xpviewbtn { display: none; } #view-texp .xphead .mclose { margin-left: auto; } }
+  #view-texp .xphead .mclose { margin: 0 !important; padding: 6px 9px; font-size: 13px; flex: none; } } #view-texp .xphead .xpprintbtn { margin-left: auto; } #view-texp .xphead .xpprintbtn[hidden] + .xpviewbtn { margin-left: auto; } @media (max-width: 1000px) { #view-texp .xpviewbtn, #view-texp .xpprintbtn { display: none; } #view-texp .xphead .mclose { margin-left: auto; } }
 .xsum { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
 .xsum > * { min-width: 140px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; }
 .xsum button { cursor: pointer; } .xsum button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
@@ -2521,6 +2530,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tcontrols">
           <div class="bmonth"><button class="navbtn" type="button" id="xpPrev" aria-label="Previous year">‹</button><h2 class="sec" id="xpPer" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="xpNext" aria-label="Next year">›</button></div>
         </div>
+        <button class="btn xpprintbtn" type="button" id="xpPrintBtn" title="Print or download the lines shown, as Excel or as an image">🖨 Print</button>
         <button class="btn xpviewbtn" type="button" id="xpViewBtn">📊 Summary</button>
         <a class="btn mclose" href="#home" aria-label="Close">Close ✕</a>
       </header>
@@ -6446,7 +6456,7 @@ function renderExp(force) {
   const tip = can ? ' title="Tap to change" style="cursor:pointer"' : "";
   if (!xpNarrow(1000)) {
     const F = $("xpForm"); if (F && xfMode !== "review") { F.hidden = true; $("view-texp").appendChild(F); }
-    $("xpViewBtn").textContent = xpView === "summary" ? "▦ Back to the sheet" : "📊 Summary";
+    $("xpViewBtn").textContent = xpView === "summary" ? "▦ Back to the sheet" : "📊 Summary"; $("xpPrintBtn").hidden = xpView === "summary";
     if (xpView === "summary") { xpSummaryRender({ P, all, VS, sum }); return; }
     xpGridRender({ P, all, list, VS, sum, can, force }); return;
   }
@@ -6569,6 +6579,7 @@ function xpKeyName(k, x) {
 // Close after opening lines from the Summary goes back to the Summary, with the earlier filters.
 document.querySelector("#view-texp .mclose").addEventListener("click", e => { if (!xpFromSum || xpView !== "sheet") return; e.preventDefault(); xpFilt = xpFromSum.filt; xpFromSum = null; xpRowSel.clear(); xpView = "summary"; xpMenuClose(); renderExp(true); });
 addEventListener("hashchange", () => { if (location.hash !== "#expenses") { xpFromSum = null; xpSumTop = 0; } });
+$("xpPrintBtn").onclick = () => xpOutOpen();
 $("xpViewBtn").onclick = () => { xpFromSum = null; xpSumTop = 0; xpView = xpView === "summary" ? "sheet" : "summary"; xpScrollEnd = true; xpMenuClose(); renderExp(true); };
 $("xpPrev").onclick = () => { xpScrollEnd = true; xpYm = `${fyOf(xpYm + "-01") - 1}-04`; delete xpFilt.date; renderExp(); };
 $("xpNext").onclick = () => { xpScrollEnd = true; xpYm = `${fyOf(xpYm + "-01") + 1}-04`; delete xpFilt.date; renderExp(); };
@@ -6641,7 +6652,7 @@ function xpGridRender(o) {
   const strip = `<div class="xsum"><button type="button" class="t${xpFilt.veh ? " off" : ""}" data-xpveh="" title="Show all vehicles"><small>${xpFilt.veh ? "◂ All vehicles" : `All vehicles · ${esc(P.label)}`}</small><b>${rs(sum(all))}</b></button>` +
     VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpOnlyVeh() === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>` + (can ? xpMonBar(P) : "");
   const dupB = xpDups.size ? `<button type="button" class="btn xdupb${xpFilt.dup ? " on" : ""}" data-xdups title="${xpFilt.dup ? "Show all lines again" : "Show only the lines that look like duplicates"}">⚠ ${[...ops.expenses].filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x))).length} possible duplicates${xpFilt.dup ? " ✕" : ""}</button>${xpFilt.dup && can ? `<button type="button" class="btn" data-xdupall title="Mark all these lines as checked: they are not duplicates">✓ Not duplicates, keep all</button>` : ""}` : "";
-  const foot = `<div class="xfoot"><span class="xfl"><span id="xpUndo">${xpUndoHtml()}</span><span id="xpSelAct">${xpSelHtml()}</span>${dupB}<span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot"><button type="button" class="btn xoutb" data-xexcel title="Print or download what is shown, as Excel or as an image">${ICON_PRINT}<span>Print</span></button>Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
+  const foot = `<div class="xfoot"><span class="xfl"><span id="xpUndo">${xpUndoHtml()}</span><span id="xpSelAct">${xpSelHtml()}</span>${dupB}<span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot">Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
   // While a cell is open for typing, only the totals are refreshed; the sheet is redrawn when it closes.
   if (!force && xpEdit && $("xpSc")) {
     xpDeferred = true; const t = document.createElement("div"); t.innerHTML = strip + foot;
@@ -6809,51 +6820,65 @@ async function xpOutShare(btn, fmt, make, title) {
   btn.disabled = true;
   try {
     if (fmt === "jpg" && navigator.clipboard?.write && window.ClipboardItem) {
-      try { const f = await make(true); await navigator.clipboard.write([new ClipboardItem({ "image/png": f.data })]); toast("Image copied. Open WhatsApp or email and paste it (Ctrl+V)."); closeDuePop(); return; } catch {}
+      try { const f = await make(true); await navigator.clipboard.write([new ClipboardItem({ "image/png": f.data })]); toast("Image copied. Open WhatsApp or email and paste it (Ctrl+V)."); xpOutClose(); return; } catch {}
     }
     const dl = await auDownloads(); if (!dl) { toast("Sharing isn't available here. Save the file instead."); return; }
-    const f = await make(); await dl.save(f); toast(`This browser can't share directly. Saved ${f.filename}: attach it in WhatsApp or email.`); closeDuePop();
+    const f = await make(); await dl.save(f); toast(`This browser can't share directly. Saved ${f.filename}: attach it in WhatsApp or email.`); xpOutClose();
   } catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't share. Save the file instead."); }
   finally { if (btn.isConnected) btn.disabled = false; }
 }
-function xpOutOpen(btn) {
-  if (document.querySelector(".duepop")) { closeDuePop(); return; }
+function xpOutClose() { $("xpOutBox")?.remove(); }
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("xpOutBox")) xpOutClose(); });
+addEventListener("hashchange", xpOutClose);
+// A large window: settings on the left, every line on the right to tick or untick.
+function xpOutOpen() {
+  xpOutClose(); xpMenuClose(); xpBillClose(); xpDupClose(); if (xpEdit && xpCommit() === false) return;
   const list = xpOutList(); if (!list.length) { toast("Nothing to download: no lines are shown."); return; }
   let fmt = "xlsx"; try { fmt = localStorage.getItem("fleet-xpout") === "jpg" ? "jpg" : "xlsx"; } catch {}
   // Lines picked in the sheet (row numbers) start ticked on their own; otherwise every line shown is ticked.
   const picked = new Set([...xpRowSel].map(xpDocOf).filter(Boolean).map(x => x.id)), some = list.some(x => picked.has(x.id));
-  const pop = document.createElement("div"); pop.className = "duepop xoutpop"; pop.setAttribute("role", "dialog");
-  pop.innerHTML = `<h4>Print / download</h4><label class="xotl">Title<input type="text" data-title maxlength="80" value="${esc(xpOutTitle0())}"></label>` +
+  const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
+  box.innerHTML = `<div class="xodlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Print / download</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
+    `<div class="xobody"><div class="xoleft"><label class="xotl">Title<input type="text" data-title maxlength="80" value="${esc(xpOutTitle0())}"></label>` +
     `<p class="dnote">${xpFiltOn() ? `Lines shown by your filters: ${esc(xpFiltTxt())}.` : "All lines of " + esc(xpPeriod().label) + "."}</p>` +
-    `<div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
-    `<details class="xosec" open><summary>Columns <span data-ccount></span></summary><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="dlist xocols">${XP_OUT.map(([c, h]) => `<li><label><input type="checkbox" data-c="${c}" checked><span><b>${h}</b></span></label></li>`).join("")}</ul></details>` +
-    `<details class="xosec"${some ? " open" : ""}><summary>Lines <span data-lcount></span></summary><label class="dall"><input type="checkbox" data-all="l"> All lines</label><ul class="dlist xolines">${list.map((x, i) => `<li><label><input type="checkbox" data-l="${i}"${!some || picked.has(x.id) ? " checked" : ""}><span class="xoln"><span>${esc(xpDateTxt(x.date))} · ${esc(x.desc || "")}</span><b class="num">${nf(num(x.amount))}</b></span></label></li>`).join("")}</ul></details>` +
-    `<p class="err" data-xoerr style="margin:8px 0 0"></p><div class="dacts"><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button></div>`;
-  const cols = () => [...pop.querySelectorAll("input[data-c]:checked")].map(i => i.dataset.c);
-  const rows = () => [...pop.querySelectorAll("input[data-l]:checked")].map(i => list[+i.dataset.l]);
-  const title = () => pop.querySelector("[data-title]").value.trim() || xpOutTitle0();
+    `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
+    `<div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${XP_OUT.map(([c, h]) => `<li><label><input type="checkbox" data-c="${c}" checked> ${h}</label></li>`).join("")}</ul></div>` +
+    `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
+    `<div class="xolines"><table class="xolt"><thead><tr><th></th><th>Date</th><th>Description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th></tr></thead><tbody>` +
+    list.map((x, i) => `<tr data-row="${i}"><td><input type="checkbox" data-l="${i}"${!some || picked.has(x.id) ? " checked" : ""} aria-label="Include this line"></td><td class="num">${esc(xpDateTxt(x.date))}</td><td>${esc(x.desc || "")}</td><td class="num nw">${esc(xpKeyName(mtKeyOf(x), x))}</td><td>${esc(xpCatTxt(x))}</td><td class="n num">${nf(num(x.amount))}</td></tr>`).join("") +
+    `</tbody></table></div></div></div>` +
+    `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
+  const cols = () => [...box.querySelectorAll("input[data-c]:checked")].map(i => i.dataset.c);
+  const rows = () => [...box.querySelectorAll("input[data-l]:checked")].map(i => list[+i.dataset.l]);
+  const title = () => box.querySelector("[data-title]").value.trim() || xpOutTitle0();
   const make = async png => fmt === "jpg" ? await xpImageFile(rows(), cols(), title(), png) : xpExcelFile(rows(), cols(), title());
-  const tick = (sel, all) => { const n = pop.querySelectorAll(sel + ":checked").length, m = pop.querySelectorAll(sel).length, a = pop.querySelector(`input[data-all="${all}"]`); a.checked = n === m; a.indeterminate = n > 0 && n < m; return [n, m]; };
+  const tick = (sel, all) => { const n = box.querySelectorAll(sel + ":checked").length, m = box.querySelectorAll(sel).length, a = box.querySelector(`input[data-all="${all}"]`); a.checked = n === m; a.indeterminate = n > 0 && n < m; return [n, m]; };
   const sync = () => {
     const [nc, mc] = tick("input[data-c]", "c"), [nl, ml] = tick("input[data-l]", "l"), big = fmt === "jpg" && nl > XP_IMG_MAX;
-    pop.querySelector("[data-ccount]").textContent = `· ${nc} of ${mc}`;
-    pop.querySelector("[data-lcount]").textContent = `· ${nl} of ${ml} · ${rs(rows().reduce((a, x) => a + num(x.amount), 0))}`;
-    pop.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
-    const sv = pop.querySelector(".duesave"), sh = pop.querySelector(".dshare"), off = !nc || !nl || big; sv.disabled = off; sh.disabled = off;
+    box.querySelector("[data-ccount]").textContent = `· ${nc} of ${mc}`;
+    box.querySelector("[data-lcount]").innerHTML = `<b>${nl}</b> of ${ml} lines · <b>${rs(rows().reduce((a, x) => a + num(x.amount), 0))}</b>`;
+    box.querySelectorAll("tr[data-row]").forEach(tr => tr.classList.toggle("off", !tr.querySelector("input").checked));
+    box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
+    const sv = box.querySelector(".duesave"), sh = box.querySelector(".dshare"), off = !nc || !nl || big; sv.disabled = off; sh.disabled = off;
     sv.lastChild.textContent = !nc ? "Choose a column" : !nl ? "Choose a line" : fmt === "jpg" ? "Save as image" : "Save as Excel";
-    pop.querySelector("[data-xoerr]").textContent = big ? `Too many lines for one image (${nl}). Untick some or filter to ${XP_IMG_MAX} or fewer, or use Excel.` : "";
+    box.querySelector("[data-xoerr]").textContent = big ? `Too many lines for one image (${nl}). Untick some or filter to ${XP_IMG_MAX} or fewer, or use Excel.` : "";
   };
-  pop.addEventListener("change", e => { const a = e.target.dataset.all; if (a) pop.querySelectorAll(a === "c" ? "input[data-c]" : "input[data-l]").forEach(i => i.checked = e.target.checked); sync(); });
-  pop.addEventListener("click", e => { const b = e.target.closest("[data-fmt]"); if (!b) return; fmt = b.dataset.fmt; try { localStorage.setItem("fleet-xpout", fmt); } catch {} sync(); });
-  pop.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-title]")) e.preventDefault(); });
-  pop.querySelector(".duesave").onclick = async ev => {
-    ev.stopPropagation(); const b = ev.currentTarget; b.disabled = true;
-    try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } const f = await make(); await dl.save(f); toast(`Saved ${f.filename} · ${rows().length} lines`); closeDuePop(); }
+  box.addEventListener("change", e => { const a = e.target.dataset.all; if (a) box.querySelectorAll(a === "c" ? "input[data-c]" : "input[data-l]").forEach(i => i.checked = e.target.checked); sync(); });
+  box.addEventListener("click", e => {
+    if (e.target === box || e.target.closest("[data-xoclose]")) { xpOutClose(); return; }
+    const b = e.target.closest("[data-fmt]"); if (b) { fmt = b.dataset.fmt; try { localStorage.setItem("fleet-xpout", fmt); } catch {} sync(); return; }
+    // A click anywhere on a line ticks or unticks it.
+    const tr = e.target.closest("tr[data-row]"); if (tr && !e.target.matches("input")) { const i = tr.querySelector("input"); i.checked = !i.checked; sync(); }
+  });
+  box.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-title]")) e.preventDefault(); });
+  box.querySelector(".duesave").onclick = async ev => {
+    const b = ev.currentTarget; b.disabled = true;
+    try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } const f = await make(); await dl.save(f); toast(`Saved ${f.filename} · ${rows().length} lines`); xpOutClose(); }
     catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."); }
     finally { if (b.isConnected) b.disabled = false; }
   };
-  pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); xpOutShare(ev.currentTarget, fmt, make, title()); };
-  placePop(pop, btn); sync();
+  box.querySelector(".dshare").onclick = ev => xpOutShare(ev.currentTarget, fmt, make, title());
+  document.body.append(box); sync(); box.querySelector("[data-title]").focus();
 }
 
 /* Monthly payments: lines marked ↻ are offered again each new month. */
@@ -7306,7 +7331,6 @@ $("xpBody").addEventListener("click", async e => {
   if (e.target.closest("[data-xundo]")) { xpUndoRun(); return; }
   if (e.target.closest("[data-xdups]")) { if (xpFilt.dup) delete xpFilt.dup; else xpFilt.dup = true; xpScrollEnd = true; renderExp(true); return; }
   if (e.target.closest("[data-xdupall]")) { const P = xpPeriod(); xpDupKeep(ops.expenses.filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x)))); return; }
-  const xo = e.target.closest("[data-xexcel]"); if (xo) { xpOutOpen(xo); return; }
   const ms = e.target.closest("[data-xmonset]");
   if (ms) { const on = ms.dataset.xmonset === "on", docs = [...xpRowSel].map(xpDocOf).filter(Boolean);
     for (const x of docs) { const d = { ...x, ...rxStamp() }; if (on) { d.monthly = true; d.series = x.series || x.id; } else delete d.monthly; try { await opsSave("expenses", d); } catch {} }
@@ -12826,7 +12850,7 @@ function closeDuePop() { document.querySelector(".duepop")?.remove(); }
 // While the popup is open, a tap outside it only closes it: the tap is caught here and goes no further.
 document.addEventListener("click", e => {
   // Only real taps count: the hidden link the app clicks to start a download must not be stopped here.
-  if (!e.isTrusted || !document.querySelector(".duepop") || e.target.closest(".duepop, .cdue, .cdocs, .cprint, .xoutb")) return;
+  if (!e.isTrusted || !document.querySelector(".duepop") || e.target.closest(".duepop, .cdue, .cdocs, .cprint")) return;
   closeDuePop(); e.preventDefault(); e.stopPropagation();
 }, true);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDuePop(); });
