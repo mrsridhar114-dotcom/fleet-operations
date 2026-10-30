@@ -6765,6 +6765,19 @@ function xpMonAdd() {
   toast(`${due.length} line${due.length > 1 ? "s" : ""} added at the bottom (yellow). Check the dates and amounts, then press Save.`);
 }
 
+// Copy the selected lines as new lines at the bottom (same day, this month); nothing is saved until Save.
+function xpCopySel() {
+  const docs = [...xpRowSel].map(xpDocOf).filter(Boolean).sort((a, b) => a.date.localeCompare(b.date)); if (!docs.length) return;
+  const today = todayISO(), ym = today.slice(0, 7);
+  docs.forEach(x => {
+    const day = Math.min(+x.date.slice(8, 10), daysIn(ym)), date = `${ym}-${pad2(day)}` > today ? today : `${ym}-${pad2(day)}`;
+    const d = Object.assign(xpBlank(), { date, desc: x.desc || "", veh: mtKeyOf(x), category: x.category || "", catNote: x.catNote || "", pay: x.pay || "", amount: num(x.amount) || "", used: true });
+    const i = xpNews.findIndex(y => !y.used); if (i >= 0) xpNews[i] = d; else xpNews.push(d);
+  });
+  xpRowSel.clear(); xpFill(); xpScrollEnd = true; renderExp(true);
+  toast(`${docs.length} line${docs.length > 1 ? "s" : ""} copied to the bottom (yellow). Change the date, amount or anything else, then press Save.`);
+}
+
 /* Bills: photos or PDFs attached to a line (📎 in the description). */
 function xpBillClose() { $("xpBillPop")?.remove(); }
 function xpBillOpen(id, btn) {
@@ -6898,7 +6911,7 @@ function xpSelectAll() {
 }
 function xpSelHtml() {
   const n = [...xpRowSel].filter(k => xpDocOf(k) || xpDraftOf(k)?.used).length, docs = [...xpRowSel].map(xpDocOf).filter(Boolean), allMon = docs.length && docs.every(x => x.monthly);
-  return n ? `<button type="button" class="btn xdelsel" data-xdelsel>Delete ${n} selected</button> ` + (docs.length ? `<button type="button" class="btn" data-xmonset="${allMon ? "off" : "on"}" title="${allMon ? "These lines will no longer be offered each month" : "Each new month, the sheet offers to add these lines again"}">${allMon ? "Stop repeating" : "↻ Repeat monthly"}</button> ` : "") : "";
+  return n ? `<button type="button" class="btn xdelsel" data-xdelsel>Delete ${n} selected</button> ` + (docs.length && canXp() ? `<button type="button" class="btn" data-xcopy title="Add a copy of each selected line at the bottom, dated this month. Change what you need, then press Save.">⧉ Copy ${docs.length} as new</button> ` : "") + (docs.length ? `<button type="button" class="btn" data-xmonset="${allMon ? "off" : "on"}" title="${allMon ? "These lines will no longer be offered each month" : "Each new month, the sheet offers to add these lines again"}">${allMon ? "Stop repeating" : "↻ Repeat monthly"}</button> ` : "") : "";
 }
 function xpSelUpd() {
   $("xpBody").querySelectorAll(".xgrid tbody tr").forEach(tr => tr.classList.toggle("rsel", xpRowSel.has(tr.dataset.r)));
@@ -7171,6 +7184,7 @@ document.addEventListener("mousedown", e => {
 const xpGo = () => { $("xpForm").scrollIntoView({ block: "nearest", behavior: "smooth" }); setTimeout(() => $("xfDesc")?.focus({ preventScroll: true }), 300); };
 $("xpBody").addEventListener("click", async e => {
   if (e.target.closest("[data-xdelsel]")) { xpDeleteSel(); return; }
+  if (e.target.closest("[data-xcopy]")) { xpCopySel(); return; }
   if (e.target.closest("[data-xundo]")) { xpUndoRun(); return; }
   if (e.target.closest("[data-xdups]")) { if (xpFilt.dup) delete xpFilt.dup; else xpFilt.dup = true; xpScrollEnd = true; renderExp(true); return; }
   if (e.target.closest("[data-xdupall]")) { const P = xpPeriod(); xpDupKeep(ops.expenses.filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x)))); return; }
