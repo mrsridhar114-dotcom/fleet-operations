@@ -715,7 +715,7 @@ a.btn { text-decoration: none; display: inline-block; }
 .ocards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
 .ocard { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ocard.main { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.ocard.oclink:hover { background: var(--accent-soft); } a.ocard .oc-go { margin-top: auto; padding-top: 10px; font-weight: 700; color: var(--accent); }
+a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.ocard.oclink:hover { background: var(--accent-soft); }
 .ocard .oc-top { display: flex; align-items: center; gap: 10px; }
 .ocard .oc-top svg { width: 28px; height: 28px; color: var(--accent); flex: none; }
 .ocard h3 { margin: 0; font-family: var(--display); font-size: 22px; line-height: 1; }
@@ -9356,16 +9356,13 @@ function renderHub() {
   $("oCards").innerHTML = `
     <a class="ocard main oclink" href="${bwIsPhone() ? "#route-sheet" : "#trips-route"}" aria-label="Open Route bus"><div class="oc-top">${ICONS.route}<div><h3>Route bus</h3><div class="oc-kind">Daily · 5 singles a day</div></div></div>
       <div class="oc-big">${ready ? rb.length - pend.length : "…"}<small>/ ${rb.length}</small></div><p class="oc-cap">entered for ${day}</p>
-      <div>${!rb.length ? '<span class="pill off">No route buses</span>' : !ready ? "" : pend.length ? `<span class="pill d30">${pend.length} still to enter</span>` : '<span class="pill ok">All entered</span>'}</div>
-      <span class="oc-go">Open ›</span></a>
+      <div>${!rb.length ? '<span class="pill off">No route buses</span>' : !ready ? "" : pend.length ? `<span class="pill d30">${pend.length} still to enter</span>` : '<span class="pill ok">All entered</span>'}</div></a>
     ${acc.tripsheets && acc.tripsheets !== "none" ? (() => { const L = tsLists(), todo = L.back.length + L.fill.length; return `<a class="ocard oclink" href="#trip-sheets" aria-label="Open Spare bus trip sheets"><div class="oc-top">${ICONS.spare}<div><h3>Spare bus</h3><div class="oc-kind">One trip sheet for each booking</div></div></div>
       <div class="oc-big">${todo}<small>to fill</small></div><p class="oc-cap">${L.sent.length} waiting for approval</p>
-      <div>${L.back.length ? `<span class="pill d30">${L.back.length} sent back</span>` : todo ? `<span class="pill d30">${todo} trip sheet${todo === 1 ? "" : "s"} to fill</span>` : '<span class="pill ok">Nothing to fill</span>'}</div>
-      <span class="oc-go">Open ›</span></a>`; })() : ""}
+      <div>${L.back.length ? `<span class="pill d30">${L.back.length} sent back</span>` : todo ? `<span class="pill d30">${todo} trip sheet${todo === 1 ? "" : "s"} to fill</span>` : '<span class="pill ok">Nothing to fill</span>'}</div></a>`; })() : ""}
     <a class="ocard oclink" href="#trips-truck" aria-label="Open Trucks"><div class="oc-top">${ICONS.truck}<div><h3>Trucks</h3><div class="oc-kind">Per load, grouped into round trips</div></div></div>
       <div class="oc-big">${tl.length}<small>trip${tl.length === 1 ? "" : "s"}</small></div><p class="oc-cap">in ${mLabel} · ${rs(tl.reduce((a, l) => a + num(l.rent), 0))} freight</p>
-      <div>${openR.length ? `<span class="pill d30">${openR.length} round trip${openR.length === 1 ? "" : "s"} not settled</span>` : `<span class="pill off">${tk.length} truck${tk.length === 1 ? "" : "s"}</span>`}</div>
-      <span class="oc-go">Open ›</span></a>`;
+      <div>${openR.length ? `<span class="pill d30">${openR.length} round trip${openR.length === 1 ? "" : "s"} not settled</span>` : `<span class="pill off">${tk.length} truck${tk.length === 1 ? "" : "s"}</span>`}</div></a>`;
   $("oTodoTitle").textContent = `To do · ${fmtDate(opDate)}`;
   const rows = [];
   if (ready) pend.forEach(b => rows.push(`<div class="orow"><div class="what"><span class="plate ${b.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(b))}</span><span>Route bus</span><span class="pill d30">Not entered</span></div>${canTrips ? `<button class="btn primary" type="button" data-go="day" data-id="${b.id}">Enter now</button>` : `<button class="btn" type="button" data-go="day" data-id="${b.id}">View</button>`}</div>`));
