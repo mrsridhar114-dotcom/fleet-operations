@@ -1427,7 +1427,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xpgrid textarea { width: 100%; box-sizing: border-box; min-height: 46px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 15.5px/1.4 var(--body); resize: none; }
 .xfbills { display: flex; flex-direction: column; gap: 6px; } .xfbills > span { font: 600 13px var(--body); color: var(--muted); } .xfbills small { font-weight: 500; } .xfbadd { align-self: flex-start; height: auto !important; padding: 8px 14px; }
 #xfBillList { display: grid; gap: 6px; } #xfBillList:empty { display: none; }
-@media (max-width: 700px) { .xpgrid { grid-template-columns: minmax(0, 1fr); gap: 18px; } .xpgrid .xpdt, .xpgrid .xpd { grid-column: 1 / -1; } .xpfh { margin-bottom: 16px; } .xpbtns .btn { flex: 1; min-width: 0; } .xpgrid input, .xpgrid select { font-size: 16px; }
+@media (max-width: 700px) { .xpgrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 13px 12px; } .xpform { padding: 14px 16px; } .xpgrid label { gap: 4px; } .xpgrid input, .xpgrid select { height: 44px; } #xpForm .xpgrid > * { grid-column: 1 / -1; } #xpForm .xpgrid > .xphalf { grid-column: auto; } .xpfh { margin-bottom: 12px; } .xpbtns .btn { flex: 1; min-width: 0; } .xpgrid input, .xpgrid select { font-size: 16px; }
   /* On a phone each expense is a small card: date and amount, the description, then vehicle, category and paid by. */
   .xptable thead { display: none; } .xptable, .xptable tbody, .xptable tfoot { display: block; }
   .xptable tr { display: grid; grid-template-columns: auto 1fr auto; column-gap: 10px; row-gap: 2px; padding: 9px 10px; border-bottom: 1px solid var(--line); }
@@ -7052,8 +7052,8 @@ function xfRender(x) {
     `<label><span>Vehicle</span><select id="xfVeh"></select></label>` +
     `<label><span>Category</span><select id="xfCat">${opt(XP_CATS, v.category)}</select></label>` +
     `<label class="xpnotef" id="xfNoteL"${v.category === "Other" ? "" : " hidden"}><span>Other: what was it?</span><input type="text" id="xfNote" value="${esc(v.catNote || "")}" placeholder="e.g. Office stationery"></label>` +
-    `<label><span>Paid by</span><select id="xfPay">${opt(XP_PAY, v.pay)}</select></label>` +
-    `<label><span>Amount (₹)</span><input type="number" id="xfAmt" inputmode="numeric" min="0" value="${esc(String(v.amount ?? ""))}" placeholder="0"></label>` +
+    `<label class="xphalf"><span>Paid by</span><select id="xfPay">${opt(XP_PAY, v.pay)}</select></label>` +
+    `<label class="xphalf"><span>Amount (₹)</span><input type="number" id="xfAmt" inputmode="numeric" min="0" value="${esc(String(v.amount ?? ""))}" placeholder="0"></label>` +
     `<div class="xpbtns"><button type="button" class="btn primary" id="xfSave">${x ? "Save" : "+ Add"}</button>${x ? `<button type="button" class="btn" id="xfDel">Delete</button><button type="button" class="btn" id="xfCancel">Cancel</button>` : ""}</div>` +
     `</div><p class="err" id="xpErr" style="margin:6px 0 0"></p>`;
   xfVehOpts(x ? mtKeyOf(x) : xfLast.veh, x); xpGrow($("xfDesc"));
