@@ -1518,9 +1518,10 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .xlist { position: absolute; left: 0; top: 100%; min-width: 100%; width: max-content; max-width: 280px; max-height: 240px; overflow: auto; margin-top: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
 .xlist div { padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; } .xlist div.h { background: var(--accent-soft); font-weight: 700; } .xlist p { margin: 4px 8px; color: var(--muted); font-size: 13px; }
 .xe-veh .xlist div { font-family: var(--mono); font-size: 13px; }
-.xmon { color: var(--accent); font-weight: 700; margin-right: 5px; } .xdupt { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 99px; background: color-mix(in srgb, #f5a400 22%, var(--surface)); color: var(--ink); font: 600 11.5px var(--body); white-space: nowrap; }
+.xmon { color: var(--accent); font-weight: 700; margin-right: 5px; } .xdupt { display: inline-block; margin-left: 6px; padding: 0 6px; border: 0; cursor: pointer; border-radius: 99px; background: color-mix(in srgb, #f5a400 22%, var(--surface)); color: var(--ink); font: 600 11.5px var(--body); white-space: nowrap; }
 .xbill { border: 0; background: none; cursor: pointer; padding: 0 2px; margin-left: 6px; font-size: 13px; opacity: 0; vertical-align: baseline; color: var(--ink); } .xgrid tr:hover .xbill { opacity: .45; } .xgrid .xbill:hover { opacity: 1 !important; } .xbill.on { opacity: 1 !important; font-weight: 700; }
-.xbillpop { width: 300px; } .xbh { display: block; padding: 2px 4px 8px; font-size: 13.5px; } .xblist { display: grid; gap: 6px; margin-bottom: 8px; max-height: 260px; overflow: auto; }
+.xbillpop { width: 300px; } .xduppop { width: 380px; } .xdlist { display: grid; gap: 6px; margin-bottom: 10px; max-height: 300px; overflow: auto; }
+.xdrow { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; } .xdrow.me { border-color: #f5a400; } .xdrow small { display: block; color: var(--muted); margin-top: 2px; font-size: 12px; } .xdrow .btn { flex: none; } .xdkeep { width: 100%; } .xbh { display: block; padding: 2px 4px 8px; font-size: 13.5px; } .xblist { display: grid; gap: 6px; margin-bottom: 8px; max-height: 260px; overflow: auto; }
 .xbrow { display: flex; align-items: center; gap: 8px; } .xbrow .filelink { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
 .xbthumb { width: 40px; height: 40px; flex: none; border-radius: 6px; overflow: hidden; display: grid; place-items: center; background: var(--accent-soft); font: 700 11px var(--mono); color: var(--accent); } .xbthumb img { width: 100%; height: 100%; object-fit: cover; }
 .xbrm { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 15px; } .xbrm:hover { color: var(--danger); } .xbadd { display: flex; justify-content: center; }
@@ -6400,6 +6401,12 @@ var xpSort = { c: "date", dir: 1 }, xpFilt = {};
 const xpFiltOn = () => Object.values(xpFilt).some(v => v === true || (v && (v.size || (typeof v === "string" && v))));
 const xpDupKey = x => `${x.date}|${mtKeyOf(x)}|${num(x.amount)}`;
 var xpDups = new Set();
+// Lines with the same date, vehicle and amount. A group stops showing once every line in it was checked (dupOk keeps the key it was checked with, so a changed or new line is checked again).
+const xpDupOk = x => x.dupOk === xpDupKey(x);
+function xpDupSet(all) {
+  const g = new Map(); all.forEach(x => { const k = xpDupKey(x); g.set(k, [...(g.get(k) || []), x]); });
+  return new Set([...g].filter(([, a]) => a.length > 1 && a.some(x => !xpDupOk(x))).map(([k]) => k));
+}
 function xpPass(x) {
   const f = xpFilt;
   return (!f.dup || xpDups.has(xpDupKey(x))) && (!f.date || f.date.has(x.date.slice(0, 7))) && (!f.veh || f.veh.has(mtKeyOf(x))) && (!f.category || f.category.has(x.category || "")) && (!f.pay || f.pay.has(x.pay || "")) &&
@@ -6415,7 +6422,7 @@ function renderExp(force) {
   if (xrMine()) { renderXr(); return; }
   renderXrRev();
   const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to), can = canXp();
-  { const n = new Map(); all.forEach(x => { const k = xpDupKey(x); n.set(k, (n.get(k) || 0) + 1); }); xpDups = new Set([...n].filter(([, c]) => c > 1).map(([k]) => k)); }
+  xpDups = xpDupSet(all);
   if (!xpDups.size) delete xpFilt.dup;
   const list = all.filter(xpPass).sort((a, b) => b.date.localeCompare(a.date) || String(b.createdOn || "").localeCompare(String(a.createdOn || "")));
   $("xpPer").textContent = P.label; $("xpRoTag").hidden = can;
@@ -6586,7 +6593,7 @@ function xpCellInner(c, v, d) {
   else if (c === "desc") {
     const x = v.x;
     t = (x?.monthly ? `<span class="xmon" title="Repeats every month">↻</span>` : d?.monthly ? `<span class="xmon" title="Monthly payment">↻</span>` : "") + esc(v.desc || "") +
-      (x && xpDups.has(xpDupKey(x)) ? ` <span class="xdupt" title="Another line has the same date, vehicle and amount">⚠ duplicate?</span>` : "") +
+      (x && xpDups.has(xpDupKey(x)) ? ` <button type="button" class="xdupt" data-xdup="${x.id}" title="Another line has the same date, vehicle and amount. Click to check it.">⚠ duplicate?</button>` : "") +
       (x ? `<button type="button" class="xbill${x.bills?.length ? " on" : ""}" data-xbill="${x.id}" title="${x.bills?.length ? `${x.bills.length} bill${x.bills.length > 1 ? "s" : ""} attached` : "Attach a bill"}">📎${x.bills?.length > 1 ? x.bills.length : ""}</button>` : "");
   }
   else if (c === "veh") t = v.veh !== "" && v.veh != null ? esc(xpKeyName(v.veh, v.x)) : "";
@@ -6622,7 +6629,7 @@ function xpGridRender(o) {
   xpRowsNow = [...xpSorted(list).map(x => "e:" + x.id), ...(can ? xpNews.map(d => "n:" + d.k) : [])];
   const strip = `<div class="xsum"><button type="button" class="t${xpFilt.veh ? " off" : ""}" data-xpveh="" title="Show all vehicles"><small>${xpFilt.veh ? "◂ All vehicles" : `All vehicles · ${esc(P.label)}`}</small><b>${rs(sum(all))}</b></button>` +
     VS.map(([k, v]) => `<button type="button" data-xpveh="${esc(k)}" aria-pressed="${xpOnlyVeh() === k}" title="Show only this vehicle"><small>${esc(xpKeyName(k))}</small><b>${rs(v)}</b></button>`).join("") + `</div>` + (can ? xpMonBar(P) : "");
-  const dupB = xpDups.size ? `<button type="button" class="btn xdupb${xpFilt.dup ? " on" : ""}" data-xdups title="${xpFilt.dup ? "Show all lines again" : "Show only the lines that look like duplicates"}">⚠ ${[...ops.expenses].filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x))).length} possible duplicates${xpFilt.dup ? " ✕" : ""}</button>` : "";
+  const dupB = xpDups.size ? `<button type="button" class="btn xdupb${xpFilt.dup ? " on" : ""}" data-xdups title="${xpFilt.dup ? "Show all lines again" : "Show only the lines that look like duplicates"}">⚠ ${[...ops.expenses].filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x))).length} possible duplicates${xpFilt.dup ? " ✕" : ""}</button>${xpFilt.dup && can ? `<button type="button" class="btn" data-xdupall title="Mark all these lines as checked: they are not duplicates">✓ Not duplicates, keep all</button>` : ""}` : "";
   const foot = `<div class="xfoot"><span class="xfl"><span id="xpUndo">${xpUndoHtml()}</span><span id="xpSelAct">${xpSelHtml()}</span>${dupB}<span id="xpStat">${can ? xpStatusHtml() : `${list.length} payment${list.length === 1 ? "" : "s"}`}</span></span><span class="xftot"><button type="button" class="btn" data-xexcel title="Download what is shown as an Excel file">⬇ Excel</button>Total <b>${nf(sum(list))}</b>${can ? `<button type="button" class="btn primary" data-xsaveall>Save</button>` : ""}</span></div>`;
   // While a cell is open for typing, only the totals are refreshed; the sheet is redrawn when it closes.
   if (!force && xpEdit && $("xpSc")) {
@@ -6794,6 +6801,40 @@ document.addEventListener("click", async e => {
 document.addEventListener("mousedown", e => { const m = $("xpBillPop"); if (m && !m.contains(e.target) && !e.target.closest?.("[data-xbill]")) xpBillClose(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") xpBillClose(); });
 addEventListener("hashchange", xpBillClose);
+
+/* Possible duplicates: see the lines side by side, then keep them all or delete the extra one. */
+function xpDupClose() { $("xpDupPop")?.remove(); }
+function xpDupOpen(id, btn) {
+  xpDupClose(); xpBillClose(); xpMenuClose();
+  const x = ops.expenses.find(y => y.id === id); if (!x) return; const can = canXp(), k = xpDupKey(x);
+  const grp = ops.expenses.filter(y => xpDupKey(y) === k).sort((a, b) => String(a.createdOn || "").localeCompare(String(b.createdOn || "")));
+  const m = document.createElement("div"); m.id = "xpDupPop"; m.className = "xmenu xduppop"; m.dataset.id = id;
+  m.innerHTML = `<b class="xbh">⚠ ${grp.length} lines with the same date, vehicle and amount</b><p class="sub" style="margin:0 4px 8px">${esc(xpDateTxt(x.date))} · ${esc(xpKeyName(mtKeyOf(x), x))} · ${rs(x.amount)}</p><div class="xdlist">` +
+    grp.map(y => `<div class="xdrow${y.id === id ? " me" : ""}"><div><b>${esc(y.desc || "")}</b><small>${esc(xpCatTxt(y))}${y.pay ? ` · ${esc(y.pay)}` : ""}${y.bills?.length ? ` · 📎${y.bills.length}` : ""}<br>Added${y.byName ? ` by ${esc(y.byName)}` : ""}${y.createdOn ? ` · ${fmtStamp(y.createdOn)}` : ""}</small></div>` +
+      (can ? `<button type="button" class="btn danger" data-xddel="${y.id}" title="This line is a duplicate: delete it">Delete</button>` : "") + `</div>`).join("") + `</div>` +
+    (can ? `<button type="button" class="btn primary xdkeep" data-xdkeep>✓ Not a duplicate, keep all</button><p class="sub" style="margin:6px 4px 0">The warning won't show again for these lines. A new line with the same date, vehicle and amount will be checked again.</p>` : "");
+  document.body.append(m);
+  const r = btn.getBoundingClientRect(); m.style.top = Math.max(8, Math.min(r.bottom + 4, innerHeight - m.offsetHeight - 10)) + "px"; m.style.left = Math.max(8, Math.min(r.left - 120, innerWidth - m.offsetWidth - 12)) + "px";
+}
+async function xpDupKeep(docs) {
+  let n = 0; for (const y of docs) { if (xpDupOk(y)) continue; try { await opsSave("expenses", { ...y, dupOk: xpDupKey(y), ...rxStamp() }); n++; } catch {} }
+  xpDupClose(); toast(n || !docs.length ? "Marked as checked · not duplicates" : "Couldn't save. Check your connection and try again."); renderExp(true);
+}
+document.addEventListener("click", async e => {
+  const pop = $("xpDupPop"); if (!pop || !pop.contains(e.target)) return;
+  const x = ops.expenses.find(y => y.id === pop.dataset.id); if (!x) { xpDupClose(); return; }
+  const grp = () => ops.expenses.filter(y => xpDupKey(y) === xpDupKey(x));
+  if (e.target.closest("[data-xdkeep]")) { xpDupKeep(grp()); return; }
+  const del = e.target.closest("[data-xddel]"); if (!del) return;
+  const y = ops.expenses.find(z => z.id === del.dataset.xddel); if (!y) return;
+  if (!await askYesNo(`Delete "${y.desc || "this line"}" (${rs(y.amount)}) as a duplicate?`, { yes: "Delete", danger: true })) return;
+  try { await opsDelete("expenses", y.id); } catch { toast("Couldn't delete. Try again."); return; }
+  xpUndoSet("Undo delete", async () => { await opsSave("expenses", y); });
+  xpDupClose(); toast("Duplicate deleted"); renderExp(true);
+});
+document.addEventListener("mousedown", e => { const m = $("xpDupPop"); if (m && !m.contains(e.target) && !e.target.closest?.("[data-xdup]")) xpDupClose(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") xpDupClose(); });
+addEventListener("hashchange", xpDupClose);
 
 /* Summary: profit for each bus, and expenses by category, month by month. */
 async function xpLoadIncome(P) {
@@ -7079,6 +7120,7 @@ $("xpBody").addEventListener("mousedown", e => {
   if (it) { e.preventDefault(); xpEdit.hi = +it.dataset.i; const r = xpCommit(); if (r === true) xpMove(0, 0); return; }
   if (e.target.closest("#xpEdBox")) return;
   const bl = e.target.closest("[data-xbill]"); if (bl) { e.preventDefault(); e.stopPropagation(); if (xpEdit && xpCommit() === false) return; xpBillOpen(bl.dataset.xbill, bl); return; }
+  const dp = e.target.closest("[data-xdup]"); if (dp) { e.preventDefault(); e.stopPropagation(); if (xpEdit && xpCommit() === false) return; xpDupOpen(dp.dataset.xdup, dp); return; }
   const rs = e.target.closest(".xrs"); if (rs) { e.preventDefault(); xpResize(rs, e); return; }
   const hd = e.target.closest(".xgrid th[data-col]"); if (hd) { e.preventDefault(); if (xpEdit && xpCommit() === false) return; xpMenuOpen(hd.dataset.col, hd); return; }
   if (e.target.closest("th[data-xall]")) { e.preventDefault(); xpSelectAll(); return; }
@@ -7131,6 +7173,7 @@ $("xpBody").addEventListener("click", async e => {
   if (e.target.closest("[data-xdelsel]")) { xpDeleteSel(); return; }
   if (e.target.closest("[data-xundo]")) { xpUndoRun(); return; }
   if (e.target.closest("[data-xdups]")) { if (xpFilt.dup) delete xpFilt.dup; else xpFilt.dup = true; xpScrollEnd = true; renderExp(true); return; }
+  if (e.target.closest("[data-xdupall]")) { const P = xpPeriod(); xpDupKeep(ops.expenses.filter(x => x.date >= P.from && x.date <= P.to && xpDups.has(xpDupKey(x)))); return; }
   if (e.target.closest("[data-xexcel]")) { xpExcel(); return; }
   const ms = e.target.closest("[data-xmonset]");
   if (ms) { const on = ms.dataset.xmonset === "on", docs = [...xpRowSel].map(xpDocOf).filter(Boolean);
