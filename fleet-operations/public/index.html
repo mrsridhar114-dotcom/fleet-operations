@@ -5604,7 +5604,7 @@ function buildTripSheet() {
   $("tRows").addEventListener("keydown", meKey);
   $("tRows").addEventListener("focusout", () => setTimeout(() => { if (meWaiting && !$("tRows").contains(document.activeElement)) { meWaiting = false; renderTrips(); } }, 0));
   $("tBody").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) meOpenDay(o.dataset.open); });
-  $("tViewSeg").addEventListener("change", e => { if (e.target.name === "tView") { tView = e.target.value; try { localStorage.setItem("fleet-tview", tView); } catch {} renderTrips(); } });
+  $("tViewSeg").addEventListener("change", e => { if (e.target.name === "tView") { tView = e.target.value; renderTrips(); } });
   $("tUndo").onclick = () => askYesNo(`Undo the changes to ${meChangedKeys().length} day${meChangedKeys().length === 1 ? "" : "s"}?`, { yes: "Undo changes", no: "Keep them", danger: true }).then(ok => { if (ok) { meDraft = {}; renderTrips(); } });
   $("tSaveAll").onclick = () => meSaveAll();
   $("tRoute").addEventListener("click", async e => {
@@ -5638,7 +5638,10 @@ function buildTripSheet() {
    meDraft["bus|date"] = { f: {field: text}, touched: {field: true} } holds what was typed until Save. Fields: start, drv, cond,
    s1–s5, tot (the day's total when the singles are not all known), lit, rate, dsl, pd, pc, pk (padi), route, exp (total expense), odo.
    Grey boxes (rate, diesel amount, padi) are worked out until typed over. */
-let meDraft = {}, meWaiting = false, tView = (() => { try { const v = localStorage.getItem("fleet-tview"); return v === "table" || v === "month" ? v : "month"; } catch { return "month"; } })();
+let meDraft = {}, meWaiting = false, tView = "month";
+// Route bus always opens in Month view; Table stays only while going to a Day sheet and back.
+addEventListener("hashchange", e => { if (location.hash === "#trips-route" && !/#trips-day$/.test(e.oldURL || "") && tView !== "month") { tView = "month"; renderTrips(); } });
+try { localStorage.removeItem("fleet-tview"); } catch {}
 const ME_NUM = ["s1", "s2", "s3", "s4", "s5", "tot", "lit", "rate", "dsl", "pd", "pc", "pk", "route", "exp", "odo"], ME_AUTO = ["rate", "dsl", "pd", "pc", "pk"];
 const meKey0 = date => `${tBusId}|${date}`;
 // The route expenses of a day as one number, and whether it can be typed here (a list of several is changed in the day sheet).
