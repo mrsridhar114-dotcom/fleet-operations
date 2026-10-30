@@ -6,7 +6,7 @@ const VE = ["none", "view", "edit"];
 const LEVELS = {
   dashboard: ["none", "view"], vehicles: VE, drivers: VE, conductors: VE, trips: ["none", "view", "update", "edit"],
   bookings: ["none", "view", "request", "edit"], tripsheets: ["none", "view", "update", "edit"],
-  fuel: VE, expenses: VE, maintenance: ["none", "view", "update", "edit"], users: VE
+  expenses: VE, maintenance: ["none", "view", "update", "edit"], users: VE
 };
 const FULL = Object.fromEntries(Object.entries(LEVELS).map(([m, l]) => [m, l.at(-1)]));
 
@@ -30,7 +30,6 @@ const MOD_OF = {
   trips: "trips", tripMonths: "trips", tripYears: "trips", truckTrips: "trips", truckRounds: "trips",
   routeExpenses: "trips", padiSlabs: "trips", // route bus masters: standard expenses by starting place, padi slabs
   routeSheets: "trips", // the conductor's day sheet, approved into trips by an admin
-  fuelLog: "fuel",
   expenses: "expenses", // payments made for each vehicle
   maintLog: "maintenance", maintTypes: "maintenance" // maintenance visits, and the service gaps
 };
@@ -106,9 +105,9 @@ export function canWrite(a, me, op, coll, id, prev, next, linkedClosed) {
       && (next.rejectReason || "") === (next.status === "rejected" ? prev?.rejectReason || "" : "") ? "" : no;
   }
 
-  // Trip sheet diesel: someone who fills in trip sheets may add, change and delete fills linked to a booking.
-  if (coll === "fuelLog" && a.fuel !== "edit" && (a.tripsheets === "update" || a.tripsheets === "edit"))
-    return (op === "delete" ? !!prev?.bookingId : !!next?.bookingId && (!prev || prev.bookingId === next.bookingId)) ? "" : no;
+  // Spare bus trip sheet diesel: someone who fills in trip sheets may add, change and delete fills linked to a booking.
+  if (coll === "fuelLog")
+    return (a.tripsheets === "update" || a.tripsheets === "edit") && (op === "delete" ? !!prev?.bookingId : !!next?.bookingId && (!prev || prev.bookingId === next.bookingId)) ? "" : no;
 
   // Maintenance entry (add entries): adds and corrects maintenance visits; the service gaps and deleting stay with editors.
   if (coll === "maintLog" && a.maintenance === "update") return op !== "delete" ? "" : no;
