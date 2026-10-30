@@ -1165,6 +1165,24 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .xolt td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .xolt tr[data-row] { cursor: pointer; } .xolt tr[data-row]:hover td { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
 .xolt tr.off td { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); } .xolt tr.off td:first-child { text-decoration: none; }
 .xolt .n { text-align: right; } .xolt .nw { white-space: nowrap; } .xolt th:first-child, .xolt td:first-child { width: 28px; padding-left: 14px; }
+.xolsub { display: none; }
+@media (max-width: 700px) {
+  #xpOutBox, .xpmbox { padding: 0; } .xodlg, .xpmdlg { width: 100vw; height: 100dvh; max-height: none; border-radius: 0; }
+  .xobody { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); overflow: auto; } .xoleft { border-right: 0; border-bottom: 1px solid var(--line); overflow: visible; padding: 12px 14px; gap: 8px; }
+  .xocols { grid-template-columns: 1fr 1fr; } .xoright { min-height: 340px; } .xolt th:nth-child(4), .xolt td:nth-child(4), .xolt th:nth-child(5), .xolt td:nth-child(5) { display: none; }
+  .xolsub { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; } .xoft { padding: 10px 14px; } .xoft .duesave { min-width: 0; flex: 1; } .xohd { padding: 10px 14px; }
+}
+.xpmbar { display: flex; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); } .xpmbar .btn { flex: 1; padding: 8px 6px; font-size: 14px; white-space: nowrap; } .xpmbar .btn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.xpmchips { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line); } .xpmchips button { border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); border-radius: 99px; padding: 4px 10px; font: 600 12.5px var(--body); cursor: pointer; } .xpmchips .clr { border-color: var(--line); background: none; color: var(--muted); }
+@media (min-width: 1001px) { .xpmbar, .xpmchips { display: none; } }
+.xpmdlg { width: min(460px, calc(100vw - 32px)); max-height: min(760px, calc(100vh - 32px)); background: var(--surface); color: var(--ink); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+.xpmsortdlg { height: auto; } .xpmsorts { display: flex; flex-direction: column; padding: 6px 0; overflow: auto; } .xpmsorts button { border: 0; background: none; text-align: left; padding: 14px 18px; font: 500 15.5px var(--body); color: var(--ink); border-bottom: 1px solid var(--line); cursor: pointer; } .xpmsorts button.on { color: var(--accent); font-weight: 700; } .xpmsorts button.on::after { content: " ✓"; }
+@media (max-width: 700px) { .xpmsortdlg { height: auto; position: fixed; bottom: 0; border-radius: 14px 14px 0 0; } }
+.xpmbody { flex: 1; min-height: 0; overflow: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; } .xpmdup { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.xpmsec { border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; } .xpmsec summary { display: flex; justify-content: space-between; padding: 12px 0; cursor: pointer; font-size: 15px; } .xpmsec summary span { color: var(--muted); font-size: 13.5px; }
+.xpmsec .xmall { display: flex; gap: 8px; align-items: center; padding: 6px 0 8px; font-weight: 600; border-bottom: 1px solid var(--line); } .xpmlist { display: flex; flex-direction: column; padding: 4px 0 10px; }
+.xpmlist label { display: flex; gap: 10px; align-items: center; padding: 8px 0; font-size: 15px; } .xpmlist label span { flex: 1; } .xpmlist small { color: var(--muted); }
+.xpmdlg input[type="checkbox"] { width: 18px; height: 18px; }
 .xoft { display: flex; gap: 10px; align-items: center; justify-content: flex-end; padding: 12px 18px; border-top: 1px solid var(--line); } .xoft .err { margin: 0 auto 0 0; } .xoft .btn { display: inline-flex; gap: 6px; align-items: center; } .xoft .duesave { min-width: 180px; justify-content: center; }
 .duepop .dlist li.off { opacity: .55; } .duepop .dlist li.off label { cursor: default; }
 /* Padi calculation pop-up on the trip sheets */
@@ -6445,7 +6463,7 @@ function renderExp(force) {
   const P = xpPeriod(), all = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to), can = canXp();
   xpDups = xpDupSet(all);
   if (!xpDups.size) delete xpFilt.dup;
-  const list = all.filter(xpPass).sort((a, b) => b.date.localeCompare(a.date) || String(b.createdOn || "").localeCompare(String(a.createdOn || "")));
+  const list = xpSorted(all.filter(xpPass), xpSortM);
   $("xpPer").textContent = P.label; $("xpRoTag").hidden = can;
   const sum = a => a.reduce((s, x) => s + num(x.amount), 0), byVeh = new Map();
   all.forEach(x => { const k = mtKeyOf(x); byVeh.set(k, (byVeh.get(k) || 0) + num(x.amount)); });
@@ -6461,7 +6479,7 @@ function renderExp(force) {
     xpGridRender({ P, all, list, VS, sum, can, force }); return;
   }
   // Phone and narrow windows: the list, with the entry box on top.
-  const h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet"><div class="tscroll"><table class="ctable xptable xpgridt"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
+  const h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet">${xpMBarHtml()}<div class="tscroll"><table class="ctable xptable xpgridt"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
     `<thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
     list.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category, x.catNote)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("") +
     `</tbody></table></div>${list.length ? "" : none}<div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
@@ -6479,6 +6497,60 @@ function renderExp(force) {
     if (act && document.contains(act)) act.focus({ preventScroll: true });
   }
 }
+/* Phone: Filter, Sort and Print above the list, and the filters in use as chips. */
+const XPM_SORTS = [["date", -1, "Date · newest first", "Newest"], ["date", 1, "Date · oldest first", "Oldest"], ["amount", -1, "Amount · largest first", "Largest"], ["amount", 1, "Amount · smallest first", "Smallest"],
+  ["veh", 1, "Vehicle · A to Z", "Vehicle"], ["category", 1, "Category · A to Z", "Category"], ["desc", 1, "Description · A to Z", "A to Z"], ["pay", 1, "Paid by · A to Z", "Paid by"]];
+const XPM_COLS = [["date", "Month"], ["veh", "Vehicle"], ["category", "Category"], ["pay", "Paid by"]];
+function xpMBarHtml() {
+  const f = xpFilt, chips = [], few = (c, set) => { const { name } = xpFiltOpts(c, []), a = [...set].map(name); return a.length > 2 ? `${a.slice(0, 2).join(", ")} +${a.length - 2}` : a.join(", "); };
+  XPM_COLS.forEach(([c, l]) => { if (f[c]?.size) chips.push([c, `${l}: ${few(c, f[c])}`]); else if (f[c] && !f[c].size) chips.push([c, `${l}: none`]); });
+  if (f.desc) chips.push(["desc", `"${f.desc}"`]); if (f.dup) chips.push(["dup", "Possible duplicates"]);
+  const so = XPM_SORTS.find(([c, d]) => c === xpSortM.c && d === xpSortM.dir);
+  return `<div class="xpmbar"><button type="button" class="btn${chips.length ? " on" : ""}" data-xmfilt>⚲ Filter${chips.length ? ` (${chips.length})` : ""}</button><button type="button" class="btn" data-xmsort>⇅ ${esc(so ? so[3] : "Sort")}</button><button type="button" class="btn" data-xmprint>🖨 Print</button></div>` +
+    (chips.length ? `<div class="xpmchips">${chips.map(([c, t]) => `<button type="button" data-xmchip="${c}" title="Remove this filter">${esc(t)} ✕</button>`).join("")}<button type="button" class="clr" data-xmchip="*">Clear all</button></div>` : "");
+}
+function xpMClose() { $("xpMBox")?.remove(); }
+function xpMOpen(html, cls) { xpMClose(); const box = document.createElement("div"); box.id = "xpMBox"; box.className = "askbox xpmbox"; box.innerHTML = `<div class="xpmdlg ${cls}" role="dialog" aria-modal="true">${html}</div>`; document.body.append(box); return box; }
+function xpMSort() {
+  const box = xpMOpen(`<header class="xohd"><h2>Sort by</h2><button type="button" class="btn mclose" data-mclose>Close ✕</button></header><div class="xpmsorts">` +
+    XPM_SORTS.map(([c, d, l]) => `<button type="button" data-xso="${c}|${d}" class="${xpSortM.c === c && xpSortM.dir === d ? "on" : ""}">${esc(l)}</button>`).join("") + `</div>`, "xpmsortdlg");
+  box.addEventListener("click", e => { if (e.target === box || e.target.closest("[data-mclose]")) { xpMClose(); return; } const b = e.target.closest("[data-xso]"); if (!b) return; const [c, d] = b.dataset.xso.split("|"); xpSortM = { c, dir: +d }; xpMClose(); renderExp(true); });
+}
+function xpMFilter() {
+  const P = xpPeriod(), rows = ops.expenses.filter(x => x.date >= P.from && x.date <= P.to);
+  const sec = ([c, l]) => { const { vals, cnt, name } = xpFiltOpts(c, rows), on = xpFilt[c];
+    return `<details class="xpmsec" data-fc="${c}"${on ? " open" : ""}><summary><b>${l}</b><span data-fs></span></summary><label class="xmall"><input type="checkbox" data-fall> Select all</label><div class="xpmlist">` +
+      vals.map(k => `<label><input type="checkbox" data-fv="${esc(c + "|" + k)}"${!on || on.has(k) ? " checked" : ""}> <span>${esc(name(k))}</span><small>${cnt.get(k)}</small></label>`).join("") + `</div></details>`; };
+  const box = xpMOpen(`<header class="xohd"><h2>Filter</h2><button type="button" class="btn mclose" data-mclose>Close ✕</button></header><div class="xpmbody">` +
+    `<label class="xotl">Description contains<input type="search" data-fdesc value="${esc(xpFilt.desc || "")}" placeholder="e.g. tyre" autocomplete="off"></label>` +
+    (xpDups.size ? `<label class="xpmdup"><input type="checkbox" data-fdup${xpFilt.dup ? " checked" : ""}> Only possible duplicates</label>` : "") + XPM_COLS.map(sec).join("") +
+    `</div><footer class="xoft"><button type="button" class="btn" data-fclr>Clear all</button><button type="button" class="btn primary" data-fok></button></footer>`, "xpmfiltdlg");
+  const read = () => { const f = {}; const d = upText(box.querySelector("[data-fdesc]").value); if (d) f.desc = d; if (box.querySelector("[data-fdup]")?.checked) f.dup = true;
+    XPM_COLS.forEach(([c]) => { const all = [...box.querySelectorAll(`[data-fc="${c}"] [data-fv]`)], on = all.filter(i => i.checked).map(i => i.dataset.fv.slice(c.length + 1)); if (on.length < all.length) f[c] = new Set(on); }); return f; };
+  const sync = () => {
+    box.querySelectorAll("[data-fc]").forEach(d => { const all = d.querySelectorAll("[data-fv]"), n = d.querySelectorAll("[data-fv]:checked").length, a = d.querySelector("[data-fall]");
+      a.checked = n === all.length; a.indeterminate = n > 0 && n < all.length; d.querySelector("[data-fs]").textContent = n === all.length ? "All" : `${n} of ${all.length}`; });
+    const keep = xpFilt; xpFilt = read(); const n = rows.filter(xpPass).length; xpFilt = keep;
+    const ok = box.querySelector("[data-fok]"); ok.textContent = `Show ${n} line${n === 1 ? "" : "s"}`; ok.disabled = !n;
+  };
+  box.addEventListener("change", e => { const a = e.target.closest("[data-fall]"); if (a) a.closest("[data-fc]").querySelectorAll("[data-fv]").forEach(i => i.checked = a.checked); sync(); });
+  box.addEventListener("input", e => { if (e.target.matches("[data-fdesc]")) sync(); });
+  box.addEventListener("click", e => {
+    if (e.target === box || e.target.closest("[data-mclose]")) { xpMClose(); return; }
+    if (e.target.closest("[data-fclr]")) { box.querySelectorAll("[data-fv], [data-fall]").forEach(i => i.checked = true); box.querySelector("[data-fdesc]").value = ""; const d = box.querySelector("[data-fdup]"); if (d) d.checked = false; sync(); return; }
+    if (e.target.closest("[data-fok]")) { xpFilt = read(); xpMClose(); renderExp(true); }
+  });
+  sync();
+}
+$("xpBody").addEventListener("click", e => {
+  if (e.target.closest("[data-xmfilt]")) { xpMFilter(); return; }
+  if (e.target.closest("[data-xmsort]")) { xpMSort(); return; }
+  if (e.target.closest("[data-xmprint]")) { xpOutOpen(); return; }
+  const ch = e.target.closest("[data-xmchip]"); if (ch) { const c = ch.dataset.xmchip; if (c === "*") xpFilt = {}; else delete xpFilt[c]; renderExp(true); }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("xpMBox")) xpMClose(); });
+addEventListener("hashchange", xpMClose);
+
 /* ---------- Expense entry: lines sent to the office for approval ("expenseReqs") ----------
    A line: the expense fields + status ("draft", "submitted", "rejected", "approved"), byAcct (his sign-in), byName, submittedOn,
    rejectReason / rejectedByName (sent back), approvedOn / approvedByName / expenseId (the line it became in Expenses). */
@@ -6688,9 +6760,17 @@ function xpFit() {
 addEventListener("resize", () => xpFit());
 const XP_HEAD = { date: "Date", desc: "Expense description", veh: "Vehicle", category: "Category", pay: "Paid by", amount: "Amount" };
 const xpSortKey = (x, c) => c === "date" ? x.date + (x.createdOn || "") : c === "amount" ? num(x.amount) : c === "veh" ? xpKeyName(mtKeyOf(x), x).toLowerCase() : c === "category" ? xpCatTxt(x).toLowerCase() : String(x[c] || "").toLowerCase();
-function xpSorted(list) {
-  const { c, dir } = xpSort;
+var xpSortM = { c: "date", dir: -1 }; // the phone list's order
+const xpSortNow = () => xpNarrow(1000) ? xpSortM : xpSort;
+function xpSorted(list, S = xpSortNow()) {
+  const { c, dir } = S;
   return [...list].sort((a, b) => { const A = xpSortKey(a, c), B = xpSortKey(b, c); return (A < B ? -1 : A > B ? 1 : 0) * dir || (a.date + (a.createdOn || "")).localeCompare(b.date + (b.createdOn || "")); });
+}
+// The values a column can be filtered on, with how many lines have each.
+function xpFiltOpts(c, rows) {
+  const key = x => c === "date" ? x.date.slice(0, 7) : c === "veh" ? mtKeyOf(x) : x[c] || "", name = k => c === "date" ? new Date(k + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) : c === "veh" ? xpKeyName(k) : k || "(blank)";
+  const cnt = new Map(); rows.forEach(x => cnt.set(key(x), (cnt.get(key(x)) || 0) + 1));
+  return { vals: [...cnt.keys()].sort((a, b) => c === "date" ? a.localeCompare(b) : name(a).localeCompare(name(b))), cnt, name };
 }
 // The menu under a column heading: sort, and tick the values to show.
 function xpMenuClose() { $("xpMenu")?.remove(); }
@@ -6701,9 +6781,7 @@ function xpMenuOpen(c, th) {
   let body = "";
   if (c === "desc") body = `<label class="xmtxt">Show lines containing<input type="text" id="xpMq" value="${esc(xpFilt.desc || "")}" placeholder="e.g. tyre" autocomplete="off"></label>`;
   else if (c !== "amount") {
-    const key = x => c === "date" ? x.date.slice(0, 7) : c === "veh" ? mtKeyOf(x) : x[c] || "", name = k => c === "date" ? new Date(k + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" }) : c === "veh" ? xpKeyName(k) : k || "(blank)";
-    const cnt = new Map(); rows.forEach(x => cnt.set(key(x), (cnt.get(key(x)) || 0) + 1));
-    const vals = [...cnt.keys()].sort((a, b) => c === "date" ? a.localeCompare(b) : name(a).localeCompare(name(b))), on = xpFilt[c];
+    const { vals, cnt, name } = xpFiltOpts(c, rows), on = xpFilt[c];
     body = `${vals.length > 8 ? `<input type="text" class="xmq" placeholder="Search…" autocomplete="off">` : ""}<label class="xmall"><input type="checkbox" data-xmall${!on ? " checked" : ""}> Select all</label>` +
       `<div class="xmlist">${vals.map(k => `<label data-n="${esc(name(k).toLowerCase())}"><input type="checkbox" data-xv="${esc(k)}"${!on || on.has(k) ? " checked" : ""}> <span>${esc(name(k))}</span><small>${cnt.get(k)}</small></label>`).join("") || `<p>Nothing to show.</p>`}</div>`;
   }
@@ -6845,7 +6923,7 @@ function xpOutOpen() {
     `<div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${XP_OUT.map(([c, h]) => `<li><label><input type="checkbox" data-c="${c}" checked> ${h}</label></li>`).join("")}</ul></div>` +
     `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
     `<div class="xolines"><table class="xolt"><thead><tr><th></th><th>Date</th><th>Description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th></tr></thead><tbody>` +
-    list.map((x, i) => `<tr data-row="${i}"><td><input type="checkbox" data-l="${i}"${!some || picked.has(x.id) ? " checked" : ""} aria-label="Include this line"></td><td class="num">${esc(xpDateTxt(x.date))}</td><td>${esc(x.desc || "")}</td><td class="num nw">${esc(xpKeyName(mtKeyOf(x), x))}</td><td>${esc(xpCatTxt(x))}</td><td class="n num">${nf(num(x.amount))}</td></tr>`).join("") +
+    list.map((x, i) => `<tr data-row="${i}"><td><input type="checkbox" data-l="${i}"${!some || picked.has(x.id) ? " checked" : ""} aria-label="Include this line"></td><td class="num">${esc(xpDateTxt(x.date))}</td><td>${esc(x.desc || "")}<small class="xolsub">${esc(xpKeyName(mtKeyOf(x), x))} · ${esc(xpCatTxt(x))}</small></td><td class="num nw">${esc(xpKeyName(mtKeyOf(x), x))}</td><td>${esc(xpCatTxt(x))}</td><td class="n num">${nf(num(x.amount))}</td></tr>`).join("") +
     `</tbody></table></div></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
   const cols = () => [...box.querySelectorAll("input[data-c]:checked")].map(i => i.dataset.c);
