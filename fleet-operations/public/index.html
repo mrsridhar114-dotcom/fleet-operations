@@ -1711,7 +1711,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .rsbus select { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); padding: 0 8px; }
 .rsdays { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 #view-trsheet .rstop { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; } .rstop h1 { margin: 0; font-size: 20px; } .rsacts { display: flex; gap: 6px; flex: none; } .rsacts .btn { padding: 6px 10px; min-height: 0; font-size: 14px; }
-.rsmsum .sec { font-size: 17px; } #tRsDays { display: flex; flex-direction: column; gap: 12px; } #tRsDays .rsmg { grid-template-columns: repeat(6, minmax(0, 1fr)); } #tRsDays .rsmnav { justify-content: center; } #tRsDays .rsmnav .btn { display: none; }
+.rsmsum .sec { font-size: 17px; } #tRsDays { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; } #tMonthView.mv > :not(#tSummary):not(#tRsDays) { display: none; }
 .rsmnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; } .rsmnav .sec { margin: 0; text-align: center; } .rsmnav .sec small { font: 500 12px var(--body); color: var(--muted); }
 .rsmnav .btn, #rsMonthBtn { padding: 6px 12px; min-height: 0; font-size: 14px; font-weight: 600; white-space: nowrap; background: var(--accent-soft); color: var(--accent); border: 1.5px solid var(--accent); }
 .rsmnav .btn:disabled { opacity: .3; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -2065,9 +2065,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="empty panel" id="tNoBus" hidden><strong>No route buses yet</strong>Add a vehicle with class Bus and operation type Route under Masters › Vehicle. It will appear here.</div>
       <div id="tBody">
         <nav class="ttabs" id="tTabs" role="tablist" aria-label="Month"></nav>
-        <div class="tmdays" id="tRsDays" hidden></div>
         <div id="tMonthView">
           <section class="tsumwrap" id="tSummary" aria-label="Month summary"></section>
+          <div class="tmdays" id="tRsDays" hidden></div>
           <div class="tentry" id="tEntryBar"></div>
           <div class="tkm" id="tRoute"></div>
           <div class="tkm" id="tKm"></div>
@@ -5618,9 +5618,12 @@ function meCrewOpts(kind, val) {
   return `<option value="">—</option>` + opts.map(([v, n]) => `<option value="${esc(v)}"${v === val ? " selected" : ""}>${esc(n)}</option>`).join("");
 }
 function renderMonthEntry(ym, M) {
-  $("tTableWrap").hidden = tView !== "table"; $("tCal").hidden = tView !== "cal";
+  $("tTableWrap").hidden = tView !== "table"; $("tCal").hidden = tView !== "cal"; $("tRsDays").hidden = tView !== "month";
+  // Month view: the same month summary, then the days as cards in place of the table.
+  $("tMonthView").classList.toggle("mv", tView === "month");
   meSaveBar();
   if (tView === "cal") { renderMeCal(ym); return; }
+  if (tView === "month") { $("tRsDays").innerHTML = rsDaysHtml(tBusId, ym, rsSrc(tBusId, ym)) + (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : ""); return; }
   if ($("tRows").contains(document.activeElement)) { meWaiting = true; return; }  // don't redraw under someone typing
   const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(k === "start" ? r.auto[k] ?? r.f[k] ?? "" : blank0(r.auto[k] ?? r.f[k]))}" aria-label="${k}"${extra}${ro}>`;
   // Columns in the order of the office sheet: Date, Starting, Day, crew, diesel, padi, S1–S5, Collection, Expense, Balance, Total Balance, KMS.
@@ -5750,21 +5753,11 @@ function renderTrips() {
   if (!buses.length) return;
   // On a phone the day is filled in the phone trip sheet, so the button goes there.
   $("tDayLink").textContent = bwIsPhone() ? "Trip sheet" : "Day sheet"; $("tDayLink").href = bwIsPhone() ? "#route-sheet" : "#trips-day";
-  // Month view: the month tabs, the month's figures as tiles, then its days as cards (no full summary).
-  const mv = tView === "month"; $("tRsDays").hidden = !mv;
 
-  if (mv && tMonthIdx === 12) tMonthIdx = (+todayISO().slice(5, 7) + 8) % 12;
   const has = new Set(trips.map(t => t.date.slice(0, 7)));
   $("tTabs").innerHTML = MONTHS.map((m, i) => { const ym = monthYM(tFyStart, i);
     return `<button type="button" role="tab" data-m="${i}" aria-selected="${tMonthIdx === i}">${m.slice(0, 3)} ${ym.slice(2, 4)}${has.has(ym) ? '<span class="dot" aria-hidden="true"></span>' : ""}</button>`; }).join("") +
-    (mv ? "" : `<button type="button" role="tab" class="year" data-m="12" aria-selected="${tMonthIdx === 12}">Full year</button>`);
-  if (mv) {
-    $("tMonthView").hidden = true; $("tYearView").hidden = true;
-    document.querySelectorAll('#tViewSeg input[name="tView"]').forEach(i => i.checked = i.value === tView);
-    const ym = monthYM(tFyStart, tMonthIdx), src = rsSrc(tBusId, ym);
-    $("tRsDays").innerHTML = rsMonthHtml(tBusId, ym, src) + rsDaysHtml(tBusId, ym, src) + (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
-    return;
-  }
+    `<button type="button" role="tab" class="year" data-m="12" aria-selected="${tMonthIdx === 12}">Full year</button>`;
   $("tMonthView").hidden = tMonthIdx === 12; $("tYearView").hidden = tMonthIdx !== 12;
   if (tMonthIdx === 12) return renderTripYear();
 
