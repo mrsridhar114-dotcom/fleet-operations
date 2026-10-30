@@ -5765,8 +5765,8 @@ function renderTrips() {
   loadLocalTrips();
   $("tNoBus").hidden = !!buses.length; $("tBody").hidden = !buses.length; $("tBusF").hidden = buses.length === 1;
   if (!buses.length) return;
-  // On a phone the day is filled in the phone trip sheet, so the button goes there.
-  $("tDayLink").textContent = bwIsPhone() ? "Trip sheet" : "Day sheet"; $("tDayLink").href = bwIsPhone() ? "#route-sheet" : "#trips-day";
+  // The Day sheet is for a computer; on a phone the days are entered from the Route trip sheet cards, so no button here.
+  $("tDayLink").hidden = bwIsPhone();
 
   const has = new Set(trips.map(t => t.date.slice(0, 7)));
   $("tTabs").innerHTML = MONTHS.map((m, i) => { const ym = monthYM(tFyStart, i);
