@@ -718,10 +718,8 @@ a.btn { text-decoration: none; display: inline-block; }
 .ocard { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ocard.main { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.ocard.oclink:hover { background: var(--accent-soft); } a.ocard .oc-go { margin-top: auto; padding-top: 10px; font-weight: 700; color: var(--accent); }
-.ocard.soon { background: var(--bg); }
 .ocard .oc-top { display: flex; align-items: center; gap: 10px; }
 .ocard .oc-top svg { width: 28px; height: 28px; color: var(--accent); flex: none; }
-.ocard.soon .oc-top svg { color: var(--muted); }
 .ocard h3 { margin: 0; font-family: var(--display); font-size: 22px; line-height: 1; }
 .ocard .oc-kind { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .ocard .oc-big { font-family: var(--display); font-size: 36px; font-weight: 700; line-height: 1; margin-top: 12px; font-variant-numeric: tabular-nums; }
@@ -1849,13 +1847,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <ul>
           <li data-mod="trips"><a class="nav" href="#trips" data-view="trips">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"/></svg>
-            Trip sheet</a></li>
-          <li id="navRs" hidden><a class="nav" href="#route-sheet" data-view="rsheet">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
-            Route trip sheet</a></li>
-          <li data-mod="fuel"><a class="nav" href="#fuel" data-view="fuel">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h4"/></svg>
-            Fuel log</a></li>
+            Trip sheet<span class="badge" id="tsBadge" hidden></span></a></li>
           <li data-mod="expenses"><a class="nav" href="#expenses" data-view="texp">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
             Expenses</a></li>
@@ -1873,9 +1865,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li data-mod="bookings"><a class="nav" href="#bookings" data-view="bookings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3M13 14h3M8 17.5h3"/></svg>
             Booking planner<span class="badge rem" id="remBadge" hidden title="WhatsApp reminders to send"></span></a></li>
-          <li id="navTs"><a class="nav" href="#trip-sheets" data-view="tsheets">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 15.5h6M10 9h2"/></svg>
-            Trip sheets<span class="badge" id="tsBadge" hidden></span></a></li>
           <li id="navAppr"><a class="nav" href="#approvals" data-view="approvals">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 4h6v3H9z"/><path d="M15 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg>
             Approvals<span class="badge" id="apprBadge" hidden></span></a></li>
@@ -2066,7 +2055,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tcontrols">
           <div class="hf" id="tBusF"><label for="tBus">Bus</label><select id="tBus"></select></div>
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
-          <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
+          <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="month"><span>Month view</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
           <button class="btn" type="button" id="tPrint" title="Monthly sheet in Excel">Print</button>
           <a class="btn primary" href="#trips-day" id="tDayLink">Day sheet</a>
           <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
@@ -2090,6 +2079,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
             </table>
           </div>
           <div class="mecal" id="tCal" hidden></div>
+          <div class="tmdays" id="tRsDays" hidden></div>
           <div class="mesave" id="tSaveBar" hidden><span class="dot" aria-hidden="true"></span><b id="tSaveN"></b><span class="hint">Type straight into the table. Grey boxes are worked out (rate copied down, diesel = litres × rate, padi from the rules) and can be overtyped. Open day ↗ shows the full day sheet.</span><span style="flex:1"></span><button class="btn" type="button" id="tUndo">Undo changes</button><button class="btn primary" type="button" id="tSaveAll">Save</button></div>
           <div class="tpanels">
             <section class="panel"><div class="sechead"><h2 class="sec">Diesel mileage by day</h2><p id="tMileNote"></p></div><div class="tchart" id="tMileage"></div></section>
@@ -2356,8 +2346,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <section class="wrap twrap" id="view-ttsheet" hidden>
       <header class="top">
         <div>
-          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Bookings</span><span class="slash">/</span><span>Trip sheets</span></nav>
-          <h1>Trip sheets</h1>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><a href="#trips">Trip sheet</a><span class="slash">/</span><span>Spare bus</span></nav>
+          <h1>Spare bus · trip sheets</h1>
           <p class="sync" id="tsNote">Fill in the expenses once the trip is over, then submit the trip sheet for approval.</p>
         </div>
       </header>
@@ -2524,26 +2514,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div id="msList" style="display:flex;flex-direction:column;gap:12px;margin-top:12px"></div>
     </section>
 
-    <section class="wrap twrap" id="view-tfuel" hidden>
-      <header class="top">
-        <div>
-          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><span>Fuel log</span></nav>
-          <h1>Fuel log<span class="ro-tag" id="flRoTag" hidden>View only</span></h1>
-          <p class="sync">Every diesel fill for the buses, paid by cash or fuel card. Km per litre is worked out from one fill's odometer reading to the next.</p>
-        </div>
-        <div class="tcontrols">
-          <div class="bmonth"><button class="navbtn" type="button" id="flPrev" aria-label="Previous month">‹</button><h2 class="sec" id="flMonth" style="min-width:9em;text-align:center">Month</h2><button class="navbtn" type="button" id="flNext" aria-label="Next month">›</button></div>
-          <div class="hf"><label for="flBusF">Bus</label><select id="flBusF"></select></div>
-          <button class="btn primary" type="button" id="flAdd">+ Add fill</button>
-        </div>
-      </header>
-      <div class="empty panel" id="flNone" hidden><strong>No buses yet</strong>Add a vehicle with class Bus under Masters › Vehicle.</div>
-      <div id="flBody" style="display:flex;flex-direction:column;gap:16px">
-        <section class="summary tsum" id="flSummary" aria-label="Fuel summary"></section>
-        <section class="panel"><div class="sechead"><h2 class="sec" id="flListTitle">Fills</h2><button class="btn csvbtn" type="button" id="flCsv">Download CSV</button></div>
-          <div class="tscroll" style="margin-top:10px"><table class="ctable" id="flList"></table></div></section>
-      </div>
-    </section>
 
     <section class="wrap twrap" id="view-ttruck" hidden>
       <header class="top">
@@ -3283,7 +3253,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="field"><label for="flDate">Date</label><input id="flDate" type="date"><span class="err" id="e-flDate"></span></div>
         <div class="field"><label for="flBus">Bus</label><select id="flBus"></select><span class="err" id="e-flBus"></span></div>
       </div>
-      <div class="field" id="flBkF" hidden><label for="flBk">Booking <span class="sub" style="font-weight:400" id="flBkOpt">(optional)</span></label><select id="flBk"></select><input id="flBkRo" readonly tabindex="-1" class="dsum" hidden aria-label="Booking"><span class="hint" id="flBkHint">Spare bus: link the fill to the hire it was for.</span></div>
+      <div class="field" id="flBkF" hidden><label for="flBkRo">Booking</label><select id="flBk" hidden></select><input id="flBkRo" readonly tabindex="-1" class="dsum"><span class="hint">Entered from this booking's trip sheet.</span></div>
       <div class="two">
         <div class="field"><label for="flDriver">Driver</label><select id="flDriver"></select></div>
         <div class="field"><label for="flBunk">Fuel station</label><input id="flBunk" list="flBunks" autocomplete="off" maxlength="80" placeholder="e.g. IOCL, Katpadi"><datalist id="flBunks"></datalist></div>
@@ -3405,7 +3375,6 @@ const MODULES = [
   { id: "trips", name: "Trip sheet", abbr: "TS", levels: ["none", "view", "update", "edit"] },
   { id: "bookings", name: "Booking planner", abbr: "BP", levels: ["none", "view", "request", "edit"] },
   { id: "tripsheets", name: "Spare bus trip sheet", abbr: "ST", levels: ["none", "view", "update", "edit"] },
-  { id: "fuel", name: "Fuel log", abbr: "FL" },
   { id: "expenses", name: "Expenses", abbr: "EX" },
   { id: "maintenance", name: "Maintenance", abbr: "MT", levels: ["none", "view", "update", "edit"], lab: { update: "Add entries" } },
   { id: "users", name: "User master", abbr: "UM" }
@@ -3413,20 +3382,20 @@ const MODULES = [
 const LEVELS = { none: "No access", view: "View", request: "Add for approval", update: "Fill & submit", edit: "Edit" };
 const levelsOf = m => m.levels || ["none", "view", "edit"];
 const ROLES = {
-  "Admin":         { dashboard: "view", vehicles: "edit", drivers: "edit", conductors: "edit", trips: "edit", bookings: "edit", tripsheets: "edit", fuel: "edit", expenses: "edit", maintenance: "edit", users: "edit" },
-  "Fleet manager": { dashboard: "view", vehicles: "edit", drivers: "edit", conductors: "edit", trips: "edit", bookings: "view", tripsheets: "view", fuel: "edit", expenses: "edit", maintenance: "edit", users: "none" },
-  "Operator":      { dashboard: "view", vehicles: "view", drivers: "view", conductors: "view", trips: "edit", bookings: "none", tripsheets: "none", fuel: "edit", expenses: "none", maintenance: "edit", users: "none" },
-  "Viewer":        { dashboard: "view", vehicles: "view", drivers: "view", conductors: "view", trips: "view", bookings: "view", tripsheets: "view", fuel: "view", expenses: "view", maintenance: "view", users: "none" },
+  "Admin":         { dashboard: "view", vehicles: "edit", drivers: "edit", conductors: "edit", trips: "edit", bookings: "edit", tripsheets: "edit", expenses: "edit", maintenance: "edit", users: "edit" },
+  "Fleet manager": { dashboard: "view", vehicles: "edit", drivers: "edit", conductors: "edit", trips: "edit", bookings: "view", tripsheets: "view", expenses: "edit", maintenance: "edit", users: "none" },
+  "Operator":      { dashboard: "view", vehicles: "view", drivers: "view", conductors: "view", trips: "edit", bookings: "none", tripsheets: "none", expenses: "none", maintenance: "edit", users: "none" },
+  "Viewer":        { dashboard: "view", vehicles: "view", drivers: "view", conductors: "view", trips: "view", bookings: "view", tripsheets: "view", expenses: "view", maintenance: "view", users: "none" },
   // The booking planner only adds new bookings; each one goes to an admin for approval. It sees nothing else.
-  "Booking planner": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "none", fuel: "none", expenses: "none", maintenance: "none", users: "none" },
+  "Booking planner": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "none", expenses: "none", maintenance: "none", users: "none" },
   // Trip update fills in the spare bus trip sheet once the trip is over and sends it to an admin for approval.
-  "Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "update", fuel: "none", expenses: "none", maintenance: "none", users: "none" },
+  "Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "update", expenses: "none", maintenance: "none", users: "none" },
   // Both jobs: adds bookings for approval, and fills in the trip sheet from the day before the trip starts.
   // Conductor: fills in the route bus trip sheet of his bus each day and sends it to an admin for approval. Nothing else.
-  "Conductor": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "update", bookings: "none", tripsheets: "none", fuel: "none", expenses: "none", maintenance: "none", users: "none" },
+  "Conductor": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "update", bookings: "none", tripsheets: "none", expenses: "none", maintenance: "none", users: "none" },
   // Maintenance entry: adds what was done to a vehicle (km, date, jobs) and sees the maintenance summary. Nothing else.
-  "Maintenance entry": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "none", fuel: "none", expenses: "none", maintenance: "update", users: "none" },
-  "Booking planner + Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "update", fuel: "none", expenses: "none", maintenance: "none", users: "none" },
+  "Maintenance entry": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "none", expenses: "none", maintenance: "update", users: "none" },
+  "Booking planner + Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "update", expenses: "none", maintenance: "none", users: "none" },
 };
 const fullAccess = () => ({ ...ROLES.Admin });
 const noAccess = () => Object.fromEntries(MODULES.map(m => [m.id, "none"]));
@@ -3680,16 +3649,18 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", tfuel: "fuel", trexp: "trips", tpadi: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "fuel": "tfuel", "trips-spare": "tspare", "trips-truck": "ttruck", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
   // Someone without the dashboard (the booking office, say) lands on the first application they can use.
-  if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tfuel", "fuel"], ["tmaint", "maintenance"], ["texp", "expenses"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
+  if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tmaint", "maintenance"], ["texp", "expenses"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
   // A conductor (route trip sheet: fill & submit) only has his own day sheet.
   if (acc.trips === "update" && ["thub", "trips", "tday", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
+  // Trip sheet with only the spare bus trip sheets: open them directly.
+  if (want === "thub" && acc.trips === "none" && acc.tripsheets && acc.tripsheets !== "none") want = "ttsheet";
   // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
   if (want === "tday" && matchMedia("(max-width: 700px)").matches) want = "trsheet";
   if (want === "trexp" && view !== "trexp") { rxOpen = ""; rxAdding = false; }
@@ -3697,10 +3668,10 @@ function showView() {
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "tfuel", "trexp", "tpadi", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = ["texp", "tmaint", "tmsum"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" ? "rsheet" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "ttsheet" ? "tsheets" : want === "tfuel" ? "fuel" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = ["texp", "tmaint", "tmsum"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
-  if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets" || VIEW_MOD[view] === "fuel") { if (view === "tday") dbFilledKey = ""; renderOps(); }
+  if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
   if (view === "tutil") renderUpload();
@@ -3754,15 +3725,12 @@ function applyAccess() {
   $("navGuide").hidden = acc.bookings === "none" && acc.tripsheets === "none";
   $("navStorage").hidden = acc.users !== "edit";
   $("navAudit").hidden = acc.users !== "edit"; $("navUtil").hidden = acc.users !== "edit";  // Utility: admin only
-  $("navTs").hidden = !acc.tripsheets || acc.tripsheets === "none";
   canTsUpd = platformWrite && (acc.tripsheets === "update" || acc.tripsheets === "edit");
-  canFuel = platformWrite && acc.fuel === "edit";
   canCloseTrips = platformWrite && acc.users === "edit";  // closing and reopening trips: admin only, until it gets a role of its own
   if (typeof updApprBadge === "function" && $("apprBadge")) updApprBadge();
   const roTrips = acc.trips === "view" || (acc.trips === "edit" && !platformWrite);
   $("tRoBanner").hidden = !roTrips; $("tRoTag").hidden = !roTrips;
-  document.querySelectorAll(".paths li[data-mod]").forEach(li => li.hidden = acc[li.dataset.mod] === "none" || (li.dataset.mod === "trips" && acc.trips === "update"));
-  $("navRs").hidden = acc.trips !== "update" && acc.trips !== "edit";
+  document.querySelectorAll(".paths li[data-mod]").forEach(li => li.hidden = li.dataset.mod === "trips" ? acc.trips === "none" && (acc.tripsheets || "none") === "none" : acc[li.dataset.mod] === "none");
   document.querySelectorAll(".paths .group").forEach(g => g.hidden = ![...g.querySelectorAll("li")].some(li => !li.hidden));
   const nm = rec?.name || me?.name || "";
   $("who").textContent = nm ? `${nm} · ${label}` : label;
@@ -5473,7 +5441,7 @@ async function saveRoute(a, b) {
   try { localStorage.setItem(TYLS, JSON.stringify(tripYearsLocal)); } catch {}
   loadLocalTrips(); renderTrips();
 }
-let trips = [], tripMonths = [], tripsLocal = [], tripMonthsLocal = [], canTrips = true, canBookings = true, canBookReq = true, canTsUpd = true, canRsUpd = true, canFuel = true, canCloseTrips = true;
+let trips = [], tripMonths = [], tripsLocal = [], tripMonthsLocal = [], canTrips = true, canBookings = true, canBookReq = true, canTsUpd = true, canRsUpd = true, canCloseTrips = true;
 let tBusId = "", tFyStart = 0, tMonthIdx = 0, tSubKey = "";
 const TLS = "fleet-trips.v1", TMLS = "fleet-tripmonths.v1";
 const MONTHS = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
@@ -5650,9 +5618,10 @@ function meCrewOpts(kind, val) {
   return `<option value="">—</option>` + opts.map(([v, n]) => `<option value="${esc(v)}"${v === val ? " selected" : ""}>${esc(n)}</option>`).join("");
 }
 function renderMonthEntry(ym, M) {
-  $("tTableWrap").hidden = tView !== "table"; $("tCal").hidden = tView !== "cal";
+  $("tTableWrap").hidden = tView !== "table"; $("tCal").hidden = tView !== "cal"; $("tRsDays").hidden = tView !== "month";
   meSaveBar();
   if (tView === "cal") { renderMeCal(ym); return; }
+  if (tView === "month") { $("tRsDays").innerHTML = rsDaysHtml(tBusId, ym, rsSrc(tBusId, ym)) + (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : ""); return; }
   if ($("tRows").contains(document.activeElement)) { meWaiting = true; return; }  // don't redraw under someone typing
   const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(k === "start" ? r.auto[k] ?? r.f[k] ?? "" : blank0(r.auto[k] ?? r.f[k]))}" aria-label="${k}"${extra}${ro}>`;
   // Columns in the order of the office sheet: Date, Starting, Day, crew, diesel, padi, S1–S5, Collection, Expense, Balance, Total Balance, KMS.
@@ -5771,7 +5740,7 @@ function renderMeCal(ym) {
 /* render */
 function renderTrips() {
   if (!$("tRows")) return;
-  if (typeof renderOps === "function" && $("oCards") && (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets" || VIEW_MOD[view] === "fuel") && view !== "trips") renderOps();
+  if (typeof renderOps === "function" && $("oCards") && (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") && view !== "trips") renderOps();
   const buses = routeBuses();
   const keep = tBusId && buses.some(b => b.id === tBusId) ? tBusId : (buses[0]?.id || "");
   $("tBus").innerHTML = buses.map(b => `<option value="${b.id}">${esc(b.plateNo || vName(b))} · ${esc(vName(b))}</option>`).join("");
@@ -6338,12 +6307,12 @@ const mtItemName = it => `${mtType(it.k).name}${it.pos ? ` · ${mtPosName(it.pos
 const mtGapsDoc = () => ops.maintTypes.find(x => x.id === "gaps") || {};
 function mtGap(key, k) { const d = mtGapsDoc(), b = d.bus?.[key]?.[k], g = d.gaps?.[k]; return num(b) || num(g) || (g === 0 ? 0 : mtType(k).gap || 0); }
 
-// The latest km reading known for a vehicle (maintenance, fuel log, trip sheets, bookings) and its km per day.
+// The latest km reading known for a vehicle (maintenance, diesel fills, trip sheets, bookings) and its km per day.
 function mtNow(key) {
   const v = mtVehOf(key), pts = [];
   ops.maintLog.filter(x => mtKeyOf(x) === key && num(x.km)).forEach(x => pts.push([x.date, num(x.km), "maintenance"]));
   if (v) {
-    ops.fuelLog.filter(f => f.vehicleId === v.id && num(f.odo)).forEach(f => pts.push([f.date, num(f.odo), "fuel log"]));
+    ops.fuelLog.filter(f => f.vehicleId === v.id && num(f.odo)).forEach(f => pts.push([f.date, num(f.odo), "diesel fill"]));
     [...trips, ...dayTrips, ...tripsLocal].filter(t => t.vehicleId === v.id && num(t.odo)).forEach(t => pts.push([t.date, num(t.odo), "trip sheet"]));
     ops.bookings.filter(b => b.vehicleId === v.id && num(b.endKm)).forEach(b => pts.push([bkEnd(b), num(b.endKm), "trip sheet"]));
   }
@@ -8084,7 +8053,7 @@ function renderApprovals() {
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
 const AU_PAGE = { trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Route bus day sheet", tspare: "Booking planner",
-  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", tfuel: "Fuel log", trexp: "Route expenses", tpadi: "Padi calculation", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
+  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", trexp: "Route expenses", tpadi: "Padi calculation", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
   if (!auditDb || !auditSess) return;
@@ -8100,7 +8069,7 @@ async function auDownloads() {
 }
 const AUDIT_SKIP = /History$|^audit|^appMeta$/;
 const AUDIT_MOD = { vehicles: "Vehicle", drivers: "Driver", conductors: "Conductor", appUsers: "User master", accessRequests: "User master", trips: "Trip sheet", tripMonths: "Trip sheet", tripYears: "Trip sheet",
-  truckTrips: "Truck trips", truckRounds: "Truck trips", bookings: "Bookings", fuelLog: "Fuel log" };
+  truckTrips: "Truck trips", truckRounds: "Truck trips", bookings: "Bookings", fuelLog: "Spare bus diesel" };
 const AUDIT_THING = { vehicles: "Vehicle", drivers: "Driver", conductors: "Conductor", appUsers: "User", accessRequests: "Access request", trips: "Route trip sheet", tripMonths: "Route month sheet", tripYears: "Route year sheet",
   truckTrips: "Truck trip", truckRounds: "Truck round trip", bookings: "Booking", fuelLog: "Fuel fill" };
 function auditFind(c, id) {
@@ -8285,7 +8254,7 @@ const stAreas = () => [
   ["appUsers", "Users", "fleet-users.v1"], ["accessRequests", "Access requests", ""],
   ["trips", "Route bus trip sheets (daily)", TLS], ["tripMonths", "Route bus monthly sheets", TMLS], ["tripYears", "Route bus yearly sheets", TYLS],
   ["bookings", "Spare bus bookings", OPS_LS.bookings], ["bookingHistory", "Booking change history", BHLS],
-  ["truckTrips", "Truck trips", OPS_LS.truckTrips], ["truckRounds", "Truck rounds", OPS_LS.truckRounds], ["fuelLog", "Fuel log", OPS_LS.fuelLog], ["routeExpenses", "Route expenses (by starting place)", OPS_LS.routeExpenses], ["padiSlabs", "Padi calculation rules", OPS_LS.padiSlabs], ["auditSessions", "Sign-in records", ""], ["auditLog", "Activity log", ""],
+  ["truckTrips", "Truck trips", OPS_LS.truckTrips], ["truckRounds", "Truck rounds", OPS_LS.truckRounds], ["fuelLog", "Spare bus diesel fills", OPS_LS.fuelLog], ["routeExpenses", "Route expenses (by starting place)", OPS_LS.routeExpenses], ["padiSlabs", "Padi calculation rules", OPS_LS.padiSlabs], ["auditSessions", "Sign-in records", ""], ["auditLog", "Activity log", ""],
   ["appMeta", "App settings", ""]
 ];
 let stData = null, stBusy = false;
@@ -9088,11 +9057,17 @@ function renderRsList() {
   if (!rsh && opDate !== today) { opDate = today; subscribeDay(); }
   const cur = today.slice(0, 7), ym = canTrips && rsYm && rsYm <= cur ? rsYm : cur, src = rsSrc(bus, ym);
   $("rsMonthBtn").dataset.ym = ym;
+  $("rsHome").innerHTML = `<div class="rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
+    `</div>` + (canTrips ? rsMonthHtml(bus, ym, src) : "") + rsDaysHtml(bus, ym, src) +
+    (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
+}
+// The days of a month as cards, latest first (the phone page, and Month view on the computer's Route bus screen).
+function rsDaysHtml(bus, ym, src) {
+  const today = todayISO(), cur = today.slice(0, 7);
+  if (ym > cur) return `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><p class="sub" style="margin:8px 0 0">This month has not started yet.</p></section>`;
   const chip = S => `<span class="bstage ${S.cls}">${S.label}</span>`, lastDay = ym === cur ? today : `${ym}-${pad2(daysIn(ym))}`;
   const days = [...Array(+lastDay.slice(8, 10))].map((_, i) => shiftDay(lastDay, -i));
-  $("rsHome").innerHTML = `<div class="rshome"><div class="rsbus"><span class="plate psv">${esc(plateOf(v))}</span>${rb.length > 1 ? `<select id="rsBusSel" aria-label="Bus">${rb.map(b => `<option value="${b.id}"${b.id === bus ? " selected" : ""}>${esc(plateOf(b))}</option>`).join("")}</select>` : ""}</div>` +
-    `</div>` + (canTrips ? rsMonthHtml(bus, ym, src) : "") +
-    `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><div class="rsdays">` +
+  return `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><div class="rsdays">` +
     days.map(day => { const S = rsDayState(bus, day, src), T = S.t || (S.x && rsTripFrom(S.x)), km = rsDayKm(bus, day, T, src), lit = num(T?.litres);
       const f = (k, v, cls = "") => `<span${cls ? ` class="${cls}"` : ""}><i>${k}</i>${v}</span>`;
       // A day that ran is green, a loss red, a part day yellow. Days in the trip sheet need no tag; who sent or entered them is in the sheet itself.
@@ -9104,8 +9079,7 @@ function renderRsList() {
           `${f("Kms", km != null ? nf(km) : "—")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
           `<span class="rsdc">${f("Driver", esc(crewName("driver", T) || "—"))}${f("Conductor", esc(crewName("conductor", T) || "—"))}</span>` : "") +
         `${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
-    `</div></section>` +
-    (canTrips ? `<section class="panel"><h2 class="sec">Sheets waiting for approval</h2>${rsWaitHtml()}</section>` : "");
+    `</div></section>`;
 }
 const rsWaiting = () => ops.routeSheets.filter(x => x.status === "submitted").sort((a, b) => String(a.submittedOn || "").localeCompare(String(b.submittedOn || "")));
 function rsWaitHtml() {
@@ -9117,10 +9091,11 @@ function rsWaitHtml() {
     : `<p class="sub" style="margin:8px 0 0">Nothing waiting. Sheets sent by conductors appear here.</p>`;
 }
 document.addEventListener("click", e => {
-  const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) {
+  const o = e.target.closest("[data-rsopen]"); if (o && ($("rsHome")?.contains(o) || $("tRsDays")?.contains(o))) {
     // On a computer the day opens in the Day sheet; Close there comes back to these cards.
-    if (bwIsPhone()) rsOpen(rsBus, o.dataset.rsopen);
-    else { dbFrom = { hash: location.hash, y: scrollY }; dbBus = rsBus; opDate = o.dataset.rsopen; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; }
+    const bus = $("tRsDays")?.contains(o) ? tBusId : rsBus;
+    if (bwIsPhone()) rsOpen(bus, o.dataset.rsopen);
+    else { dbFrom = { hash: location.hash, y: scrollY }; dbBus = bus; opDate = o.dataset.rsopen; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; }
     return; }
   const ny = e.target.closest("[data-rsym]"); if (ny && $("rsHome")?.contains(ny)) { rsYm = ny.dataset.rsym; renderRsList(); scrollTo(0, 0); return; }
   // The monthly screen opens on the bus and month being viewed.
@@ -9336,7 +9311,6 @@ function renderOps() {
   if (view === "tappr") { renderApprovals(); return; }
   if (view === "trep") { renderBkReports(); return; }
   if (view === "ttsheet") { renderTsList(); return; }
-  if (view === "tfuel") { renderFuel(); return; }
   if (view === "trexp") { renderRxp(); return; }
   if (view === "tpadi") { renderPadi(); return; }
   if (view === "tutil") { renderUpload(); return; }
@@ -9355,7 +9329,6 @@ function renderOps() {
 const ICONS = {
   route: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16M8 21v-4M16 21v-4"/><circle cx="8" cy="14" r=".6"/><circle cx="16" cy="14" r=".6"/></svg>',
   spare: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16M8 21v-4M16 21v-4"/><path d="M9 7h6"/></svg>',
-  omni: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 16V9a2 2 0 0 1 2-2h11l4 4v5h-2"/><circle cx="7" cy="17" r="2"/><circle cx="16" cy="17" r="2"/><path d="M9 17h5M3 11h17"/></svg>',
   truck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>'
 };
 function renderHub() {
@@ -9372,8 +9345,10 @@ function renderHub() {
       <div class="oc-big">${ready ? rb.length - pend.length : "…"}<small>/ ${rb.length}</small></div><p class="oc-cap">entered for ${day}</p>
       <div>${!rb.length ? '<span class="pill off">No route buses</span>' : !ready ? "" : pend.length ? `<span class="pill d30">${pend.length} still to enter</span>` : '<span class="pill ok">All entered</span>'}</div>
       <span class="oc-go">Open ›</span></a>
-    <article class="ocard soon"><div class="oc-top">${ICONS.omni}<div><h3>Omni bus</h3><div class="oc-kind">Format to be added</div></div></div>
-      <p class="oc-cap" style="margin-top:12px">Share your Omni bus sheet and it will get its own format here.</p></article>
+    ${acc.tripsheets && acc.tripsheets !== "none" ? (() => { const L = tsLists(), todo = L.back.length + L.fill.length; return `<a class="ocard oclink" href="#trip-sheets" aria-label="Open Spare bus trip sheets"><div class="oc-top">${ICONS.spare}<div><h3>Spare bus</h3><div class="oc-kind">One trip sheet for each booking</div></div></div>
+      <div class="oc-big">${todo}<small>to fill</small></div><p class="oc-cap">${L.sent.length} waiting for approval</p>
+      <div>${L.back.length ? `<span class="pill d30">${L.back.length} sent back</span>` : todo ? `<span class="pill d30">${todo} trip sheet${todo === 1 ? "" : "s"} to fill</span>` : '<span class="pill ok">Nothing to fill</span>'}</div>
+      <span class="oc-go">Open ›</span></a>`; })() : ""}
     <article class="ocard"><div class="oc-top">${ICONS.truck}<div><h3>Trucks</h3><div class="oc-kind">Per load, grouped into round trips</div></div></div>
       <div class="oc-big">${tl.length}<small>trip${tl.length === 1 ? "" : "s"}</small></div><p class="oc-cap">in ${mLabel} · ${rs(tl.reduce((a, l) => a + num(l.rent), 0))} freight</p>
       <div>${openR.length ? `<span class="pill d30">${openR.length} round trip${openR.length === 1 ? "" : "s"} not settled</span>` : `<span class="pill off">${tk.length} truck${tk.length === 1 ? "" : "s"}</span>`}</div>
@@ -9692,7 +9667,8 @@ var dbFrom = null;
 addEventListener("hashchange", () => { if (dbFrom && location.hash !== "#trips-day" && location.hash !== dbFrom.hash) dbFrom = null; });
 $("dbClose").onclick = () => {
   const go = () => { dbDirty = false; $("dbDirty").hidden = true;
-    if (dbFrom) { const f = dbFrom; dbFrom = null; rsBus = dbBus; rsYm = opDate.slice(0, 7); location.hash = f.hash; setTimeout(() => scrollTo(0, f.y), 60); return; } tBusId = dbBus; tFyStart = fyOf(opDate); if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
+    const f = dbFrom; dbFrom = null; if (f) [60, 300, 900].forEach(ms => setTimeout(() => scrollTo(0, f.y), ms));
+    if (f && f.hash !== "#trips-route") { rsBus = dbBus; rsYm = opDate.slice(0, 7); location.hash = f.hash; return; } tBusId = dbBus; tFyStart = fyOf(opDate); if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
   if (dbDirty && canTrips) askYesNo("You have unsaved changes for this day. Close without saving?", { yes: "Close without saving", no: "Stay", danger: true }).then(ok => ok && go()); else go();
 };
 $("dbDelete").onclick = async () => {
@@ -10428,7 +10404,7 @@ async function bwSave(asDraft) {
 
 /* ---------- Trip sheet on phones: the whole sheet on one page ----------
    Like the paper trip sheet: driver and cleaner with their padi, then toll and permit, diesel lines, other expenses and km.
-   Everything saves by itself a moment after typing (to the booking; each diesel line to the Fuel log against the booking).
+   Everything saves by itself a moment after typing (to the booking; each diesel line as a diesel fill against the booking).
    Send to office shows the summary first and is saved through the booking's own trip sheet, so drafts, sending for
    approval and history work as before. */
 let tw = null;
@@ -10690,13 +10666,13 @@ async function twSaveBooking() {
     if (tw) twSaveState("✓ Saved");
   } catch { if (tw) { twSaveState("Not saved. Check the signal; it will try again."); twSoon("bk", twSaveBooking, 8000); } }
 }
-// A diesel line goes into the Fuel log against this booking once the litres are filled in; its amount (when entered) is our expense.
+// A diesel line is saved as a diesel fill against this booking once the litres are filled in; its amount (when entered) is our expense.
 async function twSaveRow(i) {
   const b = twBk(), r = tw?.rows?.[i]; if (!b || !r || !tw.edit) return;
   const litres = Math.round(num(r.litres) * 100) / 100, amount = Math.round(num(r.amount) * 100) / 100;
   if (!(litres > 0)) { twSaveState("✓ Saved"); return; }
   const prev = r.id ? ops.fuelLog.find(x => x.id === r.id) : null, t = todayISO();
-  const rate = amount > 0 ? Math.round(amount / litres * 100) / 100 : 0, pay = r.pay || "Cash", bunk = String(r.place || "").trim().replace(/\s+/g, " ");  // the Fuel log keeps the rate per litre
+  const rate = amount > 0 ? Math.round(amount / litres * 100) / 100 : 0, pay = r.pay || "Cash", bunk = String(r.place || "").trim().replace(/\s+/g, " ");  // the fill keeps the rate per litre
   if (prev && num(prev.litres) === litres && num(prev.amount || 0) === amount && num(prev.rate || 0) === rate && (prev.pay || "Cash") === pay && (prev.bunk || "") === bunk && JSON.stringify(prev.file || null) === JSON.stringify(r.file || null)) { twSaveState("✓ Saved"); return; }
   const f = { ...(prev || {}), id: prev?.id || r.id || genId("fl"), date: prev?.date || (t < b.from ? b.from : t > bkEnd(b) ? bkEnd(b) : t), vehicleId: b.vehicleId, pay, litres, bookingId: b.id, bookingNo: b.no || "" };
   if (amount > 0) f.amount = amount; else delete f.amount;
@@ -11426,9 +11402,9 @@ $("remList").addEventListener("click", e => {
 });
 $("remList").addEventListener("keydown", e => { const nm = e.target.closest("[data-bk]"); if (nm && e.key === "Enter") openBooking(nm.dataset.bk); });
 
-/* ---------- fuel log (buses) ---------- */
-// One record per diesel fill in "fuelLog". Km per litre for a fill = km since the bus's previous fill ÷ litres of this fill.
-let flMonth = todayISO().slice(0, 7), flBus = "", flEditId = null, flAmtTouched = false, flPending = null, flCtx = null;
+/* ---------- diesel fill of a spare bus trip sheet ---------- */
+// Each diesel line of a spare bus trip sheet is one record in "fuelLog", linked to the booking. Km per litre = km since the bus's previous fill ÷ litres.
+let flEditId = null, flAmtTouched = false, flPending = null, flCtx = null;
 const fuelBuses = () => vehicles.filter(v => v.type === "Bus" && v.status !== "Sold / Scrapped").sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo)));
 const flSorted = vid => ops.fuelLog.filter(f => f.vehicleId === vid).sort((a, b) => String(a.date).localeCompare(String(b.date)) || num(a.odo) - num(b.odo) || String(a.id).localeCompare(String(b.id)));
 function flPrevOf(f) {
@@ -11439,42 +11415,14 @@ function flCalcOf(f) {
   const p = f.odo ? flPrevOf(f) : null, km = p && num(f.odo) > num(p.odo) ? num(f.odo) - num(p.odo) : 0;
   return { prev: p, km, kmpl: km && num(f.litres) ? km / num(f.litres) : 0 };
 }
-function renderFuel() {
-  const buses = fuelBuses();
-  $("flNone").hidden = !!buses.length; $("flBody").hidden = !buses.length; $("flAdd").hidden = !canFuel || !buses.length; $("flRoTag").hidden = canFuel;
-  $("flBusF").innerHTML = `<option value="">All buses</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))}</option>`).join(""); $("flBusF").value = flBus;
-  $("flMonth").textContent = new Date(flMonth + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-  if (!buses.length) return;
-  const list = ops.fuelLog.filter(f => (f.date || "").startsWith(flMonth) && (!flBus || f.vehicleId === flBus)).sort((a, b) => String(b.date).localeCompare(String(a.date)) || num(b.odo) - num(a.odo));
-  const rows = list.map(f => ({ f, c: flCalcOf(f) }));
-  const lit = list.reduce((a, f) => a + num(f.litres), 0), amt = list.reduce((a, f) => a + num(f.amount), 0);
-  const cash = list.filter(f => f.pay !== "Fuel card").reduce((a, f) => a + num(f.amount), 0), card = amt - cash;
-  const kmRows = rows.filter(r => r.c.km), km = kmRows.reduce((a, r) => a + r.c.km, 0), kmLit = kmRows.reduce((a, r) => a + num(r.f.litres), 0);
-  $("flSummary").innerHTML = ostat("Fills", list.length, flBus ? plateOf(vehicles.find(v => v.id === flBus)) : `${new Set(list.map(f => f.vehicleId)).size} bus${new Set(list.map(f => f.vehicleId)).size === 1 ? "" : "es"}`) +
-    ostat("Diesel", `${nf(lit, 0)} L`, lit ? `Average ₹${nf(amt / lit, 2)} a litre` : "") + ostat("Amount", rs(amt), `Cash ${rs(cash)} · Fuel card ${rs(card)}`) +
-    ostat("Km run", km ? nf(km) : "—", "Between fills this month") + ostat("Km per litre", kmLit ? nf(km / kmLit, 2) : "—", kmLit ? "Average of fills with odometer" : "Enter odometer readings");
-  $("flListTitle").textContent = `Fills in ${new Date(flMonth + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long" })}${list.length ? ` (${list.length})` : ""}`;
-  $("flList").innerHTML = list.length ? `<thead><tr><th>Date</th><th>Bus</th><th>Driver</th><th>Fuel station</th><th class="n">Litres</th><th class="n">Rate</th><th class="n">Amount</th><th>Paid by</th><th>Bill no.</th><th class="n">Odometer</th><th class="n">Km since last</th><th class="n">Km / L</th><th>Booking</th><th>Remarks</th></tr></thead><tbody>` +
-    rows.map(({ f, c }) => { const drv = f.driverId ? drivers.find(d => d.id === f.driverId)?.name : f.driverName;
-      return `<tr data-fl="${f.id}" tabindex="0" style="cursor:pointer"><td class="num" style="white-space:nowrap">${fmtShort(f.date)}</td><td class="num" style="white-space:nowrap">${esc(plateOf(vehicles.find(v => v.id === f.vehicleId)))}</td><td>${esc(drv || "")}</td><td>${esc(f.bunk || "")}</td>
-        <td class="n">${nf(num(f.litres), 2)}</td><td class="n">${f.rate ? nf(num(f.rate), 2) : "—"}</td><td class="n">${nf(num(f.amount))}</td><td>${f.pay === "Fuel card" ? `Fuel card${f.card ? ` ··${esc(f.card)}` : ""}` : "Cash"}</td><td class="num">${esc(f.bill || "")}${f.file ? ` <a href="/_blob/${encodeURIComponent(f.file.id)}" target="_blank" rel="noopener" title="Bill photo" onclick="event.stopPropagation()">📎</a>` : ""}</td>
-        <td class="n">${f.odo ? nf(num(f.odo)) : "—"}</td><td class="n">${c.km ? nf(c.km) : "—"}</td><td class="n">${c.kmpl ? nf(c.kmpl, 2) : "—"}</td><td class="num">${f.bookingId ? `<span title="${esc(ops.bookings.find(b => b.id === f.bookingId)?.party || "")}">${esc(f.bookingNo || ops.bookings.find(b => b.id === f.bookingId)?.no || "")}</span>` : ""}</td><td>${esc(f.note || "")}</td></tr>`; }).join("") + "</tbody>"
-    : `<tbody><tr><td class="sub" style="padding:14px">No fills entered this month.${canFuel ? " Use + Add fill." : ""}</td></tr></tbody>`;
-}
-$("flPrev").onclick = () => { flMonth = ymAdd(flMonth, -1); renderFuel(); };
-$("flNext").onclick = () => { flMonth = ymAdd(flMonth, 1); renderFuel(); };
-$("flBusF").onchange = () => { flBus = $("flBusF").value; renderFuel(); };
-$("flAdd").onclick = () => openFlDrawer(null);
-$("flList").addEventListener("click", e => { const r = e.target.closest("tr[data-fl]"); if (r && !e.target.closest("a")) openFlDrawer(r.dataset.fl); });
-$("flList").addEventListener("keydown", e => { const r = e.target.closest("tr[data-fl]"); if (r && e.key === "Enter") openFlDrawer(r.dataset.fl); });
-// ctx.bookingId: opened from a spare bus trip sheet. The bus and booking are fixed; whoever may edit that trip sheet may enter the fill.
+// ctx.bookingId: the spare bus trip sheet it belongs to. The bus and booking are fixed; whoever may edit that trip sheet may enter the fill.
 function openFlDrawer(id, ctx) {
   const f = id ? ops.fuelLog.find(x => x.id === id) : null; flEditId = f?.id || null; flPending = f?.file || null;
   const bk = ctx?.bookingId ? ops.bookings.find(x => x.id === ctx.bookingId) : null; flCtx = bk ? { bookingId: bk.id } : null;
-  const buses = fuelBuses(), shut = tripClosed(ops.bookings.find(x => x.id === (f?.bookingId || bk?.id))), canE = (canFuel || (!!flCtx && bkTripEdit)) && !shut;
+  const buses = fuelBuses(), shut = tripClosed(ops.bookings.find(x => x.id === (f?.bookingId || bk?.id))), canE = !!flCtx && bkTripEdit && !shut;
   $("flTitle").textContent = f ? (canE ? "Edit fill" : shut ? "Fill · trip closed" : "Fill") : "Add fill";
   $("flBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))} · ${esc(vName(v))}</option>`).join("");
-  $("flBus").value = bk ? bk.vehicleId : f?.vehicleId || flBus || (buses.length === 1 ? buses[0].id : "");
+  $("flBus").value = bk ? bk.vehicleId : f?.vehicleId || "";
   $("flDriver").innerHTML = `<option value="">Choose the driver</option>` + crewOptions("driver", null, ops.fuelLog);
   $("flDriver").value = f ? crewValue("driver", f) : bk ? crewValue("driver", bk) : "";
   $("flBunks").innerHTML = [...new Set(ops.fuelLog.map(x => x.bunk).filter(Boolean))].sort().map(b => `<option value="${esc(b)}">`).join("");
@@ -11483,46 +11431,26 @@ function openFlDrawer(id, ctx) {
   $("flDate").value = f?.date || (bk ? (todayISO() < bk.from ? bk.from : todayISO() > bkEnd(bk) ? bkEnd(bk) : todayISO()) : todayISO()); $("flBunk").value = f?.bunk ?? last?.bunk ?? ""; $("flLitres").value = f?.litres ?? ""; $("flRate").value = f?.rate ?? last?.rate ?? "";
   $("flAmount").value = f?.amount ?? ""; $("flOdo").value = f?.odo ?? ""; $("flBill").value = f?.bill || ""; $("flNote").value = f?.note || ""; $("flCard").value = f?.card || "";
   const pay = f?.pay || last?.pay || "Cash"; document.querySelectorAll('input[name="flPay"]').forEach(r => r.checked = r.value === pay);
-  flBkOptions(f ? (f.bookingId || "") : flSuggestBk());
+  flBkOptions();
   flAmtTouched = !!f && num(f.amount) !== Math.round(num(f.litres) * num(f.rate) * 100) / 100;
   $("flForm").querySelectorAll("input, select").forEach(el => el.disabled = !canE);
-  if (flCtx) { $("flBus").disabled = true; $("flBk").disabled = true; }
+  $("flBus").disabled = true; $("flBk").disabled = true;
   $("flFileBtn").hidden = $("flCamBtn").hidden = !canE || !assetsCap; $("flSave").hidden = !canE; $("flDelete").hidden = !(f && canE);
   flFlCanE = canE; $("flDelete").textContent = "Delete"; delete $("flDelete").dataset.confirm;
   $("flForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("flForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
   syncFl();
   $("scrim").hidden = false; $("flDrawer").hidden = false;
-  setTimeout(() => (canE ? $(f ? "flLitres" : ($("flBus").value ? "flLitres" : "flBus")) : $("flClose")).focus(), 30);
+  setTimeout(() => (canE ? $("flLitres") : $("flClose")).focus(), 30);
 }
-// Spare buses: offer that bus's bookings, the ones around the fill date first; the one covering the date is suggested for a new fill.
 let flFlCanE = false;
-function flBkOptions(keep) {
-  const vid = $("flBus").value, bus = vehicles.find(v => v.id === vid), spare = bus?.opType === "Spare";
-  // Opened from a trip sheet: the booking is shown, and can't be changed or removed.
+// The booking the fill belongs to, shown and not changeable.
+function flBkOptions() {
   const fixed = flCtx ? ops.bookings.find(x => x.id === flCtx.bookingId) : null;
-  $("flBk").hidden = !!fixed; $("flBkRo").hidden = !fixed; $("flBkOpt").hidden = !!fixed;
-  $("flBkHint").textContent = fixed ? "Entered from this booking's trip sheet." : "Spare bus: link the fill to the hire it was for.";
-  if (fixed) {
-    $("flBkF").hidden = false;
-    $("flBk").innerHTML = `<option value="${fixed.id}">${esc(fixed.no || "")}</option>`; $("flBk").value = fixed.id;
-    $("flBkRo").value = `${fixed.no || ""} · ${fixed.party || "No party"} · ${fmtShort(fixed.from)}${bkEnd(fixed) !== fixed.from ? ` – ${fmtShort(bkEnd(fixed))}` : ""}`;
-    return;
-  }
-  $("flBkF").hidden = !spare;
-  if (!spare) { $("flBk").innerHTML = ""; return; }
-  const d = $("flDate").value || todayISO(), gap = b => b.from <= d && bkEnd(b) >= d ? 0 : Math.abs(dayDiff(b.from <= d ? bkEnd(b) : b.from, d));
-  const cur = keep ?? $("flBk").value;
-  // A closed trip takes no new fills.
-  const list = ops.bookings.filter(b => b.vehicleId === vid && b.from && (b.status === "booked" || b.status === "ontrip" || b.status === "completed") && (!tripClosed(b) || b.id === cur)).sort((a, c) => gap(a) - gap(c) || c.from.localeCompare(a.from)).slice(0, 40);
-  $("flBk").innerHTML = `<option value="">No booking</option>` + list.map(b => `<option value="${b.id}">${esc(b.no || "")} · ${esc(b.party || "No party")} · ${fmtShort(b.from)}${bkEnd(b) !== b.from ? ` – ${fmtShort(bkEnd(b))}` : ""}</option>`).join("");
-  $("flBk").value = list.some(b => b.id === cur) ? cur : "";
+  $("flBkF").hidden = !fixed; if (!fixed) return;
+  $("flBk").innerHTML = `<option value="${fixed.id}">${esc(fixed.no || "")}</option>`; $("flBk").value = fixed.id;
+  $("flBkRo").value = `${fixed.no || ""} · ${fixed.party || "No party"} · ${fmtShort(fixed.from)}${bkEnd(fixed) !== fixed.from ? ` – ${fmtShort(bkEnd(fixed))}` : ""}`;
 }
 function closeFlDrawer() { $("flDrawer").hidden = true; flEditId = null; flCtx = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
-function flSuggestBk() {
-  const vid = $("flBus").value, d = $("flDate").value;
-  const hit = ops.bookings.filter(b => b.vehicleId === vid && b.from && b.from <= d && bkEnd(b) >= d && (b.status === "booked" || b.status === "ontrip" || b.status === "completed"));
-  return hit.length === 1 ? hit[0].id : "";
-}
 function flRead() {
   const f = { date: $("flDate").value, vehicleId: $("flBus").value, pay: document.querySelector('input[name="flPay"]:checked')?.value || "Cash" };
   [["flLitres", "litres"], ["flRate", "rate"], ["flAmount", "amount"]].forEach(([el, k]) => { const v = $(el).value; if (v !== "" && +v >= 0) f[k] = Math.round(+v * 100) / 100; });
@@ -11532,7 +11460,7 @@ function flRead() {
   if (f.pay === "Fuel card" && tx("flCard")) f.card = tx("flCard").replace(/\D/g, "").slice(-4);
   const dv = $("flDriver").value; if (dv.startsWith("id:")) { f.driverId = dv.slice(3); f.driverName = drivers.find(d => d.id === f.driverId)?.name || ""; } else if (dv) f.driverName = dv.slice(5);
   if (flPending) f.file = flPending;
-  const bkId = flCtx ? flCtx.bookingId : (!$("flBkF").hidden && $("flBk").value);
+  const bkId = flCtx?.bookingId;
   if (bkId) { const bk = ops.bookings.find(b => b.id === bkId); if (bk) { f.bookingId = bk.id; f.bookingNo = bk.no || ""; } }
   return f;
 }
@@ -11548,11 +11476,7 @@ function syncFl() {
   $("flFileName").innerHTML = flPending ? `<a href="/_blob/${encodeURIComponent(flPending.id)}" target="_blank" rel="noopener">${esc(flPending.name)}</a> <button class="icon" type="button" id="flFileRm"${flFlCanE ? "" : " hidden"}>Remove</button>` : "";
 }
 $("flForm").addEventListener("input", e => { if (e.target.id === "flAmount") flAmtTouched = $("flAmount").value !== ""; syncFl(); });
-$("flForm").addEventListener("change", e => {
-  // A new bus or date brings up that bus's bookings again; for a new fill the booking covering the date is picked.
-  if (!flCtx && (e.target.id === "flBus" || e.target.id === "flDate")) flBkOptions(!flEditId ? flSuggestBk() : undefined);
-  syncFl();
-});
+$("flForm").addEventListener("change", syncFl);
 $("flForm").addEventListener("click", e => { if (e.target.id === "flFileRm") { flPending = null; syncFl(); } });
 const flUploadFile = async e => {
   const file = e.target.files[0]; e.target.value = ""; if (!file || !assetsCap) return;
@@ -11587,8 +11511,7 @@ $("flForm").addEventListener("submit", async e => {
   try {
     await opsSave("fuelLog", f);
     const i = ops.fuelLog.findIndex(x => x.id === f.id); i >= 0 ? ops.fuelLog[i] = f : ops.fuelLog.push(f);
-    const fromTrip = !!flCtx;
-    closeFlDrawer(); if (!fromTrip) flMonth = f.date.slice(0, 7);
+    closeFlDrawer();
     for (const bid of new Set([f.bookingId, prev?.bookingId].filter(Boolean))) await syncBookingDiesel(bid);
     if (!$("bkDrawer").hidden) { drawDsl(); syncBk(); }
     toast(`Fill saved · ${nf(f.litres, 2)} L · ${rs(f.amount)}`); renderOps();
@@ -11607,16 +11530,6 @@ $("flDelete").onclick = async () => {
   } catch { toast("Couldn't delete. Try again."); }
 };
 $("flClose").onclick = $("flCancel").onclick = closeFlDrawer;
-$("flCsv").onclick = async () => {
-  const list = ops.fuelLog.filter(f => (f.date || "").startsWith(flMonth) && (!flBus || f.vehicleId === flBus)).sort((a, b) => String(a.date).localeCompare(String(b.date)) || num(a.odo) - num(b.odo));
-  const q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v ?? "");
-  const head = ["Date", "Bus", "Driver", "Fuel station", "Litres", "Rate", "Amount", "Paid by", "Card", "Bill no.", "Odometer", "Km since last", "Km per litre", "Booking no.", "Party", "Remarks"];
-  const body = list.map(f => { const c = flCalcOf(f); return [f.date.split("-").reverse().join("-"), plateOf(vehicles.find(v => v.id === f.vehicleId)), f.driverId ? drivers.find(d => d.id === f.driverId)?.name || f.driverName : f.driverName || "", f.bunk || "", f.litres ?? "", f.rate ?? "", f.amount ?? "", f.pay || "Cash", f.card || "", f.bill || "", f.odo ?? "", c.km || "", c.kmpl ? c.kmpl.toFixed(2) : "", f.bookingNo || "", f.bookingId ? ops.bookings.find(b => b.id === f.bookingId)?.party || "" : "", f.note || ""]; });
-  const csv = "﻿" + [head, ...body].map(r => r.map(q).join(",")).join("\r\n");
-  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
-  if (!dl) { toast("Saving files isn't available in this view. Reload the page and try again."); return; }
-  try { await dl.save({ filename: `fuel-log-${flMonth}${flBus ? "-" + plateOf(vehicles.find(v => v.id === flBus)).replace(/\s+/g, "") : ""}.csv`, data: csv }); toast("Saved"); } catch (er) { if (er?.code !== "declined") toast("Couldn't save the file."); }
-};
 
 /* ---------- spare bus trip sheet workflow ---------- */
 // Trip update fills in the expenses and sends the trip sheet to an admin; a rejected one goes back to the same person.
@@ -11845,13 +11758,13 @@ function bkRead() {
   b.payments = [...$("bkPays").querySelectorAll(".payrow")].map(r => ({ date: r.querySelector("[data-pd]").value, amount: Math.round(num(r.querySelector("[data-pa]").value)), mode: r.querySelector("[data-pm]").value, note: r.querySelector("[data-pn]").value.trim() })).filter(p => p.amount > 0);
   return b;
 }
-/* Diesel on the spare bus trip sheet: every fill is entered in the Fuel log against the booking (+ Add diesel opens the same
+/* Diesel on the spare bus trip sheet: every fill is saved as a diesel fill against the booking (+ Add diesel opens the same
    Add fill window, with the bus and booking fixed). Litres and Fuel price are the totals of those fills. Lines typed on the
-   trip sheet before this (no fuel log record) are kept as they were. */
+   trip sheet before this (no diesel fill record) are kept as they were. */
 let bkLegacyDsl = [];
 const dslLinked = bid => bid ? ops.fuelLog.filter(f => f.bookingId === bid).sort((a, c) => String(a.date).localeCompare(String(c.date)) || num(a.odo) - num(c.odo)) : [];
 const flToDsl = f => ({ date: f.date, litres: f.litres, amount: f.amount, note: [f.bunk, f.bill ? `Bill ${f.bill}` : "", f.pay === "Fuel card" ? "Fuel card" : ""].filter(Boolean).join(" · "), fuelLogId: f.id });
-const dslLegacyOf = b => b?.diesel ? b.diesel.filter(r => !r.fuelLogId) : (b && (num(b.litres) || num(b.fuelCost)) ? [{ litres: b.litres, amount: b.fuelCost, note: "Entered before the fuel log" }] : []);
+const dslLegacyOf = b => b?.diesel ? b.diesel.filter(r => !r.fuelLogId) : (b && (num(b.litres) || num(b.fuelCost)) ? [{ litres: b.litres, amount: b.fuelCost, note: "Entered on the booking" }] : []);
 function renderDsl(b) { bkLegacyDsl = dslLegacyOf(b).map(r => ({ ...r })); drawDsl(); }
 function drawDsl() {
   const rows = [...bkLegacyDsl.map((r, i) => ({ ...r, legacy: i })), ...dslLinked(bkEditId).map(flToDsl)].sort((a, c) => String(a.date || "").localeCompare(String(c.date || "")));
@@ -11876,7 +11789,7 @@ $("bkDslBox").addEventListener("click", e => {
   const ed = e.target.closest("[data-dfl]"); if (ed) { openFlDrawer(ed.dataset.dfl, { bookingId: bkEditId }); return; }
   const rm = e.target.closest("[data-dlg]"); if (rm && bkTripEdit) { bkLegacyDsl.splice(+rm.dataset.dlg, 1); drawDsl(); syncBk(); }
 });
-// When a fill linked to a booking is saved or deleted (from the trip sheet or the Fuel log), the booking's diesel totals follow.
+// When a fill linked to a booking is saved or deleted, the booking's diesel totals follow.
 async function syncBookingDiesel(bid) {
   const b = ops.bookings.find(x => x.id === bid); if (!b || tripClosed(b)) return;
   const rows = [...dslLegacyOf(b), ...dslLinked(bid).map(flToDsl)];
@@ -11886,7 +11799,7 @@ async function syncBookingDiesel(bid) {
   if (amt) next.fuelCost = amt; else delete next.fuelCost;
   if (JSON.stringify(next.diesel) === JSON.stringify(b.diesel || null) && next.litres === b.litres && next.fuelCost === b.fuelCost) return;
   const c = bkCalc(next); next.expense = c.exp; next.profit = c.profit; next.balance = c.balance; next.due = c.due;
-  try { await opsSave("bookings", next); await addBHistory(bookingChanges(b, next, "Diesel fill in the fuel log")).catch(() => {}); } catch {}
+  try { await opsSave("bookings", next); await addBHistory(bookingChanges(b, next, "Diesel fill")).catch(() => {}); } catch {}
 }
 function syncBk() {
   syncPhoneActs();
