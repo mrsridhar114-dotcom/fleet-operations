@@ -441,7 +441,7 @@ table.metable { border-collapse: collapse; width: 100%; min-width: 1180px; font-
 .mesave { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin-top: 10px; box-shadow: 0 -4px 16px rgba(0, 0, 0, .06); } .mesave[hidden] { display: none; }
 .mecalg { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; } .mecalg .dow { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; }
 .mecd { min-height: 86px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 7px 9px; display: flex; flex-direction: column; align-items: stretch; gap: 2px; font: inherit; font-size: 12px; text-align: left; cursor: pointer; color: var(--ink); }
-.mecd .d { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; } .mecd .d small { font-weight: 500; font-size: 11px; color: var(--muted); } .mecd .c { font-family: var(--mono); } .mecd .b { font-family: var(--mono); color: var(--ok); font-size: 11px; } .mecd .l { font-size: 11px; font-weight: 600; }
+.mecd .d { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; } .mecd .d small { font-weight: 500; font-size: 11px; color: var(--muted); } .mecd .cf { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; line-height: 1.35; } .mecd .cf i { font-style: normal; color: var(--muted); white-space: nowrap; } .mecd .cf b { font: 600 11px var(--mono); text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .mecd .cf.crew b { font-family: var(--body); } .mecd .cf.bal b { font-size: 12.5px; color: var(--ok); } .mecd .cf.neg b { color: var(--danger); } .mecd .cf.bal { margin-bottom: 2px; } .mecd .l { font-size: 11px; font-weight: 600; }
 .mecd.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); } .mecd.part, .mecd.review { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); } .mecd.part .l, .mecd.review .l { color: var(--warn); }
 .mecd.idle { background: var(--bg); color: var(--muted); } .mecd.todo { border: 1.5px dashed color-mix(in srgb, var(--danger) 70%, var(--line)); } .mecd.todo .l { color: var(--danger); } .mecd.future { opacity: .45; cursor: default; }
 .mecd:hover:not(:disabled) { outline: 2px solid var(--accent); }
@@ -2055,7 +2055,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tcontrols">
           <div class="hf" id="tBusF"><label for="tBus">Bus</label><select id="tBus"></select></div>
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
-          <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="month"><span>Month view</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
+          <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="month"><span>Month view</span></label><label><input type="radio" name="tView" value="table"><span>Table</span></label><label><input type="radio" name="tView" value="cal"><span>Calendar</span></label></div>
           <button class="btn" type="button" id="tPrint" title="Monthly sheet in Excel">Print</button>
           <a class="btn primary" href="#trips-day" id="tDayLink">Day sheet</a>
           <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
@@ -5729,13 +5729,21 @@ async function meOpenDay(date) {
   if (bwIsPhone()) { rsOpen(tBusId, date); return; }
   dbBus = tBusId; opDate = date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day";
 }
+// The figures of a day that ran, the same as on its card in Month view.
+function meCalFigs(r) {
+  const T = r.t, col = tripCollection(T), bal = col - tripExpense(T), km = rsDayKm(tBusId, r.date, T, [...winTrips(), ...trips]), lit = num(T.litres);
+  const f = (k, v, cls = "") => `<span class="cf${cls ? " " + cls : ""}"><i>${k}</i><b>${v}</b></span>`;
+  return f("Balance", `${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}`, bal < 0 ? "neg bal" : "bal") + f("Collection", rs(col)) + f("Expense", rs(col - bal)) +
+    f("Kms", km != null ? nf(km) : "—") + f("Diesel", num(T.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—") +
+    f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—") + f("Driver", esc(crewName("driver", T) || "—"), "crew") + f("Conductor", esc(crewName("conductor", T) || "—"), "crew");
+}
 // Calendar: each day of the month with its state; a click opens the day sheet.
 function renderMeCal(ym) {
   const days = meDays(ym), first = (new Date(ym + "-01T00:00:00").getDay() + 6) % 7;
   $("tCal").innerHTML = `<div class="mecalg">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => `<span class="dow">${d}</span>`).join("")}${"<span></span>".repeat(first)}` +
     days.map(r => { const sh = rsDoc(tBusId, r.date), st = r.future ? "future" : r.idle ? "idle" : sh?.status === "submitted" ? "review" : !r.t ? "todo" : totalOnly(r.t) ? "part" : "ok";
       const lbl = { future: "", idle: `Did not run${r.t?.idleReason ? ` · ${r.t.idleReason}` : ""}`, review: "Conductor sent · to approve", todo: "Not entered", part: "Total only", ok: "" }[st];
-      return `<button type="button" class="mecd ${st}" data-open="${r.date}"${r.future ? " disabled" : ""}><span class="d">${r.d}<small>${r.t?.start || plannedStart(r.date) || ""}</small></span>${r.t && !r.idle ? `<span class="c">${rs(tripCollection(r.t))}</span><span class="b">Bal ${rs(tripCollection(r.t) - tripExpense(r.t))}</span>` : ""}${lbl ? `<span class="l">${esc(lbl)}</span>` : ""}</button>`; }).join("") + `</div>` +
+      return `<button type="button" class="mecd ${st}" data-open="${r.date}"${r.future ? " disabled" : ""}><span class="d">${r.d}<small>${r.t?.start || plannedStart(r.date) || ""}</small></span>${r.t && !r.idle ? meCalFigs(r) : ""}${lbl ? `<span class="l">${esc(lbl)}</span>` : ""}</button>`; }).join("") + `</div>` +
     `<p class="hint" style="margin:8px 0 0">Click a day to open its day sheet.</p>`;
 }
 
