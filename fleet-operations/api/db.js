@@ -2,13 +2,13 @@
 // in one table. Clients pull changes with "sync" (by version number) and write one document at a time.
 import { q } from "../lib/db.js";
 import { send, fail, who, readBody } from "../lib/http.js";
-import { canRead, canWrite, readScope } from "../lib/access.js";
+import { canRead, canWrite, readScope, ownOnly } from "../lib/access.js";
 
 const COLL = /^[A-Za-z0-9_]{1,64}$/, ID = /^[A-Za-z0-9_\-:.@]{1,200}$/;
 const OPEN = ["appUsers", "accessRequests"]; // what someone not yet approved may read
 const MAX_DOC = 256 * 1024;
 const KEEP_DAYS = 30; // deleted records can be restored for this long
-const ALL_COLLS = ["bookings", "bookingHistory", "auditLog", "auditSessions"]; // the ones canRead may hide
+const ALL_COLLS = ["bookings", "bookingHistory", "auditLog", "auditSessions", "expenses", "expenseReqs"]; // the ones canRead may hide
 
 // A diesel fill belongs to a closed trip when the booking it is linked to (before or after the change) is closed.
 async function fuelTripClosed(coll, prev, next) {
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       const rows = me.member
         ? await q(`select coll, id, data, deleted, ver from fleet_docs where ver > $1 and coll <> all($3::text[]) order by ver limit $2`, [since, limit, hidden])
         : await q(`select coll, id, data, deleted, ver from fleet_docs where ver > $1 and coll = any($3::text[]) order by ver limit $2`, [since, limit, OPEN]);
-      const out = rows.map(r => ({ c: r.coll, id: r.id, d: r.deleted ? null : r.data, v: Number(r.ver) }));
+      const out = rows.map(r => ({ c: r.coll, id: r.id, d: r.deleted || !ownOnly(me.access, r.coll, r.data, me) ? null : r.data, v: Number(r.ver) }));
       return send(res, 200, { rows: out, more: out.length === limit, ver: out.length ? out[out.length - 1].v : since, scope: me.member ? readScope(me.access) : "limited" });
     }
 
