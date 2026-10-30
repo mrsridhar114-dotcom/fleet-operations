@@ -2158,8 +2158,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                     <div class="dscrew"><label for="dbChecker">Checker</label><select id="dbChecker"></select><input id="dbPayK" type="number" inputmode="numeric" min="0" aria-label="Checker padi (₹)"><span class="hint" id="dbHowK"></span></div>
                     <p class="hint" id="dbPadiHint" style="margin:0"></p>
                   </section>
-                </div>
-                <div class="dscol">
                   <section class="dscard">
                     <h3 class="dsh">Diesel</h3>
                     <div class="dbgrid c3">
@@ -2169,6 +2167,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
                     </div>
                     <span class="hint">Amount is litres × rate unless you change it.</span>
                   </section>
+                </div>
+                <div class="dscol">
                   <section class="dscard">
                     <div class="dbxhead"><h3 class="dsh">Route expenses <small id="dbExpHint"></small><button type="button" class="padibtn" id="dbRxPop" aria-label="Route expenses list from the master" title="Route expenses list from the master"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button></h3>
                       <div class="seg" role="radiogroup" aria-label="Route expenses"><label><input type="radio" name="dbExpMode" id="dbXOther" value="other"><span>Rest as Other</span></label><label><input type="radio" name="dbExpMode" id="dbXList" value="list"><span id="dbXListL">Route list</span></label></div></div>
@@ -9477,7 +9477,7 @@ function fillDayForm() {
   $("dbStart").value = t ? (t.startFixed ? t.start : planned || t.start || "") : planned;
   const was = dbExpFrom(t); if (was) { dbExp = was.list; dbExpDef = was.def; } else { dbExp = []; dbExpDef = null; } renderDbExp();
   renderDbReview(t0);
-  $("dbNote").textContent = dbReviewSheet ? "" : t ? `Saved entry. Change anything and save to update it.` : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
+  $("dbNote").textContent = dbReviewSheet || t ? "" : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
   dbFuelTouched = !!t && num(t.fuelCost) !== Math.round(num(t.dieselRate) * num(t.litres));
   $("dbForm").querySelectorAll("input, select").forEach(el => { if (el.id !== "dbDate") el.disabled = !canTrips; });
   $("dbSave").hidden = !canTrips; $("dbDelete").hidden = !(canTrips && t0);
