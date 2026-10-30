@@ -1849,7 +1849,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="group">
         <h3>Operations</h3>
         <ul>
-          <li data-mod="trips"><a class="nav" href="#trips" data-view="trips">
+          <li data-mod="trips" id="navTrips"><a class="nav" href="#trips" data-view="trips">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"/></svg>
             Trip sheet<span class="badge" id="tsBadge" hidden></span></a></li>
           <li data-mod="expenses"><a class="nav" href="#expenses" data-view="texp">
@@ -3733,7 +3733,8 @@ function applyAccess() {
   if (typeof updApprBadge === "function" && $("apprBadge")) updApprBadge();
   const roTrips = acc.trips === "view" || (acc.trips === "edit" && !platformWrite);
   $("tRoBanner").hidden = !roTrips; $("tRoTag").hidden = !roTrips;
-  document.querySelectorAll(".paths li[data-mod]").forEach(li => li.hidden = li.dataset.mod === "trips" ? acc.trips === "none" && (acc.tripsheets || "none") === "none" : acc[li.dataset.mod] === "none");
+  // Trip sheet: route/truck trips, a conductor's own day sheets, or spare bus trip sheets. Route expenses and Padi calculation are for the office only.
+  document.querySelectorAll(".paths li[data-mod]").forEach(li => li.hidden = li.id === "navTrips" ? acc.trips === "none" && (acc.tripsheets || "none") === "none" : li.dataset.mod === "trips" ? acc.trips === "none" || acc.trips === "update" : acc[li.dataset.mod] === "none");
   document.querySelectorAll(".paths .group").forEach(g => g.hidden = ![...g.querySelectorAll("li")].some(li => !li.hidden));
   const nm = rec?.name || me?.name || "";
   $("who").textContent = nm ? `${nm} · ${label}` : label;
@@ -9107,7 +9108,8 @@ document.addEventListener("click", e => {
   const o = e.target.closest("[data-rsopen]"); if (o && ($("rsHome")?.contains(o) || $("tRsDays")?.contains(o))) {
     // On a computer the day opens in the Day sheet; Close there comes back to these cards.
     const bus = $("tRsDays")?.contains(o) ? tBusId : rsBus;
-    if (bwIsPhone()) rsOpen(bus, o.dataset.rsopen);
+    // A conductor fills his own sheet (the phone form, on any screen); the office uses the Day sheet on a computer.
+    if (bwIsPhone() || !canTrips) rsOpen(bus, o.dataset.rsopen);
     else { dbFrom = { hash: location.hash, y: scrollY }; dbBus = bus; opDate = o.dataset.rsopen; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; }
     return; }
   const ny = e.target.closest("[data-rsym]"); if (ny && $("rsHome")?.contains(ny)) { rsYm = ny.dataset.rsym; renderRsList(); scrollTo(0, 0); return; }
