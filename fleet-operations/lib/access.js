@@ -6,7 +6,7 @@ const VE = ["none", "view", "edit"];
 const LEVELS = {
   dashboard: ["none", "view"], vehicles: VE, drivers: VE, conductors: VE, trips: ["none", "view", "update", "edit"],
   bookings: ["none", "view", "request", "edit"], tripsheets: ["none", "view", "update", "edit"],
-  expenses: VE, maintenance: ["none", "view", "update", "edit"], users: VE
+  expenses: ["none", "view", "request", "edit"], maintenance: ["none", "view", "update", "edit"], users: VE
 };
 const FULL = Object.fromEntries(Object.entries(LEVELS).map(([m, l]) => [m, l.at(-1)]));
 
@@ -31,12 +31,14 @@ const MOD_OF = {
   routeExpenses: "trips", padiSlabs: "trips", // route bus masters: standard expenses by starting place, padi slabs
   routeSheets: "trips", // the conductor's day sheet, approved into trips by an admin
   expenses: "expenses", // payments made for each vehicle
+  expenseReqs: "expenses", // expenses an Expense entry person sends for the office's approval
   maintLog: "maintenance", maintTypes: "maintenance" // maintenance visits, and the service gaps
 };
 const HISTORY = /History$/;
 const AUDIT = ["auditLog", "auditSessions"];
 const isAdmin = a => a.users === "edit";
 const seesBookings = a => a.bookings !== "none" || a.tripsheets !== "none";
+const seesExpenses = a => a.expenses === "view" || a.expenses === "edit";
 
 // Collections a person may download. Master lists stay readable for every approved user because other screens
 // need them (vehicle and driver pickers); bookings (money) and the activity log are kept to those who use them.
@@ -44,11 +46,14 @@ export function canRead(a, coll) {
   if (isAdmin(a)) return true;
   if (coll === "bookings" || coll === "bookingHistory") return seesBookings(a);
   if (AUDIT.includes(coll)) return false;
-  if (coll === "expenses") return a.expenses === "view" || a.expenses === "edit";
+  if (coll === "expenses") return seesExpenses(a);
+  if (coll === "expenseReqs") return a.expenses !== "none"; // an Expense entry person gets only his own lines (see ownOnly)
   return true;
 }
 // A fingerprint of what someone may read; when it changes, their app reloads everything it is now allowed to see.
-export const readScope = a => isAdmin(a) ? "member:all" : `member:${seesBookings(a) ? "b" : ""}`;
+export const readScope = a => isAdmin(a) ? "member:all" : `member:${seesBookings(a) ? "b" : ""}${seesExpenses(a) ? "e" : a.expenses === "request" ? "r" : ""}`;
+// Records a person may read only when they are his own: an Expense entry person's lines.
+export const ownOnly = (a, coll, data, me) => !(coll === "expenseReqs" && !isAdmin(a) && a.expenses === "request" && data && data.byAcct !== me.id);
 
 const OPEN_STATUS = ["draft", "pending", "rejected"];
 const today = () => new Date(Date.now() + 5.5 * 36e5).toISOString().slice(0, 10); // India time
@@ -108,6 +113,17 @@ export function canWrite(a, me, op, coll, id, prev, next, linkedClosed) {
   // Spare bus trip sheet diesel: someone who fills in trip sheets may add, change and delete fills linked to a booking.
   if (coll === "fuelLog")
     return (a.tripsheets === "update" || a.tripsheets === "edit") && (op === "delete" ? !!prev?.bookingId : !!next?.bookingId && (!prev || prev.bookingId === next.bookingId)) ? "" : no;
+
+  // Expense entry (enter and send): his own lines, while they are drafts or sent back; he may send them to the office.
+  // Approving (and the expense list itself) stays with Expenses editors.
+  if (coll === "expenseReqs" && a.expenses === "request") {
+    const mine = d => d && d.byAcct === me.id, open = d => ["draft", "rejected"].includes(d?.status);
+    if (op === "delete") return mine(prev) && open(prev) ? "" : no;
+    if (prev && !(mine(prev) && open(prev))) return no;
+    if (!mine(next) || !["draft", "rejected", "submitted"].includes(next.status) || next.approvedOn || next.expenseId) return no;
+    if (next.status === "rejected") return prev?.status === "rejected" && (next.rejectReason || "") === (prev.rejectReason || "") ? "" : no;
+    return next.rejectReason ? no : "";
+  }
 
   // Maintenance entry (add entries): adds and corrects maintenance visits; the service gaps and deleting stay with editors.
   if (coll === "maintLog" && a.maintenance === "update") return op !== "delete" ? "" : no;
