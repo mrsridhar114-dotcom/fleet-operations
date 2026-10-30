@@ -790,6 +790,9 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 .dbdirty .btn { padding: 5px 10px; font-size: 13px; }
 .dbloading { color: var(--muted); font-size: 14px; padding: 30px 0; text-align: center; }
 .dbnote { font-size: 12px; color: var(--muted); margin: 0; } .dbnote:empty { display: none; }
+.dbnote.dbcond { font-size: 13px; color: var(--ink); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 8px; padding: 8px 12px; margin: 0 0 10px; }
+.dbnote.dbcond.rejected { background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); } .dbnote.dbcond.rejected b { color: var(--danger); }
+.dbnote.dbcond.submitted { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); } .dbnote.dbcond.office, .dbnote.dbcond.approved { background: var(--bg); }
 .datenav { display: flex; align-items: flex-end; gap: 6px; }
 .datenav .navbtn { height: 34px; }
 @media (max-width: 1180px) { .dscols { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -2203,6 +2206,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
             <div class="dbcalc" id="dbCalc" aria-live="polite"></div>
             <span style="flex:1"></span>
             <span class="hint" id="dbSaved" aria-live="polite"></span>
+            <button class="btn" type="button" id="dbDraft" hidden>Save draft</button>
             <button class="btn primary" type="submit" id="dbSave">Save, next bus →</button>
           </div>
         </form>
@@ -3661,7 +3665,7 @@ function showView() {
   // Someone without the dashboard (the booking office, say) lands on the first application they can use.
   if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tmaint", "maintenance"], ["texp", "expenses"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
   // A conductor (route trip sheet: fill & submit) only has his own day sheet.
-  if (acc.trips === "update" && ["thub", "trips", "tday", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
+  if (acc.trips === "update" && ["thub", "trips", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
   // Trip sheet with only the spare bus trip sheets: open them directly.
   if (want === "thub" && acc.trips === "none" && acc.tripsheets && acc.tripsheets !== "none") want = "ttsheet";
   // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
@@ -8976,7 +8980,7 @@ function rsTripFrom(s0) {
     RS_ROLES.forEach(([k]) => { if (s[k + "Id"]) t[k + "Id"] = s[k + "Id"]; if (s[k + "Name"]) t[k + "Name"] = s[k + "Name"]; });
     [1, 2, 3, 4, 5].forEach(i => { if (s["s" + i] != null) t["s" + i] = s["s" + i]; }); if (s.colTotal) t.colTotal = s.colTotal;
     if (s.dsl.litres) t.litres = Math.round(s.dsl.litres * 10) / 10; if (s.dsl.amount) t.fuelCost = s.dsl.amount;
-    if (s.dsl.litres && s.dsl.amount) t.dieselRate = Math.round(s.dsl.amount / s.dsl.litres * 100) / 100;
+    if (s.dsl.rate) t.dieselRate = s.dsl.rate; else if (s.dsl.litres && s.dsl.amount) t.dieselRate = Math.round(s.dsl.amount / s.dsl.litres * 100) / 100;
     if (s.dsl.place) t.dieselPlace = s.dsl.place; t.dieselPay = s.dsl.pay;
     t.driverPay = s.padi.driver; t.conductorPay = s.padi.conductor; if (s.padi.checker) t.checkerPay = s.padi.checker;
     s.exp = s.exp.filter(x => !x.off);
@@ -9108,8 +9112,8 @@ document.addEventListener("click", e => {
   const o = e.target.closest("[data-rsopen]"); if (o && ($("rsHome")?.contains(o) || $("tRsDays")?.contains(o))) {
     // On a computer the day opens in the Day sheet; Close there comes back to these cards.
     const bus = $("tRsDays")?.contains(o) ? tBusId : rsBus;
-    // A conductor fills his own sheet (the phone form, on any screen); the office uses the Day sheet on a computer.
-    if (bwIsPhone() || !canTrips) rsOpen(bus, o.dataset.rsopen);
+    // On a phone the day opens in the phone form; on a computer in the Day sheet (the conductor's version for a conductor).
+    if (bwIsPhone()) rsOpen(bus, o.dataset.rsopen);
     else { dbFrom = { hash: location.hash, y: scrollY }; dbBus = bus; opDate = o.dataset.rsopen; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; }
     return; }
   const ny = e.target.closest("[data-rsym]"); if (ny && $("rsHome")?.contains(ny)) { rsYm = ny.dataset.rsym; renderRsList(); scrollTo(0, 0); return; }
@@ -9333,7 +9337,7 @@ function renderOps() {
   if (view === "tmaint") { renderMaint(); return; }
   if (view === "tmsum") { renderMsum(); return; }
   const ro = !canTrips;
-  ["dbRoTag", "kRoTag"].forEach(id => $(id).hidden = !ro); $("sRoTag").hidden = canBookings;
+  $("kRoTag").hidden = !ro;  // the Day sheet's tag follows its own sheet (fillDayForm) $("sRoTag").hidden = canBookings;
   if (view === "thub") renderHub();
   else if (view === "tday") renderDayBook();
   else if (view === "tspare") renderSpare();
@@ -9400,9 +9404,9 @@ function renderDayBook() {
   $("dbNone").hidden = !!rb.length; $("dbWrap").hidden = !rb.length; document.body.classList.toggle("dsfull", view === "tday" && !!rb.length);
   if (!rb.length) return;
   const ready = dayReady();
-  if (!rb.some(b => b.id === dbBus)) dbBus = (ready && rb.find(b => !entryOf(b.id)) || rb[0]).id;
-  // With only one route bus there is nothing to choose: the bus list is left out.
-  const one = rb.length === 1; $("dbBody").classList.toggle("one", one); $("dbList").hidden = one;
+  if (!rb.some(b => b.id === dbBus)) dbBus = dbCond() ? rsMyBus() : (ready && rb.find(b => !entryOf(b.id)) || rb[0]).id;
+  // With only one route bus there is nothing to choose: the bus list is left out (and a conductor has only his own bus).
+  const one = rb.length === 1 || dbCond(); $("dbBody").classList.toggle("one", one); $("dbList").hidden = one;
   const done = rb.filter(b => entryOf(b.id)).length;
   $("dbList").innerHTML = `<p class="dbl-h">${ready ? `${done} of ${rb.length} entered` : "Loading…"}</p>` + rb.map(b => {
     const t = ready ? entryOf(b.id) : null, bal = t && !t.notRun ? tripCollection(t) - tripExpense(t) : 0, sh = rsDoc(b.id, opDate);
@@ -9424,9 +9428,9 @@ function dbExpFrom(t) {
 }
 function dbExpDefault(start) { dbExp = rsList(start); dbExpDef = rsDefOf(dbExp); }
 function renderDbExp() {
-  const ro = canTrips ? "" : " disabled", key = n => String(n || "").trim().toLowerCase(), start = $("dbStart").value.trim();
+  const ro = dbCanEdit ? "" : " disabled", key = n => String(n || "").trim().toLowerCase(), start = $("dbStart").value.trim();
   const has = rsList(start).length, changed = dbExpDef && rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length, list = !!dbExpDef;
-  $("dbXOther").checked = !list; $("dbXList").checked = list; $("dbXList").disabled = !canTrips || !has; $("dbXListL").textContent = start && has ? `${placeName(start)} list` : "Route list";
+  $("dbXOther").checked = !list; $("dbXList").checked = list; $("dbXList").disabled = !dbCanEdit || !has; $("dbXListL").textContent = start && has ? `${placeName(start)} list` : "Route list";
   $("dbExpHint").textContent = list ? `· default from ${placeName(start)}` : "· what the Total expense doesn't cover goes under Other";
   $("dbChips").innerHTML = (dbExp.length || !list ? "" : `<p class="hint" style="margin:0">No route expenses on this entry.</p>`) +
     (list ? "" : `<div class="dbxrow"><span class="nm">Other expenses<small style="color:var(--muted);font-weight:500" id="dbOthNote"></small></span><input class="n" id="dbOthAmt" readonly tabindex="-1" aria-label="Other expenses (₹)"><span></span></div>`) +
@@ -9434,19 +9438,25 @@ function renderDbExp() {
       return `<div class="dbxrow">${x.own ? `<span><input data-xn="${i}" maxlength="40" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}>${dbExpDef ? "<small>Added</small>" : ""}</span>`
         : `<span class="nm">${esc(x.name)}${diff ? `<small>Default ${rs(m.amt)}</small>` : !m && dbExpDef ? "<small>Added</small>" : ""}</span>`}` +
         `<input class="n" data-xa="${i}" type="number" inputmode="numeric" min="0" value="${esc(x.amt)}" placeholder="₹" aria-label="${esc(x.name || "Expense")} amount (₹)"${ro}>` +
-        (canTrips ? `<button class="rxdel" type="button" data-xdel="${i}" aria-label="Remove ${esc(x.name || "expense")}">✕</button>` : "<span></span>") + `</div>`; }).join("") +
+        (dbCanEdit ? `<button class="rxdel" type="button" data-xdel="${i}" aria-label="Remove ${esc(x.name || "expense")}">✕</button>` : "<span></span>") + `</div>`; }).join("") +
     (dbExp.length ? `<div class="dbxtot"><span>Route expenses</span><span id="dbExpTot">${rs(dbExp.reduce((a, x) => a + num(x.amt), 0))}</span></div>` : "") +
-    (canTrips ? `<div class="dbxacts"><button class="btn" type="button" data-xadd>+ Add expense</button>${changed && has ? `<button class="rsreset" type="button" data-xreset>Bring back the default list of ${esc(placeName(start))}</button>` : ""}</div>` : "");
+    (dbCanEdit ? `<div class="dbxacts"><button class="btn" type="button" data-xadd>+ Add expense</button>${changed && has ? `<button class="rsreset" type="button" data-xreset>Bring back the default list of ${esc(placeName(start))}</button>` : ""}</div>` : "");
 }
 // A conductor's sheet waiting for approval opens in the day sheet with its values, for the office to check, correct and approve.
 let dbReviewSheet = null;
+// Conductor on a computer: the Day sheet fills his own day sheet (saved as a draft as he types, then sent to the office for approval).
+// dbCondSt: "new", "draft", "rejected", "submitted", "approved", or "office" (entered by the office). dbCanEdit: the boxes can be changed.
+const dbCond = () => !canTrips && acc.trips === "update";
+let dbCondSt = "", dbCanEdit = false, dbCondTimer = 0;
 function fillDayForm() {
   dbFilledKey = `${dbBus}|${opDate}`;
-  const sheet = rsDoc(dbBus, opDate); dbReviewSheet = canTrips && sheet?.status === "submitted" ? sheet : null;
-  const t0 = entryOf(dbBus), t = dbReviewSheet ? rsTripFrom(dbReviewSheet) : t0;
+  const cond = dbCond(), sheet = rsDoc(dbBus, opDate); dbReviewSheet = canTrips && sheet?.status === "submitted" ? sheet : null;
+  const t0 = entryOf(dbBus), t = dbReviewSheet ? rsTripFrom(dbReviewSheet) : cond && sheet ? rsTripFrom(sheet) : t0;
+  dbCondSt = cond ? (sheet ? sheet.status : t0 ? "office" : "new") : "";
+  dbCanEdit = canTrips || (cond && platformWrite && canRsUpd && ["new", "draft", "rejected"].includes(dbCondSt));
   const bus = vehicles.find(v => v.id === dbBus), last = t ? null : lastOf(dbBus), bw = busWin(dbBus);
   $("dbTitle").textContent = plateOf(bus);
-  $("dbSub").textContent = `${DAYS[new Date(opDate + "T00:00:00").getDay()]} · ${dbReviewSheet ? "Conductor sent · to approve" : t ? t.notRun ? "Did not run" : totalOnly(t) ? "Saved · total only, singles to come" : "Saved" : "Not entered yet"}`;
+  $("dbSub").textContent = `${DAYS[new Date(opDate + "T00:00:00").getDay()]} · ${cond ? DB_COND_SUB[dbCondSt] : dbReviewSheet ? "Conductor sent · to approve" : t ? t.notRun ? "Did not run" : totalOnly(t) ? "Saved · total only, singles to come" : "Saved" : "Not entered yet"}`;
   if (!$("dbIdleReason").options.length) $("dbIdleReason").innerHTML = `<option value="">Choose a reason</option>` + IDLE_REASONS.map(r => `<option>${r}</option>`).join("");
   const idle = !!t?.notRun;
   $("dbModeIdle").checked = idle; $("dbModeRan").checked = !idle; $("dbIdleReason").value = t?.idleReason || "";
@@ -9467,15 +9477,16 @@ function fillDayForm() {
   $("dbStart").value = t ? (t.startFixed ? t.start : planned || t.start || "") : planned;
   const was = dbExpFrom(t); if (was) { dbExp = was.list; dbExpDef = was.def; } else { dbExp = []; dbExpDef = null; } renderDbExp();
   renderDbReview(t0);
-  $("dbNote").textContent = dbReviewSheet || t ? "" : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
+  $("dbNote").className = cond ? `dbnote dbcond ${dbCondSt}` : "dbnote";
+  if (cond) $("dbNote").innerHTML = dbCondNote(sheet); else $("dbNote").textContent = dbReviewSheet || t ? "" : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
   dbFuelTouched = !!t && num(t.fuelCost) !== Math.round(num(t.dieselRate) * num(t.litres));
-  $("dbForm").querySelectorAll("input, select").forEach(el => { if (el.id !== "dbDate") el.disabled = !canTrips; });
-  $("dbSave").hidden = !canTrips; $("dbDelete").hidden = !(canTrips && t0);
+  $("dbForm").querySelectorAll("input, select").forEach(el => { if (el.id !== "dbDate") el.disabled = !dbCanEdit; });
+  $("dbSave").hidden = !dbCanEdit; $("dbDelete").hidden = !(canTrips && t0); $("dbDraft").hidden = !(cond && dbCanEdit); $("dbRoTag").hidden = dbCanEdit;
   $("dbDelete").textContent = "Delete entry"; delete $("dbDelete").dataset.confirm;
   $("dbForm").querySelectorAll(".err").forEach(e => e.textContent = ""); $("dbForm").querySelectorAll("[aria-invalid]").forEach(e => e.removeAttribute("aria-invalid"));
   dbDirty = false; $("dbDirty").hidden = true; $("dbSaved").textContent = "";
   syncDbMode(); dbCalc(); syncDbSaveLabel();
-  if (view === "tday" && canTrips) setTimeout(() => (idle ? $("dbIdleReason") : $("dbS1")).focus({ preventScroll: true }), 30);
+  if (view === "tday" && dbCanEdit) setTimeout(() => (idle ? $("dbIdleReason") : $("dbS1")).focus({ preventScroll: true }), 30);
 }
 const DB_PAY = [["dbPayD", "driver"], ["dbPayC", "conductor"], ["dbPayK", "checker"]];
 const dbPadiSys = (col, checker) => { const r = padiFor(col, rsRules(checker)); return { driver: r?.driver?.amt || 0, conductor: r?.conductor?.amt || 0, checker: checker ? r?.checker?.amt || 0 : 0 }; };
@@ -9488,7 +9499,7 @@ function nextPending() {
   return [...rb.slice(i + 1), ...rb.slice(0, Math.max(0, i))].find(b => !entryOf(b.id));
 }
 const dbOneBus = () => routeBuses().length === 1;
-function syncDbSaveLabel() { if (dbReviewSheet) { $("dbSave").textContent = "✓ Approve and add to trip sheet"; return; } $("dbSave").textContent = dbOneBus() ? (opDate < todayISO() ? "Save, next day →" : "Save") : nextPending() ? "Save, next bus →" : "Save"; }
+function syncDbSaveLabel() { if (dbCond()) { $("dbSave").textContent = "Send to office →"; return; } if (dbReviewSheet) { $("dbSave").textContent = "✓ Approve and add to trip sheet"; return; } $("dbSave").textContent = dbOneBus() ? (opDate < todayISO() ? "Save, next day →" : "Save") : nextPending() ? "Save, next bus →" : "Save"; }
 // What the save message says about singles: the singles actually typed, and any part of a typed total not split into singles.
 function dbSinglesText(t) {
   const n = [1, 2, 3, 4, 5].filter(i => num(t["s" + i]) > 0).length, sum = [1, 2, 3, 4, 5].reduce((a, i) => a + num(t["s" + i]), 0), rest = num(t.colTotal) ? num(t.colTotal) - sum : 0;
@@ -9530,6 +9541,7 @@ function dbCalc() {
   $("dbCalc").innerHTML = `<span class="${sg < SINGLES_PER_DAY || diff ? "warn" : ""}">${diff > 0 ? (sum ? `${sg} singles + ${rs(diff)} not split` : "Total only") : `${sg} of ${SINGLES_PER_DAY} singles`}</span><span>Collection <b>${rs(col)}</b></span><span>Expense <b>${rs(exp)}</b></span><span>Balance <b class="${bal < 0 ? "neg" : "pos"}">${rs(bal)}</b></span>${km > 0 ? `<span>${nf(km)} km${lit ? ` · ${nf(km / lit, 2)} km/L` : ""}</span>` : ""}`;
 }
 function dbGo(target) {
+  if (dbDirty && dbCond() && dbCanEdit) { dbCondAuto().then(() => applyDbTarget(target)); return; }
   if (dbDirty && canTrips) { dbPending = target; $("dbDirty").hidden = false; $("dbDirtySave").focus(); return; }
   applyDbTarget(target);
 }
@@ -9548,19 +9560,20 @@ $("dbDirtyDiscard").onclick = () => { const t = dbPending; dbPending = null; dbD
 $("dbDirtyStay").onclick = () => { dbPending = null; $("dbDirty").hidden = true; };
 $("dbDirtySave").onclick = () => $("dbForm").requestSubmit();
 $("dbChips").addEventListener("click", e => {
-  if (!canTrips) return;
+  if (!dbCanEdit) return;
   const d = e.target.closest("[data-xdel]"), add = e.target.closest("[data-xadd]"), rst = e.target.closest("[data-xreset]");
   if (d) { dbExp.splice(+d.dataset.xdel, 1); }
   else if (add) { dbExp.push({ name: "", amt: "", own: true }); }
   else if (rst) { dbExpDefault($("dbStart").value); }
   else return;
-  dbDirty = true; $("dbSaved").textContent = ""; renderDbExp(); dbCalc();
+  dbDirty = true; $("dbSaved").textContent = ""; renderDbExp(); dbCalc(); dbCondSoon();
   if (add) $("dbChips").querySelector(`[data-xn="${dbExp.length - 1}"]`)?.focus();
 });
 $("dbChips").addEventListener("input", e => {
   const el = e.target;
   if (el.dataset.xa != null) dbExp[+el.dataset.xa].amt = el.value;
   else if (el.dataset.xn != null) dbExp[+el.dataset.xn].name = el.value;
+  dbCondSoon();
 });
 // A new starting point brings its own list (when the list is used), unless the list was already changed.
 // Clicking the box empties it for a moment so the whole list of places shows; leaving it empty puts the place back.
@@ -9568,10 +9581,10 @@ $("dbStart").addEventListener("focus", e => { const i = e.target; if (i.readOnly
 $("dbStart").addEventListener("blur", e => { const i = e.target; if (i.dataset.prev != null) { if (!i.value.trim()) i.value = i.dataset.prev; delete i.dataset.prev; i.placeholder = ""; } });
 $("dbStart").addEventListener("change", () => { if (dbExpDef && !rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length) dbExpDefault($("dbStart").value); renderDbExp(); dbCalc(); });
 document.getElementsByName("dbExpMode").forEach(r => r.addEventListener("change", () => {
-  if (!canTrips) return;
+  if (!dbCanEdit) return;
   if ($("dbXList").checked) { const own = dbExp.filter(x => x.own); dbExpDefault($("dbStart").value); dbExp.push(...own); }
   else { dbExp = dbExp.filter(x => x.own); dbExpDef = null; }
-  dbDirty = true; renderDbExp(); dbCalc();
+  dbDirty = true; renderDbExp(); dbCalc(); dbCondSoon();
 }));
 $("dbForm").addEventListener("input", e => { const id = e.target.id; if (id === "dbDate") return;
   dbDirty = true; $("dbSaved").textContent = "";
@@ -9579,11 +9592,11 @@ $("dbForm").addEventListener("input", e => { const id = e.target.id; if (id === 
   if (id === "dbColTot") dbColTold = e.target.value;
   if (id === "dbExpAll") dbExpTold = e.target.value;
   if (DB_PAY.some(([p]) => p === id)) dbPayTouched[id] = e.target.value !== "";
-  dbCalc(); });
+  dbCalc(); dbCondSoon(); });
 // Tapping a grey total empties it (the sum stays as a grey hint), so typing starts fresh; leaving it empty brings the sum back.
 $("dbForm").addEventListener("focusin", e => { const i = e.target; if (i.id === "dbColTot" || i.id === "dbExpAll") { if (i.classList.contains("auto")) { i.placeholder = i.value; i.value = ""; } } });
 $("dbForm").addEventListener("focusout", e => { const i = e.target; if (i.id === "dbColTot" || i.id === "dbExpAll") { i.placeholder = ""; setTimeout(dbCalc, 0); } });
-$("dbForm").addEventListener("change", e => { if (e.target.name === "dbMode") { dbDirty = true; syncDbMode(); dbCalc(); } });
+$("dbForm").addEventListener("change", e => { if (e.target.name === "dbMode") { dbDirty = true; syncDbMode(); dbCalc(); } if (e.target.tagName === "SELECT" || e.target.name === "dbMode") dbCondSoon(); });
 $("dbForm").addEventListener("keydown", e => {
   if (e.key !== "Enter" || e.target.tagName === "BUTTON") return;
   e.preventDefault();
@@ -9591,13 +9604,10 @@ $("dbForm").addEventListener("keydown", e => {
   const fields = [...$("dbForm").querySelectorAll("input:not([type=radio]), select")].filter(el => !el.disabled && el.offsetParent !== null);
   const i = fields.indexOf(e.target);
   if (i >= 0 && i < fields.length - 1) { fields[i + 1].focus(); fields[i + 1].select?.(); }
-  else if (canTrips) $("dbForm").requestSubmit();
+  else if (dbCanEdit) $("dbForm").requestSubmit();
 });
-$("dbForm").addEventListener("submit", async e => {
-  e.preventDefault(); if (!canTrips || !dbBus) return;
-  $("dbForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("dbForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
-  let ok = true;
-  const err = (k, m) => { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); ok = false; };
+// The day as typed in the Day sheet, as a trip sheet day. err(box, message) marks a problem (a draft passes a no-op).
+function dbReadForm(err) {
   const date = opDate, bus = dbBus, base = { id: `${bus}_${date}`, vehicleId: bus, date };
   let t;
   if ($("dbModeIdle").checked) {
@@ -9638,8 +9648,22 @@ $("dbForm").addEventListener("submit", async e => {
     t.collection = tripCollection(t); t.expense = tripExpense(t); t.balance = t.collection - t.expense;
   }
   const rem = $("dbRemarks").value.trim(); if (rem) t.remarks = rem;
+  return t;
+}
+$("dbForm").addEventListener("submit", async e => {
+  e.preventDefault(); if (!dbCanEdit || !dbBus) return;
+  $("dbForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("dbForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
+  let ok = true;
+  const err = (k, m) => { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); ok = false; };
+  const date = opDate, bus = dbBus, t = dbReadForm(err);
   if (!ok) { $("dbDirty").hidden = true; dbPending = null; $("dbForm").querySelector('[aria-invalid="true"]')?.focus(); return; }
   $("dbSave").disabled = true;
+  if (dbCond()) {
+    try { clearTimeout(dbCondTimer); await dbCondSave("submitted", t); toast("Sent to the office"); dbDirty = false; dbFilledKey = ""; renderDayBook(); }
+    catch { toast("Couldn't send. Check your connection and try again."); }
+    finally { $("dbSave").disabled = false; }
+    return;
+  }
   try {
     const rv = dbReviewSheet && dbReviewSheet.vehicleId === bus && dbReviewSheet.date === date ? dbReviewSheet : null;
     if (rv) t.fromSheet = true;
@@ -9675,6 +9699,56 @@ $("dbReview").addEventListener("click", async e => {
   try { await opsSave("routeSheets", { ...dbReviewSheet, status: "rejected", rejectReason: why, rejectedByName: whoAmI(), rejectedOn: todayISO() }); toast("Sent back to the conductor"); dbFilledKey = ""; dbDirty = false; renderDayBook(); }
   catch { toast("Couldn't save. Check your connection and try again."); }
 });
+// The conductor's day sheet from the Day sheet boxes (the same record the phone form keeps; the office approves it).
+function dbSheetFromTrip(t, status, cur) {
+  const out = { id: rsId(t.vehicleId, t.date), vehicleId: t.vehicleId, date: t.date, status, start: t.start ? placeName(t.start) : "" };
+  if (t.notRun) Object.assign(out, { notRun: true, idleReason: t.idleReason || "" });
+  else {
+    [1, 2, 3, 4, 5].forEach(i => { if (t["s" + i] != null) out["s" + i] = t["s" + i]; });
+    if (t.colTotal) out.colTotal = t.colTotal; if (t.expTotal) out.expTotal = t.expTotal;
+    RS_ROLES.forEach(([k]) => { if (t[k + "Id"]) out[k + "Id"] = t[k + "Id"]; if (t[k + "Name"]) out[k + "Name"] = t[k + "Name"]; });
+    const col = tripCollection(t), chk = !!(t.checkerId || t.checkerName);
+    out.padiSys = { ...dbPadiSys(col, chk) }; out.padi = { driver: num(t.driverPay), conductor: num(t.conductorPay), checker: chk ? num(t.checkerPay) : 0 };
+    out.padiEd = { driver: !!dbPayTouched.dbPayD, conductor: !!dbPayTouched.dbPayC, checker: !!dbPayTouched.dbPayK };
+    out.dsl = { litres: num(t.litres), amount: num(t.fuelCost), ...(t.dieselRate ? { rate: t.dieselRate } : {}), pay: cur?.dsl?.pay || "Fuel card", place: cur?.dsl?.place || rsOpposite(out.start, rsEnds(t.vehicleId, t.date)) || "" };
+    out.exp = t.expList || []; if (t.expDef) out.expDef = t.expDef;
+    const prev = prevOdoFor(t.vehicleId, t.date); if (prev != null) out.startKm = prev; if (t.odo) out.endKm = t.odo;
+    out.collection = col; out.expense = tripExpense(t); out.balance = out.collection - out.expense;
+  }
+  if (t.remarks) out.remarks = t.remarks;
+  ["by", "byName", "createdOn", "submittedOn", "submitCount", "rejectReason", "rejectedByName", "rejectedOn"].forEach(k => { if (cur?.[k] != null) out[k] = cur[k]; });
+  if (!out.by) { out.by = myUserId || ""; out.byName = whoAmI(); out.createdOn = todayISO(); }
+  out.updatedOn = new Date().toISOString();
+  return out;
+}
+async function dbCondSave(status, t) {
+  const cur = rsDoc(t.vehicleId, t.date), st = status === "submitted" ? "submitted" : cur?.status === "rejected" ? "rejected" : "draft", doc = dbSheetFromTrip(t, st, cur);
+  if (st === "submitted") { doc.submittedOn = new Date().toISOString(); doc.submitCount = (cur?.submitCount || 0) + 1; delete doc.rejectReason; }
+  await opsSave("routeSheets", doc);
+}
+// Typing saves the draft a moment later, like the phone form.
+function dbCondSoon() { if (!dbCond() || !dbCanEdit) return; clearTimeout(dbCondTimer); dbCondTimer = setTimeout(dbCondAuto, 1500); }
+async function dbCondAuto() {
+  clearTimeout(dbCondTimer); if (!dbCond() || !dbCanEdit || !dbBus) return;
+  try {
+    await dbCondSave(null, dbReadForm(() => {})); dbDirty = false; $("dbSaved").textContent = "✓ Saved as draft";
+    if (dbCondSt === "new") { dbCondSt = "draft"; $("dbSub").textContent = `${DAYS[new Date(opDate + "T00:00:00").getDay()]} · ${DB_COND_SUB.draft}`; $("dbNote").className = "dbnote dbcond draft"; }
+  }
+  catch { $("dbSaved").textContent = "Not saved. Check your connection."; }
+}
+const DB_COND_SUB = { new: "Not entered yet", draft: "Not sent yet", rejected: "Sent back by the office", submitted: "Sent to office · waiting for approval", approved: "Approved by the office", office: "Entered by the office" };
+function dbCondNote(sh) {
+  const when = v => v ? ` · ${fmtStamp(v)}` : "";
+  return {
+    new: "<b>Not sent to the office yet.</b> It saves by itself as you type. Press <b>Send to office</b> when the day is complete. After sending you can’t change it unless the office sends it back.",
+    draft: "<b>Not sent to the office yet.</b> It saves by itself as you type. Press <b>Send to office</b> when the day is complete. After sending you can’t change it unless the office sends it back.",
+    rejected: `<b>Sent back by the office${sh?.rejectedByName ? ` (${esc(sh.rejectedByName)})` : ""}:</b> ${esc(sh?.rejectReason || "")}. Correct it and press <b>Send to office</b> again.`,
+    submitted: `<b>Sent to the office${when(sh?.submittedOn)}.</b> Waiting for approval. You can’t change it now; the office can send it back to you.`,
+    approved: "<b>Approved by the office.</b> It is in the trip sheet.",
+    office: "<b>Entered by the office.</b> You can see it, but not change it."
+  }[dbCondSt] || "";
+}
+$("dbDraft").onclick = async () => { await dbCondAuto(); if ($("dbSaved").textContent.startsWith("✓")) toast("Saved as draft"); };
 // Close goes back to the monthly entry of the same bus and month.
 var dbFrom = null;
 addEventListener("hashchange", () => { if (dbFrom && location.hash !== "#trips-day" && location.hash !== dbFrom.hash) dbFrom = null; });
@@ -9682,6 +9756,7 @@ $("dbClose").onclick = () => {
   const go = () => { dbDirty = false; $("dbDirty").hidden = true;
     const f = dbFrom; dbFrom = null; if (f) [60, 300, 900].forEach(ms => setTimeout(() => scrollTo(0, f.y), ms));
     if (f && f.hash !== "#trips-route") { rsBus = dbBus; rsYm = opDate.slice(0, 7); location.hash = f.hash; return; } tBusId = dbBus; tFyStart = fyOf(opDate); if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
+  if (dbDirty && dbCond() && dbCanEdit) { dbCondAuto().then(go); return; }
   if (dbDirty && canTrips) askYesNo("You have unsaved changes for this day. Close without saving?", { yes: "Close without saving", no: "Stay", danger: true }).then(ok => ok && go()); else go();
 };
 $("dbDelete").onclick = async () => {
