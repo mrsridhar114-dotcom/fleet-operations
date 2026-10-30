@@ -6435,7 +6435,10 @@ function xpKeyName(k, x) {
   const v = mtVehOf(k); if (v) return plateOf(v);
   const r = x || ops.expenses.find(e => mtKeyOf(e) === k); return r?.plate || (k === "p:" ? "Office / general" : k.replace(/^p:/, ""));
 }
-$("xpViewBtn").onclick = () => { xpView = xpView === "summary" ? "sheet" : "summary"; xpScrollEnd = true; xpMenuClose(); renderExp(true); };
+// Close after opening lines from the Summary goes back to the Summary, with the earlier filters.
+document.querySelector("#view-texp .mclose").addEventListener("click", e => { if (!xpFromSum || xpView !== "sheet") return; e.preventDefault(); xpFilt = xpFromSum.filt; xpFromSum = null; xpRowSel.clear(); xpView = "summary"; xpMenuClose(); renderExp(true); });
+addEventListener("hashchange", () => { if (location.hash !== "#expenses") xpFromSum = null; });
+$("xpViewBtn").onclick = () => { xpFromSum = null; xpView = xpView === "summary" ? "sheet" : "summary"; xpScrollEnd = true; xpMenuClose(); renderExp(true); };
 $("xpPrev").onclick = () => { xpScrollEnd = true; xpYm = `${fyOf(xpYm + "-01") - 1}-04`; delete xpFilt.date; renderExp(); };
 $("xpNext").onclick = () => { xpScrollEnd = true; xpYm = `${fyOf(xpYm + "-01") + 1}-04`; delete xpFilt.date; renderExp(); };
 /* ---------- The sheet on a computer: works like an Excel sheet ----------
@@ -6595,7 +6598,7 @@ document.addEventListener("input", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("xpMenu")) { xpMenuClose(); return; } if (e.key === "Enter" && e.target.id === "xpMq") { xpMenuApply(); xpMenuClose(); } });
 document.addEventListener("mousedown", e => { const m = $("xpMenu"); if (m && !m.contains(e.target) && !e.target.closest?.(".xgrid th[data-col]")) xpMenuClose(); });
 addEventListener("hashchange", xpMenuClose);
-var xpView = "sheet", xpUndo = null, xpUndoT = 0, xpInc = null;
+var xpFromSum = null, xpView = "sheet", xpUndo = null, xpUndoT = 0, xpInc = null;
 /* Undo: the last delete, change or new line can be taken back for 20 seconds (or with Ctrl+Z). */
 function xpUndoSet(label, run) { xpUndo = { label, run }; clearTimeout(xpUndoT); xpUndoT = setTimeout(() => { xpUndo = null; if ($("xpUndo")) $("xpUndo").innerHTML = ""; }, 20000); if ($("xpUndo")) $("xpUndo").innerHTML = xpUndoHtml(); }
 const xpUndoHtml = () => xpUndo ? `<button type="button" class="btn xundo" data-xundo title="Ctrl+Z">↶ ${esc(xpUndo.label)}</button>` : "";
@@ -7016,7 +7019,7 @@ $("xpBody").addEventListener("click", async e => {
   if (e.target.closest("[data-xmonadd]")) { xpMonAdd(); return; }
   if (e.target.closest("[data-xmonno]")) { try { localStorage.setItem("fleet-xpmon-skip", todayISO().slice(0, 7)); } catch {} renderExp(true); return; }
   const cm = e.target.closest("[data-xcm]");
-  if (cm) { const [c, ym] = cm.dataset.xcm.split("|"); xpFilt = { ...(xpFilt.veh ? { veh: xpFilt.veh } : {}) }; if (c) xpFilt.category = new Set([c]); if (ym) xpFilt.date = new Set([ym]); xpView = "sheet"; xpScrollEnd = true; renderExp(true); return; }
+  if (cm) { const [c, ym] = cm.dataset.xcm.split("|"); xpFromSum = { filt: xpFilt }; xpFilt = { ...(xpFilt.veh ? { veh: xpFilt.veh } : {}) }; if (c) xpFilt.category = new Set([c]); if (ym) xpFilt.date = new Set([ym]); xpView = "sheet"; xpScrollEnd = true; renderExp(true); return; }
   if (e.target.closest("[data-xsaveall]")) {
     if (xpEdit && xpCommit() === false) return;
     const used = xpNews.filter(d => d.used); let ok = 0, bad = 0;
