@@ -9117,7 +9117,11 @@ function rsWaitHtml() {
     : `<p class="sub" style="margin:8px 0 0">Nothing waiting. Sheets sent by conductors appear here.</p>`;
 }
 document.addEventListener("click", e => {
-  const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) { rsOpen(rsBus, o.dataset.rsopen); return; }
+  const o = e.target.closest("[data-rsopen]"); if (o && $("rsHome")?.contains(o)) {
+    // On a computer the day opens in the Day sheet; Close there comes back to these cards.
+    if (bwIsPhone()) rsOpen(rsBus, o.dataset.rsopen);
+    else { dbFrom = { hash: location.hash, y: scrollY }; dbBus = rsBus; opDate = o.dataset.rsopen; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; }
+    return; }
   const ny = e.target.closest("[data-rsym]"); if (ny && $("rsHome")?.contains(ny)) { rsYm = ny.dataset.rsym; renderRsList(); scrollTo(0, 0); return; }
   // The monthly screen opens on the bus and month being viewed.
   const mo = e.target.closest("[data-rsmonth]"); if (mo) { const ym = mo.dataset.ym || todayISO().slice(0, 7);
@@ -9684,8 +9688,11 @@ $("dbReview").addEventListener("click", async e => {
   catch { toast("Couldn't save. Check your connection and try again."); }
 });
 // Close goes back to the monthly entry of the same bus and month.
+var dbFrom = null;
+addEventListener("hashchange", () => { if (dbFrom && location.hash !== "#trips-day" && location.hash !== dbFrom.hash) dbFrom = null; });
 $("dbClose").onclick = () => {
-  const go = () => { dbDirty = false; $("dbDirty").hidden = true; tBusId = dbBus; tFyStart = fyOf(opDate); if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
+  const go = () => { dbDirty = false; $("dbDirty").hidden = true;
+    if (dbFrom) { const f = dbFrom; dbFrom = null; rsBus = dbBus; rsYm = opDate.slice(0, 7); location.hash = f.hash; setTimeout(() => scrollTo(0, f.y), 60); return; } tBusId = dbBus; tFyStart = fyOf(opDate); if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
   if (dbDirty && canTrips) askYesNo("You have unsaved changes for this day. Close without saving?", { yes: "Close without saving", no: "Stay", danger: true }).then(ok => ok && go()); else go();
 };
 $("dbDelete").onclick = async () => {
