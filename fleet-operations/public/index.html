@@ -1419,12 +1419,15 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xpform { padding: 16px 18px; } .xpform.ed { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .xpfh { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; margin-bottom: 12px; } .xpfh b { font: 700 16px var(--body); }
 /* Two roomy lines: date and description, then vehicle, category, amount and paid by, with the button at the end. */
-.xpgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 16px; align-items: end; } .xpgrid .xpd { grid-column: span 3; }
+.xpgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end; } .xpgrid .xpd { grid-column: span 3; } .xpgrid .xfbills { grid-column: 1 / -1; }
 .xpgrid label { display: flex; flex-direction: column; gap: 6px; min-width: 0; } .xpgrid label > span { font: 600 13px var(--body); color: var(--muted); }
 .xpgrid input, .xpgrid select { width: 100%; box-sizing: border-box; height: 46px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 15.5px var(--body); }
 .xpgrid input[type=number] { text-align: right; font-family: var(--mono); }
 .xpbtns { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; } .xpbtns .btn { height: 46px; min-width: 140px; white-space: nowrap; }
-@media (max-width: 700px) { .xpgrid { grid-template-columns: 1fr 1fr; } .xpgrid .xpdt, .xpgrid .xpd { grid-column: 1 / -1; } .xpbtns .btn { flex: 1; min-width: 0; } .xpgrid input, .xpgrid select { font-size: 16px; }
+.xpgrid textarea { width: 100%; box-sizing: border-box; min-height: 46px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 15.5px/1.4 var(--body); resize: none; }
+.xfbills { display: flex; flex-direction: column; gap: 6px; } .xfbills > span { font: 600 13px var(--body); color: var(--muted); } .xfbills small { font-weight: 500; } .xfbadd { align-self: flex-start; height: auto !important; padding: 8px 14px; }
+#xfBillList { display: grid; gap: 6px; } #xfBillList:empty { display: none; }
+@media (max-width: 700px) { .xpgrid { grid-template-columns: minmax(0, 1fr); gap: 18px; } .xpgrid .xpdt, .xpgrid .xpd { grid-column: 1 / -1; } .xpfh { margin-bottom: 16px; } .xpbtns .btn { flex: 1; min-width: 0; } .xpgrid input, .xpgrid select { font-size: 16px; }
   /* On a phone each expense is a small card: date and amount, the description, then vehicle, category and paid by. */
   .xptable thead { display: none; } .xptable, .xptable tbody, .xptable tfoot { display: block; }
   .xptable tr { display: grid; grid-template-columns: auto 1fr auto; column-gap: 10px; row-gap: 2px; padding: 9px 10px; border-bottom: 1px solid var(--line); }
@@ -1450,7 +1453,11 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 #view-texp { padding-block: 16px 14px; gap: 12px; }
 @media (min-width: 1001px) { html:has(#view-texp:not([hidden])) { overflow: hidden; } } /* only the sheet scrolls */
 #view-texp .xphead { align-items: center; justify-content: flex-start; gap: 10px 22px; } #view-texp .xphead h1 { margin: 0; }
-#view-texp .xphead .tcontrols { align-items: center; } #view-texp .xphead .xpviewbtn { margin-left: auto; } @media (max-width: 1000px) { #view-texp .xpviewbtn { display: none; } #view-texp .xphead .mclose { margin-left: auto; } }
+#view-texp .xphead .tcontrols { align-items: center; }
+@media (max-width: 700px) { #view-texp .xphead { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; }
+  #view-texp .xphead h1 { font-size: 24px; margin: 0; flex: none; } #view-texp .xphead .tcontrols { flex: 1; justify-content: center; margin: 0; min-width: 0; }
+  #view-texp .xphead .bmonth { gap: 2px; } #view-texp #xpPer { min-width: 0 !important; font-size: 15px; white-space: nowrap; } #view-texp .xphead .bmonth .navbtn { width: 32px; height: 32px; min-width: 32px; padding: 0; }
+  #view-texp .xphead .mclose { margin: 0 !important; padding: 6px 9px; font-size: 13px; flex: none; } } #view-texp .xphead .xpviewbtn { margin-left: auto; } @media (max-width: 1000px) { #view-texp .xpviewbtn { display: none; } #view-texp .xphead .mclose { margin-left: auto; } }
 .xsum { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
 .xsum > * { min-width: 140px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; }
 .xsum button { cursor: pointer; } .xsum button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
@@ -1487,7 +1494,9 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .xgrid td.xbad { background: color-mix(in srgb, var(--danger) 9%, var(--surface)) !important; }
 .xghost { color: var(--muted); opacity: .6; font-style: italic; } .xreq { color: var(--danger); opacity: .55; font-style: italic; font-size: 12.5px; } .xc-amount .xreq { font-family: var(--body); }
 .xed { position: absolute; z-index: 5; } .xed > input, .xed > textarea { display: block; width: 100%; min-height: var(--h); box-sizing: border-box; margin: 0; padding: 4px 7px; border: 2px solid var(--accent); border-radius: 0; background: var(--surface); color: var(--ink); font: 13.5px/19px var(--body); outline: none; resize: none; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
-.xed.xe-amount > input { text-align: right; font-family: var(--mono); } .xed.xe-date > input, .xed.xe-veh > input { font-family: var(--mono); font-size: 13px; } .xed.bad > * { border-color: var(--danger) !important; }
+.xed.xe-amount > input { text-align: right; font-family: var(--mono); } .xed.xe-date > input:first-child { padding-right: 30px; }
+.xed .xdpick { position: absolute; right: 3px; top: 2px; height: calc(var(--h) - 4px); border: 0; background: none; cursor: pointer; font-size: 15px; padding: 0 4px; } .xed .xdpin { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; border: 0; padding: 0; }
+.xgrid td.xc-date { position: relative; } .xdcal { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; cursor: pointer; font-size: 13px; padding: 0 2px; opacity: 0; } .xgrid tr:hover .xdcal, .xgrid td.sel .xdcal { opacity: .55; } .xgrid .xdcal:hover { opacity: 1 !important; } .xed.xe-date > input, .xed.xe-veh > input { font-family: var(--mono); font-size: 13px; } .xed.bad > * { border-color: var(--danger) !important; }
 .xlist { position: absolute; left: 0; top: 100%; min-width: 100%; width: max-content; max-width: 280px; max-height: 240px; overflow: auto; margin-top: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
 .xlist div { padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; } .xlist div.h { background: var(--accent-soft); font-weight: 700; } .xlist p { margin: 4px 8px; color: var(--muted); font-size: 13px; }
 .xe-veh .xlist div { font-family: var(--mono); font-size: 13px; }
@@ -6455,7 +6464,7 @@ const xpMissing = d => [...["date", "desc", "veh", "amount"].filter(c => d[c] ==
 function xpCellInner(c, v, d) {
   if (d && !d.used && c === "desc" && xpNews.find(y => !y.used) === d) return `<span class="xghost">Start typing a new expense…</span>`;
   let t = "";
-  if (c === "date") t = v.date ? esc(xpDateTxt(v.date)) : "";
+  if (c === "date") t = (v.date ? esc(xpDateTxt(v.date)) : "") + (canXp() ? `<button type="button" class="xdcal" data-xdcal tabindex="-1" title="Pick the date from a calendar" aria-label="Pick the date">📅</button>` : "");
   else if (c === "desc") {
     const x = v.x;
     t = (x?.monthly ? `<span class="xmon" title="Repeats every month">↻</span>` : d?.monthly ? `<span class="xmon" title="Monthly payment">↻</span>` : "") + esc(v.desc || "") +
@@ -6812,7 +6821,7 @@ function xpOpen(mode, ch, note) {
   const { r } = xpAct, c = note ? "catNote" : xpAct.c, v = xpValOf(r), td = xpTd(r, xpAct.c), sc = $("xpSc"), box = $("xpEdBox"); if (!v || !td) return;
   const cur = c === "date" ? (v.date ? xpDMY(v.date) : "") : c === "veh" ? (v.veh !== "" ? xpKeyName(v.veh, v.x) : "") : c === "amount" ? String(v.amount ?? "") : String(v[c] ?? "");
   xpEdit = { r, c, mode, hi: 0, items: null };
-  box.innerHTML = (c === "desc" ? `<textarea rows="1" aria-label="Expense description"></textarea>` : `<input type="text" autocomplete="off" aria-label="${c === "catNote" ? "Details for Other" : XP_NAMES[c]}"${c === "catNote" ? ' placeholder="Other: what was it?"' : ""}${c === "amount" ? ' inputmode="decimal"' : ""}>`) + `<div class="xlist" hidden></div>`;
+  box.innerHTML = (c === "desc" ? `<textarea rows="1" aria-label="Expense description"></textarea>` : `<input type="text" autocomplete="off" aria-label="${c === "catNote" ? "Details for Other" : XP_NAMES[c]}"${c === "catNote" ? ' placeholder="Other: what was it?"' : ""}${c === "amount" ? ' inputmode="decimal"' : ""}>`) + (c === "date" ? `<button type="button" class="xdpick" title="Pick from the calendar" aria-label="Pick the date from a calendar">📅</button><input type="date" class="xdpin" tabindex="-1" aria-hidden="true" max="${todayISO()}">` : "") + `<div class="xlist" hidden></div>`;
   const el = box.firstElementChild; el.value = mode === "type" ? ch : cur;
   const a = td.getBoundingClientRect(), b = sc.getBoundingClientRect();
   box.style.left = a.left - b.left + sc.scrollLeft + "px"; box.style.top = a.top - b.top + sc.scrollTop + (note ? a.height : 0) + "px";
@@ -6941,7 +6950,13 @@ $("xpBody").addEventListener("keydown", e => {
   if (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); xpOpen("type", k); }
 });
 $("xpBody").addEventListener("input", e => { if (e.target.closest("#xpEdBox")) { $("xpEdBox").classList.remove("bad"); if (e.target.matches("textarea")) xpGrow(e.target); xpListUpd(false); } });
+// Date: type it (dd/mm/yyyy) or pick it from the calendar; a picked date is kept like a typed one.
+function xpPickDate() { const pin = $("xpEdBox")?.querySelector(".xdpin"); if (!pin) return; const t = $("xpEdBox").firstElementChild, iso = xpParseDate(t.value); if (iso) pin.value = iso; try { pin.showPicker(); } catch { pin.focus(); } }
+$("xpBody").addEventListener("change", e => { if (!e.target.matches?.(".xdpin") || !e.target.value) return; const t = $("xpEdBox").firstElementChild; t.value = xpDMY(e.target.value); if (xpCommit() === true) xpMove(0, 0); });
 $("xpBody").addEventListener("mousedown", e => {
+  if (e.target.closest(".xdpick")) { e.preventDefault(); xpPickDate(); return; }
+  const dc = e.target.closest("[data-xdcal]");
+  if (dc && canXp()) { e.preventDefault(); if (xpEdit && xpCommit() === false) return; xpSel(dc.closest("tr").dataset.r, "date"); xpOpen("edit"); xpPickDate(); return; }
   const it = e.target.closest(".xlist [data-i]");
   if (it) { e.preventDefault(); xpEdit.hi = +it.dataset.i; const r = xpCommit(); if (r === true) xpMove(0, 0); return; }
   if (e.target.closest("#xpEdBox")) return;
@@ -7033,14 +7048,23 @@ function xfRender(x) {
     `<div class="xpgrid">` +
     `<label class="xpdt"><span>Date</span><input type="date" id="xfDate" value="${esc(v.date)}" max="${todayISO()}"></label>` +
     `<label class="xpd"><span>Expense description</span><textarea id="xfDesc" rows="1" placeholder="e.g. Tyre rebuilt (2 nos)">${esc(v.desc || "")}</textarea></label>` +
+    (assetsCap ? `<div class="xfbills"><span>Bill <small>(photo or PDF)</small></span><div id="xfBillList"></div><label class="btn xfbadd">📎 Attach bill<input type="file" id="xfBillIn" accept="${FILE_TYPES.join(",")}" multiple hidden></label></div>` : "") +
     `<label><span>Vehicle</span><select id="xfVeh"></select></label>` +
     `<label><span>Category</span><select id="xfCat">${opt(XP_CATS, v.category)}</select></label>` +
     `<label class="xpnotef" id="xfNoteL"${v.category === "Other" ? "" : " hidden"}><span>Other: what was it?</span><input type="text" id="xfNote" value="${esc(v.catNote || "")}" placeholder="e.g. Office stationery"></label>` +
-    `<label><span>Amount (₹)</span><input type="number" id="xfAmt" inputmode="numeric" min="0" value="${esc(String(v.amount ?? ""))}" placeholder="0"></label>` +
     `<label><span>Paid by</span><select id="xfPay">${opt(XP_PAY, v.pay)}</select></label>` +
+    `<label><span>Amount (₹)</span><input type="number" id="xfAmt" inputmode="numeric" min="0" value="${esc(String(v.amount ?? ""))}" placeholder="0"></label>` +
     `<div class="xpbtns"><button type="button" class="btn primary" id="xfSave">${x ? "Save" : "+ Add"}</button>${x ? `<button type="button" class="btn" id="xfDel">Delete</button><button type="button" class="btn" id="xfCancel">Cancel</button>` : ""}</div>` +
     `</div><p class="err" id="xpErr" style="margin:6px 0 0"></p>`;
   xfVehOpts(x ? mtKeyOf(x) : xfLast.veh, x); xpGrow($("xfDesc"));
+  xfBills = x?.bills ? [...x.bills] : []; xfBillDraw();
+}
+// Bills attached in the phone form: uploaded when chosen, kept on the line when it is saved.
+let xfBills = [];
+function xfBillDraw() {
+  const el = $("xfBillList"); if (!el) return;
+  el.innerHTML = xfBills.map((b, i) => `<div class="xbrow">${/^image\//.test(b.type || "") ? `<a href="/_blob/${encodeURIComponent(b.id)}" target="_blank" rel="noopener" class="xbthumb"><img src="/_blob/${encodeURIComponent(b.id)}" alt="" loading="lazy"></a>` : `<span class="xbthumb">PDF</span>`}` +
+    `<a class="filelink" href="/_blob/${encodeURIComponent(b.id)}" target="_blank" rel="noopener">${esc(b.name || "Bill")}</a><button type="button" class="xbrm" data-xfbrm="${i}" aria-label="Remove this bill">✕</button></div>`).join("");
 }
 // Vehicle choices: the fleet, "Office / general", and the old number of the row being changed.
 function xfVehOpts(cur, x) {
@@ -7051,10 +7075,18 @@ function xfVehOpts(cur, x) {
 }
 $("xpForm").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input, textarea")) { e.preventDefault(); $("xfSave")?.click(); } });
 $("xpForm").addEventListener("input", e => { if (e.target.id === "xfDesc") xpGrow(e.target); });
-$("xpForm").addEventListener("change", e => { if (e.target.id === "xfCat") { $("xfNoteL").hidden = e.target.value !== "Other"; if (e.target.value === "Other") $("xfNote").focus(); } });
+$("xpForm").addEventListener("change", async e => {
+  if (e.target.id === "xfBillIn") { const files = [...e.target.files]; e.target.value = "";
+    for (const f of files) { if (!FILE_TYPES.includes(f.type) || f.size > 20 * 1024 * 1024) { $("xpErr").textContent = `Left out ${f.name}: attach PDF, JPG or PNG up to 20 MB.`; continue; }
+      $("xpErr").textContent = `Uploading ${f.name}…`;
+      try { const u = await assetsCap.upload(f, { type: f.type }); xfBills.push({ id: u.id, name: f.name, type: f.type, at: new Date().toISOString(), byName: whoAmI() }); $("xpErr").textContent = ""; xfBillDraw(); }
+      catch { $("xpErr").textContent = `Couldn't upload ${f.name}.`; } }
+    return; }
+  if (e.target.id === "xfCat") { $("xfNoteL").hidden = e.target.value !== "Other"; if (e.target.value === "Other") $("xfNote").focus(); } });
 $("xpForm").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   const err = m => { $("xpErr").textContent = m; };
+  if (b.dataset.xfbrm != null) { xfBills.splice(+b.dataset.xfbrm, 1); xfBillDraw(); return; }
   if (b.id === "xfCancel") { xfRender(null); renderExp(); return; }
   if (b.id === "xfDel") {
     if (!await askYesNo("Delete this expense?", { yes: "Yes, delete", danger: true })) return;
@@ -7071,6 +7103,7 @@ $("xpForm").addEventListener("click", async e => {
   const where = veh === "p:" ? { vehicleId: "", plate: "" } : veh.startsWith("p:") ? { vehicleId: "", plate: old?.plate || veh.slice(2) } : { vehicleId: veh, plate: "" };
   const doc = { ...(old || {}), date, desc, ...where, category: cat, catNote: cat === "Other" ? note : "", pay: $("xfPay").value, amount: amt, ...rxStamp() };
   if (!doc.catNote) delete doc.catNote;
+  if (xfBills.length) doc.bills = xfBills; else delete doc.bills;
   if (!doc.id) Object.assign(doc, { id: "xp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdOn: new Date().toISOString(), byName: whoAmI() });
   b.disabled = true;
   try {
