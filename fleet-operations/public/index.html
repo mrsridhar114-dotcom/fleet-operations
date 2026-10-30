@@ -1553,6 +1553,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .xlist { position: absolute; left: 0; top: 100%; min-width: 100%; width: max-content; max-width: 280px; max-height: 240px; overflow: auto; margin-top: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
 .xlist div { padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; } .xlist div.h { background: var(--accent-soft); font-weight: 700; } .xlist p { margin: 4px 8px; color: var(--muted); font-size: 13px; }
 .xe-veh .xlist div { font-family: var(--mono); font-size: 13px; }
+.xfut { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 99px; background: color-mix(in srgb, #2f6fd6 16%, var(--surface)); color: #1f4f9e; font: 600 11.5px var(--body); white-space: nowrap; }
 .xmon { color: var(--accent); font-weight: 700; margin-right: 5px; } .xdupt { display: inline-block; margin-left: 6px; padding: 0 6px; border: 0; cursor: pointer; border-radius: 99px; background: color-mix(in srgb, #f5a400 22%, var(--surface)); color: var(--ink); font: 600 11.5px var(--body); white-space: nowrap; }
 .xbill { border: 0; background: none; cursor: pointer; padding: 0 2px; margin-left: 6px; font-size: 13px; opacity: 0; vertical-align: baseline; color: var(--ink); } .xgrid tr:hover .xbill { opacity: .45; } .xgrid .xbill:hover { opacity: 1 !important; } .xbill.on { opacity: 1 !important; font-weight: 700; }
 .xbillpop { width: 300px; } .xduppop { width: 380px; } .xdlist { display: grid; gap: 6px; margin-bottom: 10px; max-height: 300px; overflow: auto; }
@@ -6481,7 +6482,7 @@ function renderExp(force) {
   // Phone and narrow windows: the list, with the entry box on top.
   const h = `<div class="xps"><div data-slot="top"></div><section class="panel xpsheet">${xpMBarHtml()}<div class="tscroll"><table class="ctable xptable xpgridt"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>` +
     `<thead><tr><th>Date</th><th>Expense description</th><th>Vehicle</th><th>Category</th><th class="n">Amount</th><th>Paid by</th><th></th></tr></thead><tbody>` +
-    list.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category, x.catNote)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("") +
+    list.map(x => `<tr data-xp="${x.id}" tabindex="0" class="${on(x)}"${tip}><td class="num">${fmtShort(x.date)}</td><td>${esc(x.desc || "")}${x.date > todayISO() ? ` <span class="xfut">upcoming</span>` : ""}</td><td class="num" style="white-space:nowrap">${veh(x)}</td><td>${xpTag(x.category, x.catNote)}</td><td class="n">${nf(num(x.amount))}</td><td>${esc(x.pay || "")}</td><td></td></tr>`).join("") +
     `</tbody></table></div>${list.length ? "" : none}<div class="xpsfoot"><span>${totTxt}</span><b>${nf(sum(list))}</b></div></section>` +
     `<aside class="panel xpvtab"><table><thead><tr><th>Vehicle</th><th class="n">Expense</th></tr></thead><tbody>` +
     VS.map(([k, v]) => `<tr data-xpveh="${esc(k)}" class="${xpOnlyVeh() === k ? "on" : ""}"><td class="num">${esc(xpKeyName(k))}</td><td class="n">${nf(v)}</td></tr>`).join("") +
@@ -6686,7 +6687,7 @@ function xpCellInner(c, v, d) {
   if (c === "date") t = (v.date ? esc(xpDateTxt(v.date)) : "") + (canXp() ? `<button type="button" class="xdcal" data-xdcal tabindex="-1" title="Pick the date from a calendar" aria-label="Pick the date">📅</button>` : "");
   else if (c === "desc") {
     const x = v.x;
-    t = (x?.monthly ? `<span class="xmon" title="Repeats every month">↻</span>` : d?.monthly ? `<span class="xmon" title="Monthly payment">↻</span>` : "") + esc(v.desc || "") +
+    t = (x?.monthly ? `<span class="xmon" title="Repeats every month">↻</span>` : d?.monthly ? `<span class="xmon" title="Monthly payment">↻</span>` : "") + esc(v.desc || "") + (v.date > todayISO() ? ` <span class="xfut" title="The date is still to come">upcoming</span>` : "") +
       (x && xpDups.has(xpDupKey(x)) ? ` <button type="button" class="xdupt" data-xdup="${x.id}" title="Another line has the same date, vehicle and amount. Click to check it.">⚠ duplicate?</button>` : "") +
       (x ? `<button type="button" class="xbill${x.bills?.length ? " on" : ""}" data-xbill="${x.id}" title="${x.bills?.length ? `${x.bills.length} bill${x.bills.length > 1 ? "s" : ""} attached` : "Attach a bill"}">📎${x.bills?.length > 1 ? x.bills.length : ""}</button>` : "");
   }
@@ -7214,7 +7215,7 @@ function xpOpen(mode, ch, note) {
   const { r } = xpAct, c = note ? "catNote" : xpAct.c, v = xpValOf(r), td = xpTd(r, xpAct.c), sc = $("xpSc"), box = $("xpEdBox"); if (!v || !td) return;
   const cur = c === "date" ? (v.date ? xpDMY(v.date) : "") : c === "veh" ? (v.veh !== "" ? xpKeyName(v.veh, v.x) : "") : c === "amount" ? String(v.amount ?? "") : String(v[c] ?? "");
   xpEdit = { r, c, mode, hi: 0, items: null };
-  box.innerHTML = (c === "desc" ? `<textarea rows="1" aria-label="Expense description"></textarea>` : `<input type="text" autocomplete="off" aria-label="${c === "catNote" ? "Details for Other" : XP_NAMES[c]}"${c === "catNote" ? ' placeholder="Other: what was it?"' : ""}${c === "amount" ? ' inputmode="decimal"' : ""}>`) + (c === "date" ? `<button type="button" class="xdpick" title="Pick from the calendar" aria-label="Pick the date from a calendar">📅</button><input type="date" class="xdpin" tabindex="-1" aria-hidden="true" max="${todayISO()}">` : "") + `<div class="xlist" hidden></div>`;
+  box.innerHTML = (c === "desc" ? `<textarea rows="1" aria-label="Expense description"></textarea>` : `<input type="text" autocomplete="off" aria-label="${c === "catNote" ? "Details for Other" : XP_NAMES[c]}"${c === "catNote" ? ' placeholder="Other: what was it?"' : ""}${c === "amount" ? ' inputmode="decimal"' : ""}>`) + (c === "date" ? `<button type="button" class="xdpick" title="Pick from the calendar" aria-label="Pick the date from a calendar">📅</button><input type="date" class="xdpin" tabindex="-1" aria-hidden="true">` : "") + `<div class="xlist" hidden></div>`;
   const el = box.firstElementChild; el.value = mode === "type" ? ch : cur;
   const a = td.getBoundingClientRect(), b = sc.getBoundingClientRect();
   box.style.left = a.left - b.left + sc.scrollLeft + "px"; box.style.top = a.top - b.top + sc.scrollTop + (note ? a.height : 0) + "px";
@@ -7240,7 +7241,7 @@ function xpCancel() { if (xpEdit?.c === "catNote" && xpPendingOther) { const r =
 function xpCommit() {
   const E = xpEdit; if (!E) return true;
   const box = $("xpEdBox"), raw = box.firstElementChild.value, c = E.c; let val;
-  if (c === "date") { val = xpParseDate(raw); if (val === null) return xpEdErr("Type the date like 29/10 or 29/10/2026."); if (val > todayISO()) return xpEdErr("That date is in the future."); }
+  if (c === "date") { val = xpParseDate(raw); if (val === null) return xpEdErr("Type the date like 29/10 or 29/10/2026."); }
   else if (c === "amount") { if (!upText(raw)) val = ""; else { const n = num(String(raw).replace(/[,₹\s]/g, "")); if (!(n > 0)) return xpEdErr("Type the amount as a number."); val = Math.round(n); } }
   else if (["veh", "category", "pay"].includes(c)) { if (!upText(raw)) val = ""; else { const m = E.items?.[E.hi]; if (!m) return xpEdErr("Pick one from the list."); val = m[0]; } }
   else val = upText(raw);
@@ -7446,7 +7447,7 @@ function xfRender(x, mode = "") {
     : x ? ["Change expense", "Make the change and tap Save."] : ["New expense", "Fill in the details and tap Add (or press Enter)."];
   $("xpForm").innerHTML = `<div class="xpfh"><b>${head[0]}</b><span class="sub${mode === "mine" && x?.status === "rejected" ? " xrwhy" : ""}">${head[1]}</span></div>` +
     `<div class="xpgrid">` +
-    `<label class="xpdt"><span>Date</span><input type="date" id="xfDate" value="${esc(v.date)}" max="${todayISO()}"></label>` +
+    `<label class="xpdt"><span>Date</span><input type="date" id="xfDate" value="${esc(v.date)}"></label>` +
     `<label class="xpd"><span>Expense description</span><textarea id="xfDesc" rows="1" placeholder="e.g. Tyre rebuilt (2 nos)">${esc(v.desc || "")}</textarea></label>` +
     (assetsCap ? `<div class="xfbills"><span>Bill <small>(photo or PDF)</small></span><div id="xfBillList"></div><label class="btn xfbadd">📎 Attach bill<input type="file" id="xfBillIn" accept="${FILE_TYPES.join(",")}" multiple hidden></label></div>` : "") +
     `<label><span>Vehicle</span><select id="xfVeh"></select></label>` +
