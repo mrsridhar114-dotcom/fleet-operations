@@ -588,7 +588,7 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtst.hi { background: var(--accent-soft); } .rtst.hi span, .rtst.hi b { color: var(--accent); } .rtst.hi.neg { background: var(--danger-soft, #fde8e6); } .rtst.hi.neg span, .rtst.hi.neg b { color: var(--danger); }
 .rtst.ed input { font: inherit; font-size: 14px; font-weight: 700; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 96px; box-sizing: border-box; }
 .rtst.ed .dmy { width: 142px; } .icon.rtbin { color: var(--danger); display: inline-flex; align-items: center; justify-content: center; padding: 6px; } .icon.rtbin:hover { background: var(--danger-soft, #FDECEC); }
-.rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
+.rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst .rtact.rtmeter { color: var(--muted); } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
 .rttab tr.adv td { background: var(--accent-soft); } .rttab tr.dim td { color: var(--muted); } .rtpendn { margin: 8px 0 0; color: var(--warn); }
@@ -5970,7 +5970,7 @@ function renderMonthEntry(ym, M) {
   $("tFoot").innerHTML = `<tr><td class="sticky">Total</td><td colspan="5">${ran.length} day${ran.length === 1 ? "" : "s"} · ${days.filter(r => r.idle).length} not run</td>` +
     `<td></td><td class="n">${nf(sumK("lit"))}</td><td class="n">${nf(sumK("dsl"))}</td><td class="n">${nf(sumK("pd"))}</td><td class="n">${nf(sumK("pc"))}</td><td class="n">${nf(sumK("pk"))}</td>` +
     `${[1, 2, 3, 4, 5].map(i => `<td class="n">${nf(sumK("s" + i))}</td>`).join("")}<td class="n">${nf(totCol)}</td><td class="n">${nf(totExp)}</td>` +
-    `<td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n" title="${M.odoK?.conv ? `Meter km this month. Actual km: ${km != null ? nf(km) : "—"}` : "Km run this month"}">${M.mkm != null ? nf(M.mkm) + " km" : "—"}</td><td></td></tr>`;
+    `<td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n" title="${M.odoK?.conv ? `Actual km this month. Meter km: ${M.mkm != null ? nf(M.mkm) : "—"}` : "Km run this month"}">${km != null ? nf(km) + " km" : "—"}</td><td></td></tr>`;
 }
 // Typing updates the draft and the worked-out boxes of the month, without redrawing the box being typed in.
 function meInput(e) {
@@ -6096,7 +6096,7 @@ function renderTrips() {
       stat("Profit per km", perKm(bal, km), km && tot.col ? `${nf(bal / tot.col * 100, 1)}% of collection` : "", bal < 0 ? "var(--danger)" : "") +
     `</div><div class="tscards">` +
       `<section class="tscard"><h3>Money</h3>${line("Total collection", rs(tot.col))}${line("Total expense", rs(tot.exp))}${line("Total balance", rs(bal), bal < 0 ? "neg" : "pos")}</section>` +
-      `<section class="tscard"><h3>Kilometres</h3>${tKmStartHtml(ym, open)}${line("Kilometer ending", M.lastOdo ? nf(M.lastOdo) : "—")}${line(M.odoK?.conv ? "Meter kilometers" : "Total kilometers", M.mkm != null ? nf(M.mkm) : "—")}${M.odoK?.conv ? line("Actual kilometers", km != null ? nf(km) : "—") : ""}${line("Per day average kms", km != null && days ? nf(km / days) : "—")}${km && tot.lit ? `<p class="hint" style="margin:4px 0 0">Mileage ${nf(km / tot.lit, 2)} km/L</p>` : ""}${M.odoK?.conv ? `<p class="hint" style="margin:6px 0 0">${odoExplain(M.odoK, M.open.km, M.lastOdo)}</p>` : ""}</section>` +
+      `<section class="tscard"><h3>Kilometres</h3>${tKmStartHtml(ym, open)}${line("Kilometer ending", M.lastOdo ? nf(M.lastOdo) : "—")}${line("Total kilometers", km != null ? nf(km) : "—")}${M.odoK?.conv ? `<p class="hint" style="margin:0 0 4px;text-align:right">Meter ${M.mkm != null ? nf(M.mkm) : "—"} km</p>` : ""}${line("Per day average kms", km != null && days ? nf(km / days) : "—")}${km && tot.lit ? `<p class="hint" style="margin:4px 0 0">Mileage ${nf(km / tot.lit, 2)} km/L</p>` : ""}${M.odoK?.conv ? `<p class="hint" style="margin:6px 0 0">${odoExplain(M.odoK, M.open.km, M.lastOdo)}</p>` : ""}</section>` +
       `<section class="tscard"><h3>Salary</h3>${line("Driver salary", rs(tot.pd))}${line("Conductor salary", rs(tot.pc))}${line("Checker salary", rs(tot.pk))}${line("Total", rs(crewPay), "pos")}</section>` +
     `</div>` + meCrewTable(M);
 
@@ -14029,12 +14029,12 @@ function meXlsx(ym) {
   lab("Q4", "Checker Salary", "Q4:S4"); put(ws, "T4", tot.pk, S.sum, `ROUND(SUM(${rg("L")}),0)`);
   lab("Q5", "Total", "Q5:S5"); put(ws, "T5", crewPay, S.sum, "SUM(T2:T4)");
   // Kilometres
-  // Actual km from the vehicle master's readings: the figures are written as worked out (Total = meter km, per day = actual km), not as formulas.
-  const kmPlain = !!M.odoK?.conv;
+  // The Excel keeps the odometer km (Total and per day on the meter km); across a new meter they are written as worked out, not as formulas.
+  const kmPlain = !!M.odoK?.split;
   lab("J6", "Kilometer Starting", "J6:M6"); put(ws, "N6", M.open.km ?? "", S.sum); ws.merges.push("N6:O6");
   lab("J7", "Kilometer Ending", "J7:M7"); put(ws, "N7", M.lastOdo || 0, S.sum, M.odoK?.split ? undefined : `MAX(${rg("V")})`); ws.merges.push("N7:O7");
   lab("J8", "Total Kilometers", "J8:M8"); put(ws, "N8", M.mkm ?? 0, S.sum, kmPlain ? undefined : "IF(N6>0,N7-N6,0)"); ws.merges.push("N8:O8");
-  lab("J9", "Per Day Average Kms", "J9:M9"); put(ws, "N9", M.km && days ? Math.round(M.km / days) : 0, S.sum, kmPlain ? undefined : "IF(B2>0,ROUND(N8/B2,0),0)"); ws.merges.push("N9:O9");
+  lab("J9", "Per Day Average Kms", "J9:M9"); put(ws, "N9", M.mkm && days ? Math.round(M.mkm / days) : 0, S.sum, kmPlain ? undefined : "IF(B2>0,ROUND(N8/B2,0),0)"); ws.merges.push("N9:O9");
   // Driver and conductor table (the template's formulas: days are the dates each person is on)
   ["Name", "No.of Days", "Diesel", "Avg Diesel/Day", "Collection", "Expense", "Balance", "Avg / Day", "Avg Col/Day"].forEach((h, i) => put(ws, XL.col(i) + 6, h, S.head));
   let r = 7;
@@ -14182,10 +14182,10 @@ function renderTruck() {
       const c = legCalc(l), d1 = l.driver1Id ? (drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name) : l.driver1Name, d2 = l.driver2Id ? (drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name) : l.driver2Name;
       body += `<tr data-lid="${l.id}" tabindex="0" class="${c.bal < 0 ? "loss" : ""}"><td class="sticky"><span class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</span></td><td class="n">${fmtDays(c.days)}</td>
         <td>${esc(l.origin || "")}</td><td>${esc(l.dest || "")}</td><td>${esc([d1, d2].filter(Boolean).join(", "))}</td><td class="n"><b>${nf(num(l.rent))}</b></td>${ncell(l.commission)}<td class="n">${l.litres ? nf(l.litres) : "—"}</td>${ncell(l.fuelCost)}${ncell(l.toll)}${ncell(l.padi)}${ncell(l.rto)}${ncell(l.loading)}${ncell(l.bridge)}${ncell(l.otherExp)}${ncell(l.billExp)}${ncell(c.exp)}
-        <td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td>${ncell(c.received)}${ncell(l.startKm)}${ncell(l.endKm)}${ncell(c.km)}<td class="n">${c.act && l.litres ? nf(c.act / l.litres, 2) : "—"}</td><td class="rm" title="${esc(l.remarks || "")}">${esc(l.remarks || "")}</td></tr>`;
+        <td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td>${ncell(c.received)}${ncell(l.startKm)}${ncell(l.endKm)}${ncell(c.act)}<td class="n">${c.act && l.litres ? nf(c.act / l.litres, 2) : "—"}</td><td class="rm" title="${esc(l.remarks || "")}">${esc(l.remarks || "")}</td></tr>`;
     });
   });
-  const foot = legs.length ? `<tfoot><tr><td class="sticky">Total</td><td class="n">${fmtDays(T.days)}</td><td colspan="3">${legs.length} trips</td><td class="n">${nf(T.rent)}</td><td class="n">${nf(T.commission)}</td><td class="n">${nf(T.lit)}</td><td class="n">${nf(T.fuelCost)}</td><td class="n">${nf(T.toll)}</td><td class="n">${nf(T.padi)}</td><td class="n">${nf(T.rto)}</td><td class="n">${nf(T.loading)}</td><td class="n">${nf(T.bridge)}</td><td class="n">${nf(T.otherExp)}</td><td class="n">${nf(T.billExp)}</td><td class="n">${nf(T.exp)}</td><td class="n">${nf(bal)}</td><td class="n">${nf(T.rec)}</td><td></td><td></td><td class="n">${nf(T.km)}</td><td class="n">${T.act && T.lit ? nf(T.act / T.lit, 2) : "—"}</td><td></td></tr></tfoot>` : "";
+  const foot = legs.length ? `<tfoot><tr><td class="sticky">Total</td><td class="n">${fmtDays(T.days)}</td><td colspan="3">${legs.length} trips</td><td class="n">${nf(T.rent)}</td><td class="n">${nf(T.commission)}</td><td class="n">${nf(T.lit)}</td><td class="n">${nf(T.fuelCost)}</td><td class="n">${nf(T.toll)}</td><td class="n">${nf(T.padi)}</td><td class="n">${nf(T.rto)}</td><td class="n">${nf(T.loading)}</td><td class="n">${nf(T.bridge)}</td><td class="n">${nf(T.otherExp)}</td><td class="n">${nf(T.billExp)}</td><td class="n">${nf(T.exp)}</td><td class="n">${nf(bal)}</td><td class="n">${nf(T.rec)}</td><td></td><td></td><td class="n">${nf(T.act)}</td><td class="n">${T.act && T.lit ? nf(T.act / T.lit, 2) : "—"}</td><td></td></tr></tfoot>` : "";
   $("kTable").classList.toggle("ronly", !$("kLegs").checked);
   $("kTable").innerHTML = head + `<tbody>${body || `<tr><td colspan="${cols}" class="sub" style="padding:18px">No trips entered for FY ${fyLabel(kFy)}.${canTrips ? " Use + Add trip to enter one." : ""}</td></tr>`}</tbody>` + foot;
   rtRefresh();
@@ -14739,7 +14739,7 @@ function rtSumRender() {
     : `<span class="rtadvin${A.typed ? " typed" : ""}">${A.typed ? `<button type="button" class="rtrst" data-rtreset="advEdit" title="Go back to ${rs(A.auto)} from the last round trip" aria-label="Go back to the worked-out advance">↺</button>` : ""}<input type="number" inputmode="numeric" data-rtk="advEdit" value="${A.amt}" aria-label="Advance from the previous trip, ₹"></span>` });
   const balRow = row(S.balLine, { cls: S.loss ? "loss" : "", date: edit ? `<input type="date" data-rtk="balDate" value="${S.balLine.date}" aria-label="Date of the vehicle balance">` : "" });
   $("rtSum").innerHTML = `<div class="rtstrip"><div class="rtstats">` + st("Truck", esc(bus ? plateOf(bus) : "—")) + ed("startDate", "Start date", S.startDate, S.autoStart, 1) + ed("endDate", "End date", S.endDate, S.autoEnd, 1) +
-    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK, 0, S.odoK.conv ? `<small class="rtact">Actual ${nf(S.odoK.sA)}</small>` : "") + ed("endKm", "End km", S.endKm, S.autoEK, 0, S.odoK.conv ? `<small class="rtact">Actual ${nf(S.odoK.eA)}</small>` : "") + st(S.odoK.conv ? "Meter km" : "Total km", S.km ? nf(S.km) : "—") + (S.odoK.conv ? st("Actual km", S.act ? nf(S.act) : "—", " hi") : "") +
+    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK, 0, S.odoK.conv ? `<small class="rtact">Actual ${nf(S.odoK.sA)}</small>` : "") + ed("endKm", "End km", S.endKm, S.autoEK, 0, S.odoK.conv ? `<small class="rtact">Actual ${nf(S.odoK.eA)}</small>` : "") + st("Total km", S.act ? nf(S.act) : "—", "", S.odoK.conv ? `<small class="rtact rtmeter">Meter ${nf(S.km)}</small>` : "") +
     st("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—") + st("Mileage", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L` : "—") + st("Vehicle bal.", rs(S.bal), S.bal < 0 ? " hi neg" : " hi") + `</div>` + rtOdoNote(S) + `</div>` +
     `<div class="rtcard"><h3>Loads${S.drivers.length ? ` <span class="sub">· ${esc(S.drivers.join(", "))}</span>` : ""}</h3><div class="rttscroll"><table class="rttab"><thead><tr><th>#</th><th>Dates</th><th>Trip</th><th class="n">Rent</th><th class="n">Expense</th><th class="n">Balance</th></tr></thead><tbody>` +
     S.loads.map(({ l, c }, i) => `<tr><td>${i + 1}</td><td class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</td><td>${esc(rtLegName(l))}</td><td class="n">${nf(num(l.rent))}</td><td class="n">${nf(c.exp)}</td><td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td></tr>`).join("") +
@@ -14811,10 +14811,11 @@ function rtTamilFont() {
   if (!document.getElementById("rtTaFont")) { const l = document.createElement("link"); l.id = "rtTaFont"; l.rel = "stylesheet"; l.href = "https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&display=swap"; document.head.append(l); }
   return Promise.race([Promise.all([document.fonts.load("400 20px 'Noto Sans Tamil'", "தமிழ்"), document.fonts.load("700 20px 'Noto Sans Tamil'", "தமிழ்")]), new Promise(ok => setTimeout(ok, 4000))]).catch(() => {});
 }
-// The trip summary lines. With actual km from the vehicle master, Total km is the actual km (and the mileage is on it).
+// The trip summary lines, printed with the odometer km as entered: Total km is the meter km and the mileage is on it.
+// (The screen shows the actual km from the vehicle master.)
 function rtSumRows(S, r, t = RT_T.en) {
-  const rows = [fmtShort(S.startDate), fmtShort(S.endDate), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.act ? nf(S.act) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
-    S.act && S.litres ? nf(S.act / S.litres, 2) : "—", rtSigned(S.bal)].map((v, i) => [t.sum[i], v]);
+  const rows = [fmtShort(S.startDate), fmtShort(S.endDate), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.km ? nf(S.km) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
+    S.km && S.litres ? nf(S.km / S.litres, 2) : "—", rtSigned(S.bal)].map((v, i) => [t.sum[i], v]);
   return rows;
 }
 // Under the strip: how the actual km were worked out from the vehicle master's readings.
