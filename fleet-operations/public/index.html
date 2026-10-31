@@ -14462,14 +14462,14 @@ const RT_T = {
   en: { font: "Arial, Helvetica, sans-serif", sheet: "TRIP SHEET", summary: "TRIP SUMMARY", veh: "Vehicle No", drv: "Driver", loads: "LOADS", cols: ["Dates", "Trip", "Rent", "Expenses", "Balance"], total: "Total",
     owner: "① OWNER'S MONEY", came: "② CAME TO THE OWNER", gFast: "FASTag", gCard: "Diesel paid by card", gGiv: "Given to the driver", gBal: "Balance with the vehicle", none: "None", nopay: "No payments yet",
     tot1: "Total ①", tot2: "Total ②", notSet: "Not settled", adv: "③ ADVANCE", ownerM: "Owner's Money", cameM: "Came to owner", balance: "Balance", next: "Advance for next trip",
-    pend: n => `Came to owner includes ${n} not settled.`, sign: "Driver's signature", checked: "Checked by", printed: "Printed by", sheets: ["Trip sheet", "Trip summary"],
+    pend: n => `Came to owner includes ${n} not settled.`, note: "This is a computer-generated document. No signature is required.", printed: "Printed by", sheets: ["Trip sheet", "Trip summary"],
     sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
     fast: "FASTag", card: "Diesel by card", L: "L", advPrev: "Advance from the previous trip", advSet: (no, fy) => `settlement of round trip ${no} (FY ${fy})`, given: "Given to the driver", vbal: "Vehicle balance", pay: {}, giv: {} },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
     cols: ["தேதி", "பயணம்", "வாடகை", "செலவு", "மீதம்"], total: "மொத்தம்", owner: "① முதலாளி பணம்", came: "② முதலாளிக்கு வந்தது", gFast: "ஃபாஸ்டேக்", gCard: "கார்டு மூலம் டீசல்",
     gGiv: "ஓட்டுநரிடம் கொடுத்தது", gBal: "வண்டி மீதம்", none: "இல்லை", nopay: "இன்னும் பணம் வரவில்லை", tot1: "மொத்தம் ①", tot2: "மொத்தம் ②", notSet: "நிலுவை", adv: "③ முன்பணம்",
     ownerM: "முதலாளி பணம்", cameM: "முதலாளிக்கு வந்தது", balance: "மீதம்", next: "அடுத்த பயணத்திற்கான முன்பணம்", pend: n => `முதலாளிக்கு வந்ததில் ${n} நிலுவை உள்ளது.`,
-    sign: "ஓட்டுநர் கையொப்பம்", checked: "சரிபார்த்தவர்", printed: "அச்சிட்டவர்", sheets: ["பயணக் கணக்கு", "பயணச் சுருக்கம்"],
+    note: "இது கணினியால் உருவாக்கப்பட்ட ஆவணம். கையொப்பம் தேவையில்லை.", printed: "அச்சிட்டவர்", sheets: ["பயணக் கணக்கு", "பயணச் சுருக்கம்"],
     sum: ["தொடக்க தேதி", "முடிவு தேதி", "மொத்த நாட்கள்", "மொத்த வாடகை", "தொடக்க கி.மீ", "முடிவு கி.மீ", "மொத்த கி.மீ", "மொத்த டீசல் (லி)", "மைலேஜ் (கி.மீ/லி)", "வண்டி மீதம்"],
     fast: "ஃபாஸ்டேக்", card: "டீசல் (கார்டு)", L: "லி", advPrev: "முந்தைய பயண முன்பணம்", advSet: (no, fy) => `சுற்றுப் பயணம் ${no} கணக்கு (நிதியாண்டு ${fy})`, given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்",
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
@@ -14540,8 +14540,9 @@ function rtPaint(fn, t = RT_T.en) {
     else { hi = k; k = lo !== null ? (lo + hi) / 2 : Math.max(0.55, k * (room - 230) / (end - 230) * 0.98); }
   }
   const { cv, g, K, end } = best, h = Math.max(H, end + 150), fy = h - M - 56;
-  K.txt(t.sign, K.P, fy, { px: 15, color: "#555" }); K.txt(t.checked, W / 2, fy, { px: 15, color: "#555", align: "center" });
-  K.txt(`${t.printed} ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, W - K.P, fy, { px: 13, color: "#777", align: "right" });
+  // As on the booking slip and the spare bus trip sheet: no signature lines, a note that none is needed.
+  K.txt(t.note, W / 2, fy, { px: K.fitPx(t.note, K.IN, 16) / K.z(1), color: "#555", align: "center" });
+  K.txt(`${t.printed} ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, W / 2, fy + 26, { px: 13, color: "#777", align: "center" });
   g.strokeStyle = K.ink; g.lineWidth = 3; g.strokeRect(M, M, W - 2 * M, h - 2 * M);
   const out = document.createElement("canvas"); out.width = W; out.height = h; out.getContext("2d").drawImage(cv, 0, 0); return out;
 }
@@ -14620,14 +14621,16 @@ function rtSheetXlsx(r, S, sec, withSum, t = RT_T.en) {
     if (sec.adv) {
       put(`A${n}`, t.adv, st.ttext); n++;
       [[t.ownerM, S.owner], [t.cameM, S.came], [t.balance, S.diff]].forEach(([l, v], i) => { put(`A${n}`, l, i === 2 ? st.ttext : st.text); put(`B${n}`, "=", st.text); put(`C${n}`, v, i === 2 ? st.tint : st.int); n++; });
-      put(`A${n}`, t.next, st.ttext); put(`C${n}`, S.diff, st.tint);
+      put(`A${n}`, t.next, st.ttext); put(`C${n}`, S.diff, st.tint); n++;
     }
+    put(`A${n + 1}`, t.note, st.note); ws.merges.push(`A${n + 1}:G${n + 1}`);
   }
   if (withSum) {
     const ws = XL.sheet(t.sheets[1]), put = (ref, v, s) => XL.put(ws, ref, v, s); sheets.push(ws);
     Object.assign(ws.widths, { A: 25, B: 40, C: 13, D: 13, E: 14, F: 40, G: 13 }); top(ws, put, t.summary);
     rtSumRows(S, r, t).forEach(([l, v], i) => { put(`A${5 + i}`, l, st.label); const raw = typeof v === "string" ? +v.replace(/,/g, "") : v;
       put(`B${5 + i}`, i < 2 ? { d: i ? r.to : r.from } : Number.isFinite(raw) ? raw : v, i < 2 ? st.date : Number.isFinite(raw) ? (Number.isInteger(raw) ? st.int : st.dec) : st.text); });
+    put("A16", t.note, st.note); ws.merges.push("A16:G16");
   }
   return XL.build(sheets);
 }
