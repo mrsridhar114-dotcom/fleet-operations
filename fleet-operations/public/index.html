@@ -528,7 +528,8 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 @media (max-width: 820px) { .tfgrid { grid-template-columns: minmax(0, 1fr); } .tfside { position: static; order: -1; } }
 .tentry { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .rbtn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 5px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
-.rbtn.add { border-color: var(--accent); color: var(--accent); }
+.rbtn.add { border-color: var(--accent); color: var(--accent); } .rbtn.del { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); color: var(--danger); } .rbtn.del:hover { background: var(--danger); border-color: var(--danger); }
+.lgshut { margin: 0; padding: 10px 14px; border-radius: 8px; background: var(--chip-bg); border: 1px solid var(--line); font-size: 14px; }
 .rbtn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 table.ttable tbody tr[data-tdate]:not([data-tdate=""]) { cursor: pointer; }
 table.ttable tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -581,7 +582,7 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
   #lgDrawer.fullpage form { padding: 24px 40px 32px; }
   #lgDrawer .tfgrid { grid-template-columns: minmax(0, 1fr) 260px; gap: 22px; max-width: 1600px; }
   #lgDrawer .tfmain { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px 22px; align-items: start; }
-  #lgDrawer .tfmain > fieldset:nth-of-type(3) { grid-column: 1 / -1; }
+  #lgDrawer .tfmain > fieldset:nth-of-type(3), #lgDrawer .tfmain > fieldset:nth-of-type(5) { grid-column: 1 / -1; }
   #lgDrawer .tfmain > fieldset { margin: 0; }
   #lgDrawer .tfmain > fieldset:first-of-type .three { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 76px; } #lgDrawer input[type="date"] { padding-left: 8px; padding-right: 6px; }
 }
@@ -814,6 +815,7 @@ table.ttable.otable { min-width: 1750px; }
 table.ttable tr.grp td { background: var(--bg); font-size: 12px; padding: 8px; border-bottom: 1px solid var(--line); }
 table.ttable tr.grp td .grpin { position: sticky; left: 8px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; max-width: calc(100vw - 80px); }
 table.ttable tr.grp td .grpin b { font-size: 13px; }
+@media (min-width: 861px) { body:not(.navless) table.ttable tr.grp td .grpin { max-width: calc(100vw - 330px); } }
 table.ttable tr.grp .rbtn { font-size: 12px; }
 table.ttable tbody tr[data-hid], table.ttable tbody tr[data-lid] { cursor: pointer; }
 table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
@@ -824,6 +826,9 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
 @media (max-width: 700px) { .lgftab { min-width: 660px; } }
 .lgftab tfoot td { border-bottom: 0; padding-top: 8px; font-weight: 700; font-family: var(--mono); } .lgftab tfoot td.n { text-align: right; padding-right: 10px; } .lgftab tfoot .sub { font-family: var(--body); font-weight: 400; } .lgftab tfoot .btn { padding: 5px 10px; font-size: 13px; font-family: var(--body); white-space: nowrap; }
 .lgftab [data-frm] { padding: 2px 6px; }
+.lgptab th:nth-child(1) { width: 17%; } .lgptab th:nth-child(2) { width: auto; } .lgptab th:nth-child(3) { width: 15%; } .lgptab th:nth-child(4) { width: 18%; } .lgptab th:nth-child(5) { width: 9%; } .lgptab th:last-child { width: 5%; }
+.lgptab .c { text-align: center; } .lgptab input[type="checkbox"] { width: 18px; height: 18px; padding: 0; margin: 0; vertical-align: middle; accent-color: var(--accent); }
+@media (max-width: 700px) { .lgptab { min-width: 620px; } }
 .payrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .paylist { display: flex; flex-direction: column; gap: 8px; }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
@@ -2622,11 +2627,11 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <p class="sync">Each load is one trip. Trips out and back are grouped into a round trip, which is closed once its payments are settled.</p>
         </div>
         <div class="tcontrols">
-          <div class="hf"><label for="kBus">Truck</label><select id="kBus"></select></div>
           <div class="hf"><label for="kFy">Financial year</label><select id="kFy"></select></div>
           <button class="btn primary" type="button" id="kAdd">+ Add trip</button>
         </div>
       </header>
+      <nav class="ttabs ktabs" id="kTabs" role="tablist" aria-label="Truck"></nav>
       <div class="empty panel" id="kNone" hidden><strong>No trucks yet</strong>Add a vehicle with class 12 Wheeler Truck under Masters › Vehicle.</div>
       <div id="kBody" style="display:flex;flex-direction:column;gap:16px">
         <section class="summary tsum" id="kSummary" aria-label="Truck summary"></section>
@@ -3287,7 +3292,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 </div>
 <aside class="drawer fullpage lgfull" id="lgDrawer" role="dialog" aria-modal="true" aria-labelledby="lgTitle" hidden>
   <header><div style="min-width:0"><h2 id="lgTitle">Add trip</h2><div class="vsub" id="lgSub"></div></div><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></header>
-  <form id="lgForm" novalidate><div class="tfgrid"><div class="tfmain">
+  <form id="lgForm" novalidate><p class="lgshut" id="lgShut" hidden>🔒 This round trip is closed, so the trip is view-only. To change it, press <b>Reopen</b> on the round trip in the Trucks page.</p><div class="tfgrid"><div class="tfmain">
     <fieldset class="docs"><legend>Trip</legend>
       <div class="field"><label for="lgRound">Round trip</label><select id="lgRound"></select><span class="hint">Trips out and back belong to one round trip. Its payment is settled together.</span></div>
       <div class="three">
@@ -3339,8 +3344,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </div>
     </fieldset>
     <fieldset class="docs"><legend>Payments received</legend>
-      <div class="paylist" id="lgPays"></div>
-      <div><button class="btn" type="button" id="lgAddPay" style="padding:6px 12px;font-size:13px">+ Add payment</button></div>
+      <div class="tscroll"><table class="lgftab lgptab"><thead><tr><th>Date</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th class="c">Settled</th><th></th></tr></thead><tbody id="lgPays"></tbody>
+        <tfoot><tr><td><button class="btn" type="button" id="lgAddPay">+ Add payment</button></td><td class="sub" id="lgPayTot"></td><td class="n" id="lgPayAmt"></td><td colspan="3"></td></tr></tfoot></table></div>
       <div class="field"><label for="lgRemarks">Remarks</label><input id="lgRemarks" autocomplete="off" maxlength="300"></div>
     </fieldset>
   </div><aside class="tfside"><div class="tfcard"><h3>This trip</h3><div class="tcalc" id="lgCalc" aria-live="polite"></div></div></aside></div></form>
@@ -13916,7 +13921,7 @@ const LG_NUM = { lgRent: "rent", lgCommission: "commission", lgToll: "toll", lgP
 const LG_EXP = ["commission", "fuelCost", "toll", "padi", "rto", "loading", "bridge", "otherExp", "billExp"];
 const legCalc = l => {
   const exp = LG_EXP.reduce((a, k) => a + num(l[k]), 0), km = l.endKm && l.startKm && l.endKm > l.startKm ? l.endKm - l.startKm : 0;
-  return { exp, bal: num(l.rent) - exp, km, days: num(l.days), received: (l.payments || []).reduce((a, p) => a + num(p.amount), 0) };
+  return { exp, bal: num(l.rent) - exp, km, days: num(l.days), received: (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0) };
 };
 function roundsOf(vid, fy) {
   const legs = ops.truckTrips.filter(l => (!vid || l.vehicleId === vid) && (fy == null || fyOf(l.from) === fy)).sort((a, b) => a.from.localeCompare(b.from) || String(a.id).localeCompare(String(b.id)));
@@ -13932,7 +13937,7 @@ function roundsOf(vid, fy) {
 function renderTruck() {
   const tks = truckList();
   if (!tks.some(b => b.id === kBusId)) kBusId = tks[0]?.id || "";
-  $("kBus").innerHTML = tks.map(b => `<option value="${b.id}">${esc(plateOf(b))} · ${esc(vName(b))}</option>`).join(""); $("kBus").value = kBusId;
+  $("kTabs").innerHTML = tks.map(b => `<button type="button" role="tab" data-ktab="${b.id}" aria-selected="${b.id === kBusId}">${esc(plateOf(b))}</button>`).join(""); $("kTabs").hidden = tks.length < 1;
   $("kNone").hidden = !!tks.length; $("kBody").hidden = !tks.length; $("kAdd").hidden = !canTrips || !tks.length;
   if (!tks.length) return;
   const rounds = roundsOf(kBusId, kFy), legs = rounds.flatMap(r => r.legs);
@@ -13952,7 +13957,7 @@ function renderTruck() {
   [...rounds].forEach((r, i) => {
     body += `<tr class="grp"><td colspan="${cols}"><span class="grpin"><b>Round trip ${i + 1}</b><span>${fmtShort(r.from)} – ${fmtShort(r.to)} · ${esc(r.path)}</span><span>Trip balance <b style="color:${r.bal < 0 ? "var(--danger)" : "var(--ok)"}">${rs(r.bal)}</b></span><span>Received ${rs(r.received)}</span>
       <span class="pill ${r.status === "Closed" ? "ok" : "d30"}">${r.status === "Closed" ? `Closed${r.closedOn ? " " + fmtShort(r.closedOn) : ""}` : "Open"}</span>
-      ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="${r.status === "Closed" ? "open" : "close"}">${r.status === "Closed" ? "Reopen" : "Mark closed"}</button>${r.status !== "Closed" ? `<button class="rbtn add" type="button" data-round="${r.id}" data-act="add">+ Add trip to this round</button>` : ""}` : ""}</span></td></tr>`;
+      ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="${r.status === "Closed" ? "open" : "close"}">${r.status === "Closed" ? "Reopen" : "Mark closed"}</button>${r.status !== "Closed" ? `<button class="rbtn add" type="button" data-round="${r.id}" data-act="add">+ Add trip to this round</button><button class="rbtn del" type="button" data-round="${r.id}" data-act="del">Delete round trip</button>` : ""}` : ""}</span></td></tr>`;
     r.legs.forEach(l => {
       const c = legCalc(l), d1 = l.driver1Id ? (drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name) : l.driver1Name, d2 = l.driver2Id ? (drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name) : l.driver2Name;
       body += `<tr data-lid="${l.id}" tabindex="0" class="${c.bal < 0 ? "loss" : ""}"><td class="sticky"><span class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</span></td><td class="n">${fmtDays(c.days)}</td>
@@ -13963,7 +13968,7 @@ function renderTruck() {
   const foot = legs.length ? `<tfoot><tr><td class="sticky">Total</td><td class="n">${fmtDays(T.days)}</td><td colspan="3">${legs.length} trips</td><td class="n">${nf(T.rent)}</td><td class="n">${nf(T.commission)}</td><td class="n">${nf(T.lit)}</td><td class="n">${nf(T.fuelCost)}</td><td class="n">${nf(T.toll)}</td><td class="n">${nf(T.padi)}</td><td class="n">${nf(T.rto)}</td><td class="n">${nf(T.loading)}</td><td class="n">${nf(T.bridge)}</td><td class="n">${nf(T.otherExp)}</td><td class="n">${nf(T.billExp)}</td><td class="n">${nf(T.exp)}</td><td class="n">${nf(bal)}</td><td class="n">${nf(T.rec)}</td><td></td><td></td><td class="n">${nf(T.km)}</td><td class="n">${T.km && T.lit ? nf(T.km / T.lit, 2) : "—"}</td><td></td></tr></tfoot>` : "";
   $("kTable").innerHTML = head + `<tbody>${body || `<tr><td colspan="${cols}" class="sub" style="padding:18px">No trips entered for FY ${fyLabel(kFy)}.${canTrips ? " Use + Add trip to enter one." : ""}</td></tr>`}</tbody>` + foot;
 }
-$("kBus").addEventListener("change", () => { kBusId = $("kBus").value; renderTruck(); });
+$("kTabs").addEventListener("click", e => { const b = e.target.closest("[data-ktab]"); if (!b || b.dataset.ktab === kBusId) return; kBusId = b.dataset.ktab; renderTruck(); });
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 $("kAdd").onclick = () => openLeg(null);
 $("kTable").addEventListener("click", async e => {
@@ -13971,6 +13976,12 @@ $("kTable").addEventListener("click", async e => {
   if (b) {
     const r = roundsOf(kBusId).find(x => x.id === b.dataset.round); if (!r) return;
     if (b.dataset.act === "add") { openLeg(null, r.id); return; }
+    if (b.dataset.act === "del") {
+      const n = r.legs.length; if (!await askYesNo(`Delete this round trip completely?\n${fmtShort(r.from)} – ${fmtShort(r.to)} · ${r.path}\n${n} trip${n > 1 ? "s" : ""}, rent ${rs(r.rent)}, with all their diesel fills and payments. This cannot be undone.`, { yes: "Delete round trip", danger: true })) return;
+      let bad = 0; for (const l of r.legs) { try { await opsDelete("truckTrips", l.id); } catch { bad++; } }
+      if (ops.truckRounds.some(x => x.id === r.id)) { try { await opsDelete("truckRounds", r.id); } catch { bad++; } }
+      toast(bad ? "Some trips could not be deleted. Try again." : `Round trip deleted · ${n} trip${n > 1 ? "s" : ""}`); return;
+    }
     const closing = b.dataset.act === "close";
     try { await opsSave("truckRounds", { id: r.id, vehicleId: r.vehicleId, fy: fyOf(r.from), status: closing ? "Closed" : "Open", ...(closing ? { closedOn: todayISO() } : {}) }); toast(closing ? "Round trip closed" : "Round trip reopened"); }
     catch { toast("Couldn't save. Try again."); }
@@ -13979,14 +13990,21 @@ $("kTable").addEventListener("click", async e => {
   const row = e.target.closest("tr[data-lid]"); if (row) openLeg(row.dataset.lid);
 });
 $("kTable").addEventListener("keydown", e => { const r = e.target.closest("tr[data-lid]"); if (r && e.key === "Enter") openLeg(r.dataset.lid); });
-function payRow(p = {}) { return `<div class="payrow"><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" placeholder="Amount ₹" aria-label="Payment amount"><button class="icon" type="button" data-prm>Remove</button></div>`; }
+// A payment received for a truck trip: date, description (the load by default), amount, how it was paid and whether it is settled.
+const LG_PAYBY = ["Bank transfer", "UPI", "Cash", "Cheque"];
+function payRow(p = {}) {
+  const by = p.pay || "Bank transfer";
+  return `<tr class="lgprow"><td><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></td><td><input data-pdesc maxlength="120" value="${esc(p.desc || "")}" aria-label="Description"></td>` +
+    `<td><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td><td><select data-pby aria-label="Paid by">${LG_PAYBY.map(x => `<option${x === by ? " selected" : ""}>${x}</option>`).join("")}</select></td>` +
+    `<td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td><td><button class="icon" type="button" data-prm aria-label="Remove this payment">✕</button></td></tr>`;
+}
 function openLeg(id, roundId) {
   const l = id ? ops.truckTrips.find(x => x.id === id) : null; lgEditId = l?.id || null;
   const vid = l?.vehicleId || kBusId, bus = vehicles.find(v => v.id === vid);
   const all = roundsOf(vid), last = ops.truckTrips.filter(x => x.vehicleId === vid).sort((a, b) => (b.to || b.from).localeCompare(a.to || a.from))[0];
   const lastRound = last ? all.find(r => r.id === (last.roundId || last.id)) : null;
   const pick = l ? (l.roundId || l.id) : roundId || (lastRound && lastRound.status !== "Closed" ? lastRound.id : "new");
-  $("lgTitle").textContent = l ? (canTrips ? "Edit trip" : "Trip") : "Add trip"; $("lgSub").textContent = bus ? `${plateOf(bus)} · ${vName(bus)}` : "";
+  $("lgTitle").textContent = l ? (canTrips && (all.find(r => r.id === (l.roundId || l.id))?.status !== "Closed") ? "Edit trip" : "Trip") : "Add trip"; $("lgSub").textContent = bus ? `${plateOf(bus)} · ${vName(bus)}` : "";
   $("lgRound").innerHTML = `<option value="new">Start a new round trip</option>` + all.filter(r => r.status !== "Closed" || r.id === pick).reverse()
     .map(r => `<option value="${r.id}">From ${fmtShort(r.from)} · ${esc(r.path)}${r.status === "Closed" ? " (closed)" : ""}</option>`).join("");
   $("lgRound").value = pick;
@@ -14008,9 +14026,13 @@ function openLeg(id, roundId) {
   if (!l && last?.endKm) $("lgStartKm").value = last.endKm;
   $("lgRemarks").value = l?.remarks || "";
   $("lgPays").innerHTML = (l?.payments || []).map(payRow).join("");
-  $("lgForm").querySelectorAll("input, select, #lgPays button, #lgFuels button").forEach(el => el.disabled = !canTrips); $("lgAddPay").hidden = !canTrips; $("lgAddFuel").hidden = !canTrips;
+  // A trip of a closed round trip is view-only: no adding or removing, no Save, Delete or Close at the bottom (Close ✕ at the top stays).
+  const shut = !!l && all.find(r => r.id === (l.roundId || l.id))?.status === "Closed", edit = canTrips && !shut;
+  $("lgForm").querySelectorAll("input, select, textarea, #lgPays button, #lgFuels button").forEach(el => el.disabled = !edit);
+  $("lgAddPay").hidden = !edit; $("lgAddFuel").hidden = !edit; $("lgForm").querySelectorAll("[data-prm], [data-frm]").forEach(b => b.hidden = !edit);
+  $("lgShut").hidden = !shut; $("lgDrawer").querySelector("footer").hidden = !edit;
   $("lgForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("lgForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
-  $("lgSave").hidden = !canTrips; $("lgDelete").hidden = !(canTrips && l); $("lgDelete").textContent = "Delete trip"; delete $("lgDelete").dataset.confirm;
+  $("lgSave").hidden = !edit; $("lgDelete").hidden = !(edit && l); $("lgDelete").textContent = "Delete trip"; delete $("lgDelete").dataset.confirm;
   lgCalcRender();
   $("scrim").hidden = false; $("lgDrawer").hidden = false; $("lgForm").scrollTop = 0;
   setTimeout(() => (canTrips ? $("lgFrom") : $("lgClose")).focus({ preventScroll: true }), 30);
@@ -14021,7 +14043,8 @@ function lgRead() {
   Object.entries(LG_NUM).forEach(([el, k]) => { const v = $(el).value; if (v !== "" && +v >= 0) l[k] = Math.round(+v); });
   const f = lgFuelRead(); if (f.length) { l.fuels = f; l.litres = Math.round(f.reduce((a, x) => a + x.litres, 0) * 100) / 100; l.fuelCost = Math.round(f.reduce((a, x) => a + num(x.amount), 0)); }
   l.days = num($("lgDays").value);
-  l.payments = [...$("lgPays").querySelectorAll(".payrow")].map(r => ({ date: r.querySelector("[data-pd]").value, amount: Math.round(num(r.querySelector("[data-pa]").value)) })).filter(p => p.amount > 0);
+  l.payments = [...$("lgPays").querySelectorAll(".lgprow")].map(r => { const d = r.querySelector("[data-pdesc]").value.trim().replace(/\s+/g, " "), p = { date: r.querySelector("[data-pd]").value, amount: Math.round(num(r.querySelector("[data-pa]").value)), pay: r.querySelector("[data-pby]").value };
+    if (d) p.desc = d; if (!r.querySelector("[data-pset]").checked) p.settled = false; return p; }).filter(p => p.amount > 0);
   return l;
 }
 // Diesel fills of a truck trip, like the spare bus trip sheet: date, litres, rate per litre, amount, paid by (card or cash), place, odometer.
@@ -14058,13 +14081,16 @@ function lgCalcRender() {
   if (!lgDaysTouched) { const d = inclDays($("lgFrom").value, $("lgTo").value); if (d) $("lgDays").value = d; }
   const l = lgRead(), c = legCalc(l);
   const cell = (k, v, col = "") => `<div><div class="k">${k}</div><div class="v"${col ? ` style="color:${col}"` : ""}>${v}</div></div>`;
-  $("lgCalc").innerHTML = cell("Trip rent", rs(num(l.rent))) + cell("Expense", rs(c.exp)) + cell("Balance", rs(c.bal), c.bal < 0 ? "var(--danger)" : "var(--ok)") + cell("Received", rs(c.received)) +
-    cell("Km", c.km ? nf(c.km) : "—") + cell("Km / L", c.km && l.litres ? nf(c.km / l.litres, 2) : "—");
+  $("lgCalc").innerHTML = cell("Trip rent", rs(num(l.rent))) + cell("Expense", rs(c.exp)) + cell("Balance", rs(c.bal), c.bal < 0 ? "var(--danger)" : "var(--ok)");
+  const P = l.payments || [], set = P.filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0), pend = P.reduce((a, p) => a + num(p.amount), 0) - set;
+  $("lgPayAmt").textContent = P.length ? nf(set + pend) : ""; $("lgPayTot").textContent = P.length ? `${P.length} payment${P.length > 1 ? "s" : ""}${pend ? ` · ${rs(pend)} not settled` : ""}` : "";
 }
 $("lgForm").addEventListener("input", e => { if (e.target.id === "lgDays") lgDaysTouched = true; lgCalcRender(); });
 $("lgForm").addEventListener("change", lgCalcRender);
-$("lgAddPay").onclick = () => { $("lgPays").insertAdjacentHTML("beforeend", payRow({ date: todayISO() })); $("lgPays").lastElementChild.querySelector("[data-pa]").focus(); };
-$("lgPays").addEventListener("click", e => { const b = e.target.closest("[data-prm]"); if (b) { b.closest(".payrow").remove(); lgCalcRender(); } });
+const lgPlace = s => String(s || "").replace(/^[A-Z]{2}\s*-\s*/, "").trim();
+$("lgAddPay").onclick = () => { const a = lgPlace($("lgOrigin").value), b = lgPlace($("lgDest").value);
+  $("lgPays").insertAdjacentHTML("beforeend", payRow({ date: todayISO(), desc: a || b ? `${a || "?"} → ${b || "?"}` : "" })); $("lgPays").lastElementChild.querySelector("[data-pa]").focus(); lgCalcRender(); };
+$("lgPays").addEventListener("click", e => { const b = e.target.closest("[data-prm]"); if (b) { b.closest(".lgprow").remove(); lgCalcRender(); } });
 $("lgForm").addEventListener("submit", async e => {
   e.preventDefault(); if (!canTrips) return;
   $("lgForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("lgForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
