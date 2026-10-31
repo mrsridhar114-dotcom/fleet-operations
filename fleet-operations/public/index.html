@@ -590,6 +590,20 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtst.ed .dmy { width: 142px; } .icon.rtbin { color: var(--danger); display: inline-flex; align-items: center; justify-content: center; padding: 6px; } .icon.rtbin:hover { background: var(--danger-soft, #FDECEC); }
 /* Diesel place and the description of money given to the driver: plain text boxes; earlier entries are suggested only while typing (no dropdown arrow). */
 input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-webkit-calendar-picker-indicator, input[list="lgDrvList"]::-webkit-calendar-picker-indicator { display: none !important; }
+/* Round trip overview */
+.ovtop { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; } .ovtop .m { color: var(--muted); font-size: 14px; }
+.ovg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; } @media (max-width: 700px) { .ovg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ovc { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ovc span { font: 600 10px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); } .ovc b { font-size: 20px; font-variant-numeric: tabular-nums; } .ovc small { color: var(--muted); font-size: 12px; }
+.ovc.neg b { color: var(--danger); } .ovc.hi { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); } .ovc.hi span, .ovc.hi small { color: inherit; opacity: .85; }
+.ovlist { display: flex; flex-direction: column; gap: 6px; }
+.ovtrip { display: grid; grid-template-columns: 28px minmax(0, 1fr) 100px 100px 170px 16px; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.ovtrip:hover { background: var(--bg); } .ovtrip .n1 { width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-size: 13px; }
+.ovtrip .w { display: flex; flex-direction: column; min-width: 0; } .ovtrip .w small, .ovtrip .f small { color: var(--muted); font-size: 12px; }
+.ovtrip .f { display: flex; flex-direction: column; text-align: right; font-variant-numeric: tabular-nums; } .ovtrip .pill { justify-self: start; } .ovtrip .go { color: var(--muted); font-size: 20px; } .ovtrip .neg { color: var(--danger); } .ovtrip .pos { color: var(--ok); }
+@media (max-width: 700px) { .ovtrip { grid-template-columns: 26px minmax(0, 1fr) auto; row-gap: 6px; } .ovtrip .f { text-align: left; flex-direction: row; gap: 6px; align-items: baseline; grid-column: 2; } .ovtrip .pill { grid-column: 2; } .ovtrip .go { grid-row: 1 / span 4; grid-column: 3; } }
+.ovtodo { display: flex; flex-direction: column; gap: 6px; } .ovtodo div { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--warn-soft); color: #7a4a00; font-size: 14px; }
+.ovtodo div.info { background: var(--bg); color: var(--ink); } .ovtodo div button { margin-left: auto; border: 0; background: none; font: inherit; font-weight: 600; color: var(--accent); white-space: nowrap; cursor: pointer; }
 .lgact { font: 600 12px var(--mono); color: var(--accent); } .lgact:empty { display: none; }
 .rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst .rtact.rtmeter { color: var(--muted); } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
@@ -3465,6 +3479,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="field"><label for="lgRemarks">Remarks</label><input id="lgRemarks" autocomplete="off" maxlength="300"></div>
     </fieldset>
   </div><aside class="tfside"><div class="tfcard"><h3>This trip</h3><div class="tcalc" id="lgCalc" aria-live="polite"></div></div></aside></div></form>
+  <div class="rtpane" id="rtOv" hidden></div>
   <div class="rtpane" id="rtSum" hidden></div>
   <div class="rtpane" id="rtPay" hidden>
     <fieldset class="docs"><legend>Money received</legend>
@@ -14283,7 +14298,7 @@ $("kTable").addEventListener("click", async e => {
     await rtSetLock(r, b.dataset.act === "close"); return;
   }
   const row = e.target.closest("tr[data-lid]"); if (row) { const l = ops.truckTrips.find(x => x.id === row.dataset.lid); if (l) openRound(l.roundId || l.id, "leg", l.id); return; }
-  const g = e.target.closest("tr[data-rid]"); if (g) openRound(g.dataset.rid, "sum");
+  const g = e.target.closest("tr[data-rid]"); if (g) openRound(g.dataset.rid, "ov");
 });
 $("kTable").addEventListener("keydown", e => { if (e.key !== "Enter" || e.target.closest("button")) return; const r = e.target.closest("tr[data-lid], tr[data-rid]"); if (r) r.click(); });
 // Close or reopen a round trip, keeping its payments and money given to the driver.
@@ -14457,7 +14472,7 @@ const rtGet = () => rt?.rid ? roundsOf(rt.vid).find(r => r.id === rt.rid) || nul
 const rtLegName = l => `${lgPlace(l.origin) || "?"} → ${lgPlace(l.dest) || "?"}`;
 const rtNo = r => roundsOf(r.vehicleId, fyOf(r.from)).findIndex(x => x.id === r.id) + 1;
 const rtSum = a => a.reduce((t, x) => t + num(x.amt), 0);
-function openRound(rid, pane = "sum", legId = null) {
+function openRound(rid, pane = "ov", legId = null) {
   const r = rid ? roundsOf(null).find(x => x.id === rid) : null;
   rt = { rid: r ? r.id : null, vid: r?.vehicleId || kBusId, pane: r ? pane : "leg", leg: r ? legId : null };
   $("scrim").hidden = false; $("lgDrawer").hidden = false; rtShow();
@@ -14469,12 +14484,13 @@ function rtShow() {
   $("lgSub").textContent = [bus ? plateOf(bus) : "", r ? `${fmtShort(r.from)} – ${fmtShort(r.to)}` : "", r?.path].filter(Boolean).join(" · ");
   $("rtPrint").hidden = !r; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = shut ? "Reopen" : "Mark closed"; $("lgShut").hidden = !shut;
   rtNavRender();
-  ["lgForm", "rtSum", "rtPay", "rtDsl", "rtFiles"].forEach(id => $(id).hidden = true);
+  ["lgForm", "rtOv", "rtSum", "rtPay", "rtDsl", "rtFiles"].forEach(id => $(id).hidden = true);
   $("rtPaySave").hidden = true; $("lgSave").hidden = true;
   if (rt.pane === "leg") { $("lgForm").hidden = false; lgLoad(rt.leg, rt.rid); }
   else if (rt.pane === "pay" || rt.pane === "dsl") { const pay = rt.pane === "pay"; $(pay ? "rtPay" : "rtDsl").hidden = false; pay ? rtPayRender() : rtDslRender();
     foot.hidden = !edit; $("rtPaySave").hidden = !edit; $("rtPaySave").textContent = pay ? "Save payments" : "Save diesel"; }
   else if (rt.pane === "files") { $("rtFiles").hidden = false; rtFilesRender(); foot.hidden = true; }
+  else if (rt.pane === "ov") { $("rtOv").hidden = false; rtOvRender(); foot.hidden = true; }
   else { $("rtSum").hidden = false; rtSumRender(); foot.hidden = true; }
   rtSnap = rtSnapNow();
 }
@@ -14482,17 +14498,17 @@ function rtShow() {
 function rtRefresh() {
   if (!rt || $("lgDrawer").hidden) return;
   const r = rtGet(); if (rt.rid && !r) { closeLgDrawer(); return; }
-  if (rt.pane === "sum" || rt.pane === "files" || ((rt.pane === "pay" || rt.pane === "dsl") && rtSnapNow() === rtSnap)) { rtShow(); return; }
+  if (rt.pane === "ov" || rt.pane === "sum" || rt.pane === "files" || ((rt.pane === "pay" || rt.pane === "dsl") && rtSnapNow() === rtSnap)) { rtShow(); return; }
   rtNavRender(); $("lgShut").hidden = r?.status !== "Closed";
 }
 function rtSnapNow() {
-  if (!rt || rt.pane === "sum" || rt.pane === "files") return "";
+  if (!rt || rt.pane === "ov" || rt.pane === "sum" || rt.pane === "files") return "";
   if (rt.pane === "pay") return JSON.stringify(rtPayRead());
   if (rt.pane === "dsl") return JSON.stringify(rtDslRead());
   return JSON.stringify([lgRead(), ...["lgFrom", "lgTo", "lgOrigin", "lgDest", "lgDriver1", "lgDriver2", "lgRemarks", "lgRound"].map(k => $(k).value)]);
 }
 async function rtLeaveOk() {
-  if (!rt || !canTrips || rt.pane === "sum" || rtGet()?.status === "Closed" || rtSnapNow() === rtSnap) return true;
+  if (!rt || !canTrips || rt.pane === "ov" || rt.pane === "sum" || rtGet()?.status === "Closed" || rtSnapNow() === rtSnap) return true;
   return askYesNo(`You have changed ${rt.pane === "pay" ? "the payments" : rt.pane === "dsl" ? "the diesel fills" : "this trip"} but not saved. Leave without saving?`, { yes: "Leave without saving", no: "Stay", danger: true });
 }
 function rtNavRender() {
@@ -14502,12 +14518,13 @@ function rtNavRender() {
   if (!r) { $("rtNav").innerHTML = `<span class="rtnh">Trips</span>` + fresh; return; }
   const giv = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0), nfl = (r.doc?.files || []).length;
   const dl = rtDslAll(r).reduce((a, f) => ({ n: a.n + 1, L: a.L + num(f.litres), A: a.A + num(f.amount) }), { n: 0, L: 0, A: 0 });
-  $("rtNav").innerHTML = btn("sum", null, "Summary", `Rent ${rs(r.rent)} · balance ${rs(r.bal)}`) + `<span class="rtnh">Trips</span>` +
+  $("rtNav").innerHTML = btn("ov", null, "Overview", `Rent ${rs(r.rent)} · balance ${rs(r.bal)}`) + `<span class="rtnh">Trips</span>` +
     r.legs.map((l, i) => `<span class="rtleg">${btn("leg", l.id, `${i + 1} · ${esc(rtLegName(l))}`, `${fmtShort(l.from)} · ${rs(num(l.rent))}`)}` +
       (canTrips && !shut ? `<button type="button" class="rtdel" data-rtdel="${l.id}" title="Delete this trip" aria-label="Delete trip ${i + 1}">${TRASH_SVG}</button>` : "") + `</span>`).join("") + fresh +
     (canTrips && !shut && !fresh ? `<button type="button" class="rtadd" data-rp="leg" data-new="1"><span>+ Add trip</span></button>` : "") +
     `<span class="rtnh">Money</span>` + btn("pay", null, "Payments", `Received ${rs(r.received)} · given ${rs(giv)}`) +
     btn("dsl", null, "Diesel", dl.n ? `${dl.n} fill${dl.n > 1 ? "s" : ""} · ${nf(dl.L, dl.L % 1 ? 2 : 0)} L · ${rs(dl.A)}` : "No fills yet") +
+    `<span class="rtnh">Office</span>` + btn("sum", null, "Trip Sheet (Office)", `Owner's money · advance ${rs(rtCalcOf(r).diff)}`) +
     `<span class="rtnh">Papers</span>` + btn("files", null, "Files", nfl ? `${nfl} file${nfl > 1 ? "s" : ""}` : "None attached");
 }
 $("rtNav").addEventListener("click", async e => {
@@ -14524,7 +14541,7 @@ async function rtDelLeg(id) {
   if (!(rt.pane === "leg" && rt.leg === id) && !await rtLeaveOk()) return;
   try { await opsDelete("truckTrips", id); toast("Trip deleted"); } catch { toast("Couldn't delete. Try again."); return; }
   if (!rtGet()) { closeLgDrawer(); return; }
-  if (rt.pane === "leg") { rt.pane = "sum"; rt.leg = null; }
+  if (rt.pane === "leg") { rt.pane = "ov"; rt.leg = null; }
   rtShow();
 }
 $("rtLock").onclick = async () => {
@@ -14740,6 +14757,36 @@ async function rtDocSave(r, patch) {
   Object.keys(patch).forEach(k => { if (patch[k] === "" || patch[k] == null) delete n[k]; });
   try { await opsSave("truckRounds", n); return true; } catch { toast("Couldn't save. Check your connection and try again."); return false; }
 }
+/* Overview: the first page of a round trip. Its status (with the date it was closed, set by Mark closed), the main figures,
+   the trips with their payment, and what is still to be done before closing. */
+function rtOvRender() {
+  const r = rtGet(), S = rtCalcOf(r), D = r.doc || {}, shut = r.status === "Closed";
+  const giv = (D.given || []).reduce((a, g) => a + num(g.amount), 0), adv = num(S.giv[0]?.amt);
+  const dl = rtDslAll(r).reduce((a, f) => ({ n: a.n + 1, L: a.L + num(f.litres), A: a.A + num(f.amount) }), { n: 0, L: 0, A: 0 });
+  const fast = r.legs.reduce((a, l) => a + num(l.toll), 0);
+  const rec = l => (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0), pend = l => (l.payments || []).filter(p => p.settled === false).reduce((a, p) => a + num(p.amount), 0);
+  const pill = l => { const a = rec(l), b = pend(l); return !a && !b ? '<span class="pill d7">Not paid</span>' : b ? `<span class="pill d30">Part · ${rs(b)} pending</span>` : a >= num(l.rent) ? '<span class="pill ok">Paid</span>' : '<span class="pill d30">Part paid</span>'; };
+  const card = (k, v, sub = "", cls = "") => `<div class="ovc${cls}"><span>${k}</span><b>${v}</b>${sub ? `<small>${sub}</small>` : ""}</div>`;
+  const go = (pane, leg) => `data-ovgo="${pane}"${leg ? ` data-ovleg="${leg}"` : ""}`;
+  const todo = shut ? [] : [
+    S.pendAmt ? ["warn", `${rs(S.pendAmt)} of payments not settled`, go("pay"), "Payments"] : null,
+    ...r.legs.filter(l => !rec(l) && !pend(l)).map(l => ["warn", `No payment yet for ${rtLegName(l)} (rent ${rs(num(l.rent))})`, go("pay"), "Payments"]),
+    ...r.legs.filter(l => !num(l.endKm)).map(l => ["info", `End km not entered for ${rtLegName(l)}`, go("leg", l.id), "Open trip"]),
+    !(D.files || []).length ? ["info", "No bills attached: diesel bills, rent slip, weighbridge slip", go("files"), "Files"] : null].filter(Boolean);
+  $("rtOv").innerHTML =
+    `<div class="ovtop"><span class="pill ${shut ? "ok" : "d30"}">${shut ? `Closed${r.closedOn ? ` on ${fmtShort(r.closedOn)}` : ""}` : "Open"}</span><b>${fmtShort(S.startDate)} – ${fmtShort(S.endDate)}</b>` +
+      `<span class="m">${S.days} day${S.days === 1 ? "" : "s"} · ${esc(r.path)}</span>${S.drivers.length ? `<span class="m">Driver: ${esc(S.drivers.join(", "))}</span>` : ""}</div>` +
+    `<div class="ovg">${card("Total rent", rs(r.rent), `${r.legs.length} trip${r.legs.length > 1 ? "s" : ""}`)}${card("Expenses", rs(r.rent - S.bal), `Diesel ${rs(dl.A)} · FASTag ${rs(fast)}`)}` +
+      `${card("Vehicle balance", rs(S.bal), "Rent − expenses", S.bal < 0 ? " neg" : "")}${card(S.diff < 0 ? "To pay the driver" : "Advance for next trip", rs(Math.abs(S.diff)), "From the trip sheet (office)", " hi")}` +
+      `${card("Money received", rs(r.received), S.pendAmt ? `+ ${rs(S.pendAmt)} not settled` : r.received ? "All settled" : "None yet")}${card("Given to driver", rs(adv + giv), `Advance ${rs(adv)} + sent ${rs(giv)}`)}` +
+      `${card("Diesel", dl.L ? `${nf(dl.L, dl.L % 1 ? 2 : 0)} L` : "—", dl.n ? `${dl.n} fill${dl.n > 1 ? "s" : ""} · ${rs(dl.A)}` : "No fills yet")}` +
+      `${card(S.odoK?.conv ? "Actual km" : "Km", S.act ? nf(S.act) : "—", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L${S.odoK?.conv ? ` · meter ${nf(S.km)}` : ""}` : "End km not entered")}</div>` +
+    `<div class="rtcard"><h3>Trips</h3><div class="ovlist">` + r.legs.map((l, i) => { const c = legCalc(l), dn = [l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name, l.driver2Id ? drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name : l.driver2Name].filter(Boolean);
+      return `<button type="button" class="ovtrip" ${go("leg", l.id)}><b class="n1">${i + 1}</b><span class="w"><b>${esc(rtLegName(l))}</b><small>${fmtShort(l.from)} – ${fmtShort(l.to || l.from)}${dn.length ? " · " + esc(dn.join(", ")) : ""}</small></span>` +
+        `<span class="f"><small>Rent</small><b>${nf(num(l.rent))}</b></span><span class="f"><small>Balance</small><b class="${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</b></span>${pill(l)}<span class="go" aria-hidden="true">›</span></button>`; }).join("") + `</div></div>` +
+    (shut ? "" : `<div class="rtcard"><h3>To do before closing</h3><div class="ovtodo">${todo.map(([c, t, g, a]) => `<div class="${c}"><span aria-hidden="true">${c === "warn" ? "⚠" : "ℹ"}</span><span>${t}</span><button type="button" ${g}>${a} ›</button></div>`).join("") || `<p class="sub" style="margin:0">Nothing pending. Ready to close.</p>`}</div></div>`);
+}
+$("rtOv").addEventListener("click", e => { const b = e.target.closest("[data-ovgo]"); if (!b || !rt) return; rt.pane = b.dataset.ovgo; rt.leg = b.dataset.ovleg || null; rtShow(); });
 function rtSumRender() {
   const r = rtGet(), S = rtCalcOf(r), bus = vehicles.find(v => v.id === r.vehicleId), edit = canTrips && r.status !== "Closed", d = S.diff, D = r.doc || {};
   const st = (k, v, cls = "", note = "") => `<div class="rtst${cls}"><span>${k}</span><b>${v}</b>${note}</div>`;
