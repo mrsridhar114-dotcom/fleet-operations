@@ -589,7 +589,7 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtst.ed input { font: inherit; font-size: 14px; font-weight: 700; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 96px; box-sizing: border-box; }
 .rtst.ed .dmy { width: 142px; } .icon.rtbin { color: var(--danger); display: inline-flex; align-items: center; justify-content: center; padding: 6px; } .icon.rtbin:hover { background: var(--danger-soft, #FDECEC); }
 /* Diesel place and the description of money given to the driver: plain text boxes; earlier entries are suggested only while typing (no dropdown arrow). */
-input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-webkit-calendar-picker-indicator { display: none !important; }
+input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-webkit-calendar-picker-indicator, input[list="lgDrvList"]::-webkit-calendar-picker-indicator { display: none !important; }
 .lgact { font: 600 12px var(--mono); color: var(--accent); } .lgact:empty { display: none; }
 .rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst .rtact.rtmeter { color: var(--muted); } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
@@ -3419,8 +3419,10 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="field"><label for="lgDest">Destination</label><input id="lgDest" list="lgPlaces" autocomplete="off" maxlength="80" placeholder="TS - Miriyalguda"><span class="err" id="e-lgDest"></span></div>
       </div>
       <div class="two">
-        <div class="field"><label for="lgDriver1">Driver 1</label><select id="lgDriver1"></select></div>
-        <div class="field"><label for="lgDriver2">Driver 2</label><select id="lgDriver2"></select></div>
+        <div class="field"><label for="lgDriver1">Driver 1</label><input id="lgDriver1" list="lgDrvList" autocomplete="off" maxlength="60" placeholder="Type or choose the driver"></div>
+        <div class="field"><label for="lgDriver2">Driver 2 <span class="hint" style="font-weight:400">(optional)</span></label><input id="lgDriver2" list="lgDrvList" autocomplete="off" maxlength="60" placeholder="Leave empty if none"></div>
+        <datalist id="lgDrvList"></datalist>
+        <p class="hint" style="grid-column:1/-1;margin:-4px 0 0">Choose a driver from the driver master, or type any name (an acting or contract driver) — it is kept with the trip only.</p>
       </div>
     </fieldset>
     <fieldset class="docs"><legend>Freight and expenses (₹)</legend>
@@ -14325,14 +14327,16 @@ function lgLoad(id, roundId) {
     .map(r => `<option value="${r.id}">From ${fmtShort(r.from)} · ${esc(r.path)}${r.status === "Closed" ? " (closed)" : ""}</option>`).join("");
   $("lgRound").value = pick;
   const own = ops.truckTrips.filter(x => x.vehicleId === vid).map(x => ({ driverId: x.driver1Id, driverName: x.driver1Name })).concat(ops.truckTrips.filter(x => x.vehicleId === vid).map(x => ({ driverId: x.driver2Id, driverName: x.driver2Name })));
-  const opts = crewOptions("driver", null, own, bus?.type, [l?.driver1Id, l?.driver2Id]);
-  $("lgDriver1").innerHTML = `<option value="">Choose the driver</option>` + opts; $("lgDriver2").innerHTML = `<option value="">No second driver</option>` + opts;
+  // Drivers: the driver master (who can drive this class) and names typed on earlier trips, as suggestions; any name can be typed.
+  const dm = drivers.filter(p => p.status !== "Inactive" && (drivesClass(p, bus?.type) || [l?.driver1Id, l?.driver2Id].includes(p.id))).map(p => p.name);
+  const typed = own.filter(x => !x.driverId && x.driverName && !crewMaster("driver", x.driverName)).map(x => x.driverName);
+  $("lgDrvList").innerHTML = [...new Set([...dm, ...typed])].sort((a, b) => a.localeCompare(b)).map(n => `<option value="${esc(n)}">`).join("");
   $("lgPlaces").innerHTML = [...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean))].sort().map(p => `<option value="${esc(p)}">`).join("");
   const src = l || {};
   $("lgFrom").value = l?.from || (last ? (last.to || last.from) : todayISO()); $("lgTo").value = l?.to || $("lgFrom").value;
   $("lgDays").value = l?.days ?? ""; lgDaysTouched = !!l && num(l.days) !== inclDays(l.from, l.to || l.from);
   $("lgOrigin").value = l?.origin || (last && !l ? last.dest || "" : ""); $("lgDest").value = l?.dest || "";
-  const dv = (idk, nk, x) => x?.[idk] ? "id:" + x[idk] : x?.[nk] ? "name:" + x[nk].toUpperCase() : "";
+  const dv = (idk, nk, x) => x?.[idk] ? drivers.find(d => d.id === x[idk])?.name || x[nk] || "" : x?.[nk] || "";
   $("lgDriver1").value = dv("driver1Id", "driver1Name", l || last); $("lgDriver2").value = dv("driver2Id", "driver2Name", l);
   Object.entries(LG_NUM).forEach(([el, k]) => $(el).value = src[k] ?? "");
   // Diesel fills: older trips (and the Excel upload) hold only the totals; they open as one fill.
@@ -14424,7 +14428,8 @@ $("lgForm").addEventListener("submit", async e => {
   if (!l.rent) err("lgRent", "Enter the trip rent.");
   if (l.startKm && l.endKm && l.endKm <= l.startKm) err("lgEndKm", "Must be more than the start km.");
   if ((l.fuels || []).some(f => f.litres > 1000)) { $("e-lgFuels").textContent = "Check the litres: more than 1,000 L in one fill."; ok = false; }
-  const setD = (n, sel) => { const v = $(sel).value; if (v.startsWith("id:")) { l[`driver${n}Id`] = v.slice(3); l[`driver${n}Name`] = drivers.find(d => d.id === v.slice(3))?.name || ""; } else if (v) l[`driver${n}Name`] = v.slice(5); };
+  // A name from the driver master is linked to that driver; any other name is kept with the trip as typed.
+  const setD = (n, el) => { const v = tidy($(el).value); if (!v) return; const m = crewMaster("driver", v); if (m) { l[`driver${n}Id`] = m.id; l[`driver${n}Name`] = m.name; } else l[`driver${n}Name`] = v; };
   setD(1, "lgDriver1"); setD(2, "lgDriver2");
   const rem = $("lgRemarks").value.trim(); if (rem) l.remarks = rem;
   if (!l.payments.length) delete l.payments;
