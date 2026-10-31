@@ -590,6 +590,49 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtst.ed .dmy { width: 142px; } .icon.rtbin { color: var(--danger); display: inline-flex; align-items: center; justify-content: center; padding: 6px; } .icon.rtbin:hover { background: var(--danger-soft, #FDECEC); }
 /* Diesel place and the description of money given to the driver: plain text boxes; earlier entries are suggested only while typing (no dropdown arrow). */
 input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-webkit-calendar-picker-indicator, input[list="lgDrvList"]::-webkit-calendar-picker-indicator { display: none !important; }
+/* Trip on a phone: one step at a time */
+.lgchips, .lgwiz[hidden] { display: none; }
+#lgForm.mwiz .lgchips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; } #lgForm.mwiz .lgchips:empty { display: none; }
+#lgForm.mwiz #lgDateChips { flex-direction: column; align-items: stretch; } #lgDateChips > div { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } #lgDateChips > div > span { width: 76px; font-size: 12px; font-weight: 600; color: var(--muted); }
+#lgForm.mwiz [data-mstep="1"] .two { grid-template-columns: minmax(0, 1fr); }
+.lgchips > span { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 2px; }
+.lgchips .chip { height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+#lgForm.mwiz .lgwiz { display: flex; flex-direction: column; gap: 8px; margin: 0 0 12px; }
+.lgwiz .wdots { display: flex; align-items: center; gap: 4px; } .lgwiz .wdots i { flex: 1; height: 3px; background: var(--line); }
+.lgwiz .wdots span { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.lgwiz .wdots span.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); } .lgwiz .wdots span.ok { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft); }
+.lgwiz > b { font-size: 16px; }
+.lgwiz .wstrip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: var(--accent-soft); border-radius: 10px; padding: 8px 10px; font-size: 12px; color: var(--muted); } .lgwiz .wstrip[hidden] { display: none; }
+.lgwiz .wstrip span { display: flex; flex-direction: column; } .lgwiz .wstrip b { font: 700 16px var(--mono); color: var(--ink); } .lgwiz .wstrip b.neg { color: var(--danger); }
+#lgForm.mwiz .rtlegh { display: none; }
+#lgForm.mwiz .tfside, #lgForm.mwiz .lgdslrow, #lgForm.mwiz [data-mstep] .hint, #lgForm.mwiz [data-mstep] p.sub { display: none; }
+#lgForm.mwiz[data-cur="1"] [data-mstep]:not([data-mstep="1"]), #lgForm.mwiz[data-cur="2"] [data-mstep]:not([data-mstep="2"]),
+#lgForm.mwiz[data-cur="3"] [data-mstep]:not([data-mstep="3"]), #lgForm.mwiz[data-cur="4"] [data-mstep]:not([data-mstep="4"]),
+#lgForm.mwiz[data-cur="5"] [data-mstep], #lgForm.mwiz[data-cur="6"] [data-mstep] { display: none; }
+#lgForm.mwiz .three, #lgForm.mwiz .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#lgForm.mwiz input, #lgForm.mwiz select { min-height: 46px; font-size: 16px; }
+#lgForm.mwiz #lgRent { min-height: 56px; font-size: 22px; font-weight: 700; } #lgForm.mwiz [data-mstep="2"] .three:first-child .field:first-child { grid-column: 1 / -1; }
+#lgForm.mwiz .tscroll { overflow: visible; } #lgForm.mwiz .lgftab, #lgForm.mwiz .lgptab { display: block; border: 0; min-width: 0; width: 100%; table-layout: auto; }
+#lgForm.mwiz .lgftab td input[type="number"] { text-align: left; } #lgForm.mwiz { overflow-x: hidden; } #lgForm.mwiz .lgftab thead { display: none; } #lgForm.mwiz .lgftab tbody, #lgForm.mwiz .lgftab tfoot { display: block; }
+#lgForm.mwiz .lgftab tr.lgfuel, #lgForm.mwiz .lgftab tr.lgprow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-bottom: 10px; background: var(--surface); position: relative; }
+#lgForm.mwiz .lgftab td { display: flex; flex-direction: column; gap: 3px; padding: 0; border: 0; text-align: left; } #lgForm.mwiz .lgftab td.wide { grid-column: 1 / -1; }
+#lgForm.mwiz .lgftab td[data-l]::before { content: attr(data-l); font-size: 12px; font-weight: 600; color: var(--muted); }
+#lgForm.mwiz .lgftab td input, #lgForm.mwiz .lgftab td select { width: 100%; box-sizing: border-box; } #lgForm.mwiz .lgftab td.c { align-items: flex-start; } #lgForm.mwiz .lgftab td.c input { width: 26px; min-height: 26px; }
+#lgForm.mwiz .lgftab td.bin { position: absolute; top: 4px; right: 4px; } #lgForm.mwiz .lgftab tr.lgfuel td:first-child, #lgForm.mwiz .lgftab tr.lgprow td:first-child { padding-right: 44px; grid-column: 1 / -1; }
+#lgForm.mwiz .lgftab tfoot tr { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; } #lgForm.mwiz .lgftab tfoot td { display: block; padding: 0; border: 0; }
+#lgForm.mwiz .lgftab tfoot td:first-child { width: 100%; } #lgForm.mwiz .lgftab tfoot .btn { width: 100%; min-height: 48px; border-style: dashed; font-size: 15px; } #lgForm.mwiz .lgftab tfoot td:empty { display: none; }
+.lgcheck { display: flex; flex-direction: column; gap: 10px; } .lgcheck[hidden], .lgdone[hidden] { display: none; }
+.lgcheck .cres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 12px; }
+.lgcheck .cres span { display: flex; flex-direction: column; font: 600 10px var(--mono); letter-spacing: .05em; text-transform: uppercase; } .lgcheck .cres b { font: 700 18px var(--mono); letter-spacing: 0; }
+.lgcheck .clist { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0 12px; }
+.lgcheck .cl { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); } .lgcheck .cl:last-child { border-bottom: 0; }
+.lgcheck .cl > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .lgcheck .cl small { font: 600 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.lgcheck .cl span { font-size: 13px; color: var(--muted); } .lgcheck .cl span.warn { color: var(--warn); font-weight: 600; }
+.lnk { border: 0; background: none; color: var(--accent); font: inherit; font-weight: 600; padding: 10px 4px; cursor: pointer; }
+.lgdone { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 18px 4px; }
+.lgdone .dok { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 32px; } .lgdone h2 { margin: 4px 0 0; } .lgdone p { margin: 0; color: var(--muted); }
+.lgdone .dbtns { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 10px; } .lgdone .dbtns .btn { min-height: 50px; font-size: 16px; }
+#lgDrawer footer #lgBack, #lgDrawer footer #lgNext { min-height: 48px; } @media (max-width: 700px) { #lgDrawer footer:has(#lgNext:not([hidden])) #lgNext, #lgDrawer footer:has(#lgSave:not([hidden])) #lgSave { flex: 2; } #lgDrawer footer:has(#lgBack:not([hidden])) #lgBack { flex: 1; } }
 /* Round trip overview */
 .ovtop { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; } .ovtop .m { color: var(--muted); font-size: 14px; }
 .ovg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; } @media (max-width: 700px) { .ovg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -3420,32 +3463,35 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <span class="rthbtns"><button class="btn" type="button" id="rtPrint" title="Print or download this round trip, as Excel or as an image">Print</button><button class="btn" type="button" id="rtLock"></button><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></span></header>
   <nav class="rtnav" id="rtNav" role="tablist" aria-label="Round trip"></nav>
   <p class="lgshut" id="lgShut" hidden>🔒 This round trip is closed, so it is view-only. To change it, press <b>Reopen</b> at the top.</p>
-  <form id="lgForm" novalidate><h3 class="rtlegh" id="rtLegH"></h3><div class="tfgrid"><div class="tfmain">
-    <fieldset class="docs"><legend>Trip</legend>
+  <form id="lgForm" novalidate><h3 class="rtlegh" id="rtLegH"></h3><div class="lgwiz" id="lgWizHd" hidden></div><div class="tfgrid"><div class="tfmain">
+    <fieldset class="docs" data-mstep="1"><legend>Trip</legend>
       <div class="field"><label for="lgRound">Round trip</label><select id="lgRound"></select><span class="hint">Trips out and back belong to one round trip. Its payment is settled together.</span></div>
       <div class="three">
         <div class="field"><label for="lgFrom">From date</label><input id="lgFrom" type="date"><span class="err" id="e-lgFrom"></span></div>
         <div class="field"><label for="lgTo">To date</label><input id="lgTo" type="date"><span class="err" id="e-lgTo"></span></div>
         <div class="field"><label for="lgDays">Days</label><input id="lgDays" type="number" inputmode="decimal" min="0.5" step="0.5"><span class="hint">Counted from the dates</span><span class="err" id="e-lgDays"></span></div>
       </div>
+      <div class="lgchips" id="lgDateChips"></div>
       <div class="two">
         <div class="field"><label for="lgOrigin">Starting place</label><input id="lgOrigin" list="lgPlaces" autocomplete="off" maxlength="80" placeholder="TN - Thoothukudi"><datalist id="lgPlaces"></datalist><span class="err" id="e-lgOrigin"></span></div>
         <div class="field"><label for="lgDest">Destination</label><input id="lgDest" list="lgPlaces" autocomplete="off" maxlength="80" placeholder="TS - Miriyalguda"><span class="err" id="e-lgDest"></span></div>
       </div>
+      <div class="lgchips" id="lgDestChips"></div>
       <div class="two">
         <div class="field"><label for="lgDriver1">Driver 1</label><input id="lgDriver1" list="lgDrvList" autocomplete="off" maxlength="60" placeholder="Type or choose the driver"></div>
         <div class="field"><label for="lgDriver2">Driver 2 <span class="hint" style="font-weight:400">(optional)</span></label><input id="lgDriver2" list="lgDrvList" autocomplete="off" maxlength="60" placeholder="Leave empty if none"></div>
         <datalist id="lgDrvList"></datalist>
         <p class="hint" style="grid-column:1/-1;margin:-4px 0 0">Choose a driver from the driver master, or type any name (an acting or contract driver) — it is kept with the trip only.</p>
       </div>
+      <div class="lgchips" id="lgDrvChips"></div>
     </fieldset>
-    <fieldset class="docs"><legend>Freight and expenses (₹)</legend>
+    <fieldset class="docs" data-mstep="2"><legend>Freight and expenses (₹)</legend>
       <div class="three">
         <div class="field"><label for="lgRent">Trip rent</label><input id="lgRent" type="number" inputmode="numeric" min="0"><span class="err" id="e-lgRent"></span></div>
         <div class="field"><label for="lgCommission">Commission</label><input id="lgCommission" type="number" inputmode="numeric" min="0"></div>
         <div class="field"><label for="lgPadi">Driver padi</label><input id="lgPadi" type="number" inputmode="numeric" min="0"></div>
       </div>
-      <div class="three">
+      <div class="three lgdslrow">
         <div class="field"><label for="lgDslL">Diesel litres</label><input id="lgDslL" readonly tabindex="-1" class="dsum"><span class="hint">Added up from the Diesel section</span></div>
         <div class="field"><label for="lgDslA">Diesel amount (₹)</label><input id="lgDslA" readonly tabindex="-1" class="dsum"><span class="hint" id="lgDslR">Added up from the Diesel section</span></div>
         <div></div>
@@ -3461,23 +3507,24 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="field"><label for="lgBill">Bill expenses</label><input id="lgBill" type="number" inputmode="numeric" min="0"></div>
       </div>
     </fieldset>
-    <fieldset class="docs"><legend>Diesel</legend>
+    <fieldset class="docs" data-mstep="3"><legend>Diesel</legend>
       <p class="sub" style="margin:0 0 6px">One row for each fill. Amount is litres × rate unless you type it.</p>
       <div class="tscroll"><table class="lgftab"><thead><tr><th>Date</th><th class="n">Litres</th><th class="n">Rate / L</th><th class="n">Amount ₹</th><th>Paid by</th><th>Place</th><th class="n">Odometer</th><th></th></tr></thead>
         <tbody id="lgFuels"></tbody><tfoot><tr><td><button class="btn" type="button" id="lgAddFuel">+ Add fill</button></td><td class="n" id="lgFtL"></td><td class="n" id="lgFtR"></td><td class="n" id="lgFtA"></td><td colspan="4" class="sub" id="lgFuelTot"></td></tr></tfoot></table></div><datalist id="lgBunks"></datalist>
       <span class="err" id="e-lgFuels"></span>
     </fieldset>
-    <fieldset class="docs"><legend>Kilometres</legend>
+    <fieldset class="docs" data-mstep="4"><legend>Kilometres</legend>
       <div class="two">
         <div class="field"><label for="lgStartKm">Start km</label><input id="lgStartKm" type="number" inputmode="numeric" min="0"><span class="lgact" id="lgStartAct"></span></div>
         <div class="field"><label for="lgEndKm">End km</label><input id="lgEndKm" type="number" inputmode="numeric" min="0"><span class="lgact" id="lgEndAct"></span><span class="err" id="e-lgEndKm"></span></div>
       </div>
     </fieldset>
-    <fieldset class="docs"><legend>Payments received</legend>
+    <fieldset class="docs" data-mstep="4"><legend>Payments received</legend>
       <div class="tscroll"><table class="lgftab lgptab"><thead><tr><th>Date</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th class="c">Settled</th><th></th></tr></thead><tbody id="lgPays"></tbody>
         <tfoot><tr><td><button class="btn" type="button" id="lgAddPay">+ Add payment</button></td><td class="sub" id="lgPayTot"></td><td class="n" id="lgPayAmt"></td><td colspan="3"></td></tr></tfoot></table></div>
       <div class="field"><label for="lgRemarks">Remarks</label><input id="lgRemarks" autocomplete="off" maxlength="300"></div>
     </fieldset>
+    <div class="lgcheck" id="lgCheck" hidden></div><div class="lgdone" id="lgDone" hidden></div>
   </div><aside class="tfside"><div class="tfcard"><h3>This trip</h3><div class="tcalc" id="lgCalc" aria-live="polite"></div></div></aside></div></form>
   <div class="rtpane" id="rtOv" hidden></div>
   <div class="rtpane" id="rtSum" hidden></div>
@@ -3513,6 +3560,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   </div>
   <footer>
     <span style="flex:1"></span>
+    <button class="btn" type="button" id="lgBack" hidden>‹ Back</button>
+    <button class="btn primary" type="button" id="lgNext" hidden>Next</button>
     <button class="btn primary" type="submit" form="lgForm" id="lgSave">Save trip</button>
     <button class="btn primary" type="button" id="rtPaySave" hidden>Save payments</button>
   </footer>
@@ -14327,9 +14376,9 @@ async function rtSetLock(r, closing) {
 const LG_PAYBY = ["Bank transfer", "UPI", "Cash", "Cheque"];
 function payRow(p = {}) {
   const by = p.pay || "Bank transfer";
-  return `<tr class="lgprow"><td><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></td><td><input data-pdesc maxlength="120" value="${esc(p.desc || "")}" aria-label="Description"></td>` +
-    `<td><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td><td><select data-pby aria-label="Paid by">${LG_PAYBY.map(x => `<option${x === by ? " selected" : ""}>${x}</option>`).join("")}</select></td>` +
-    `<td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td><td><button class="icon rtbin" type="button" data-prm aria-label="Remove this payment" title="Remove">${TRASH_SVG}</button></td></tr>`;
+  return `<tr class="lgprow"><td data-l="Date"><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></td><td data-l="Description" class="wide"><input data-pdesc maxlength="120" value="${esc(p.desc || "")}" aria-label="Description"></td>` +
+    `<td data-l="Amount ₹"><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td><td data-l="Paid by"><select data-pby aria-label="Paid by">${LG_PAYBY.map(x => `<option${x === by ? " selected" : ""}>${x}</option>`).join("")}</select></td>` +
+    `<td class="c" data-l="Settled"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td><td class="bin"><button class="icon rtbin" type="button" data-prm aria-label="Remove this payment" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 // The trip form of the round trip screen: one trip (load), or a new one when id is null.
 function lgLoad(id, roundId) {
@@ -14369,6 +14418,7 @@ function lgLoad(id, roundId) {
   $("lgForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("lgForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
   $("lgSave").hidden = !edit;
   lgCalcRender(); $("lgForm").scrollTop = 0;
+  lgWizStart(l, edit);
   if (!l && edit) setTimeout(() => $("lgFrom").focus({ preventScroll: true }), 30);
 }
 function closeLgDrawer() { $("lgDrawer").hidden = true; lgEditId = null; rt = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
@@ -14384,11 +14434,11 @@ function lgRead() {
 // Diesel fills of a truck trip, like the spare bus trip sheet: date, litres, rate per litre, amount, paid by (card or cash), place, odometer.
 function lgFuelRow(f = {}) {
   const pay = f.pay === "Cash" ? "Cash" : "Card";
-  return `<tr class="lgfuel"><td><input type="date" data-fd value="${esc(f.date || "")}" aria-label="Date"></td><td><input type="number" inputmode="decimal" min="0" step="0.01" data-fl value="${f.litres ?? ""}" aria-label="Litres"></td>` +
-    `<td><input type="number" inputmode="decimal" min="0" step="0.01" data-fr value="${f.rate ?? ""}" aria-label="Rate per litre"></td><td><input type="number" inputmode="decimal" min="0" step="0.01" data-fa value="${f.amount ?? ""}"${f.amount ? ' data-typed="1"' : ""} aria-label="Amount"></td>` +
-    `<td><select data-fpay aria-label="Paid by"><option${pay === "Card" ? " selected" : ""}>Card</option><option${pay === "Cash" ? " selected" : ""}>Cash</option></select></td>` +
-    `<td><input data-fp list="lgBunks" autocomplete="off" maxlength="80" placeholder="e.g. IOCL, Nellore" value="${esc(f.place || "")}" aria-label="Place"></td><td><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>` +
-    `<td><button class="icon rtbin" type="button" data-frm aria-label="Remove this fill" title="Remove">${TRASH_SVG}</button></td></tr>`;
+  return `<tr class="lgfuel"><td data-l="Date"><input type="date" data-fd value="${esc(f.date || "")}" aria-label="Date"></td><td data-l="Litres"><input type="number" inputmode="decimal" min="0" step="0.01" data-fl value="${f.litres ?? ""}" aria-label="Litres"></td>` +
+    `<td data-l="Rate / L"><input type="number" inputmode="decimal" min="0" step="0.01" data-fr value="${f.rate ?? ""}" aria-label="Rate per litre"></td><td data-l="Amount ₹"><input type="number" inputmode="decimal" min="0" step="0.01" data-fa value="${f.amount ?? ""}"${f.amount ? ' data-typed="1"' : ""} aria-label="Amount"></td>` +
+    `<td data-l="Paid by"><select data-fpay aria-label="Paid by"><option${pay === "Card" ? " selected" : ""}>Card</option><option${pay === "Cash" ? " selected" : ""}>Cash</option></select></td>` +
+    `<td data-l="Place" class="wide"><input data-fp list="lgBunks" autocomplete="off" maxlength="80" placeholder="e.g. IOCL, Nellore" value="${esc(f.place || "")}" aria-label="Place"></td><td data-l="Odometer"><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>` +
+    `<td class="bin"><button class="icon rtbin" type="button" data-frm aria-label="Remove this fill" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function lgFuelRead() {
   return [...$("lgFuels").querySelectorAll(".lgfuel")].map(r => { const v = s => r.querySelector(s).value, litres = Math.round(num(v("[data-fl]")) * 100) / 100, amount = Math.round(num(v("[data-fa]")) * 100) / 100, rate = Math.round(num(v("[data-fr]")) * 100) / 100;
@@ -14420,6 +14470,7 @@ function lgCalcRender() {
   [["lgStartAct", from, l.startKm], ["lgEndAct", to, l.endKm]].forEach(([id, d, km]) => { const a = km && odoPairs(V).length ? odoActual(V, d, km) : null; $(id).textContent = a > 0 ? `Actual ${nf(Math.round(a))}` : ""; });
   $("lgCalc").innerHTML = cell("Trip rent", rs(num(l.rent))) + cell("Expense", rs(c.exp)) + cell("Balance", rs(c.bal), c.bal < 0 ? "var(--danger)" : "var(--ok)");
   const P = l.payments || [], set = P.filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0), pend = P.reduce((a, p) => a + num(p.amount), 0) - set;
+  if (LGW.on) lgWizStrip(c, num(l.rent));
   $("lgPayAmt").textContent = P.length ? nf(set + pend) : ""; $("lgPayTot").textContent = P.length ? `${P.length} payment${P.length > 1 ? "s" : ""}${pend ? ` · ${rs(pend)} not settled` : ""}` : "";
 }
 $("lgForm").addEventListener("input", e => { if (e.target.id === "lgDays") lgDaysTouched = true; lgCalcRender(); });
@@ -14428,6 +14479,100 @@ const lgPlace = s => String(s || "").replace(/^[A-Z]{2}\s*-\s*/, "").trim();
 $("lgAddPay").onclick = () => { const a = lgPlace($("lgOrigin").value), b = lgPlace($("lgDest").value);
   $("lgPays").insertAdjacentHTML("beforeend", payRow({ date: todayISO(), desc: a || b ? `${a || "?"} → ${b || "?"}` : "" })); $("lgPays").lastElementChild.querySelector("[data-pa]").focus(); lgCalcRender(); };
 $("lgPays").addEventListener("click", e => { const b = e.target.closest("[data-prm]"); if (b) { b.closest(".lgprow").remove(); lgCalcRender(); } });
+/* On a phone, a trip is entered one step at a time: 1 trip, 2 rent and expenses, 3 diesel, 4 km and payments, 5 check and save.
+   The same form and the same saving as on a computer; the steps only show one part at a time, with Back and Next.
+   A saved trip shows what to do next: attach bills, print, send details, or the next trip. */
+var LGW = { on: false, cur: 1, saved: null, names: ["Trip details", "Rent & expenses", "Diesel", "Km & payments", "Check & save"] };
+const lgWizPhone = () => matchMedia("(max-width: 700px)").matches;
+function lgWizStart(l, edit) {
+  LGW.on = !!edit && lgWizPhone(); $("lgForm").classList.toggle("mwiz", LGW.on);
+  if (!LGW.on) { ["lgWizHd", "lgCheck", "lgDone"].forEach(id => $(id).hidden = true); $("lgBack").hidden = $("lgNext").hidden = true; delete $("lgForm").dataset.cur; LGW.saved = null; return; }
+  lgWizChips();
+  if (l && LGW.saved === l.id) { LGW.saved = null; lgWizDone(l); return; }
+  LGW.saved = null; lgWizGo(l ? 5 : 1);
+}
+function lgWizGo(n) {
+  LGW.cur = n; const f = $("lgForm"); f.dataset.cur = n;
+  $("lgWizHd").hidden = false; $("lgDone").hidden = true; $("lgCheck").hidden = n !== 5;
+  const dot = i => `<span class="${i < n ? "ok" : i === n ? "on" : ""}">${i < n ? "✓" : i}</span>`;
+  $("lgWizHd").innerHTML = `<div class="wdots">${[1, 2, 3, 4, 5].map(i => dot(i)).join("<i></i>")}</div><b>Step ${n} of 5 · ${LGW.names[n - 1]}</b><div class="wstrip" id="lgWizStrip"></div>`;
+  $("lgDrawer").querySelector("footer").hidden = false;
+  $("lgBack").hidden = n === 1; $("lgNext").hidden = n === 5; $("lgSave").hidden = n !== 5;
+  $("lgNext").textContent = n < 5 ? `Next · ${LGW.names[n]}` : "";
+  if (n === 5) lgWizCheckRender();
+  lgCalcRender(); f.scrollTop = 0; $("lgDrawer").querySelector("#lgForm")?.scrollIntoView?.({ block: "start" });
+}
+function lgWizStrip(c, rent) { const el = $("lgWizStrip"); if (!el) return; el.hidden = LGW.cur < 2 || LGW.cur > 4;
+  el.innerHTML = `<span>Rent <b>${nf(rent)}</b></span><span>Expense <b>${nf(c.exp)}</b></span><span>Balance <b class="${c.bal < 0 ? "neg" : ""}">${nf(c.bal)}</b></span>`; }
+// The checks of a step before Next (the same as on saving).
+function lgWizOk(n) {
+  const f = $("lgForm"), box = f.querySelector(`[data-mstep="${n}"]`); let ok = true;
+  f.querySelectorAll(`[data-mstep="${n}"] .err`).forEach(x => x.textContent = ""); f.querySelectorAll(`[data-mstep="${n}"] [aria-invalid]`).forEach(x => x.removeAttribute("aria-invalid"));
+  const err = (k, m) => { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); ok = false; };
+  if (n === 1) {
+    const a = $("lgFrom").value, b = $("lgTo").value || a;
+    if (!a) err("lgFrom", "Enter the loading date."); else if (b < a) err("lgTo", "Must be on or after the from date.");
+    if (!(num($("lgDays").value) > 0)) err("lgDays", "Enter the number of days.");
+    if (!$("lgOrigin").value.trim()) err("lgOrigin", "Enter where the load was picked up."); if (!$("lgDest").value.trim()) err("lgDest", "Enter the destination.");
+  }
+  if (n === 2 && !(num($("lgRent").value) > 0)) err("lgRent", "Enter the trip rent.");
+  if (n === 3) { $("e-lgFuels").textContent = ""; if (lgFuelRead().some(x => x.litres > 1000)) { $("e-lgFuels").textContent = "Check the litres: more than 1,000 L in one fill."; ok = false; } }
+  if (n === 4) { const a = num($("lgStartKm").value), b = num($("lgEndKm").value); if (a && b && b <= a) err("lgEndKm", "Must be more than the start km."); }
+  if (!ok) box?.querySelector('[aria-invalid="true"]')?.focus();
+  return ok;
+}
+// Quick picks: today or yesterday, the places and drivers of this truck's recent trips.
+function lgWizChips() {
+  const vid = rt?.vid || kBusId, legs = ops.truckTrips.filter(x => x.vehicleId === vid).sort((a, b) => (b.to || b.from).localeCompare(a.to || a.from));
+  const top = arr => { const m = new Map(); arr.filter(Boolean).forEach(x => m.set(x, (m.get(x) || 0) + 1)); return [...m.entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]).slice(0, 5); };
+  const chip = (k, v, label) => `<button type="button" class="chip" data-wset="${k}" data-v="${esc(v)}">${esc(label || v)}</button>`;
+  $("lgDateChips").innerHTML = `<div><span>Loaded</span>${chip("lgFrom", todayISO(), "Today")}${chip("lgFrom", shiftDay(todayISO(), -1), "Yesterday")}</div>` +
+    `<div><span>Unloaded</span>${chip("lgTo", todayISO(), "Today")}${chip("lgTo", "=from", "Same day as loaded")}</div>`;
+  const org = crewNorm(lgPlace($("lgOrigin").value)), dests = top(legs.slice(0, 30).flatMap(x => [x.dest, x.origin])).filter(d => crewNorm(lgPlace(d)) !== org);
+  $("lgDestChips").innerHTML = dests.length ? `<span>Recent</span>` + dests.map(d => chip("lgDest", d, lgPlace(d))).join("") : "";
+  const drs = [...new Set(legs.slice(0, 20).flatMap(x => [x.driver1Id ? drivers.find(d => d.id === x.driver1Id)?.name || x.driver1Name : x.driver1Name, x.driver2Id ? drivers.find(d => d.id === x.driver2Id)?.name || x.driver2Name : x.driver2Name]).filter(Boolean))].slice(0, 5);
+  $("lgDrvChips").innerHTML = drs.length ? `<span>Recent</span>` + drs.map(d => chip("lgDriver1", d)).join("") : "";
+}
+$("lgForm").addEventListener("click", e => {
+  const c = e.target.closest("[data-wset]"); if (c && LGW.on) { const k = c.dataset.wset, v = c.dataset.v === "=from" ? $("lgFrom").value : c.dataset.v;
+    if (k === "lgDriver1" && $("lgDriver1").value.trim() && !$("lgDriver2").value.trim() && $("lgDriver1").value.trim() !== v) $("lgDriver2").value = v; else $(k).value = v;
+    if (k === "lgFrom" && (!$("lgTo").value || $("lgTo").value < v)) $("lgTo").value = v;
+    $(k).dispatchEvent(new Event("change", { bubbles: true })); return; }
+  const g = e.target.closest("[data-wgo]"); if (g) { lgWizGo(+g.dataset.wgo); return; }
+});
+$("lgNext").onclick = () => { if (lgWizOk(LGW.cur)) lgWizGo(LGW.cur + 1); };
+$("lgBack").onclick = () => lgWizGo(Math.max(1, LGW.cur - 1));
+// Step 5: everything entered, one line a step with Edit.
+function lgWizCheckRender() {
+  const l = lgRead(), c = legCalc(l), drv = [$("lgDriver1").value.trim(), $("lgDriver2").value.trim()].filter(Boolean);
+  const from = $("lgFrom").value, to = $("lgTo").value || from, F = l.fuels || [], P = l.payments || [];
+  const ex = [["FASTag", l.toll], ["Commission", l.commission], ["Driver padi", l.padi], ["RTO", l.rto], ["Loading", l.loading], ["Weighbridge", l.bridge], ["Other", l.otherExp], ["Bills", l.billExp]].filter(x => num(x[1]));
+  const rec = P.filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0), pend = P.filter(p => p.settled === false).reduce((a, p) => a + num(p.amount), 0);
+  const K = odoKm(vehicles.find(v => v.id === (rt?.vid || kBusId)), from, l.startKm, to, l.endKm);
+  const line = (n, t, b, sub, warn) => `<div class="cl"><div><small>${n} · ${t}</small><b>${b}</b>${sub ? `<span${warn ? ' class="warn"' : ""}>${sub}</span>` : ""}</div><button type="button" class="lnk" data-wgo="${n}">Edit</button></div>`;
+  $("lgCheck").innerHTML = `<div class="cres"><span>Rent<b>${nf(num(l.rent))}</b></span><span>Expense<b>${nf(c.exp)}</b></span><span>Balance<b>${nf(c.bal)}</b></span></div><div class="clist">` +
+    line(1, "Trip", `${esc(lgPlace($("lgOrigin").value) || "?")} → ${esc(lgPlace($("lgDest").value) || "?")}`, `${from ? fmtShort(from) : "—"} – ${to ? fmtShort(to) : "—"} · ${num($("lgDays").value) || "—"} day${num($("lgDays").value) === 1 ? "" : "s"}${drv.length ? " · " + esc(drv.join(", ")) : ""}`) +
+    line(2, "Rent & expenses", `Rent ${rs(num(l.rent))}`, ex.length ? ex.map(([k, v]) => `${k} ${nf(v)}`).join(" · ") : "No expenses entered") +
+    line(3, "Diesel", F.length ? `${F.length} fill${F.length > 1 ? "s" : ""} · ${nf(num(l.litres), num(l.litres) % 1 ? 2 : 0)} L · ${rs(num(l.fuelCost))}` : "No diesel", F.length ? [...new Set(F.map(f => f.place).filter(Boolean))].join(", ") : "") +
+    line(4, "Km & payments", `${K.act ? nf(K.act) + " km" + (K.conv ? " actual" : "") : "Km not entered"} · ${rs(rec)} received`, pend ? `${rs(pend)} not settled yet` : P.length ? "All settled" : "No payment yet", !!pend) + `</div>`;
+}
+// After saving on a phone: what to do next.
+function lgWizDone(l) {
+  const c = legCalc(l); LGW.cur = 6; $("lgForm").dataset.cur = 6;
+  $("lgWizHd").hidden = true; $("lgCheck").hidden = true; $("lgDone").hidden = false;
+  $("lgBack").hidden = $("lgNext").hidden = true; $("lgSave").hidden = true; $("lgDrawer").querySelector("footer").hidden = true;
+  $("lgDone").innerHTML = `<div class="dok">✓</div><h2>Trip saved</h2><p>${esc(rtLegName(l))} · balance ${rs(c.bal)}</p><div class="dbtns">` +
+    `<button type="button" class="btn" data-wdone="files">📎 Attach bills</button><button type="button" class="btn" data-wdone="print">🖨 Print trip sheet</button>` +
+    `<button type="button" class="btn" data-wdone="send">📤 Send details</button><button type="button" class="btn" data-wdone="ov">Round trip overview</button>` +
+    `<button type="button" class="btn primary" data-wdone="next">+ Add next trip</button><button type="button" class="lnk" data-wdone="review">Review this trip</button></div>`;
+}
+$("lgDone").addEventListener("click", e => {
+  const b = e.target.closest("[data-wdone]"), r = rtGet(); if (!b || !rt) return; const a = b.dataset.wdone;
+  if (a === "print" && r) rtPrintOpen(r); else if (a === "send" && r) rtSendOpen(r);
+  else if (a === "review") { $("lgDrawer").querySelector("footer").hidden = false; lgWizGo(5); }
+  else if (a === "next") { rt.pane = "leg"; rt.leg = null; rtShow(); }
+  else { rt.pane = a; rt.leg = null; rtShow(); }
+});
 $("lgForm").addEventListener("submit", async e => {
   e.preventDefault(); if (!canTrips) return;
   $("lgForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("lgForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
@@ -14448,7 +14593,7 @@ $("lgForm").addEventListener("submit", async e => {
   setD(1, "lgDriver1"); setD(2, "lgDriver2");
   const rem = $("lgRemarks").value.trim(); if (rem) l.remarks = rem;
   if (!l.payments.length) delete l.payments;
-  if (!ok) { $("lgForm").querySelector('[aria-invalid="true"]')?.focus(); return; }
+  if (!ok) { const bad = $("lgForm").querySelector('[aria-invalid="true"]'); if (LGW.on) { const st = bad?.closest("[data-mstep]")?.dataset.mstep || ($("e-lgFuels").textContent ? 3 : 0); if (st) lgWizGo(+st); } bad?.focus(); return; }
   // A new round trip takes this trip's id, unless that id already anchors other trips.
   const rsel = $("lgRound").value; l.roundId = rsel !== "new" ? rsel : ops.truckTrips.some(x => x.id !== l.id && x.roundId === l.id) ? genId("rt") : l.id;
   const c = legCalc(l); l.expense = c.exp; l.balance = c.bal; l.fy = fyOf(l.from);
@@ -14457,6 +14602,7 @@ $("lgForm").addEventListener("submit", async e => {
     await opsSave("truckTrips", l);
     toast(`Trip saved · balance ${rs(c.bal)}`);
     if (fyOf(l.from) !== kFy) { kFy = fyOf(l.from); $("kFy").value = String(kFy); renderTruck(); }
+    if (LGW.on) LGW.saved = l.id;
     if (rt) { rt.rid = l.roundId; rt.vid = l.vehicleId; rt.pane = "leg"; rt.leg = l.id; rtShow(); }
   } catch { toast("Couldn't save. Check your connection and try again."); }
   finally { $("lgSave").disabled = false; }
@@ -14485,7 +14631,7 @@ function rtShow() {
   $("rtPrint").hidden = !r; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = shut ? "Reopen" : "Mark closed"; $("lgShut").hidden = !shut;
   rtNavRender();
   ["lgForm", "rtOv", "rtSum", "rtPay", "rtDsl", "rtFiles"].forEach(id => $(id).hidden = true);
-  $("rtPaySave").hidden = true; $("lgSave").hidden = true;
+  $("rtPaySave").hidden = true; $("lgSave").hidden = true; $("lgBack").hidden = $("lgNext").hidden = true;
   if (rt.pane === "leg") { $("lgForm").hidden = false; lgLoad(rt.leg, rt.rid); }
   else if (rt.pane === "pay" || rt.pane === "dsl") { const pay = rt.pane === "pay"; $(pay ? "rtPay" : "rtDsl").hidden = false; pay ? rtPayRender() : rtDslRender();
     foot.hidden = !edit; $("rtPaySave").hidden = !edit; $("rtPaySave").textContent = pay ? "Save payments" : "Save diesel"; }
