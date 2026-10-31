@@ -529,7 +529,41 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .tentry { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .rbtn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 5px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
 .rbtn.add { border-color: var(--accent); color: var(--accent); } .rbtn.del { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); color: var(--danger); } .rbtn.del:hover { background: var(--danger); border-color: var(--danger); }
-.lgshut { margin: 0; padding: 10px 14px; border-radius: 8px; background: var(--chip-bg); border: 1px solid var(--line); font-size: 14px; }
+.lgshut { margin: 12px 20px 0; padding: 10px 14px; border-radius: 8px; background: var(--chip-bg); border: 1px solid var(--line); font-size: 14px; flex: none; }
+/* Round trip screen: summary, each trip and the payments as tabs (on a computer, a menu on the left). */
+.rthbtns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.rtnav { display: flex; gap: 4px; overflow-x: auto; padding: 8px 12px 0; border-bottom: 1px solid var(--line); background: var(--surface); flex: none; }
+.rtnav button { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; border: 0; background: none; color: var(--ink); padding: 8px 12px; border-radius: 8px 8px 0 0; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; text-align: left; max-width: 260px; }
+.rtnav button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.rtnav button small { font-weight: 500; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.rtnav button:hover { background: var(--bg); }
+.rtnav button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+.rtnav .rtadd { color: var(--accent); justify-content: center; }
+.rtnav .rtnh { display: none; }
+.rtlegh { margin: 0; font-size: 18px; }
+.rtpane { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.rtpane > * { flex-shrink: 0; }
+.rtstats { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.rtcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; align-items: start; }
+.rtcard { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 12px 14px; min-width: 0; }
+.rtcard h3 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); }
+.rttab { width: 100%; border-collapse: collapse; font-size: 14px; }
+.rttab td, .rttab th { padding: 6px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.rttab th { font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.rttab .n { text-align: right; font-family: var(--mono); white-space: nowrap; } .rttab .num { font-family: var(--mono); white-space: nowrap; font-size: 13px; }
+.rttab tr.sh td { font-weight: 700; color: var(--muted); font-size: 12px; padding-top: 10px; }
+.rttab tfoot td { font-weight: 700; border-bottom: 0; border-top: 2px solid var(--line); }
+.rttab .neg { color: var(--danger); } .rttab .pos { color: var(--ok); }
+.rtset .rtbig { font-family: var(--display); font-size: 28px; font-weight: 700; margin: 4px 0; }
+.rtset p { margin: 4px 0; }
+#rtPrint, #kPrint { display: inline-flex; gap: 6px; align-items: center; }
+.rtstats .stat .v { font-size: 22px; } .rttscroll { overflow-x: auto; }
+@media (max-width: 700px) { .rtpane { padding: 14px; } #lgDrawer > header { flex-wrap: wrap; } #lgDrawer .rthbtns { width: 100%; justify-content: flex-start; } #lgDrawer .rthbtns .icon { margin-left: auto; }
+  .rtstats .stat .v { font-size: 19px; } .rtnav button { max-width: 210px; } }
+.kchk { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; align-self: flex-start; }
+.kchk input { width: 18px; height: 18px; accent-color: var(--accent); }
+#kTable.ronly tr[data-lid] { display: none; }
+table.ttable tr.grp[data-rid] td { cursor: pointer; } table.ttable tr.grp[data-rid]:hover td { background: var(--accent-soft); }
 .rbtn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 table.ttable tbody tr[data-tdate]:not([data-tdate=""]) { cursor: pointer; }
 table.ttable tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -578,8 +612,16 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
   .drawer.fullpage .docpop { left: auto; right: 40px; width: 460px; top: 76px; }
   .drawer.fullpage footer { padding-left: 40px; padding-right: 40px; }
   /* Truck trip: the whole page. Trip and money side by side, diesel across, then kilometres and payments; the totals card on the right. */
-  #lgDrawer.fullpage { width: auto; left: 0; border-left: 0; }
-  #lgDrawer.fullpage form { padding: 24px 40px 32px; }
+  #lgDrawer.fullpage { width: auto; left: 0; border-left: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; }
+  #lgDrawer > header { grid-column: 1 / -1; }
+  #lgDrawer > .rtnav { grid-column: 1; grid-row: 2 / span 3; flex-direction: column; gap: 3px; border-bottom: 0; border-right: 1px solid var(--line); padding: 14px 10px; overflow-y: auto; }
+  #lgDrawer > .rtnav button { width: 100%; max-width: none; border-radius: 10px; padding: 10px 14px; }
+  #lgDrawer > .rtnav button[aria-selected="true"] { box-shadow: none; }
+  #lgDrawer > .rtnav .rtnh { display: block; font: 600 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 14px 14px 4px; }
+  #lgDrawer > #lgShut { grid-column: 2; grid-row: 2; margin: 16px 32px 0; }
+  #lgDrawer > form, #lgDrawer > .rtpane { grid-column: 2; grid-row: 3; min-height: 0; }
+  #lgDrawer > footer { grid-column: 2; grid-row: 4; }
+  #lgDrawer.fullpage form, #lgDrawer .rtpane { padding: 20px 32px 28px; }
   #lgDrawer .tfgrid { grid-template-columns: minmax(0, 1fr) 260px; gap: 22px; max-width: 1600px; }
   #lgDrawer .tfmain { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px 22px; align-items: start; }
   #lgDrawer .tfmain > fieldset:nth-of-type(3), #lgDrawer .tfmain > fieldset:nth-of-type(5) { grid-column: 1 / -1; }
@@ -829,6 +871,10 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
 .lgptab th:nth-child(1) { width: 17%; } .lgptab th:nth-child(2) { width: auto; } .lgptab th:nth-child(3) { width: 15%; } .lgptab th:nth-child(4) { width: 18%; } .lgptab th:nth-child(5) { width: 9%; } .lgptab th:last-child { width: 5%; }
 .lgptab .c { text-align: center; } .lgptab input[type="checkbox"] { width: 18px; height: 18px; padding: 0; margin: 0; vertical-align: middle; accent-color: var(--accent); }
 @media (max-width: 700px) { .lgptab { min-width: 620px; } }
+.rtptab th:nth-child(1), .rtgtab th:nth-child(1) { width: 14%; } .rtptab th:nth-child(2), .rtgtab th:nth-child(2) { width: 21%; } .rtptab th:nth-child(3), .rtgtab th:nth-child(3) { width: auto; }
+.rtptab th:nth-child(4), .rtgtab th:nth-child(4) { width: 12%; } .rtptab th:nth-child(5), .rtgtab th:nth-child(5) { width: 15%; } .rtptab th:nth-child(6) { width: 7%; } .rtgtab th:nth-child(6), .rtptab th:nth-child(7) { width: 4%; min-width: 24px; }
+.rtptab .c { text-align: center; } .rtptab input[type="checkbox"] { width: 18px; height: 18px; padding: 0; margin: 0; vertical-align: middle; accent-color: var(--accent); }
+@media (max-width: 700px) { .rtptab, .rtgtab { min-width: 760px; } }
 .payrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .paylist { display: flex; flex-direction: column; gap: 8px; }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
@@ -2628,6 +2674,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
         <div class="tcontrols">
           <div class="hf"><label for="kFy">Financial year</label><select id="kFy"></select></div>
+          <button class="btn" type="button" id="kPrint" title="Print or download the trips and expenses of this truck, as Excel or as an image">Print</button>
+          <button class="btn" type="button" id="kFast" title="Download the FASTag amounts of this truck">FASTag</button>
           <button class="btn primary" type="button" id="kAdd">+ Add trip</button>
         </div>
       </header>
@@ -2635,6 +2683,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="empty panel" id="kNone" hidden><strong>No trucks yet</strong>Add a vehicle with class 12 Wheeler Truck under Masters › Vehicle.</div>
       <div id="kBody" style="display:flex;flex-direction:column;gap:16px">
         <section class="summary tsum" id="kSummary" aria-label="Truck summary"></section>
+        <label class="kchk"><input type="checkbox" id="kLegs" checked> Show the trips inside each round trip</label>
         <div class="tscroll"><table class="ttable otable" id="kTable" style="min-width:2050px"></table></div>
       </div>
     </section>
@@ -3291,8 +3340,11 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   <div class="askcard"><p id="askMsg"></p><div class="askbtns"><button class="btn" type="button" id="askNo">No</button><button class="btn primary" type="button" id="askYes">Yes</button></div></div>
 </div>
 <aside class="drawer fullpage lgfull" id="lgDrawer" role="dialog" aria-modal="true" aria-labelledby="lgTitle" hidden>
-  <header><div style="min-width:0"><h2 id="lgTitle">Add trip</h2><div class="vsub" id="lgSub"></div></div><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></header>
-  <form id="lgForm" novalidate><p class="lgshut" id="lgShut" hidden>🔒 This round trip is closed, so the trip is view-only. To change it, press <b>Reopen</b> on the round trip in the Trucks page.</p><div class="tfgrid"><div class="tfmain">
+  <header><div style="min-width:0"><h2 id="lgTitle">Round trip</h2><div class="vsub" id="lgSub"></div></div>
+    <span class="rthbtns"><button class="btn" type="button" id="rtPrint" title="Print or download this round trip, as Excel or as an image">Print</button><button class="btn" type="button" id="rtLock"></button><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></span></header>
+  <nav class="rtnav" id="rtNav" role="tablist" aria-label="Round trip"></nav>
+  <p class="lgshut" id="lgShut" hidden>🔒 This round trip is closed, so it is view-only. To change it, press <b>Reopen</b> at the top.</p>
+  <form id="lgForm" novalidate><h3 class="rtlegh" id="rtLegH"></h3><div class="tfgrid"><div class="tfmain">
     <fieldset class="docs"><legend>Trip</legend>
       <div class="field"><label for="lgRound">Round trip</label><select id="lgRound"></select><span class="hint">Trips out and back belong to one round trip. Its payment is settled together.</span></div>
       <div class="three">
@@ -3349,11 +3401,26 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="field"><label for="lgRemarks">Remarks</label><input id="lgRemarks" autocomplete="off" maxlength="300"></div>
     </fieldset>
   </div><aside class="tfside"><div class="tfcard"><h3>This trip</h3><div class="tcalc" id="lgCalc" aria-live="polite"></div></div></aside></div></form>
+  <div class="rtpane" id="rtSum" hidden></div>
+  <div class="rtpane" id="rtPay" hidden>
+    <fieldset class="docs"><legend>Money received</legend>
+      <p class="sub" style="margin:0 0 6px">Payments that came to the owner for this round trip. Choose the trip a payment is for: it also shows in that trip. Untick Settled while it is still to be confirmed.</p>
+      <div class="tscroll"><table class="lgftab rtptab"><thead><tr><th>Date</th><th>For</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th class="c">Settled</th><th></th></tr></thead><tbody id="rtRec"></tbody>
+        <tfoot><tr><td><button class="btn" type="button" id="rtAddRec">+ Add payment</button></td><td colspan="2" class="sub" id="rtRecTot"></td><td class="n" id="rtRecAmt"></td><td colspan="3"></td></tr></tfoot></table></div>
+    </fieldset>
+    <fieldset class="docs"><legend>Money given to the driver</legend>
+      <p class="sub" style="margin:0 0 6px">The advance before the trip and any money sent to the driver during the trip.</p>
+      <div class="tscroll"><table class="lgftab rtgtab"><thead><tr><th>Date</th><th>For</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th></th></tr></thead><tbody id="rtGiv"></tbody>
+        <tfoot><tr><td><button class="btn" type="button" id="rtAddGiv">+ Add money given</button></td><td colspan="2" class="sub" id="rtGivTot"></td><td class="n" id="rtGivAmt"></td><td colspan="2"></td></tr></tfoot></table></div>
+      <datalist id="rtGivList"><option value="Advance"><option value="Sent during the trip"><option value="Driver took"><option value="Diesel in cash"></datalist>
+    </fieldset>
+  </div>
   <footer>
     <button class="btn danger" type="button" id="lgDelete" hidden>Delete trip</button>
     <span style="flex:1"></span>
     <button class="btn" type="button" id="lgCancel">Close</button>
     <button class="btn primary" type="submit" form="lgForm" id="lgSave">Save trip</button>
+    <button class="btn primary" type="button" id="rtPaySave" hidden>Save payments</button>
   </footer>
 </aside>
 <aside class="drawer" id="flDrawer" role="dialog" aria-modal="true" aria-labelledby="flTitle" hidden>
@@ -13928,9 +13995,9 @@ function roundsOf(vid, fy) {
   const map = new Map();
   legs.forEach(l => { const k = l.roundId || l.id; if (!map.has(k)) map.set(k, { id: k, vehicleId: l.vehicleId, legs: [] }); map.get(k).legs.push(l); });
   return [...map.values()].map(r => {
-    const doc = ops.truckRounds.find(x => x.id === r.id), c = r.legs.map(legCalc);
-    return { ...r, status: doc?.status || "Open", closedOn: doc?.closedOn || "", from: r.legs[0].from, to: r.legs.reduce((a, l) => (l.to || l.from) > a ? (l.to || l.from) : a, ""),
-      rent: r.legs.reduce((a, l) => a + num(l.rent), 0), bal: c.reduce((a, x) => a + x.bal, 0), received: c.reduce((a, x) => a + x.received, 0), km: c.reduce((a, x) => a + x.km, 0),
+    const doc = ops.truckRounds.find(x => x.id === r.id), c = r.legs.map(legCalc), rp = (doc?.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0);
+    return { ...r, doc, status: doc?.status || "Open", closedOn: doc?.closedOn || "", from: r.legs[0].from, to: r.legs.reduce((a, l) => (l.to || l.from) > a ? (l.to || l.from) : a, ""),
+      rent: r.legs.reduce((a, l) => a + num(l.rent), 0), bal: c.reduce((a, x) => a + x.bal, 0), received: c.reduce((a, x) => a + x.received, 0) + rp, km: c.reduce((a, x) => a + x.km, 0),
       path: [r.legs[0].origin, ...r.legs.map(l => l.dest)].filter(Boolean).map(p => p.replace(/^[A-Z]{2}\s*-\s*/, "")).join(" → ") };
   });
 }
@@ -13955,7 +14022,7 @@ function renderTruck() {
   const head = `<thead><tr><th class="sticky">Dates</th><th class="n">Days</th><th>Starting place</th><th>Destination</th><th>Driver</th><th class="n">Trip rent</th><th class="n">Commission</th><th class="n">Litres</th><th class="n">Diesel ₹</th><th class="n">Toll</th><th class="n">Driver padi</th><th class="n">RTO</th><th class="n">Loading</th><th class="n">Weighbridge</th><th class="n">Other</th><th class="n">Bill exp.</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Received</th><th class="n">Start km</th><th class="n">End km</th><th class="n">Km</th><th class="n">Km / L</th><th>Remarks</th></tr></thead>`;
   let body = "";
   [...rounds].forEach((r, i) => {
-    body += `<tr class="grp"><td colspan="${cols}"><span class="grpin"><b>Round trip ${i + 1}</b><span>${fmtShort(r.from)} – ${fmtShort(r.to)} · ${esc(r.path)}</span><span>Trip balance <b style="color:${r.bal < 0 ? "var(--danger)" : "var(--ok)"}">${rs(r.bal)}</b></span><span>Received ${rs(r.received)}</span>
+    body += `<tr class="grp" data-rid="${r.id}" tabindex="0"><td colspan="${cols}"><span class="grpin"><b>Round trip ${i + 1}</b><span>${fmtShort(r.from)} – ${fmtShort(r.to)} · ${esc(r.path)}</span><span>${r.legs.length} trip${r.legs.length > 1 ? "s" : ""} · rent <b>${rs(r.rent)}</b></span><span>Trip balance <b style="color:${r.bal < 0 ? "var(--danger)" : "var(--ok)"}">${rs(r.bal)}</b></span><span>Received ${rs(r.received)}</span>
       <span class="pill ${r.status === "Closed" ? "ok" : "d30"}">${r.status === "Closed" ? `Closed${r.closedOn ? " " + fmtShort(r.closedOn) : ""}` : "Open"}</span>
       ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="${r.status === "Closed" ? "open" : "close"}">${r.status === "Closed" ? "Reopen" : "Mark closed"}</button>${r.status !== "Closed" ? `<button class="rbtn add" type="button" data-round="${r.id}" data-act="add">+ Add trip to this round</button><button class="rbtn del" type="button" data-round="${r.id}" data-act="del">Delete round trip</button>` : ""}` : ""}</span></td></tr>`;
     r.legs.forEach(l => {
@@ -13966,30 +14033,75 @@ function renderTruck() {
     });
   });
   const foot = legs.length ? `<tfoot><tr><td class="sticky">Total</td><td class="n">${fmtDays(T.days)}</td><td colspan="3">${legs.length} trips</td><td class="n">${nf(T.rent)}</td><td class="n">${nf(T.commission)}</td><td class="n">${nf(T.lit)}</td><td class="n">${nf(T.fuelCost)}</td><td class="n">${nf(T.toll)}</td><td class="n">${nf(T.padi)}</td><td class="n">${nf(T.rto)}</td><td class="n">${nf(T.loading)}</td><td class="n">${nf(T.bridge)}</td><td class="n">${nf(T.otherExp)}</td><td class="n">${nf(T.billExp)}</td><td class="n">${nf(T.exp)}</td><td class="n">${nf(bal)}</td><td class="n">${nf(T.rec)}</td><td></td><td></td><td class="n">${nf(T.km)}</td><td class="n">${T.km && T.lit ? nf(T.km / T.lit, 2) : "—"}</td><td></td></tr></tfoot>` : "";
+  $("kTable").classList.toggle("ronly", !$("kLegs").checked);
   $("kTable").innerHTML = head + `<tbody>${body || `<tr><td colspan="${cols}" class="sub" style="padding:18px">No trips entered for FY ${fyLabel(kFy)}.${canTrips ? " Use + Add trip to enter one." : ""}</td></tr>`}</tbody>` + foot;
+  rtRefresh();
 }
+// Trucks page Print: every trip of the truck in the year with its expenses. FASTag: only the FASTag amounts.
+const kLegRows = () => roundsOf(kBusId, kFy).flatMap((r, i) => r.legs.map(l => ({ l, n: i + 1, c: legCalc(l) })));
+const kDrv = l => [l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name, l.driver2Id ? drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name : l.driver2Name].filter(Boolean).join(", ");
+const K_OTHER = ["rto", "loading", "bridge", "otherExp", "billExp"];
+function kRaw(x, k) {
+  const l = x.l; return k === "from" ? l.from : k === "to" ? l.to || l.from : k === "exp" ? x.c.exp : k === "bal" ? x.c.bal : k === "rec" ? x.c.received : k === "km" ? x.c.km : k === "days" ? x.c.days
+    : k === "other" ? K_OTHER.reduce((a, f) => a + num(l[f]), 0) : k === "litres" ? num(l.litres) : ["rent", "commission", "fuelCost", "toll", "padi"].includes(k) ? num(l[k]) : null;
+}
+function kVal(x, k) {
+  const l = x.l; if (k === "from" || k === "to") return fmtShort(kRaw(x, k)); if (k === "round") return `Round trip ${x.n}`; if (k === "origin") return l.origin || ""; if (k === "dest") return l.dest || "";
+  if (k === "trip") return rtLegName(l); if (k === "driver") return kDrv(l); if (k === "remarks") return l.remarks || "";
+  const v = kRaw(x, k); return v ? (k === "litres" || k === "days" ? nf(v, Number.isInteger(v) ? 0 : 2) : nf(v)) : "";
+}
+$("kPrint").insertAdjacentHTML("afterbegin", ICON_PRINT);
+$("kPrint").onclick = () => {
+  const bus = vehicles.find(v => v.id === kBusId), plate = bus ? plateOf(bus) : "", rows = kLegRows();
+  if (!rows.length) { toast(`No trips entered for ${plate} in FY ${fyLabel(kFy)}.`); return; }
+  const N = (k, h, off) => ({ k, h, xl: 12, px: 120, kind: "num", total: true, off });
+  pbOpen({ sheet: "Truck trips", title0: `${plate} · trips and expenses · FY ${fyLabel(kFy)}`, rows, sumKey: "bal", sub: `${plate} · FY ${fyLabel(kFy)}`,
+    note: `Every trip of <b>${esc(plate)}</b> in FY <b>${fyLabel(kFy)}</b> with its expenses. Untick the columns and lines you don't want.`,
+    cols: [{ k: "from", h: "From date", xl: 12, px: 120, kind: "date" }, { k: "to", h: "To date", xl: 12, px: 120, kind: "date", off: true }, { k: "round", h: "Round trip", xl: 12, px: 130, kind: "text" },
+      { k: "origin", h: "Starting place", xl: 20, px: 0, kind: "text" }, { k: "dest", h: "Destination", xl: 20, px: 0, kind: "text" }, { k: "driver", h: "Driver", xl: 18, px: 0, kind: "text", off: true },
+      N("days", "Days", true), N("rent", "Trip rent"), N("commission", "Commission", true), N("litres", "Diesel (L)", true), N("fuelCost", "Diesel ₹"), N("toll", "FASTag"), N("padi", "Padi", true),
+      N("other", "Other exp.", true), N("exp", "Expenses"), N("bal", "Balance"), N("rec", "Received", true), N("km", "Km", true), { k: "remarks", h: "Remarks", xl: 30, px: 0, kind: "wrap", off: true }],
+    lineCols: ["from", "origin", "dest", "rent", "exp", "bal"], val: kVal, raw: kRaw, lineSub: x => `Round trip ${x.n}` });
+};
+$("kFast").onclick = () => {
+  const bus = vehicles.find(v => v.id === kBusId), plate = bus ? plateOf(bus) : "", rows = kLegRows().filter(x => num(x.l.toll) > 0);
+  if (!rows.length) { toast(`No FASTag amounts entered for ${plate} in FY ${fyLabel(kFy)}.`); return; }
+  pbOpen({ sheet: "FASTag", title0: `${plate} · FASTag · FY ${fyLabel(kFy)}`, rows, sumKey: "toll", sub: `${plate} · FY ${fyLabel(kFy)}`,
+    note: `The FASTag amount of each trip of <b>${esc(plate)}</b> in FY <b>${fyLabel(kFy)}</b>.`,
+    cols: [{ k: "from", h: "Date", xl: 12, px: 130, kind: "date" }, { k: "round", h: "Round trip", xl: 12, px: 140, kind: "text" }, { k: "trip", h: "Trip", xl: 34, px: 0, kind: "text" },
+      { k: "driver", h: "Driver", xl: 18, px: 0, kind: "text", off: true }, { k: "toll", h: "FASTag ₹", xl: 14, px: 150, kind: "num", total: true }],
+    lineCols: ["from", "trip", "toll"], val: kVal, raw: kRaw, lineSub: x => `Round trip ${x.n}` });
+};
 $("kTabs").addEventListener("click", e => { const b = e.target.closest("[data-ktab]"); if (!b || b.dataset.ktab === kBusId) return; kBusId = b.dataset.ktab; renderTruck(); });
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
-$("kAdd").onclick = () => openLeg(null);
+// + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
+$("kAdd").onclick = () => { const last = roundsOf(kBusId).filter(r => r.status !== "Closed").sort((a, b) => b.to.localeCompare(a.to))[0]; openRound(last ? last.id : null, "leg", null); };
+try { $("kLegs").checked = localStorage.getItem("fleet-klegs") !== "0"; } catch {}
+$("kLegs").addEventListener("change", () => { try { localStorage.setItem("fleet-klegs", $("kLegs").checked ? "1" : "0"); } catch {} $("kTable").classList.toggle("ronly", !$("kLegs").checked); });
 $("kTable").addEventListener("click", async e => {
   const b = e.target.closest("button[data-round]");
   if (b) {
     const r = roundsOf(kBusId).find(x => x.id === b.dataset.round); if (!r) return;
-    if (b.dataset.act === "add") { openLeg(null, r.id); return; }
+    if (b.dataset.act === "add") { openRound(r.id, "leg", null); return; }
     if (b.dataset.act === "del") {
       const n = r.legs.length; if (!await askYesNo(`Delete this round trip completely?\n${fmtShort(r.from)} – ${fmtShort(r.to)} · ${r.path}\n${n} trip${n > 1 ? "s" : ""}, rent ${rs(r.rent)}, with all their diesel fills and payments. This cannot be undone.`, { yes: "Delete round trip", danger: true })) return;
       let bad = 0; for (const l of r.legs) { try { await opsDelete("truckTrips", l.id); } catch { bad++; } }
       if (ops.truckRounds.some(x => x.id === r.id)) { try { await opsDelete("truckRounds", r.id); } catch { bad++; } }
       toast(bad ? "Some trips could not be deleted. Try again." : `Round trip deleted · ${n} trip${n > 1 ? "s" : ""}`); return;
     }
-    const closing = b.dataset.act === "close";
-    try { await opsSave("truckRounds", { id: r.id, vehicleId: r.vehicleId, fy: fyOf(r.from), status: closing ? "Closed" : "Open", ...(closing ? { closedOn: todayISO() } : {}) }); toast(closing ? "Round trip closed" : "Round trip reopened"); }
-    catch { toast("Couldn't save. Try again."); }
-    return;
+    await rtSetLock(r, b.dataset.act === "close"); return;
   }
-  const row = e.target.closest("tr[data-lid]"); if (row) openLeg(row.dataset.lid);
+  const row = e.target.closest("tr[data-lid]"); if (row) { const l = ops.truckTrips.find(x => x.id === row.dataset.lid); if (l) openRound(l.roundId || l.id, "leg", l.id); return; }
+  const g = e.target.closest("tr[data-rid]"); if (g) openRound(g.dataset.rid, "sum");
 });
-$("kTable").addEventListener("keydown", e => { const r = e.target.closest("tr[data-lid]"); if (r && e.key === "Enter") openLeg(r.dataset.lid); });
+$("kTable").addEventListener("keydown", e => { if (e.key !== "Enter" || e.target.closest("button")) return; const r = e.target.closest("tr[data-lid], tr[data-rid]"); if (r) r.click(); });
+// Close or reopen a round trip, keeping its payments and money given to the driver.
+async function rtSetLock(r, closing) {
+  const d = { ...(ops.truckRounds.find(x => x.id === r.id) || { id: r.id, vehicleId: r.vehicleId, fy: fyOf(r.from) }), status: closing ? "Closed" : "Open" };
+  if (closing) d.closedOn = todayISO(); else delete d.closedOn;
+  try { await opsSave("truckRounds", d); toast(closing ? "Round trip closed" : "Round trip reopened"); return true; }
+  catch { toast("Couldn't save. Try again."); return false; }
+}
 // A payment received for a truck trip: date, description (the load by default), amount, how it was paid and whether it is settled.
 const LG_PAYBY = ["Bank transfer", "UPI", "Cash", "Cheque"];
 function payRow(p = {}) {
@@ -13998,13 +14110,13 @@ function payRow(p = {}) {
     `<td><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td><td><select data-pby aria-label="Paid by">${LG_PAYBY.map(x => `<option${x === by ? " selected" : ""}>${x}</option>`).join("")}</select></td>` +
     `<td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td><td><button class="icon" type="button" data-prm aria-label="Remove this payment">✕</button></td></tr>`;
 }
-function openLeg(id, roundId) {
+// The trip form of the round trip screen: one trip (load), or a new one when id is null.
+function lgLoad(id, roundId) {
   const l = id ? ops.truckTrips.find(x => x.id === id) : null; lgEditId = l?.id || null;
-  const vid = l?.vehicleId || kBusId, bus = vehicles.find(v => v.id === vid);
+  const vid = l?.vehicleId || rt?.vid || kBusId, bus = vehicles.find(v => v.id === vid);
   const all = roundsOf(vid), last = ops.truckTrips.filter(x => x.vehicleId === vid).sort((a, b) => (b.to || b.from).localeCompare(a.to || a.from))[0];
-  const lastRound = last ? all.find(r => r.id === (last.roundId || last.id)) : null;
-  const pick = l ? (l.roundId || l.id) : roundId || (lastRound && lastRound.status !== "Closed" ? lastRound.id : "new");
-  $("lgTitle").textContent = l ? (canTrips && (all.find(r => r.id === (l.roundId || l.id))?.status !== "Closed") ? "Edit trip" : "Trip") : "Add trip"; $("lgSub").textContent = bus ? `${plateOf(bus)} · ${vName(bus)}` : "";
+  const pick = l ? (l.roundId || l.id) : roundId || "new", rr = all.find(r => r.id === pick), n = rr && l ? rr.legs.indexOf(l) + 1 : 0;
+  $("rtLegH").textContent = l ? `Trip ${n} · ${rtLegName(l)}` : "New trip";
   $("lgRound").innerHTML = `<option value="new">Start a new round trip</option>` + all.filter(r => r.status !== "Closed" || r.id === pick).reverse()
     .map(r => `<option value="${r.id}">From ${fmtShort(r.from)} · ${esc(r.path)}${r.status === "Closed" ? " (closed)" : ""}</option>`).join("");
   $("lgRound").value = pick;
@@ -14027,17 +14139,16 @@ function openLeg(id, roundId) {
   $("lgRemarks").value = l?.remarks || "";
   $("lgPays").innerHTML = (l?.payments || []).map(payRow).join("");
   // A trip of a closed round trip is view-only: no adding or removing, no Save, Delete or Close at the bottom (Close ✕ at the top stays).
-  const shut = !!l && all.find(r => r.id === (l.roundId || l.id))?.status === "Closed", edit = canTrips && !shut;
+  const shut = rr?.status === "Closed", edit = canTrips && !shut;
   $("lgForm").querySelectorAll("input, select, textarea, #lgPays button, #lgFuels button").forEach(el => el.disabled = !edit);
   $("lgAddPay").hidden = !edit; $("lgAddFuel").hidden = !edit; $("lgForm").querySelectorAll("[data-prm], [data-frm]").forEach(b => b.hidden = !edit);
-  $("lgShut").hidden = !shut; $("lgDrawer").querySelector("footer").hidden = !edit;
+  $("lgDrawer").querySelector("footer").hidden = !edit;
   $("lgForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("lgForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
   $("lgSave").hidden = !edit; $("lgDelete").hidden = !(edit && l); $("lgDelete").textContent = "Delete trip"; delete $("lgDelete").dataset.confirm;
-  lgCalcRender();
-  $("scrim").hidden = false; $("lgDrawer").hidden = false; $("lgForm").scrollTop = 0;
-  setTimeout(() => (canTrips ? $("lgFrom") : $("lgClose")).focus({ preventScroll: true }), 30);
+  lgCalcRender(); $("lgForm").scrollTop = 0;
+  if (!l && edit) setTimeout(() => $("lgFrom").focus({ preventScroll: true }), 30);
 }
-function closeLgDrawer() { $("lgDrawer").hidden = true; lgEditId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
+function closeLgDrawer() { $("lgDrawer").hidden = true; lgEditId = null; rt = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function lgRead() {
   const l = {};
   Object.entries(LG_NUM).forEach(([el, k]) => { const v = $(el).value; if (v !== "" && +v >= 0) l[k] = Math.round(+v); });
@@ -14117,16 +14228,196 @@ $("lgForm").addEventListener("submit", async e => {
   $("lgSave").disabled = true;
   try {
     await opsSave("truckTrips", l);
-    closeLgDrawer(); toast(`Trip saved · balance ${rs(c.bal)}`);
+    toast(`Trip saved · balance ${rs(c.bal)}`);
     if (fyOf(l.from) !== kFy) { kFy = fyOf(l.from); $("kFy").value = String(kFy); renderTruck(); }
+    if (rt) { rt.rid = l.roundId; rt.vid = l.vehicleId; rt.pane = "leg"; rt.leg = l.id; rtShow(); }
   } catch { toast("Couldn't save. Check your connection and try again."); }
   finally { $("lgSave").disabled = false; }
 });
 $("lgDelete").onclick = async () => {
   const b = $("lgDelete"); if (!b.dataset.confirm) { b.dataset.confirm = "1"; b.textContent = "Click again to delete"; return; }
-  try { await opsDelete("truckTrips", lgEditId); closeLgDrawer(); toast("Trip deleted"); } catch { toast("Couldn't delete. Try again."); }
+  try { await opsDelete("truckTrips", lgEditId); toast("Trip deleted"); if (rt && rtGet()) { rt.pane = "sum"; rt.leg = null; rtShow(); } else closeLgDrawer(); } catch { toast("Couldn't delete. Try again."); }
 };
-$("lgClose").onclick = $("lgCancel").onclick = closeLgDrawer;
+$("lgClose").onclick = $("lgCancel").onclick = async () => { if (await rtLeaveOk()) closeLgDrawer(); };
+
+/* ---------- Round trip screen ----------
+   A round trip opens as one screen: its summary, each trip (load) and its payments, chosen on the left (tabs on a phone).
+   A payment received is kept on the trip it is for, or on the round trip when it is for the whole round.
+   Money given to the driver (the advance, money sent during the trip) is kept on the round trip. */
+let rt = null, rtSnap = "";
+const rtGet = () => rt?.rid ? roundsOf(rt.vid).find(r => r.id === rt.rid) || null : null;
+const rtLegName = l => `${lgPlace(l.origin) || "?"} → ${lgPlace(l.dest) || "?"}`;
+const rtNo = r => roundsOf(r.vehicleId, fyOf(r.from)).findIndex(x => x.id === r.id) + 1;
+const rtSum = a => a.reduce((t, x) => t + num(x.amt), 0);
+function openRound(rid, pane = "sum", legId = null) {
+  const r = rid ? roundsOf(null).find(x => x.id === rid) : null;
+  rt = { rid: r ? r.id : null, vid: r?.vehicleId || kBusId, pane: r ? pane : "leg", leg: r ? legId : null };
+  $("scrim").hidden = false; $("lgDrawer").hidden = false; rtShow();
+}
+function rtShow() {
+  const r = rtGet(), bus = vehicles.find(v => v.id === rt.vid), shut = r?.status === "Closed", edit = canTrips && !shut, foot = $("lgDrawer").querySelector("footer");
+  if (rt.rid && !r) { closeLgDrawer(); return; }
+  $("lgTitle").textContent = r ? `Round trip ${rtNo(r)}` : "New round trip";
+  $("lgSub").textContent = [bus ? plateOf(bus) : "", r ? `${fmtShort(r.from)} – ${fmtShort(r.to)}` : "", r?.path].filter(Boolean).join(" · ");
+  $("rtPrint").hidden = !r; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = shut ? "Reopen" : "Mark closed"; $("lgShut").hidden = !shut;
+  rtNavRender();
+  ["lgForm", "rtSum", "rtPay"].forEach(id => $(id).hidden = true);
+  $("rtPaySave").hidden = true; $("lgSave").hidden = true; $("lgDelete").hidden = true;
+  if (rt.pane === "leg") { $("lgForm").hidden = false; lgLoad(rt.leg, rt.rid); }
+  else if (rt.pane === "pay") { $("rtPay").hidden = false; rtPayRender(); foot.hidden = !edit; $("rtPaySave").hidden = !edit; }
+  else { $("rtSum").hidden = false; rtSumRender(); foot.hidden = true; }
+  rtSnap = rtSnapNow();
+}
+// After a change from elsewhere: the menu and summary follow; a form being typed in is left alone.
+function rtRefresh() {
+  if (!rt || $("lgDrawer").hidden) return;
+  const r = rtGet(); if (rt.rid && !r) { closeLgDrawer(); return; }
+  if (rt.pane === "sum" || (rt.pane === "pay" && rtSnapNow() === rtSnap)) { rtShow(); return; }
+  rtNavRender(); $("lgShut").hidden = r?.status !== "Closed";
+}
+function rtSnapNow() {
+  if (!rt || rt.pane === "sum") return "";
+  if (rt.pane === "pay") return JSON.stringify(rtPayRead());
+  return JSON.stringify([lgRead(), ...["lgFrom", "lgTo", "lgOrigin", "lgDest", "lgDriver1", "lgDriver2", "lgRemarks", "lgRound"].map(k => $(k).value)]);
+}
+async function rtLeaveOk() {
+  if (!rt || !canTrips || rt.pane === "sum" || rtGet()?.status === "Closed" || rtSnapNow() === rtSnap) return true;
+  return askYesNo(`You have changed ${rt.pane === "pay" ? "the payments" : "this trip"} but not saved. Leave without saving?`, { yes: "Leave without saving", no: "Stay", danger: true });
+}
+function rtNavRender() {
+  const r = rtGet(), shut = r?.status === "Closed", sel = (p, l) => rt.pane === p && (p !== "leg" || rt.leg === l);
+  const btn = (p, l, label, sub) => `<button type="button" role="tab" data-rp="${p}"${l ? ` data-rl="${l}"` : ""} aria-selected="${sel(p, l)}"><span>${label}</span>${sub ? `<small>${sub}</small>` : ""}</button>`;
+  const fresh = rt.pane === "leg" && !rt.leg ? btn("leg", null, "New trip", "Not saved yet") : "";
+  if (!r) { $("rtNav").innerHTML = `<span class="rtnh">Trips</span>` + fresh; return; }
+  const giv = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0);
+  $("rtNav").innerHTML = btn("sum", null, "Summary", `Rent ${rs(r.rent)} · balance ${rs(r.bal)}`) + `<span class="rtnh">Trips</span>` +
+    r.legs.map((l, i) => btn("leg", l.id, `${i + 1} · ${esc(rtLegName(l))}`, `${fmtShort(l.from)} · ${rs(num(l.rent))}`)).join("") + fresh +
+    (canTrips && !shut && !fresh ? `<button type="button" class="rtadd" data-rp="leg" data-new="1"><span>+ Add trip</span></button>` : "") +
+    `<span class="rtnh">Money</span>` + btn("pay", null, "Payments", `Received ${rs(r.received)} · given ${rs(giv)}`);
+}
+$("rtNav").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-rp]"); if (!b || b.getAttribute("aria-selected") === "true") return;
+  if (!await rtLeaveOk()) return;
+  rt.pane = b.dataset.rp; rt.leg = b.dataset.rl || null; rtShow();
+});
+$("rtLock").onclick = async () => {
+  const r = rtGet(); if (!r || !canTrips) return;
+  const closing = r.status !== "Closed"; if (closing && !await rtLeaveOk()) return;
+  if (await rtSetLock(r, closing)) rtShow();
+};
+
+/* Payments: money received and money given to the driver. */
+const RT_GIVE = ["Cash", "UPI", "Bank transfer"];
+const rtForOpts = (r, cur) => `<option value="">Whole round trip</option>` + r.legs.map((l, i) => `<option value="${l.id}"${l.id === cur ? " selected" : ""}>${i + 1} · ${esc(rtLegName(l))}</option>`).join("");
+const rtByOpts = (list, cur) => list.map(x => `<option${x === cur ? " selected" : ""}>${x}</option>`).join("");
+function rtRecRow(r, p = {}) {
+  return `<tr class="rtrow"><td><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Date"></td><td><select data-pleg aria-label="For">${rtForOpts(r, p.leg)}</select></td>` +
+    `<td><input data-pdesc maxlength="120" value="${esc(p.desc || "")}"${p.auto ? ' data-auto="1"' : ""} placeholder="${esc(rtDefDesc(r, p.leg || ""))}" aria-label="Description"></td><td><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td>` +
+    `<td><select data-pby aria-label="Paid by">${rtByOpts(LG_PAYBY, p.pay || "Bank transfer")}</select></td><td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td>` +
+    `<td><button class="icon" type="button" data-prm aria-label="Remove">✕</button></td></tr>`;
+}
+function rtGivRow(r, g = {}) {
+  return `<tr class="rtrow"><td><input type="date" data-pd value="${esc(g.date || "")}" aria-label="Date"></td><td><select data-pleg aria-label="For">${rtForOpts(r, g.leg)}</select></td>` +
+    `<td><input data-pdesc list="rtGivList" maxlength="120" value="${esc(g.desc || "")}" aria-label="Description"></td><td><input type="number" inputmode="numeric" min="0" data-pa value="${g.amount ?? ""}" aria-label="Amount"></td>` +
+    `<td><select data-pby aria-label="Paid by">${rtByOpts(RT_GIVE, g.pay || "Cash")}</select></td><td><button class="icon" type="button" data-prm aria-label="Remove">✕</button></td></tr>`;
+}
+function rtPayRender() {
+  const r = rtGet(), D = r.doc || {}, edit = canTrips && r.status !== "Closed";
+  const rec = [...r.legs.flatMap(l => (l.payments || []).map(p => ({ ...p, leg: l.id }))), ...(D.payments || [])].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+  $("rtRec").innerHTML = rec.map(p => rtRecRow(r, p)).join(""); $("rtGiv").innerHTML = (D.given || []).map(g => rtGivRow(r, g)).join("");
+  $("rtPay").querySelectorAll("input, select").forEach(x => x.disabled = !edit); $("rtPay").querySelectorAll("[data-prm], #rtAddRec, #rtAddGiv").forEach(x => x.hidden = !edit);
+  rtPayTot();
+}
+function rtPayRead() {
+  const rows = id => [...$(id).querySelectorAll(".rtrow")].map(tr => { const q = k => tr.querySelector(k), d = q("[data-pdesc]").value.trim().replace(/\s+/g, " "), set = q("[data-pset]");
+    const p = { date: q("[data-pd]").value, amount: Math.round(num(q("[data-pa]").value)), pay: q("[data-pby]").value, leg: q("[data-pleg]").value };
+    if (d) p.desc = d; if (set && !set.checked) p.settled = false; return p; }).filter(p => p.amount > 0);
+  return { rec: rows("rtRec"), giv: rows("rtGiv") };
+}
+function rtPayTot() {
+  const { rec, giv } = rtPayRead(), pend = rec.filter(p => p.settled === false).reduce((a, p) => a + p.amount, 0), R = rec.reduce((a, p) => a + p.amount, 0), G = giv.reduce((a, p) => a + p.amount, 0);
+  $("rtRecAmt").textContent = rec.length ? nf(R) : ""; $("rtRecTot").textContent = rec.length ? `${rec.length} payment${rec.length > 1 ? "s" : ""}${pend ? ` · ${rs(pend)} not settled` : ""}` : "";
+  $("rtGivAmt").textContent = giv.length ? nf(G) : ""; $("rtGivTot").textContent = giv.length ? `${giv.length} time${giv.length > 1 ? "s" : ""}` : "";
+}
+const rtDefDesc = (r, leg) => { const l = r.legs.find(x => x.id === leg); return l ? rtLegName(l) : r.path; };
+$("rtAddRec").onclick = () => { const r = rtGet(); $("rtRec").insertAdjacentHTML("beforeend", rtRecRow(r, { date: todayISO(), desc: rtDefDesc(r, ""), auto: 1 })); $("rtRec").lastElementChild.querySelector("[data-pleg]").focus(); rtPayTot(); };
+$("rtAddGiv").onclick = () => { const r = rtGet(); $("rtGiv").insertAdjacentHTML("beforeend", rtGivRow(r, { date: todayISO(), desc: $("rtGiv").children.length ? "Sent during the trip" : "Advance" })); $("rtGiv").lastElementChild.querySelector("[data-pa]").focus(); rtPayTot(); };
+$("rtPay").addEventListener("click", e => { const b = e.target.closest("[data-prm]"); if (b) { b.closest(".rtrow").remove(); rtPayTot(); } });
+$("rtPay").addEventListener("input", e => { if (e.target.matches("[data-pdesc]")) delete e.target.dataset.auto; rtPayTot(); });
+// The description follows the trip chosen until it is typed in.
+$("rtPay").addEventListener("change", e => { if (!e.target.matches("[data-pleg]")) return; const d = e.target.closest(".rtrow").querySelector("[data-pdesc]"); if (d.closest("#rtRec")) { const t = rtDefDesc(rtGet(), e.target.value); d.placeholder = t; if (d.dataset.auto) d.value = t; } rtPayTot(); });
+$("rtPaySave").onclick = async () => {
+  const r = rtGet(); if (!r || !canTrips || r.status === "Closed") return;
+  const { rec, giv } = rtPayRead(); if ([...rec, ...giv].some(p => !p.date)) { toast("Enter the date of every payment."); return; }
+  const strip = ({ leg, ...p }) => p, b = $("rtPaySave"); b.disabled = true;
+  try {
+    for (const l of r.legs) {
+      const P = rec.filter(p => p.leg === l.id).map(strip); if (JSON.stringify(P) === JSON.stringify(l.payments || [])) continue;
+      const n = { ...l }; if (P.length) n.payments = P; else delete n.payments; await opsSave("truckTrips", n);
+    }
+    const D = ops.truckRounds.find(x => x.id === r.id), RP = rec.filter(p => !p.leg).map(strip), G = giv.map(g => g.leg ? g : strip(g));
+    if (D || RP.length || G.length) {
+      const n = { ...(D || { id: r.id, vehicleId: r.vehicleId, fy: fyOf(r.from), status: "Open" }) };
+      if (RP.length) n.payments = RP; else delete n.payments; if (G.length) n.given = G; else delete n.given;
+      if (JSON.stringify(n) !== JSON.stringify(D)) await opsSave("truckRounds", n);
+    }
+    toast("Payments saved"); rt.pane = "pay"; rtShow();
+  } catch { toast("Couldn't save. Check your connection and try again."); }
+  finally { b.disabled = false; }
+};
+
+/* Summary, in the driver's account format: ① the owner's money (FASTag, diesel by card, money given to the driver and the
+   vehicle balance), ② the money that came to the owner, ③ the difference, which is the cash with the driver. */
+function rtCalc(r) {
+  const D = r.doc || {}, legs = r.legs, C = legs.map(legCalc), dn = (id, nm) => id ? drivers.find(d => d.id === id)?.name || nm : nm;
+  const fills = legs.flatMap(l => (l.fuels?.length ? l.fuels : num(l.fuelCost) || num(l.litres) ? [{ date: l.from, litres: num(l.litres), amount: num(l.fuelCost), pay: "Card" }] : []));
+  const odo = [...legs.flatMap(l => [num(l.startKm), num(l.endKm)]), ...fills.map(f => num(f.odo))].filter(x => x > 0);
+  const startKm = odo.length ? Math.min(...odo) : 0, endKm = odo.length ? Math.max(...odo) : 0, litres = fills.reduce((a, f) => a + num(f.litres), 0);
+  const fast = legs.filter(l => num(l.toll) > 0).map(l => ({ date: l.from, what: `FASTag · ${rtLegName(l)}`, amt: num(l.toll) }));
+  const card = fills.filter(f => f.pay !== "Cash" && num(f.amount) > 0).map(f => ({ date: f.date, what: `Diesel by card · ${nf(num(f.litres), 2)} L${f.rate ? ` @ ₹${nf(f.rate, 2)}` : ""}${f.place ? " · " + f.place : ""}`, amt: Math.round(num(f.amount)) }));
+  const giv = (D.given || []).map(g => ({ date: g.date, what: `Given to the driver · ${g.desc || "Advance"}${g.pay ? ` (${g.pay})` : ""}`, amt: num(g.amount) }));
+  const pays = [...legs.flatMap(l => (l.payments || []).map(p => ({ ...p, l }))), ...(D.payments || [])].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+  const line = p => ({ date: p.date, what: `${p.desc || (p.l ? rtLegName(p.l) : r.path)}${p.pay ? ` · ${p.pay}` : ""}`, amt: num(p.amount) });
+  const rec = pays.filter(p => p.settled !== false).map(line), pend = pays.filter(p => p.settled === false).map(line);
+  const bal = C.reduce((a, c) => a + c.bal, 0), owner = rtSum(fast) + rtSum(card) + rtSum(giv) + bal, came = rtSum(rec);
+  return { days: inclDays(r.from, r.to) || 0, startKm, endKm, km: endKm - startKm, litres, fast, card, giv, rec, pend, bal, owner, came, diff: owner - came,
+    loads: legs.map((l, i) => ({ l, c: C[i] })), drivers: [...new Set(legs.flatMap(l => [dn(l.driver1Id, l.driver1Name), dn(l.driver2Id, l.driver2Name)]).filter(Boolean))] };
+}
+function rtSumRender() {
+  const r = rtGet(), S = rtCalc(r), bus = vehicles.find(v => v.id === r.vehicleId);
+  const lines = (list, empty) => list.length ? list.map(x => `<tr><td class="num">${fmtShort(x.date)}</td><td>${esc(x.what)}</td><td class="n">${nf(x.amt)}</td></tr>`).join("") : `<tr><td colspan="3" class="sub">${empty}</td></tr>`;
+  const sh = t => `<tr class="sh"><td colspan="3">${t}</td></tr>`, d = S.diff;
+  $("rtSum").innerHTML = `<section class="summary tsum rtstats">` +
+    ostat("Truck", esc(bus ? plateOf(bus) : "—"), esc(S.drivers.join(", "))) + ostat("Start date", fmtShort(r.from)) + ostat("End date", fmtShort(r.to)) + ostat("Total days", S.days || "—") +
+    ostat("Total rent", rs(r.rent), `${r.legs.length} trip${r.legs.length > 1 ? "s" : ""}`) + ostat("Start km", S.startKm ? String(S.startKm) : "—") + ostat("End km", S.endKm ? String(S.endKm) : "—") +
+    ostat("Total km", S.km ? nf(S.km) : "—") + ostat("Total diesel", S.litres ? `${nf(S.litres, 2)} L` : "—") + ostat("Mileage", S.km && S.litres ? `${nf(S.km / S.litres, 2)} km/L` : "—") +
+    ostat("Vehicle balance", rs(S.bal), "Rent less all expenses", S.bal < 0 ? "var(--danger)" : "var(--ok)") + `</section><div class="rtcols">` +
+    `<div class="rtcard"><h3>Loads</h3><div class="rttscroll"><table class="rttab"><thead><tr><th>#</th><th>Dates</th><th>Trip</th><th class="n">Rent</th><th class="n">Expense</th><th class="n">Balance</th></tr></thead><tbody>` +
+    S.loads.map(({ l, c }, i) => `<tr><td>${i + 1}</td><td class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? `<br>${fmtShort(l.to)}` : ""}</td><td>${esc(rtLegName(l))}</td><td class="n">${nf(num(l.rent))}</td><td class="n">${nf(c.exp)}</td><td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td></tr>`).join("") +
+    `</tbody><tfoot><tr><td colspan="3">Vehicle balance</td><td class="n">${nf(r.rent)}</td><td class="n">${nf(r.rent - S.bal)}</td><td class="n">${nf(S.bal)}</td></tr></tfoot></table></div></div>` +
+    `<div class="rtcard"><h3>① Owner's money</h3><table class="rttab"><tbody>` + sh("FASTag") + lines(S.fast, "No FASTag entered") + sh("Diesel paid by card") + lines(S.card, "No diesel by card") +
+    sh("Given to the driver") + lines(S.giv, "Nothing given. Add the advance under Payments.") + sh("Vehicle balance") + `<tr><td></td><td>Rent less all expenses of the loads</td><td class="n">${nf(S.bal)}</td></tr>` +
+    `</tbody><tfoot><tr><td></td><td>Total ①</td><td class="n">${nf(S.owner)}</td></tr></tfoot></table></div>` +
+    `<div class="rtcard"><h3>② Came to the owner</h3><table class="rttab"><tbody>${lines(S.rec, "No payments received yet")}</tbody><tfoot><tr><td></td><td>Total ②</td><td class="n">${nf(S.came)}</td></tr></tfoot></table>` +
+    (S.pend.length ? `<p class="sub" style="margin:8px 0 0">Not settled yet, so not counted: ${S.pend.map(x => `${fmtShort(x.date)} ${rs(x.amt)}`).join(", ")}</p>` : "") + `</div>` +
+    `<div class="rtcard rtset"><h3>③ Settlement</h3><p>① ${rs(S.owner)} − ② ${rs(S.came)}</p><div class="rtbig" style="color:${d < 0 ? "var(--danger)" : "var(--ink)"}">${rs(Math.abs(d))}</div>` +
+    `<p>${d > 0 ? "Cash with the driver. It is carried forward as the advance for the next trip." : d < 0 ? "The owner has to pay this to the driver." : "Nothing with the driver: the round trip is settled."}</p></div></div>`;
+}
+// Print: the summary as lines in the shared Print window.
+$("rtPrint").insertAdjacentHTML("afterbegin", ICON_PRINT);
+$("rtPrint").onclick = () => {
+  const r = rtGet(); if (!r) return; const S = rtCalc(r), bus = vehicles.find(v => v.id === r.vehicleId), plate = bus ? plateOf(bus) : "";
+  const L = (sec, list) => list.map(x => ({ sec, date: x.date, det: x.what, amt: x.amt })), O = "① Owner's money";
+  const rows = [...S.loads.map(({ l, c }, i) => ({ sec: "Loads", date: l.from, det: `${i + 1}. ${rtLegName(l)} · rent ${rs(num(l.rent))} · expense ${rs(c.exp)}`, amt: c.bal })),
+    ...L(O, S.fast), ...L(O, S.card), ...L(O, S.giv), { sec: O, det: "Vehicle balance (rent less all expenses)", amt: S.bal }, { sec: O, det: "Total ①", amt: S.owner },
+    ...L("② Came to the owner", S.rec), { sec: "② Came to the owner", det: "Total ②", amt: S.came },
+    { sec: "③ Settlement", det: S.diff >= 0 ? "Cash with the driver, carried forward as advance" : "To pay the driver", amt: Math.abs(S.diff) }];
+  pbOpen({ sheet: "Round trip", title0: `${plate} · round trip ${rtNo(r)} · ${fmtShort(r.from)} – ${fmtShort(r.to)}`, rows,
+    sub: [S.drivers.join(", "), `${S.days} days`, `rent ${rs(r.rent)}`, S.km ? `${nf(S.km)} km (${S.startKm} – ${S.endKm})` : "", S.litres ? `${nf(S.litres, 2)} L` : "", S.km && S.litres ? `${nf(S.km / S.litres, 2)} km/L` : ""].filter(Boolean).join(" · "),
+    note: "The loads, the owner's money, the money that came to the owner and the settlement. Untick any line you don't want.",
+    cols: [{ k: "sec", h: "Section", xl: 22, px: 200, kind: "text" }, { k: "date", h: "Date", xl: 12, px: 130, kind: "date" }, { k: "det", h: "Details", xl: 52, px: 0, kind: "wrap" }, { k: "amt", h: "Amount ₹", xl: 14, px: 150, kind: "num" }],
+    lineCols: ["sec", "date", "det", "amt"], val: (x, k) => k === "date" ? (x.date ? fmtShort(x.date) : "") : k === "amt" ? nf(x.amt) : x[k] || "", raw: (x, k) => k === "date" ? x.date || null : k === "amt" ? x.amt : null });
+};
 
 /* ---------- home wiring ---------- */
 $("oDate").addEventListener("change", () => { const v = $("oDate").value; if (v && v <= todayISO()) { opDate = v; dbFilledKey = ""; renderHub(); } else $("oDate").value = opDate; });
