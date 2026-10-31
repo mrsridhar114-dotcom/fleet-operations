@@ -388,6 +388,12 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .ttabs button { flex: none; border: 1px solid transparent; border-bottom: 0; background: none; color: var(--muted); padding: 8px 12px; border-radius: 6px 6px 0 0; font-weight: 600; font-size: 13px; position: relative; top: 1px; }
 .ttabs button:hover { color: var(--ink); }
 .ttabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.ktabs { align-items: flex-end; } .ktabs [data-ktab] { cursor: grab; } .ktabs .kdrag { opacity: .4; } .ktabs.arr { flex-wrap: wrap; overflow: visible; row-gap: 6px; }
+.ktabs .kdrop-l { box-shadow: inset 3px 0 0 var(--accent); } .ktabs .kdrop-r { box-shadow: inset -3px 0 0 var(--accent); }
+.ktabs .ktarr { margin-left: auto; color: var(--accent); font-weight: 600; } .ktabs .ktarr.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.ktmove { flex: none; display: inline-flex; align-items: center; gap: 2px; border: 1px dashed var(--accent); border-bottom: 0; border-radius: 6px 6px 0 0; padding: 2px 4px; font-size: 13px; background: var(--accent-soft); }
+.ktmove b { padding: 0 6px; } .ktabs .ktmove button { top: 0; border: 0; padding: 6px 9px; font-size: 16px; line-height: 1; color: var(--accent); border-radius: 6px; }
+.ktabs .ktmove button:hover:not(:disabled) { background: var(--surface); } .ktabs .ktmove button:disabled { opacity: .3; }
 .ttabs button .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-left: 6px; vertical-align: 2px; }
 .ttabs button.year { margin-left: auto; }
 .tsumwrap { display: flex; flex-direction: column; gap: 12px; }
@@ -14022,9 +14028,13 @@ function roundsOf(vid, fy) {
   });
 }
 function renderTruck() {
-  const tks = truckList();
+  const tks = kSorted(truckList());
   if (!tks.some(b => b.id === kBusId)) kBusId = tks[0]?.id || "";
-  $("kTabs").innerHTML = tks.map(b => `<button type="button" role="tab" data-ktab="${b.id}" aria-selected="${b.id === kBusId}">${esc(plateOf(b))}</button>`).join(""); $("kTabs").hidden = tks.length < 1;
+  $("kTabs").innerHTML = tks.map((b, i) => kArrange
+    ? `<span class="ktmove" data-kmove="${b.id}"><button type="button" data-kstep="-1" aria-label="Move ${esc(plateOf(b))} left"${i ? "" : " disabled"}>‹</button><b>${esc(plateOf(b))}</b><button type="button" data-kstep="1" aria-label="Move ${esc(plateOf(b))} right"${i < tks.length - 1 ? "" : " disabled"}>›</button></span>`
+    : `<button type="button" role="tab" data-ktab="${b.id}" draggable="true" aria-selected="${b.id === kBusId}">${esc(plateOf(b))}</button>`).join("") +
+    (tks.length > 1 ? `<button type="button" class="ktarr${kArrange ? " on" : ""}" data-karr title="${kArrange ? "Done arranging" : "Change the order of the trucks"}">${kArrange ? "✓ Done" : "⇄ Arrange"}</button>` : "");
+  $("kTabs").hidden = tks.length < 1; $("kTabs").classList.toggle("arr", kArrange);
   $("kNone").hidden = !!tks.length; $("kBody").hidden = !tks.length; $("kAdd").hidden = !canTrips || !tks.length;
   if (!tks.length) return;
   const rounds = roundsOf(kBusId, kFy), legs = rounds.flatMap(r => r.legs);
@@ -14092,7 +14102,31 @@ $("kFast").onclick = () => {
       { k: "driver", h: "Driver", xl: 18, px: 0, kind: "text", off: true }, { k: "toll", h: "FASTag ₹", xl: 14, px: 150, kind: "num", total: true }],
     lineCols: ["from", "trip", "toll"], val: kVal, raw: kRaw, lineSub: x => `Round trip ${x.n}` });
 };
-$("kTabs").addEventListener("click", e => { const b = e.target.closest("[data-ktab]"); if (!b || b.dataset.ktab === kBusId) return; kBusId = b.dataset.ktab; renderTruck(); });
+$("kTabs").addEventListener("click", e => {
+  if (e.target.closest("[data-karr]")) { kArrange = !kArrange; renderTruck(); return; }
+  const st = e.target.closest("[data-kstep]");
+  if (st) { const ids = kSorted(truckList()).map(b => b.id), id = st.closest("[data-kmove]").dataset.kmove, i = ids.indexOf(id), j = i + +st.dataset.kstep;
+    if (j < 0 || j >= ids.length) return; [ids[i], ids[j]] = [ids[j], ids[i]]; kSaveOrder(ids); renderTruck();
+    $("kTabs").querySelector(`[data-kmove="${id}"] [data-kstep="${st.dataset.kstep}"]:not(:disabled)`)?.focus(); return; }
+  const b = e.target.closest("[data-ktab]"); if (!b || b.dataset.ktab === kBusId) return; kBusId = b.dataset.ktab; renderTruck();
+});
+// The order of the truck tabs: drag a tab on a computer, or Arrange and the arrows on any screen. Kept on this device until changed again.
+const K_ORD = "fleet-ktab-order";
+function kOrder() { try { const o = JSON.parse(localStorage.getItem(K_ORD) || "[]"); return Array.isArray(o) ? o : []; } catch { return []; } }
+function kSaveOrder(ids) { try { localStorage.setItem(K_ORD, JSON.stringify(ids)); } catch {} }
+function kSorted(tks) { const o = kOrder(), at = b => { const i = o.indexOf(b.id); return i < 0 ? o.length + tks.indexOf(b) : i; }; return [...tks].sort((a, b) => at(a) - at(b)); }
+let kArrange = false, kDrag = null;
+$("kTabs").addEventListener("dragstart", e => { const b = e.target.closest("[data-ktab]"); if (!b) return; kDrag = b.dataset.ktab; b.classList.add("kdrag"); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", kDrag); } catch {} });
+$("kTabs").addEventListener("dragover", e => { const b = e.target.closest("[data-ktab]"); if (!kDrag || !b) return; e.preventDefault();
+  $("kTabs").querySelectorAll(".kdrop-l, .kdrop-r").forEach(x => x.classList.remove("kdrop-l", "kdrop-r"));
+  if (b.dataset.ktab !== kDrag) { const r = b.getBoundingClientRect(); b.classList.add(e.clientX < r.left + r.width / 2 ? "kdrop-l" : "kdrop-r"); } });
+$("kTabs").addEventListener("drop", e => {
+  const b = e.target.closest("[data-ktab]"); if (!kDrag || !b) return; e.preventDefault();
+  const ids = kSorted(truckList()).map(x => x.id).filter(x => x !== kDrag), r = b.getBoundingClientRect(), i = ids.indexOf(b.dataset.ktab);
+  if (i >= 0) { ids.splice(e.clientX < r.left + r.width / 2 ? i : i + 1, 0, kDrag); kSaveOrder(ids); }
+  kDrag = null; renderTruck();
+});
+$("kTabs").addEventListener("dragend", () => { kDrag = null; $("kTabs").querySelectorAll(".kdrag, .kdrop-l, .kdrop-r").forEach(x => x.classList.remove("kdrag", "kdrop-l", "kdrop-r")); });
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 // + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
 $("kAdd").onclick = () => { const last = roundsOf(kBusId).filter(r => r.status !== "Closed").sort((a, b) => b.to.localeCompare(a.to))[0]; openRound(last ? last.id : null, "leg", null); };
