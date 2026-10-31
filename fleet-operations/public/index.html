@@ -896,6 +896,7 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 .ocard .oc-cap { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
 .otodo .orow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .otodo .orow:last-child { border-bottom: 0; }
+.otodo .orow[data-go] { cursor: pointer; } .otodo .orow[data-go]:hover { background: var(--bg); } .otodo .orow .what .sub { color: var(--muted); font-size: 13px; }
 .otodo .orow .what { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; }
 .otodo .orow .btn { padding: 5px 12px; font-size: 13px; }
 .otodo .none { color: var(--muted); font-size: 14px; padding: 8px 0; margin: 0; }
@@ -2374,7 +2375,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </header>
       <div class="ocards" id="oCards"></div>
       <section class="panel">
-        <div class="sechead"><h2 class="sec" id="oTodoTitle">To do</h2><p>Route buses still waiting for an entry, and truck trips not yet settled</p></div>
+        <div class="sechead"><h2 class="sec" id="oTodoTitle">To do</h2><p>Route buses still to enter, spare bus trip sheets to fill, and truck round trips not yet settled. Click a line to open it.</p></div>
         <div class="otodo" id="oTodo"></div>
       </section>
     </section>
@@ -10338,10 +10339,16 @@ function renderHub() {
       <div class="oc-big">${tl.length}<small>trip${tl.length === 1 ? "" : "s"}</small></div><p class="oc-cap">in ${mLabel} · ${rs(tl.reduce((a, l) => a + num(l.rent), 0))} freight</p>
       <div>${openR.length ? `<span class="pill d30">${openR.length} round trip${openR.length === 1 ? "" : "s"} not settled</span>` : `<span class="pill off">${tk.length} truck${tk.length === 1 ? "" : "s"}</span>`}</div></a>`;
   $("oTodoTitle").textContent = `To do · ${fmtDate(opDate)}`;
-  const rows = [];
-  if (ready) pend.forEach(b => rows.push(`<div class="orow"><div class="what"><span class="plate ${b.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(b))}</span><span>Route bus</span><span class="pill d30">Not entered</span></div>${canTrips ? `<button class="btn primary" type="button" data-go="day" data-id="${b.id}">Enter now</button>` : `<button class="btn" type="button" data-go="day" data-id="${b.id}">View</button>`}</div>`));
-  openR.forEach(r => { const b = vehicles.find(v => v.id === r.vehicleId);
-    rows.push(`<div class="orow"><div class="what"><span class="plate psv">${esc(plateOf(b))}</span><span>Round trip ${esc(r.path)}</span><span class="sub">from ${fmtShort(r.from)} · received ${rs(r.received)} of ${rs(r.rent)}</span><span class="pill d30">Not settled</span></div><button class="btn" type="button" data-go="truck" data-id="${r.vehicleId}">Settle</button></div>`); });
+  // Each line opens its own entry: the route bus day sheet, the spare bus booking, or the truck round trip. Close comes back here.
+  const rows = [], line = (go, id, what, btn, pri) => `<div class="orow" data-go="${go}" data-id="${id}" tabindex="0"><div class="what">${what}</div><button class="btn${pri ? " primary" : ""}" type="button" data-go="${go}" data-id="${id}">${btn}</button></div>`;
+  if (ready) pend.forEach(b => { const sh = rsDoc(b.id, opDate), sent = sh?.status === "submitted";
+    rows.push(line("day", b.id, `<span class="plate ${b.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(b))}</span><span>Route bus</span><span class="pill d30">${sent ? "Conductor sent · review" : sh && sh.status !== "approved" ? "Conductor filling" : "Not entered"}</span>`, canTrips ? (sent ? "Review" : "Enter now") : "View", canTrips)); });
+  if (acc.tripsheets && acc.tripsheets !== "none") { const L = tsLists(), by = (a, c) => String(a.from).localeCompare(String(c.from));
+    [...L.back.sort(by), ...L.fill.sort(by), ...(canBookings ? L.sent.sort(by) : [])].forEach(b => { const bus = vehicles.find(v => v.id === b.vehicleId), k = b.tsStatus === "rejected" ? "back" : b.tsStatus === "submitted" ? "sent" : "fill";
+      rows.push(line("booking", b.id, `<span class="plate psv">${esc(bus ? plateOf(bus) : "No bus yet")}</span><span>Spare bus${b.no ? ` · ${esc(b.no)}` : ""}</span><span class="sub">${esc(b.party || "")}${b.party ? " · " : ""}${fmtShort(b.from)}${b.to && b.to !== b.from ? ` – ${fmtShort(b.to)}` : ""}</span>${tsTag(b)}`,
+        k === "back" ? "Correct" : k === "sent" ? "Review" : b.tsStatus === "draft" ? "Continue" : "Fill in", k !== "sent")); }); }
+  openR.forEach(r => { const b = vehicles.find(v => v.id === r.vehicleId), un = [...r.legs.flatMap(l => (l.payments || []).filter(p => p.settled === false)), ...(r.doc?.payments || []).filter(p => p.settled === false)].reduce((a, p) => a + num(p.amount), 0);
+    rows.push(line("round", r.id, `<span class="plate psv">${esc(plateOf(b))}</span><span>Round trip ${esc(r.path)}</span><span class="sub">from ${fmtShort(r.from)} · received ${rs(r.received)} of ${rs(r.rent)}${un ? ` · ${rs(un)} payment not settled` : ""}</span><span class="pill d30">Not settled</span>`, canTrips ? "Settle" : "View")); });
   $("oTodo").innerHTML = rows.length ? rows.join("") : `<p class="none">${ready ? "Nothing waiting for this day." : "Loading…"}</p>`;
 }
 
@@ -15494,11 +15501,12 @@ function dmyInstall() {
 /* ---------- home wiring ---------- */
 $("oDate").addEventListener("change", () => { const v = $("oDate").value; if (v && v <= todayISO()) { opDate = v; dbFilledKey = ""; renderHub(); } else $("oDate").value = opDate; });
 $("oTodo").addEventListener("click", e => {
-  const b = e.target.closest("button[data-go]"); if (!b) return;
-  if (b.dataset.go === "day") { dbBus = b.dataset.id; rsBus = b.dataset.id; dbFilledKey = ""; location.hash = "#trips-day"; }
-  if (b.dataset.go === "booking") { const id = b.dataset.id, bk = ops.bookings.find(x => x.id === id); if (bk) bMonth = bk.from.slice(0, 7); location.hash = "#bookings"; setTimeout(() => openBooking(id), 50); }
-  if (b.dataset.go === "truck") { kBusId = b.dataset.id; location.hash = "#trips-truck"; }
+  const b = e.target.closest("[data-go]"); if (!b) return;
+  if (b.dataset.go === "day") { dbBus = b.dataset.id; rsBus = b.dataset.id; dbFilledKey = ""; dbFrom = { hash: "#trips", y: scrollY }; location.hash = "#trips-day"; }
+  if (b.dataset.go === "booking") openBooking(b.dataset.id);
+  if (b.dataset.go === "round") openRound(b.dataset.id);
 });
+$("oTodo").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches(".orow[data-go]")) { e.preventDefault(); e.target.click(); } });
 kFy = fyOptions("kFy");
 
 buildForm();
