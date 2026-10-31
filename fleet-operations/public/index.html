@@ -14530,7 +14530,7 @@ function rtKit(g, k, t = RT_T.en) {
   };
   return { W, P, IN, ink, z, txt, fitPx, rect, fill, hline, header, sect, table, red: "#B42318", head };
 }
-// Draws a page, then again with smaller text until it fits on one A4 page, as large as it can be.
+// Draws a page, then again with smaller text until it fits on one A4 page, as large as it can be. The border closes where the content ends.
 function rtPaint(fn, t = RT_T.en) {
   const W = 1240, H = 1754, M = 28, room = H - 80; let k = 1, lo = null, hi = null, best = null;
   for (let i = 0; i < 8; i++) {
@@ -14539,7 +14539,8 @@ function rtPaint(fn, t = RT_T.en) {
     if (end <= room || k <= 0.55) { best = { cv, g, K, end }; lo = k; if (hi === null || hi - lo < 0.02) break; k = (lo + hi) / 2; }
     else { hi = k; k = lo !== null ? (lo + hi) / 2 : Math.max(0.55, k * (room - 230) / (end - 230) * 0.98); }
   }
-  const { cv, g, K, end } = best, h = Math.max(H, end + 80);
+  // The page ends just below the last section, so only what is used gets printed.
+  const { cv, g, K, end } = best, h = Math.ceil(end + 24);
   g.strokeStyle = K.ink; g.lineWidth = 3; g.strokeRect(M, M, W - 2 * M, h - 2 * M);
   const out = document.createElement("canvas"); out.width = W; out.height = h; out.getContext("2d").drawImage(cv, 0, 0); return out;
 }
