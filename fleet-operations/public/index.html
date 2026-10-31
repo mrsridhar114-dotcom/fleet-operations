@@ -6618,34 +6618,38 @@ const mtItemName = it => `${mtType(it.k).name}${it.pos ? ` · ${mtPosName(it.pos
 const mtGapsDoc = () => ops.maintTypes.find(x => x.id === "gaps") || {};
 function mtGap(key, k) { const d = mtGapsDoc(), b = d.bus?.[key]?.[k], g = d.gaps?.[k]; return num(b) || num(g) || (g === 0 ? 0 : mtType(k).gap || 0); }
 
-// The latest km reading known for a vehicle (maintenance, diesel fills, trip sheets, bookings) and its km per day.
+// Maintenance runs on actual km: every odometer reading is turned into actual km with the vehicle master's
+// meter and actual km lines (a vehicle without them uses the reading as it is).
+function mtAct(key, date, km) { const v = mtVehOf(key); return v && num(km) && odoPairs(v).length ? Math.round(odoActual(v, date, km)) : num(km); }
+// The latest km reading known for a vehicle (maintenance, diesel fills, trip sheets, bookings, truck trips) in actual km, and its km per day.
 function mtNow(key) {
-  const v = mtVehOf(key), pts = [];
-  ops.maintLog.filter(x => mtKeyOf(x) === key && num(x.km)).forEach(x => pts.push([x.date, num(x.km), "maintenance"]));
+  const v = mtVehOf(key), pts = [], add = (date, km, src) => { if (date && num(km)) pts.push([date, mtAct(key, date, km), src, num(km)]); };
+  ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => add(x.date, x.km, "maintenance"));
   if (v) {
-    ops.fuelLog.filter(f => f.vehicleId === v.id && num(f.odo)).forEach(f => pts.push([f.date, num(f.odo), "diesel fill"]));
-    [...trips, ...dayTrips, ...tripsLocal].filter(t => t.vehicleId === v.id && num(t.odo)).forEach(t => pts.push([t.date, num(t.odo), "trip sheet"]));
-    ops.bookings.filter(b => b.vehicleId === v.id && num(b.endKm)).forEach(b => pts.push([bkEnd(b), num(b.endKm), "trip sheet"]));
+    ops.fuelLog.filter(f => f.vehicleId === v.id).forEach(f => add(f.date, f.odo, "diesel fill"));
+    [...trips, ...dayTrips, ...tripsLocal].filter(t => t.vehicleId === v.id).forEach(t => add(t.date, t.odo, "trip sheet"));
+    ops.bookings.filter(b => b.vehicleId === v.id).forEach(b => add(bkEnd(b), b.endKm, "trip sheet"));
+    ops.truckTrips.filter(l => l.vehicleId === v.id).forEach(l => { add(l.to || l.from, l.endKm, "truck trip"); (l.fuels || []).forEach(f => add(f.date, f.odo, "diesel fill")); });
   }
   if (!pts.length) return null;
   const best = pts.reduce((a, p) => p[1] > a[1] ? p : a);
   // Km per day from the readings of the last year (at least two weeks apart).
   const since = shiftDay(best[0], -365), rec = pts.filter(p => p[0] >= since && p[0] <= best[0]), first = rec.reduce((a, p) => p[0] < a[0] ? p : a, best);
   const days = dayDiff(first[0], best[0]), perDay = days >= 14 && best[1] > first[1] ? (best[1] - first[1]) / days : 0;
-  return { km: best[1], date: best[0], src: best[2], perDay };
+  return { km: best[1], meter: best[3], date: best[0], src: best[2], perDay };
 }
 // Each job of a vehicle (by wheel where it is done wheel by wheel) with its last visit and the next one due.
 function mtDue(key) {
   const now = mtNow(key), last = new Map();
   ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => (x.items || []).forEach(it => {
     const id = it.k + "|" + (it.pos || ""), cur = last.get(id);
-    if (!cur || num(x.km) > num(cur.e.km) || (num(x.km) === num(cur.e.km) && x.date > cur.e.date)) last.set(id, { it, e: x });
+    const a = mtAct(key, x.date, x.km); if (!cur || a > cur.a || (a === cur.a && x.date > cur.e.date)) last.set(id, { it, e: x, a });
   }));
-  return [...last.values()].map(({ it, e }) => {
-    const gap = mtGap(key, it.k), next = gap && num(e.km) ? num(e.km) + gap : null, left = next != null && now ? next - now.km : null;
+  return [...last.values()].map(({ it, e, a }) => {
+    const gap = mtGap(key, it.k), next = gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
     const when = left != null && now?.perDay ? shiftDay(now.date, Math.round(left / now.perDay)) : "";
     const st = next == null ? "nogap" : left == null ? "ok" : left <= 0 ? "over" : left <= 5000 ? "soon" : "ok";
-    return { it, e, gap, next, left, when, st };
+    return { it, e, ekm: a, gap, next, left, when, st };
   }).sort((a, b) => ["over", "soon", "ok", "nogap"].indexOf(a.st) - ["over", "soon", "ok", "nogap"].indexOf(b.st) || (a.left ?? 9e12) - (b.left ?? 9e12) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
 }
 const MT_ST = { over: ["Overdue", "d7"], soon: ["Due soon", "d30"], ok: ["OK", "ok"], nogap: ["No gap set", "off"] };
@@ -7775,11 +7779,11 @@ function renderMaint() {
     `<section class="panel"><h2 class="sec">1 · Choose the vehicle</h2><div class="bwchips mtplates" style="margin-top:8px">${fleet.map(v => `<button type="button" data-mtbus="${v.id}" aria-pressed="${mtBus === v.id}">${esc(plateOf(v))}</button>`).join("")}</div></section>` +
     (mtBus ? `<section class="panel mtgo">` +
       (add ? `<button type="button" class="bwgo" data-mtnew>＋ New maintenance for ${esc(mtPlateOf({ vehicleId: mtBus }))}</button>` : "") +
-      `<p class="sub" style="margin:8px 0 0">${now ? `Last km reading: <b>${nf(now.km)} km</b> on ${fmtDate(now.date)} (${now.src})` : "No km reading yet for this vehicle."}</p>` +
+      `<p class="sub" style="margin:8px 0 0">${now ? `Last km reading: <b>${nf(now.km)} km</b>${now.meter !== now.km ? ` (meter ${nf(now.meter)})` : ""} on ${fmtDate(now.date)} (${now.src})` : "No km reading yet for this vehicle."}</p>` +
       (due.length ? `<div class="mtdue"><b>Due now</b>${due.slice(0, 6).map(d => `<span class="pill ${MT_ST[d.st][1]}">${esc(mtItemName(d.it))} · ${esc(mtLeftTxt(d))}</span>`).join("")}${due.length > 6 ? `<a href="#maintenance-summary">+${due.length - 6} more</a>` : ""}</div>` : "") +
       `</section>` +
       `<section class="panel"><h2 class="sec">Work done on ${esc(mtPlateOf({ vehicleId: mtBus }))}</h2>` +
-      (hist.length ? `<div class="mtlist">${hist.slice(0, 60).map(x => `<button type="button" class="mtcard" data-mtopen="${x.id}"><span class="mth"><b>${fmtDate(x.date)}</b><span>${nf(num(x.km))} km</span></span>` +
+      (hist.length ? `<div class="mtlist">${hist.slice(0, 60).map(x => `<button type="button" class="mtcard" data-mtopen="${x.id}"><span class="mth"><b>${fmtDate(x.date)}</b><span>${nf(mtAct(mtKeyOf(x), x.date, x.km))} km</span></span>` +
         `<span class="mti">${(x.items || []).map(it => `<span>${esc(mtItemName(it))}</span>`).join("")}</span>${x.notes ? `<small>${esc(x.notes)}</small>` : ""}</button>`).join("")}</div>`
         : `<p class="sub" style="margin:8px 0 0">Nothing entered yet.</p>`) + `</section>` : "");
 }
@@ -7803,20 +7807,23 @@ function mtOpen(x) {
   if (!x) setTimeout(() => $("mtKm")?.focus(), 60);
 }
 const mtHas = (k, pos) => mtw.items.some(it => it.k === k && (it.pos || "") === (pos || ""));
-const mtLast = () => ops.maintLog.filter(x => mtKeyOf(x) === mtw.key && x.id !== mtw.id && num(x.km)).sort((a, b) => num(b.km) - num(a.km))[0];
+const mtLast = () => ops.maintLog.filter(x => mtKeyOf(x) === mtw.key && x.id !== mtw.id && num(x.km)).sort((a, b) => mtAct(mtw.key, b.date, b.km) - mtAct(mtw.key, a.date, a.km))[0];
+// The reading typed (odometer) in actual km.
+const mtwAct = () => mtAct(mtw.key, mtw.date, mtw.km);
 function mtKmWarn() {
-  const km = num(mtw.km), last = mtLast(), now = mtw.now;
+  const km = mtwAct(), last = mtLast(), lastA = last ? mtAct(mtw.key, last.date, last.km) : 0, now = mtw.now;
   if (!km) return "";
-  if (last && km < num(last.km) && mtw.date >= last.date) return `Less than the last maintenance reading (${nf(num(last.km))} km on ${fmtDate(last.date)}). Check the meter.`;
+  if (last && km < lastA && mtw.date >= last.date) return `Less than the last maintenance reading (${nf(lastA)} km on ${fmtDate(last.date)}). Check the meter.`;
   if (now && km > now.km + 30000) return `Much more than the last known reading (${nf(now.km)} km on ${fmtDate(now.date)}). Check the meter.`;
   return "";
 }
-function mtKmNote() { const w = mtKmWarn(), el = $("mtKmWarn"); if (el) { el.textContent = w; el.hidden = !w; } const go = $("mtw").querySelector('[data-mt="next"]'); if (go && mtw.step === 0) go.disabled = !num(mtw.km) || !mtw.date; }
+function mtKmNote() { const w = mtKmWarn(), el = $("mtKmWarn"); if (el) { el.textContent = w; el.hidden = !w; }
+  const ac = $("mtKmAct"); if (ac) ac.textContent = num(mtw.km) && mtwAct() > 0 && mtwAct() !== num(mtw.km) ? `Actual ${nf(mtwAct())} km` : ""; const go = $("mtw").querySelector('[data-mt="next"]'); if (go && mtw.step === 0) go.disabled = !num(mtw.km) || !mtw.date; }
 function mtRender() {
   const s = mtw.step, plate = mtPlateOf({ vehicleId: mtw.vehicleId, plate: mtw.plate }), ro = mtw.edit ? "" : " disabled";
   let body = "";
   if (mtw.done) {
-    body = `<div class="mtdone"><div class="mtok">✓</div><h2>Saved</h2><p>${esc(plate)} · ${fmtDate(mtw.date)} · ${nf(num(mtw.km))} km</p>` +
+    body = `<div class="mtdone"><div class="mtok">✓</div><h2>Saved</h2><p>${esc(plate)} · ${fmtDate(mtw.date)} · ${nf(num(mtw.km))} km${mtwAct() !== num(mtw.km) ? ` (actual ${nf(mtwAct())})` : ""}</p>` +
       `<div class="mtnext">${mtw.done.map(d => `<div><b>${esc(mtItemName(d.it))}</b><span>${d.next ? `Next at ${nf(d.next)} km` : "No service gap set"}</span></div>`).join("")}</div></div>`;
     $("mtw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="mtTitle">Maintenance · ${esc(plate)}</b><span>Saved</span></div></header><div class="bwb tws">${body}</div>` +
       `<footer class="bwf two"><button type="button" class="bwalt" data-mt="another">＋ Add another</button><button type="button" class="bwgo" data-mt="close">${BW_ICON.ok} Done</button></footer>`;
@@ -7824,8 +7831,8 @@ function mtRender() {
   }
   if (s === 0) {
     const last = mtLast(), w = mtKmWarn();
-    body = rsSec("1", "Kilometer reading", `<p class="rsq">What does the km meter show now?</p><label class="bwf1 mtkm"><span class="bwin"><input id="mtKm" type="number" inputmode="numeric" min="0" data-k="km" value="${esc(mtw.km)}" placeholder="e.g. 188502" aria-label="Kilometer reading"${ro}><b>km</b></span></label>` +
-      `<p class="bwnote">${last ? `Last maintenance: <b>${nf(num(last.km))} km</b> on ${fmtDate(last.date)}` : mtw.now ? `Last known reading: <b>${nf(mtw.now.km)} km</b> on ${fmtDate(mtw.now.date)}` : "First maintenance entry for this vehicle."}</p>` +
+    body = rsSec("1", "Kilometer reading", `<p class="rsq">What does the km meter show now?</p><label class="bwf1 mtkm"><span class="bwin"><input id="mtKm" type="number" inputmode="numeric" min="0" data-k="km" value="${esc(mtw.km)}" placeholder="e.g. 188502" aria-label="Kilometer reading"${ro}><b>km</b></span></label><p class="lgact" id="mtKmAct">${num(mtw.km) && mtwAct() > 0 && mtwAct() !== num(mtw.km) ? `Actual ${nf(mtwAct())} km` : ""}</p>` +
+      `<p class="bwnote">${last ? `Last maintenance: <b>${nf(mtAct(mtw.key, last.date, last.km))} km</b> on ${fmtDate(last.date)}` : mtw.now ? `Last known reading: <b>${nf(mtw.now.km)} km</b> on ${fmtDate(mtw.now.date)}` : "First maintenance entry for this vehicle."}</p>` +
       `<p class="rswarnt" id="mtKmWarn"${w ? "" : " hidden"}>${esc(w)}</p>`) +
       rsSec("2", "Date", `<label class="bwf1"><span>Date the work was done</span><input type="date" data-k="date" value="${esc(mtw.date)}" max="${todayISO()}"${ro}></label>` +
         `<div class="bwseg c2" style="margin-top:8px"><button type="button" data-mt="today" aria-pressed="${mtw.date === todayISO()}"${ro}>Today</button><button type="button" data-mt="yday" aria-pressed="${mtw.date === shiftDay(todayISO(), -1)}"${ro}>Yesterday</button></div>`);
@@ -7845,9 +7852,9 @@ function mtRender() {
   } else if (s === 2) {
     body = rsSec("3", "Notes", `<p class="rsq">Anything to remember? (not needed)</p><label class="bwf1"><textarea data-k="notes" rows="4" maxlength="400" placeholder="e.g. battery numbers, mechanic, place, parts changed"${ro}>${esc(mtw.notes)}</textarea></label>`);
   } else {
-    const gaps = mtw.items.map(it => { const g = mtGap(mtw.key, it.k); return { it, next: g && num(mtw.km) ? num(mtw.km) + g : null }; });
+    const gaps = mtw.items.map(it => { const g = mtGap(mtw.key, it.k); return { it, next: g && num(mtw.km) ? mtwAct() + g : null }; });
     const row = (n, t, v) => `<button type="button" class="mtchk" data-mtgo="${n}"${ro}><span>${t}</span><b>${v}</b>${mtw.edit ? '<i>Change</i>' : ""}</button>`;
-    body = `<div class="mtsum"><div class="mtchk mtfix"><span>Vehicle</span><b>${esc(plate)}</b></div>` + row(0, "Km and date", `${num(mtw.km) ? nf(num(mtw.km)) + " km" : "—"} · ${fmtDate(mtw.date)}`) +
+    body = `<div class="mtsum"><div class="mtchk mtfix"><span>Vehicle</span><b>${esc(plate)}</b></div>` + row(0, "Km and date", `${num(mtw.km) ? nf(num(mtw.km)) + " km" + (mtwAct() !== num(mtw.km) ? ` (actual ${nf(mtwAct())})` : "") : "—"} · ${fmtDate(mtw.date)}`) +
       `<button type="button" class="mtchk" data-mtgo="1"${ro}><span>Work done</span><b>${gaps.length ? gaps.map(g => `${esc(mtItemName(g.it))}${g.next ? `<small class="mtnx">next at ${nf(g.next)} km</small>` : ""}`).join("<br>") : "Nothing chosen"}</b>${mtw.edit ? "<i>Change</i>" : ""}</button>` +
       row(2, "Notes", esc(mtw.notes || "—")) + `</div>` +
       (mtw.byName ? `<p class="bwnote">Entered by ${esc(mtw.byName)}${mtw.createdOn ? ` on ${fmtDate(mtw.createdOn.slice(0, 10))}` : ""}${mtw.src === "excel" ? " (from Excel)" : ""}</p>` : "") +
@@ -7888,7 +7895,7 @@ async function mtClick(e) {
       date: mtw.date, km, items: mtw.items, notes: upText(mtw.notes), by: mtw.by || myUserId || "", byName: mtw.byName || whoAmI(), createdOn: mtw.createdOn || new Date().toISOString(), ...rxStamp(), ...(mtw.src ? { src: mtw.src } : {}) };
     mtw.saving = true; mtRender();
     try { await opsSave("maintLog", doc); mtw.id = doc.id; mtw.saving = false;
-      mtw.done = doc.items.map(it => { const g = mtGap(mtw.key, it.k); return { it, next: g ? km + g : null }; }); mtRender(); toast("Maintenance saved"); }
+      mtw.done = doc.items.map(it => { const g = mtGap(mtw.key, it.k); return { it, next: g ? mtwAct() + g : null }; }); mtRender(); toast("Maintenance saved"); }
     catch { mtw.saving = false; mtRender(); toast("Couldn't save. Check your connection and try again."); }
   }
 }
@@ -7909,12 +7916,12 @@ function renderMsum() {
   $("msList").innerHTML = (all.length ? all.map(({ k, due, now }) => `<section class="panel msbus"><div class="msh"><h2 class="sec"><span class="plate psv">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</span></h2>` +
     `<span class="sub">${now ? `Now about <b>${nf(now.km)} km</b> (${now.src}, ${fmtDate(now.date)})${now.perDay ? ` · about ${nf(Math.round(now.perDay))} km a day` : ""}` : "No km reading"}</span></div>` +
     `<div class="tscroll"><table class="ctable mstable"><thead><tr><th>Maintenance</th><th>Last done</th><th class="n">Kms</th><th class="n">Next service at</th><th class="n">Km left</th><th>Expected around</th><th>Status</th></tr></thead><tbody>` +
-    due.map(d => `<tr class="ms-${d.st}" data-msentry="${d.e.id}" tabindex="0" style="cursor:pointer"><td>${esc(mtItemName(d.it))}</td><td class="num">${fmtDate(d.e.date)}</td><td class="n">${nf(num(d.e.km))}</td><td class="n">${d.next ? nf(d.next) : "—"}</td>` +
+    due.map(d => `<tr class="ms-${d.st}" data-msentry="${d.e.id}" tabindex="0" style="cursor:pointer"><td>${esc(mtItemName(d.it))}</td><td class="num">${fmtDate(d.e.date)}</td><td class="n">${nf(d.ekm)}</td><td class="n">${d.next ? nf(d.next) : "—"}</td>` +
       `<td class="n">${esc(mtLeftTxt(d))}</td><td class="num">${d.st === "over" ? "Now" : d.when ? fmtDate(d.when) : "—"}</td><td><span class="pill ${MT_ST[d.st][1]}">${MT_ST[d.st][0]}</span></td></tr>`).join("") +
     `</tbody></table></div>` +
     // On a phone each job is a small card instead of a wide table.
     `<div class="mscards">${due.map(d => `<button type="button" class="mscard ms-${d.st}" data-msentry="${d.e.id}"><span class="mscn"><b>${esc(mtItemName(d.it))}</b><span class="pill ${MT_ST[d.st][1]}">${MT_ST[d.st][0]}</span></span>` +
-      `<span>Last: ${fmtDate(d.e.date)} · ${nf(num(d.e.km))} km</span>${d.next ? `<span>Next at <b>${nf(d.next)} km</b> · ${esc(mtLeftTxt(d))}${d.st !== "over" && d.when ? ` · around ${fmtDate(d.when)}` : ""}</span>` : `<span>No service gap set</span>`}</button>`).join("")}</div>` +
+      `<span>Last: ${fmtDate(d.e.date)} · ${nf(d.ekm)} km</span>${d.next ? `<span>Next at <b>${nf(d.next)} km</b> · ${esc(mtLeftTxt(d))}${d.st !== "over" && d.when ? ` · around ${fmtDate(d.when)}` : ""}</span>` : `<span>No service gap set</span>`}</button>`).join("")}</div>` +
     `</section>`).join("") : `<section class="panel"><p class="sub" style="margin:0">No maintenance entered yet. Use Maintenance entry, or load your Excel in Utility › Data upload.</p></section>`) +
     (!msBus && old.length ? `<button type="button" class="btn" id="msOldBtn" style="align-self:flex-start">${msOld ? "Hide" : "Show"} ${old.length} vehicle${old.length === 1 ? "" : "s"} not in the vehicle master</button>` : "");
 }
@@ -14389,7 +14396,7 @@ function lgCalcRender() {
   const cell = (k, v, col = "") => `<div><div class="k">${k}</div><div class="v"${col ? ` style="color:${col}"` : ""}>${v}</div></div>`;
   // Under the odometer readings: the actual km from the vehicle master's meter and actual km lines.
   const V = vehicles.find(v => v.id === (rt?.vid || kBusId)), from = $("lgFrom").value, to = $("lgTo").value || from;
-  [["lgStartAct", from, l.startKm], ["lgEndAct", to, l.endKm]].forEach(([id, d, km]) => { const a = km && odoPairs(V).length ? odoActual(V, d, km) : null; $(id).textContent = a != null ? `Actual ${nf(Math.round(a))}` : ""; });
+  [["lgStartAct", from, l.startKm], ["lgEndAct", to, l.endKm]].forEach(([id, d, km]) => { const a = km && odoPairs(V).length ? odoActual(V, d, km) : null; $(id).textContent = a > 0 ? `Actual ${nf(Math.round(a))}` : ""; });
   $("lgCalc").innerHTML = cell("Trip rent", rs(num(l.rent))) + cell("Expense", rs(c.exp)) + cell("Balance", rs(c.bal), c.bal < 0 ? "var(--danger)" : "var(--ok)");
   const P = l.payments || [], set = P.filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0), pend = P.reduce((a, p) => a + num(p.amount), 0) - set;
   $("lgPayAmt").textContent = P.length ? nf(set + pend) : ""; $("lgPayTot").textContent = P.length ? `${P.length} payment${P.length > 1 ? "s" : ""}${pend ? ` · ${rs(pend)} not settled` : ""}` : "";
