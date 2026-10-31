@@ -572,7 +572,10 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtstats { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); }
 .rtst { padding: 9px 11px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; min-width: 0; } .rtst:last-child { border-right: 0; }
 .rtst span { font: 600 10px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; } .rtst b { font-size: 15px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.rtst.hi { background: var(--accent-soft); } .rtst.hi span, .rtst.hi b { color: var(--accent); }
+.rtst.hi { background: var(--accent-soft); } .rtst.hi span, .rtst.hi b { color: var(--accent); } .rtst.hi.neg { background: var(--danger-soft, #fde8e6); } .rtst.hi.neg span, .rtst.hi.neg b { color: var(--danger); }
+.rtst.ed input { font: inherit; font-size: 14px; font-weight: 700; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 118px; box-sizing: border-box; }
+.rtst.ed .dmy { width: 158px; } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
+.rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
 .rttab tr.adv td { background: var(--accent-soft); } .rtpendn { margin: 8px 0 0; color: var(--warn); }
 .rttab td input { font: inherit; font-size: 13px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); box-sizing: border-box; } .rttab td.n input { text-align: right; width: 110px; }
@@ -894,6 +897,9 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
 @media (max-width: 700px) { .lgftab { min-width: 660px; } }
 .lgftab tfoot td { border-bottom: 0; padding-top: 8px; font-weight: 700; font-family: var(--mono); } .lgftab tfoot td.n { text-align: right; padding-right: 10px; } .lgftab tfoot .sub { font-family: var(--body); font-weight: 400; } .lgftab tfoot .btn { padding: 5px 10px; font-size: 13px; font-family: var(--body); white-space: nowrap; }
 .lgftab [data-frm] { padding: 2px 6px; }
+.rtdtab th:nth-child(1) { width: 13%; } .rtdtab th:nth-child(2) { width: 16%; } .rtdtab th:nth-child(3), .rtdtab th:nth-child(4) { width: 8%; } .rtdtab th:nth-child(5) { width: 10%; }
+.rtdtab th:nth-child(6) { width: 8%; } .rtdtab th:nth-child(7) { width: auto; } .rtdtab th:nth-child(8) { width: 10%; } .rtdtab th:nth-child(9) { width: 4%; min-width: 24px; }
+@media (max-width: 700px) { .rtdtab { min-width: 900px; } }
 .lgptab th:nth-child(1) { width: 17%; } .lgptab th:nth-child(2) { width: auto; } .lgptab th:nth-child(3) { width: 15%; } .lgptab th:nth-child(4) { width: 18%; } .lgptab th:nth-child(5) { width: 9%; } .lgptab th:last-child { width: 5%; }
 .lgptab .c { text-align: center; } .lgptab input[type="checkbox"] { width: 18px; height: 18px; padding: 0; margin: 0; vertical-align: middle; accent-color: var(--accent); }
 @media (max-width: 700px) { .lgptab { min-width: 620px; } }
@@ -3439,6 +3445,23 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="tscroll"><table class="lgftab rtgtab"><thead><tr><th>Date</th><th>For</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th></th></tr></thead><tbody id="rtGiv"></tbody>
         <tfoot><tr><td><button class="btn" type="button" id="rtAddGiv">+ Add money given</button></td><td colspan="2" class="sub" id="rtGivTot"></td><td class="n" id="rtGivAmt"></td><td colspan="2"></td></tr></tfoot></table></div>
       <datalist id="rtGivList"><option value="Advance"><option value="Sent during the trip"><option value="Driver took"><option value="Diesel in cash"></datalist>
+    </fieldset>
+  </div>
+  <div class="rtpane" id="rtDsl" hidden>
+    <fieldset class="docs"><legend>Diesel fill-ups</legend>
+      <p class="sub" style="margin:0 0 6px">Every diesel fill of the round trip in one place. Choose the trip a fill is for (it also shows in that trip), or leave it as the whole round trip. Amount is litres × rate unless you type it.</p>
+      <div class="tscroll"><table class="lgftab rtdtab"><thead><tr><th>Date</th><th>For</th><th class="n">Litres</th><th class="n">Rate / L</th><th class="n">Amount ₹</th><th>Paid by</th><th>Place</th><th class="n">Odometer</th><th></th></tr></thead><tbody id="rtDslRows"></tbody>
+        <tfoot><tr><td><button class="btn" type="button" id="rtAddDsl">+ Add fill</button></td><td class="sub" id="rtDslTot"></td><td class="n" id="rtDslL"></td><td class="n" id="rtDslR"></td><td class="n" id="rtDslA"></td><td colspan="4"></td></tr></tfoot></table></div>
+      <datalist id="rtBunks"></datalist>
+    </fieldset>
+  </div>
+  <div class="rtpane" id="rtFiles" hidden>
+    <fieldset class="docs"><legend>Files</legend>
+      <div class="bkupl" id="rtUpl"><select id="rtFileKind" aria-label="What the file is"><option>Diesel bill</option><option>Commission bill</option><option>Rent slip</option><option>Weight scale slip</option><option>Trip sheet</option><option>Others</option></select>
+        <label class="btn filebtn" for="rtFileIn" style="padding:6px 12px;font-size:13px">+ Attach file</label><input id="rtFileIn" type="file" accept="image/*,application/pdf" hidden multiple>
+        <label class="btn filebtn camonly" for="rtFileCam" style="padding:6px 12px;font-size:13px">📷 Take photo</label><input id="rtFileCam" type="file" accept="image/*" capture="environment" hidden>
+        <span class="hint" id="rtFileHint"></span></div>
+      <div class="bkfiles" id="rtFileList"></div>
     </fieldset>
   </div>
   <footer>
@@ -14021,9 +14044,9 @@ function roundsOf(vid, fy) {
   const map = new Map();
   legs.forEach(l => { const k = l.roundId || l.id; if (!map.has(k)) map.set(k, { id: k, vehicleId: l.vehicleId, legs: [] }); map.get(k).legs.push(l); });
   return [...map.values()].map(r => {
-    const doc = ops.truckRounds.find(x => x.id === r.id), c = r.legs.map(legCalc), rp = (doc?.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0);
+    const doc = ops.truckRounds.find(x => x.id === r.id), c = r.legs.map(legCalc), rp = (doc?.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0), rf = Math.round((doc?.fuels || []).reduce((a, f) => a + num(f.amount), 0));
     return { ...r, doc, status: doc?.status || "Open", closedOn: doc?.closedOn || "", from: r.legs[0].from, to: r.legs.reduce((a, l) => (l.to || l.from) > a ? (l.to || l.from) : a, ""),
-      rent: r.legs.reduce((a, l) => a + num(l.rent), 0), bal: c.reduce((a, x) => a + x.bal, 0), received: c.reduce((a, x) => a + x.received, 0) + rp, km: c.reduce((a, x) => a + x.km, 0),
+      rent: r.legs.reduce((a, l) => a + num(l.rent), 0), bal: c.reduce((a, x) => a + x.bal, 0) - rf, received: c.reduce((a, x) => a + x.received, 0) + rp, km: c.reduce((a, x) => a + x.km, 0),
       path: [r.legs[0].origin, ...r.legs.map(l => l.dest)].filter(Boolean).map(p => p.replace(/^[A-Z]{2}\s*-\s*/, "")).join(" → ") };
   });
 }
@@ -14041,6 +14064,7 @@ function renderTruck() {
   const T = legs.reduce((a, l) => { const c = legCalc(l); a.days += c.days; a.rent += num(l.rent); a.exp += c.exp; a.km += c.km; a.lit += num(l.litres); a.rec += c.received;
     ["commission", "fuelCost", "toll", "padi", "rto", "loading", "bridge", "otherExp", "billExp"].forEach(k => a[k] += num(l[k])); return a; },
     { days: 0, rent: 0, exp: 0, km: 0, lit: 0, rec: 0, commission: 0, fuelCost: 0, toll: 0, padi: 0, rto: 0, loading: 0, bridge: 0, otherExp: 0, billExp: 0 });
+  rounds.forEach(r => { const F = r.doc?.fuels || [], A = Math.round(F.reduce((a, f) => a + num(f.amount), 0)); T.exp += A; T.fuelCost += A; T.lit += F.reduce((a, f) => a + num(f.litres), 0); });
   const bal = T.rent - T.exp, open = rounds.filter(r => r.status !== "Closed");
   $("kSummary").innerHTML = ostat("Trips", legs.length, `${rounds.length} round trip${rounds.length === 1 ? "" : "s"} · ${fmtDays(T.days)} days`) +
     ostat("Trip rent", rs(T.rent), T.days ? `${rs(T.rent / T.days)} a day` : "") + ostat("Expense", rs(T.exp), `Diesel ${rs(T.fuelCost)} · Toll ${rs(T.toll)}`) +
@@ -14315,10 +14339,12 @@ function rtShow() {
   $("lgSub").textContent = [bus ? plateOf(bus) : "", r ? `${fmtShort(r.from)} – ${fmtShort(r.to)}` : "", r?.path].filter(Boolean).join(" · ");
   $("rtPrint").hidden = !r; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = shut ? "Reopen" : "Mark closed"; $("lgShut").hidden = !shut;
   rtNavRender();
-  ["lgForm", "rtSum", "rtPay"].forEach(id => $(id).hidden = true);
+  ["lgForm", "rtSum", "rtPay", "rtDsl", "rtFiles"].forEach(id => $(id).hidden = true);
   $("rtPaySave").hidden = true; $("lgSave").hidden = true; $("lgDelete").hidden = true;
   if (rt.pane === "leg") { $("lgForm").hidden = false; lgLoad(rt.leg, rt.rid); }
-  else if (rt.pane === "pay") { $("rtPay").hidden = false; rtPayRender(); foot.hidden = !edit; $("rtPaySave").hidden = !edit; }
+  else if (rt.pane === "pay" || rt.pane === "dsl") { const pay = rt.pane === "pay"; $(pay ? "rtPay" : "rtDsl").hidden = false; pay ? rtPayRender() : rtDslRender();
+    foot.hidden = !edit; $("rtPaySave").hidden = !edit; $("rtPaySave").textContent = pay ? "Save payments" : "Save diesel"; }
+  else if (rt.pane === "files") { $("rtFiles").hidden = false; rtFilesRender(); foot.hidden = true; }
   else { $("rtSum").hidden = false; rtSumRender(); foot.hidden = true; }
   rtSnap = rtSnapNow();
 }
@@ -14326,28 +14352,32 @@ function rtShow() {
 function rtRefresh() {
   if (!rt || $("lgDrawer").hidden) return;
   const r = rtGet(); if (rt.rid && !r) { closeLgDrawer(); return; }
-  if (rt.pane === "sum" || (rt.pane === "pay" && rtSnapNow() === rtSnap)) { rtShow(); return; }
+  if (rt.pane === "sum" || rt.pane === "files" || ((rt.pane === "pay" || rt.pane === "dsl") && rtSnapNow() === rtSnap)) { rtShow(); return; }
   rtNavRender(); $("lgShut").hidden = r?.status !== "Closed";
 }
 function rtSnapNow() {
-  if (!rt || rt.pane === "sum") return "";
+  if (!rt || rt.pane === "sum" || rt.pane === "files") return "";
   if (rt.pane === "pay") return JSON.stringify(rtPayRead());
+  if (rt.pane === "dsl") return JSON.stringify(rtDslRead());
   return JSON.stringify([lgRead(), ...["lgFrom", "lgTo", "lgOrigin", "lgDest", "lgDriver1", "lgDriver2", "lgRemarks", "lgRound"].map(k => $(k).value)]);
 }
 async function rtLeaveOk() {
   if (!rt || !canTrips || rt.pane === "sum" || rtGet()?.status === "Closed" || rtSnapNow() === rtSnap) return true;
-  return askYesNo(`You have changed ${rt.pane === "pay" ? "the payments" : "this trip"} but not saved. Leave without saving?`, { yes: "Leave without saving", no: "Stay", danger: true });
+  return askYesNo(`You have changed ${rt.pane === "pay" ? "the payments" : rt.pane === "dsl" ? "the diesel fills" : "this trip"} but not saved. Leave without saving?`, { yes: "Leave without saving", no: "Stay", danger: true });
 }
 function rtNavRender() {
   const r = rtGet(), shut = r?.status === "Closed", sel = (p, l) => rt.pane === p && (p !== "leg" || rt.leg === l);
   const btn = (p, l, label, sub) => `<button type="button" role="tab" data-rp="${p}"${l ? ` data-rl="${l}"` : ""} aria-selected="${sel(p, l)}"><span>${label}</span>${sub ? `<small>${sub}</small>` : ""}</button>`;
   const fresh = rt.pane === "leg" && !rt.leg ? btn("leg", null, "New trip", "Not saved yet") : "";
   if (!r) { $("rtNav").innerHTML = `<span class="rtnh">Trips</span>` + fresh; return; }
-  const giv = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0);
+  const giv = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0), nfl = (r.doc?.files || []).length;
+  const dl = rtDslAll(r).reduce((a, f) => ({ n: a.n + 1, L: a.L + num(f.litres), A: a.A + num(f.amount) }), { n: 0, L: 0, A: 0 });
   $("rtNav").innerHTML = btn("sum", null, "Summary", `Rent ${rs(r.rent)} · balance ${rs(r.bal)}`) + `<span class="rtnh">Trips</span>` +
     r.legs.map((l, i) => btn("leg", l.id, `${i + 1} · ${esc(rtLegName(l))}`, `${fmtShort(l.from)} · ${rs(num(l.rent))}`)).join("") + fresh +
     (canTrips && !shut && !fresh ? `<button type="button" class="rtadd" data-rp="leg" data-new="1"><span>+ Add trip</span></button>` : "") +
-    `<span class="rtnh">Money</span>` + btn("pay", null, "Payments", `Received ${rs(r.received)} · given ${rs(giv)}`);
+    `<span class="rtnh">Money</span>` + btn("pay", null, "Payments", `Received ${rs(r.received)} · given ${rs(giv)}`) +
+    btn("dsl", null, "Diesel", dl.n ? `${dl.n} fill${dl.n > 1 ? "s" : ""} · ${nf(dl.L, dl.L % 1 ? 2 : 0)} L · ${rs(dl.A)}` : "No fills yet") +
+    `<span class="rtnh">Papers</span>` + btn("files", null, "Files", nfl ? `${nfl} file${nfl > 1 ? "s" : ""}` : "None attached");
 }
 $("rtNav").addEventListener("click", async e => {
   const b = e.target.closest("button[data-rp]"); if (!b || b.getAttribute("aria-selected") === "true") return;
@@ -14401,6 +14431,7 @@ $("rtPay").addEventListener("input", e => { if (e.target.matches("[data-pdesc]")
 // The description follows the trip chosen until it is typed in.
 $("rtPay").addEventListener("change", e => { if (!e.target.matches("[data-pleg]")) return; const d = e.target.closest(".rtrow").querySelector("[data-pdesc]"); if (d.closest("#rtRec")) { const t = rtDefDesc(rtGet(), e.target.value); d.placeholder = t; if (d.dataset.auto) d.value = t; } rtPayTot(); });
 $("rtPaySave").onclick = async () => {
+  if (rt?.pane === "dsl") return rtDslSave();
   const r = rtGet(); if (!r || !canTrips || r.status === "Closed") return;
   const { rec, giv } = rtPayRead(); if ([...rec, ...giv].some(p => !p.date)) { toast("Enter the date of every payment."); return; }
   const strip = ({ leg, ...p }) => p, b = $("rtPaySave"); b.disabled = true;
@@ -14420,6 +14451,102 @@ $("rtPaySave").onclick = async () => {
   finally { b.disabled = false; }
 };
 
+/* Diesel: every fill of the round trip in one table. A fill for a trip is kept on that trip (it shows in its form too);
+   a fill for the whole round trip is kept on the round trip. */
+function rtDslAll(r) {
+  const legFills = l => l.fuels?.length ? l.fuels : num(l.fuelCost) || num(l.litres) ? [{ date: l.from, litres: num(l.litres), amount: num(l.fuelCost), rate: num(l.litres) && num(l.fuelCost) ? Math.round(l.fuelCost / l.litres * 100) / 100 : "", pay: "Card" }] : [];
+  return [...r.legs.flatMap(l => legFills(l).map(f => ({ ...f, leg: l.id }))), ...(r.doc?.fuels || [])].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+}
+function rtDslRow(r, f = {}) {
+  const pay = f.pay === "Cash" ? "Cash" : "Card";
+  return `<tr class="rtrow"><td><input type="date" data-fd value="${esc(f.date || "")}" aria-label="Date"></td><td><select data-pleg aria-label="For">${rtForOpts(r, f.leg)}</select></td>` +
+    `<td><input type="number" inputmode="decimal" min="0" step="0.01" data-fl value="${f.litres ?? ""}" aria-label="Litres"></td><td><input type="number" inputmode="decimal" min="0" step="0.01" data-fr value="${f.rate ?? ""}" aria-label="Rate per litre"></td>` +
+    `<td><input type="number" inputmode="decimal" min="0" step="0.01" data-fa value="${f.amount ?? ""}"${f.amount ? ' data-typed="1"' : ""} aria-label="Amount"></td>` +
+    `<td><select data-fpay aria-label="Paid by"><option${pay === "Card" ? " selected" : ""}>Card</option><option${pay === "Cash" ? " selected" : ""}>Cash</option></select></td>` +
+    `<td><input data-fp list="rtBunks" autocomplete="off" maxlength="80" value="${esc(f.place || "")}" aria-label="Place"></td><td><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>` +
+    `<td><button class="icon" type="button" data-prm aria-label="Remove this fill">✕</button></td></tr>`;
+}
+function rtDslRender() {
+  const r = rtGet(), edit = canTrips && r.status !== "Closed";
+  $("rtDslRows").innerHTML = rtDslAll(r).map(f => rtDslRow(r, f)).join("");
+  $("rtBunks").innerHTML = [...new Set([...ops.truckTrips.flatMap(x => (x.fuels || []).map(f => f.place)), ...ops.truckRounds.flatMap(x => (x.fuels || []).map(f => f.place))].filter(Boolean))].sort().map(p => `<option value="${esc(p)}">`).join("");
+  $("rtDsl").querySelectorAll("input, select").forEach(x => x.disabled = !edit); $("rtDsl").querySelectorAll("[data-prm], #rtAddDsl").forEach(x => x.hidden = !edit);
+  rtDslTot();
+}
+function rtDslRead() {
+  return [...$("rtDslRows").querySelectorAll(".rtrow")].map(tr => {
+    const v = k => tr.querySelector(k).value, litres = Math.round(num(v("[data-fl]")) * 100) / 100, amount = Math.round(num(v("[data-fa]")) * 100) / 100, rate = Math.round(num(v("[data-fr]")) * 100) / 100;
+    const f = { date: v("[data-fd]"), litres, pay: v("[data-fpay]") || "Card", leg: v("[data-pleg]") };
+    if (rate > 0) f.rate = rate; if (amount > 0) f.amount = amount; const pl = v("[data-fp]").trim().replace(/\s+/g, " "); if (pl) f.place = pl; const o = Math.round(num(v("[data-fo]"))); if (o > 0) f.odo = o;
+    return f;
+  }).filter(f => f.litres > 0 || f.amount > 0);
+}
+function rtDslTot() {
+  const F = rtDslRead(), L = F.reduce((a, x) => a + x.litres, 0), A = F.reduce((a, x) => a + num(x.amount), 0), cash = F.filter(x => x.pay === "Cash").reduce((a, x) => a + num(x.amount), 0);
+  $("rtDslL").textContent = L ? nf(L, 2) : ""; $("rtDslA").textContent = A ? nf(Math.round(A)) : ""; $("rtDslR").textContent = L && A ? nf(A / L, 2) : "";
+  $("rtDslTot").textContent = F.length ? `${F.length} fill${F.length > 1 ? "s" : ""}${cash ? ` · cash ${rs(Math.round(cash))}` : ""}` : "";
+}
+$("rtAddDsl").onclick = () => {
+  const r = rtGet(), rows = $("rtDslRows").querySelectorAll(".rtrow"), last = rows[rows.length - 1];
+  $("rtDslRows").insertAdjacentHTML("beforeend", rtDslRow(r, { date: last?.querySelector("[data-fd]").value || todayISO(), rate: last?.querySelector("[data-fr]").value || "", leg: last?.querySelector("[data-pleg]").value || "" }));
+  $("rtDslRows").lastElementChild.querySelector("[data-fl]").focus(); rtDslTot();
+};
+$("rtDsl").addEventListener("click", e => { const b = e.target.closest("[data-prm]"); if (b) { b.closest(".rtrow").remove(); rtDslTot(); } });
+// Amount follows litres × rate until it is typed; a typed amount sets the rate.
+$("rtDsl").addEventListener("input", e => {
+  const tr = e.target.closest(".rtrow"); if (!tr) return; const L = num(tr.querySelector("[data-fl]").value), R = tr.querySelector("[data-fr]"), A = tr.querySelector("[data-fa]");
+  if (e.target === A) { A.dataset.typed = A.value ? "1" : ""; if (L && num(A.value)) R.value = Math.round(num(A.value) / L * 100) / 100; }
+  else if ((e.target.matches("[data-fl]") || e.target === R) && !A.dataset.typed) A.value = L && num(R.value) ? Math.round(L * num(R.value) * 100) / 100 : "";
+  rtDslTot();
+});
+async function rtDslSave() {
+  const r = rtGet(); if (!r || !canTrips || r.status === "Closed") return;
+  const F = rtDslRead(); if (F.some(f => !f.date)) { toast("Enter the date of every fill."); return; } if (F.some(f => f.litres > 1000)) { toast("Check the litres: more than 1,000 L in one fill."); return; }
+  const strip = ({ leg, ...f }) => f, b = $("rtPaySave"); b.disabled = true;
+  try {
+    for (const l of r.legs) {
+      const mine = F.filter(f => f.leg === l.id).map(strip), had = rtDslAll({ legs: [l], doc: {} }).map(strip);
+      if (JSON.stringify(mine) === JSON.stringify(had)) continue;
+      const n = { ...l };
+      if (mine.length) { n.fuels = mine; n.litres = Math.round(mine.reduce((a, f) => a + f.litres, 0) * 100) / 100; n.fuelCost = Math.round(mine.reduce((a, f) => a + num(f.amount), 0)); }
+      else { delete n.fuels; delete n.litres; delete n.fuelCost; }
+      const c = legCalc(n); n.expense = c.exp; n.balance = c.bal; await opsSave("truckTrips", n);
+    }
+    const RF = F.filter(f => !f.leg).map(strip);
+    if (JSON.stringify(RF) !== JSON.stringify(r.doc?.fuels || [])) await rtDocSave(r, { fuels: RF.length ? RF : "" });
+    toast("Diesel saved"); rt.pane = "dsl"; rtShow();
+  } catch { toast("Couldn't save. Check your connection and try again."); }
+  finally { b.disabled = false; }
+}
+
+/* Files of the round trip (diesel bills, slips and other papers), saved with the round trip as soon as they are attached. */
+function rtFilesRender() {
+  const r = rtGet(), F = r.doc?.files || [], edit = canTrips && r.status !== "Closed";
+  $("rtUpl").hidden = !edit; $("rtFileIn").disabled = $("rtFileCam").disabled = !assetsCap;
+  $("rtFileHint").textContent = assetsCap ? "PDF or photo. Saved with the round trip straight away." : "Attaching files isn't available in this view.";
+  $("rtFileList").innerHTML = F.length ? `<div class="tscroll"><table class="ctable bkftbl"><thead><tr><th>Kind</th><th>File</th><th>Added on</th><th>Added by</th><th class="c">View</th>${edit ? "<th></th>" : ""}</tr></thead><tbody>` +
+      F.map((f, i) => { const u = `/_blob/${encodeURIComponent(f.id)}`; return `<tr><td><span class="fk">${esc(f.kind || "Others")}</span></td><td class="fn"><a href="${u}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(f.name)}</a></td><td>${f.at ? fmtDate(f.at.slice(0, 10)) : "—"}</td><td>${esc(f.byName || "—")}</td>` +
+        `<td class="c"><a class="fview" href="${u}" target="_blank" rel="noopener" aria-label="View ${esc(f.name)}" title="View">${EYE_SVG}</a></td>${edit ? `<td class="c"><button class="icon fdel" type="button" data-frm="${i}" aria-label="Remove ${esc(f.name)}" title="Remove">✕</button></td>` : ""}</tr>`; }).join("") + "</tbody></table></div>"
+    : `<p class="sub" style="margin:0">No files attached. Keep the diesel bills, commission bill, rent slip, weighbridge slip and the trip sheet here.</p>`;
+}
+const rtUploadFiles = async e => {
+  const files = [...e.target.files]; e.target.value = ""; const r = rtGet();
+  if (!assetsCap || !files.length || !r) return;
+  $("rtFileHint").textContent = "Uploading…"; const add = [];
+  for (const file of files) {
+    try { const u = await assetsCap.upload(file, { type: file.type }); add.push({ id: u.id, name: file.name, kind: $("rtFileKind").value, type: file.type, at: new Date().toISOString(), byName: whoAmI() }); }
+    catch (er) { toast(er?.code === "too_large" ? "That file is too large." : er?.code === "unsupported_type" ? "Attach a PDF or a photo." : er?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the file. Try again."); }
+  }
+  if (add.length && await rtDocSave(r, { files: [...(r.doc?.files || []), ...add] })) toast(`${add.length === 1 ? "File" : add.length + " files"} attached`);
+  if (rt?.pane === "files") rtFilesRender();
+};
+$("rtFileIn").addEventListener("change", rtUploadFiles); $("rtFileCam").addEventListener("change", rtUploadFiles);
+$("rtFileList").addEventListener("click", async e => {
+  const x = e.target.closest("[data-frm]"), r = rtGet(); if (!x || !r) return; const F = [...(r.doc?.files || [])], f = F[+x.dataset.frm]; if (!f) return;
+  if (!await askYesNo(`Remove ${f.name} from this round trip?`, { yes: "Remove", danger: true })) return;
+  F.splice(+x.dataset.frm, 1); if (await rtDocSave(r, { files: F.length ? F : "" })) toast("File removed");
+});
+
 /* Summary, in the driver's account format.
    ① The owner's money: FASTag, diesel by card, money given to the driver (first, the advance carried forward from the
    truck's previous round trip) and the vehicle balance. ② The money that came to the owner: every payment, one not settled
@@ -14427,26 +14554,35 @@ $("rtPaySave").onclick = async () => {
    to the truck's next round trip. A truck's first round trip takes its advance as typed in. */
 function rtCalc(r, prev, lang = "en") {
   const t = RT_T[lang], pm = p => p ? ` · ${t.pay[p] || p}` : "", D = r.doc || {}, legs = r.legs, C = legs.map(legCalc), dn = (id, nm) => id ? drivers.find(d => d.id === id)?.name || nm : nm;
-  const fills = legs.flatMap(l => (l.fuels?.length ? l.fuels : num(l.fuelCost) || num(l.litres) ? [{ date: l.from, litres: num(l.litres), amount: num(l.fuelCost), pay: "Card" }] : []));
-  const odo = [...legs.flatMap(l => [num(l.startKm), num(l.endKm)]), ...fills.map(f => num(f.odo))].filter(x => x > 0);
-  const startKm = odo.length ? Math.min(...odo) : 0, endKm = odo.length ? Math.max(...odo) : 0, litres = fills.reduce((a, f) => a + num(f.litres), 0);
+  // Diesel: the fills of each trip, and fills for the whole round trip (kept on the round trip).
+  const legFills = l => l.fuels?.length ? l.fuels : num(l.fuelCost) || num(l.litres) ? [{ date: l.from, litres: num(l.litres), amount: num(l.fuelCost), pay: "Card" }] : [];
+  const fills = [...legs.flatMap(legFills), ...(D.fuels || [])], rfuel = Math.round((D.fuels || []).reduce((a, f) => a + num(f.amount), 0));
+  const odo = [...legs.flatMap(l => [num(l.startKm), num(l.endKm)]), ...fills.map(f => num(f.odo))].filter(x => x > 0), litres = fills.reduce((a, f) => a + num(f.litres), 0);
+  // Dates and kilometres: from where the last round trip ended to where this one ends; each can be typed over.
+  const last = legs[legs.length - 1], autoStart = prev?.end || r.from, autoEnd = r.to;
+  const autoEK = num(last?.endKm) || (odo.length ? Math.max(...odo) : 0), autoSK = prev?.km || (odo.length ? Math.min(...odo) : 0);
+  const startDate = D.startDate || autoStart, endDate = D.endDate || autoEnd, startKm = num(D.startKm) || autoSK, endKm = num(D.endKm) || autoEK;
   const fast = legs.filter(l => num(l.toll) > 0).map(l => ({ date: l.from, what: `${t.fast} · ${rtLegName(l)}`, amt: num(l.toll) }));
-  const card = fills.filter(f => f.pay !== "Cash" && num(f.amount) > 0).map(f => ({ date: f.date, what: `${t.card} · ${nf(num(f.litres), 2)} ${t.L}${f.rate ? ` @ ₹${nf(f.rate, 2)}` : ""}${f.place ? " · " + f.place : ""}`, amt: Math.round(num(f.amount)) }));
+  const card = fills.filter(f => f.pay !== "Cash" && num(f.amount) > 0).map(f => ({ date: f.date, what: `${t.card} · ${nf(num(f.litres), 2)} ${t.L}${f.rate ? ` @ ₹${nf(f.rate, 2)}` : ""}${f.place ? " · " + f.place : ""}`, amt: Math.round(num(f.amount)) }))
+    .sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
   const adv = prev ? { date: r.from, what: `${t.advPrev} · ${t.advSet(prev.no, fyLabel(prev.fy))}`, amt: prev.amt, adv: "auto" }
     : { date: r.from, what: t.advPrev, amt: num(D.advIn), adv: "typed" };
   const giv = [adv, ...(D.given || []).map(g => ({ date: g.date, what: `${t.giv[g.desc] || g.desc || t.given}${pm(g.pay)}`, amt: num(g.amount) }))];
-  const bal = C.reduce((a, c) => a + c.bal, 0), balLine = { date: D.balDate || r.to, what: t.vbal, amt: bal };
+  // The vehicle balance is the owner's money; a loss is shown with the money that came to the owner instead (the same result).
+  const bal = C.reduce((a, c) => a + c.bal, 0) - rfuel, loss = bal < 0, balLine = { date: D.balDate || endDate, what: loss ? t.vbalLoss : t.vbal, amt: Math.abs(bal) };
   const pays = [...legs.flatMap(l => (l.payments || []).map(p => ({ ...p, l }))), ...(D.payments || [])]
     .sort((a, b) => (a.settled === false) - (b.settled === false) || String(a.date || "").localeCompare(String(b.date || "")));
   const rec = pays.map(p => ({ date: p.settled === false ? "" : p.date, what: `${p.desc || (p.l ? rtLegName(p.l) : r.path)}${pm(p.pay)}`, amt: num(p.amount), pend: p.settled === false }));
-  const owner = rtSum(fast) + rtSum(card) + rtSum(giv) + bal, came = rtSum(rec);
-  return { days: inclDays(r.from, r.to) || 0, startKm, endKm, km: endKm - startKm, litres, fast, card, giv, balLine, rec, pendAmt: rtSum(rec.filter(x => x.pend)), bal, owner, came, diff: owner - came,
+  const owner = rtSum(fast) + rtSum(card) + rtSum(giv) + (loss ? 0 : bal), came = rtSum(rec) + (loss ? -bal : 0);
+  return { startDate, endDate, autoStart, autoEnd, days: inclDays(startDate, endDate) || 0, startKm, endKm, autoSK, autoEK, km: endKm > startKm ? endKm - startKm : 0, litres, rfuel,
+    fast, card, giv, balLine, loss, rec, pendAmt: rtSum(rec.filter(x => x.pend)), bal, owner, came, diff: owner - came,
     loads: legs.map((l, i) => ({ l, c: C[i] })), drivers: [...new Set(legs.flatMap(l => [dn(l.driver1Id, l.driver1Name), dn(l.driver2Id, l.driver2Name)]).filter(Boolean))] };
 }
-// Every round trip of the truck in date order, each carrying the last one's settlement forward as its advance.
+// Every round trip of the truck in date order. Each takes the last one's settlement as its advance, and the last one's
+// end date and end km as its start.
 function rtCalcOf(r, lang = "en") {
   let prev = null, out = null;
-  for (const x of roundsOf(r.vehicleId)) { const S = rtCalc(x, prev, x.id === r.id ? lang : "en"); if (x.id === r.id) { out = S; break; } prev = { amt: S.diff, no: rtNo(x), fy: fyOf(x.from) }; }
+  for (const x of roundsOf(r.vehicleId)) { const S = rtCalc(x, prev, x.id === r.id ? lang : "en"); if (x.id === r.id) { out = S; break; } prev = { amt: S.diff, no: rtNo(x), fy: fyOf(x.from), end: S.endDate, km: S.endKm }; }
   return out || rtCalc(r, null, lang);
 }
 async function rtDocSave(r, patch) {
@@ -14455,34 +14591,57 @@ async function rtDocSave(r, patch) {
   try { await opsSave("truckRounds", n); return true; } catch { toast("Couldn't save. Check your connection and try again."); return false; }
 }
 function rtSumRender() {
-  const r = rtGet(), S = rtCalcOf(r), bus = vehicles.find(v => v.id === r.vehicleId), edit = canTrips && r.status !== "Closed", d = S.diff;
+  const r = rtGet(), S = rtCalcOf(r), bus = vehicles.find(v => v.id === r.vehicleId), edit = canTrips && r.status !== "Closed", d = S.diff, D = r.doc || {};
   const st = (k, v, cls = "") => `<div class="rtst${cls}"><span>${k}</span><b>${v}</b></div>`;
+  // Start and end: worked out, or typed over (↺ goes back to the worked-out value).
+  const ed = (k, label, val, auto, date) => {
+    const typed = D[k] != null && D[k] !== "", shown = date ? fmtShort(val) : val || "—";
+    if (!edit) return st(label, shown);
+    return `<div class="rtst ed${typed ? " typed" : ""}" title="${typed ? `Typed in. Worked out: ${date ? fmtShort(auto) : auto || "—"}` : "Worked out from the trips. Type to change."}"><span>${label}${typed ? ` <button type="button" class="rtrst" data-rtreset="${k}" aria-label="Go back to the worked-out ${label.toLowerCase()}">↺</button>` : ""}</span>` +
+      (date ? `<input type="date" data-rtk="${k}" value="${val || ""}" aria-label="${label}">` : `<input type="number" inputmode="numeric" min="0" data-rtk="${k}" value="${val || ""}" aria-label="${label}">`) + `</div>`;
+  };
   const row = (x, o = {}) => `<tr${x.pend ? ' class="pend"' : o.cls ? ` class="${o.cls}"` : ""}><td class="num">${o.date || (x.pend ? "Not settled" : fmtShort(x.date))}</td><td>${esc(x.what)}</td><td class="n">${o.amt || nf(x.amt)}</td></tr>`;
   const lines = (list, empty) => list.length ? list.map(x => row(x)).join("") : `<tr><td colspan="3" class="sub">${empty}</td></tr>`;
   const sh = t => `<tr class="sh"><td colspan="3">${t}</td></tr>`, A = S.giv[0];
-  const advRow = row(A, { cls: "adv", amt: A.adv === "typed" && edit ? `<input type="number" inputmode="numeric" min="0" data-rtk="advIn" value="${num(r.doc?.advIn) || ""}" placeholder="0" aria-label="Advance from the previous trip, ₹">` : "" });
-  const balRow = row(S.balLine, { date: edit ? `<input type="date" data-rtk="balDate" value="${S.balLine.date}" aria-label="Date of the vehicle balance">` : "" });
-  $("rtSum").innerHTML = `<div class="rtstrip"><div class="rtstats">` + st("Truck", esc(bus ? plateOf(bus) : "—")) + st("Start date", fmtShort(r.from)) + st("End date", fmtShort(r.to)) +
-    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + st("Start km", S.startKm || "—") + st("End km", S.endKm || "—") + st("Total km", S.km ? nf(S.km) : "—") +
-    st("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—") + st("Mileage", S.km && S.litres ? `${nf(S.km / S.litres, 2)} km/L` : "—") + st("Vehicle bal.", rs(S.bal), " hi") + `</div></div>` +
+  const advRow = row(A, { cls: "adv", amt: A.adv === "typed" && edit ? `<input type="number" inputmode="numeric" min="0" data-rtk="advIn" value="${num(D.advIn) || ""}" placeholder="0" aria-label="Advance from the previous trip, ₹">` : "" });
+  const balRow = row(S.balLine, { cls: S.loss ? "loss" : "", date: edit ? `<input type="date" data-rtk="balDate" value="${S.balLine.date}" aria-label="Date of the vehicle balance">` : "" });
+  $("rtSum").innerHTML = `<div class="rtstrip"><div class="rtstats">` + st("Truck", esc(bus ? plateOf(bus) : "—")) + ed("startDate", "Start date", S.startDate, S.autoStart, 1) + ed("endDate", "End date", S.endDate, S.autoEnd, 1) +
+    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK) + ed("endKm", "End km", S.endKm, S.autoEK) + st("Total km", S.km ? nf(S.km) : "—") +
+    st("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—") + st("Mileage", S.km && S.litres ? `${nf(S.km / S.litres, 2)} km/L` : "—") + st("Vehicle bal.", rs(S.bal), S.bal < 0 ? " hi neg" : " hi") + `</div></div>` +
     `<div class="rtcard"><h3>Loads${S.drivers.length ? ` <span class="sub">· ${esc(S.drivers.join(", "))}</span>` : ""}</h3><div class="rttscroll"><table class="rttab"><thead><tr><th>#</th><th>Dates</th><th>Trip</th><th class="n">Rent</th><th class="n">Expense</th><th class="n">Balance</th></tr></thead><tbody>` +
     S.loads.map(({ l, c }, i) => `<tr><td>${i + 1}</td><td class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</td><td>${esc(rtLegName(l))}</td><td class="n">${nf(num(l.rent))}</td><td class="n">${nf(c.exp)}</td><td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td></tr>`).join("") +
+    (S.rfuel ? `<tr><td></td><td class="num">—</td><td>Diesel for the whole round trip</td><td class="n"></td><td class="n">${nf(S.rfuel)}</td><td class="n neg">-${nf(S.rfuel)}</td></tr>` : "") +
     `</tbody><tfoot><tr><td colspan="3" class="n">Total</td><td class="n">${nf(r.rent)}</td><td class="n">${nf(r.rent - S.bal)}</td><td class="n${S.bal < 0 ? " neg" : ""}">${nf(S.bal)}</td></tr></tfoot></table></div></div><div class="rtcols">` +
     `<div class="rtcard"><h3>① Owner's money</h3><div class="rttscroll"><table class="rttab"><tbody>` + sh("FASTag") + lines(S.fast, "No FASTag entered") + sh("Diesel paid by card") + lines(S.card, "No diesel by card") +
-    sh("Given to the driver") + advRow + S.giv.slice(1).map(x => row(x)).join("") + sh("Balance with the vehicle") + balRow +
+    sh("Given to the driver") + advRow + S.giv.slice(1).map(x => row(x)).join("") + (S.loss ? "" : sh("Balance with the vehicle") + balRow) +
     `</tbody><tfoot><tr><td></td><td>Total ①</td><td class="n">${nf(S.owner)}</td></tr></tfoot></table></div>` +
     (A.adv === "typed" && edit ? `<p class="sub" style="margin:8px 0 0">This is the truck's first round trip in the app, so type the advance the driver already had.</p>` : "") + `</div>` +
-    `<div class="rtcard"><h3>② Came to the owner</h3><div class="rttscroll"><table class="rttab"><tbody>${lines(S.rec, "No payments yet. Add them under Payments.")}</tbody><tfoot><tr><td></td><td>Total ②</td><td class="n">${nf(S.came)}</td></tr></tfoot></table></div>` +
-    (S.pendAmt ? `<p class="sub rtpendn">Lines in orange are not settled yet. They have no date and are counted in the total.</p>` : "") + `</div></div>` +
+    `<div class="rtcard"><h3>② Came to the owner</h3><div class="rttscroll"><table class="rttab"><tbody>${lines(S.rec, "No payments yet. Add them under Payments.")}${S.loss ? sh("Vehicle balance (loss)") + balRow : ""}</tbody><tfoot><tr><td></td><td>Total ②</td><td class="n">${nf(S.came)}</td></tr></tfoot></table></div>` +
+    (S.pendAmt ? `<p class="sub rtpendn">Lines in orange are not settled yet. They have no date and are counted in the total.</p>` : "") +
+    (S.loss ? `<p class="sub" style="margin:8px 0 0">The vehicle made a loss on this round trip, so its balance is shown here, with the money that came to the owner.</p>` : "") + `</div></div>` +
     `<div class="rtcard"><h3>③ Advance</h3><div class="rtsrow"><div class="rtsb"><span>① Owner's money</span><b>${rs(S.owner)}</b></div><i aria-hidden="true">−</i>` +
     `<div class="rtsb"><span>② Came to the owner</span><b>${rs(S.came)}</b>${S.pendAmt ? `<small>includes ${rs(S.pendAmt)} not settled</small>` : ""}</div><i aria-hidden="true">=</i>` +
     `<div class="rtsb main${d < 0 ? " neg" : ""}"><span>${d < 0 ? "To pay the driver" : "Advance for the next trip"}</span><b>${rs(Math.abs(d))}</b><small>${d < 0 ? "The owner has to pay this to the driver. It is taken off the next round trip's advance." : "Cash with the driver. It opens the next round trip as “Advance from the previous trip”."}</small></div></div></div>`;
 }
-// The typed first advance and the date of the vehicle balance are saved with the round trip.
+// Typed values saved with the round trip: the first advance, the date of the vehicle balance, and the start and end dates and km.
 $("rtSum").addEventListener("change", async e => {
   const k = e.target.dataset.rtk, r = rtGet(); if (!k || !r || !canTrips || r.status === "Closed") return;
-  if (k === "balDate") { const v = e.target.value; if (!v) { e.target.value = r.doc?.balDate || r.to; return; } if (await rtDocSave(r, { balDate: v === r.to ? "" : v })) toast("Date saved"); return; }
-  if (await rtDocSave(r, { advIn: Math.max(0, Math.round(num(e.target.value))) || "" })) toast("Advance saved");
+  const S = rtCalcOf(r), v = e.target.value;
+  if (k === "advIn") { if (await rtDocSave(r, { advIn: Math.max(0, Math.round(num(v))) || "" })) toast("Advance saved"); return; }
+  if (k === "balDate") { if (!v) { e.target.value = S.balLine.date; return; } if (await rtDocSave(r, { balDate: v === S.endDate ? "" : v })) toast("Date saved"); return; }
+  if (k === "startDate" || k === "endDate") {
+    const s = k === "startDate" ? v : S.startDate, en = k === "endDate" ? v : S.endDate;
+    if (!v) { e.target.value = S[k]; return; } if (s > en) { toast("The start date must be on or before the end date."); e.target.value = S[k]; return; }
+    if (await rtDocSave(r, { [k]: v === (k === "startDate" ? S.autoStart : S.autoEnd) ? "" : v })) toast("Date saved"); return;
+  }
+  if (k === "startKm" || k === "endKm") {
+    const n = Math.round(num(v)), auto = k === "startKm" ? S.autoSK : S.autoEK;
+    if (await rtDocSave(r, { [k]: !n || n === auto ? "" : n })) toast(n ? "Kilometres saved" : "Back to the worked-out kilometres");
+  }
+});
+$("rtSum").addEventListener("click", async e => {
+  const b = e.target.closest("[data-rtreset]"), r = rtGet(); if (!b || !r || !canTrips || r.status === "Closed") return;
+  if (await rtDocSave(r, { [b.dataset.rtreset]: "" })) toast("Back to the worked-out value");
 });
 
 /* Print: a preview of the trip sheet, under the company header, before it is saved or shared as images or Excel.
@@ -14498,14 +14657,14 @@ const RT_T = {
     tot1: "Total ①", tot2: "Total ②", notSet: "Not settled", adv: "③ ADVANCE", ownerM: "Owner's Money", cameM: "Came to owner", balance: "Balance", next: "Advance for next trip",
     pend: n => `Came to owner includes ${n} not settled.`, sheets: ["Trip sheet", "Trip summary"],
     sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
-    fast: "FASTag", card: "Diesel by card", L: "L", advPrev: "Advance from the previous trip", advSet: (no, fy) => `settlement of round trip ${no} (FY ${fy})`, given: "Given to the driver", vbal: "Vehicle balance", pay: {}, giv: {} },
+    fast: "FASTag", card: "Diesel by card", L: "L", advPrev: "Advance from the previous trip", advSet: (no, fy) => `settlement of round trip ${no} (FY ${fy})`, given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {} },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
     cols: ["தேதி", "பயணம்", "வாடகை", "செலவு", "மீதம்"], total: "மொத்தம்", owner: "① முதலாளி பணம்", came: "② முதலாளிக்கு வந்தது", gFast: "ஃபாஸ்டேக்", gCard: "கார்டு மூலம் டீசல்",
     gGiv: "ஓட்டுநரிடம் கொடுத்தது", gBal: "வண்டி மீதம்", none: "இல்லை", nopay: "இன்னும் பணம் வரவில்லை", tot1: "மொத்தம் ①", tot2: "மொத்தம் ②", notSet: "நிலுவை", adv: "③ முன்பணம்",
     ownerM: "முதலாளி பணம்", cameM: "முதலாளிக்கு வந்தது", balance: "மீதம்", next: "அடுத்த பயணத்திற்கான முன்பணம்", pend: n => `முதலாளிக்கு வந்ததில் ${n} நிலுவை உள்ளது.`,
     sheets: ["பயணக் கணக்கு", "பயணச் சுருக்கம்"],
     sum: ["தொடக்க தேதி", "முடிவு தேதி", "மொத்த நாட்கள்", "மொத்த வாடகை", "தொடக்க கி.மீ", "முடிவு கி.மீ", "மொத்த கி.மீ", "மொத்த டீசல் (லி)", "மைலேஜ் (கி.மீ/லி)", "வண்டி மீதம்"],
-    fast: "ஃபாஸ்டேக்", card: "டீசல் (கார்டு)", L: "லி", advPrev: "முந்தைய பயண முன்பணம்", advSet: (no, fy) => `சுற்றுப் பயணம் ${no} கணக்கு (நிதியாண்டு ${fy})`, given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்",
+    fast: "ஃபாஸ்டேக்", card: "டீசல் (கார்டு)", L: "லி", advPrev: "முந்தைய பயண முன்பணம்", advSet: (no, fy) => `சுற்றுப் பயணம் ${no} கணக்கு (நிதியாண்டு ${fy})`, given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்", vbalLoss: "வண்டி நஷ்டம்", rfuel: "முழு சுற்றுப் பயணத்திற்கான டீசல்",
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
     giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" } }
 };
@@ -14515,7 +14674,7 @@ function rtTamilFont() {
   return Promise.race([Promise.all([document.fonts.load("400 20px 'Noto Sans Tamil'", "தமிழ்"), document.fonts.load("700 20px 'Noto Sans Tamil'", "தமிழ்")]), new Promise(ok => setTimeout(ok, 4000))]).catch(() => {});
 }
 function rtSumRows(S, r, t = RT_T.en) {
-  return [fmtShort(r.from), fmtShort(r.to), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.km ? nf(S.km) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
+  return [fmtShort(S.startDate), fmtShort(S.endDate), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.km ? nf(S.km) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
     S.km && S.litres ? nf(S.km / S.litres, 2) : "—", rtSigned(S.bal)].map((v, i) => [t.sum[i], v]);
 }
 // Drawing kit for one A4 page (1240 × 1754 px) at text scale k: the company header, a title line, tables whose text wraps
@@ -14588,6 +14747,7 @@ function rtPage1(r, S, sec, t = RT_T.en) {
       const cols = [{ w: 300 }, { w: IN - 300 - 3 * 155 }, { w: 155, r: 1 }, { w: 155, r: 1 }, { w: 155, r: 1 }];
       y = K.table(P, y, cols, [{ cells: t.cols, bold: true, bg: K.head },
         ...S.loads.map(({ l, c }) => ({ cells: [`${fmtShort(l.from)} – ${fmtShort(l.to || l.from)}`, rtLegName(l), nf(num(l.rent)), nf(c.exp), rtSigned(c.bal)], color: [0, 0, 0, 0, c.bal < 0 ? red : 0] })),
+        ...(S.rfuel ? [{ cells: ["—", t.rfuel, "", nf(S.rfuel), rtSigned(-S.rfuel)], color: [0, 0, 0, 0, red] }] : []),
         { cells: ["", t.total, nf(r.rent), nf(r.rent - S.bal), rtSigned(S.bal)], bold: true, right: [1], color: [0, 0, 0, 0, S.bal < 0 ? red : 0] }]) + z(22);
     }
     const two = [sec.owner && "owner", sec.came && "came"].filter(Boolean);
@@ -14595,11 +14755,11 @@ function rtPage1(r, S, sec, t = RT_T.en) {
       const gap = 24, cw = two.length === 2 ? (IN - gap) / 2 : IN, y0 = y; let yEnd = y;
       two.forEach((k2, i) => {
         const x0 = P + i * (cw + gap), cols = [{ w: 128 }, { w: cw - 128 - 118 }, { w: 118, r: 1 }];
-        const one = x => ({ cells: [x.pend ? t.notSet : fmtShort(x.date), x.what, rtSigned(x.amt)], ...(x.pend ? { bg: "#FDF1DC", color: "#8A4B00" } : x.amt < 0 ? { color: [0, 0, red] } : {}) });
+        const one = x => ({ cells: [x.pend ? t.notSet : fmtShort(x.date), x.what, rtSigned(x.amt)], ...(x.pend ? { bg: "#FDF1DC", color: "#8A4B00" } : x.amt < 0 || x.red ? { color: [0, 0, red] } : {}) });
         let yy = K.sect(k2 === "owner" ? t.owner : t.came, x0, y0), rows;
         if (k2 === "owner") rows = [{ group: t.gFast }, ...(S.fast.length ? S.fast.map(one) : [{ cells: ["", t.none, ""] }]), { group: t.gCard }, ...(S.card.length ? S.card.map(one) : [{ cells: ["", t.none, ""] }]),
-          { group: t.gGiv }, ...S.giv.map(one), { group: t.gBal }, one(S.balLine), { cells: ["", t.tot1, nf(S.owner)], bold: true, right: [1] }];
-        else rows = [...(S.rec.length ? S.rec.map(one) : [{ cells: ["", t.nopay, ""] }]), { cells: ["", t.tot2, nf(S.came)], bold: true, right: [1] }];
+          { group: t.gGiv }, ...S.giv.map(one), ...(S.loss ? [] : [{ group: t.gBal }, one(S.balLine)]), { cells: ["", t.tot1, nf(S.owner)], bold: true, right: [1] }];
+        else rows = [...(S.rec.length ? S.rec.map(one) : [{ cells: ["", t.nopay, ""] }]), ...(S.loss ? [{ group: t.vbalLoss }, one({ ...S.balLine, red: 1 })] : []), { cells: ["", t.tot2, nf(S.came)], bold: true, right: [1] }];
         yy = K.table(x0, yy, cols, rows, 15); yEnd = Math.max(yEnd, yy);
       });
       y = yEnd + z(22);
@@ -14636,6 +14796,7 @@ function rtSheetXlsx(r, S, sec, withSum, t = RT_T.en) {
     if (sec.loads) {
       put(`A${n}`, t.loads, st.ttext); n++; t.cols.forEach((h, i) => put(`${"ABCDE"[i]}${n}`, h, st.head)); n++;
       S.loads.forEach(({ l, c }) => { put(`A${n}`, `${fmtShort(l.from)} – ${fmtShort(l.to || l.from)}`, st.text); put(`B${n}`, rtLegName(l), st.text); put(`C${n}`, num(l.rent), st.int); put(`D${n}`, c.exp, st.int); put(`E${n}`, c.bal, st.int); n++; });
+      if (S.rfuel) { put(`A${n}`, "—", st.text); put(`B${n}`, t.rfuel, st.text); put(`D${n}`, S.rfuel, st.int); put(`E${n}`, -S.rfuel, st.int); n++; }
       put(`B${n}`, t.total, st.ttext); put(`C${n}`, r.rent, st.tint); put(`D${n}`, r.rent - S.bal, st.tint); put(`E${n}`, S.bal, st.tint); n += 2;
     }
     const side = (k, i) => {
@@ -14644,8 +14805,8 @@ function rtSheetXlsx(r, S, sec, withSum, t = RT_T.en) {
       const grp = t => { put(`${cD}${m}`, t, st.label); ws.merges.push(`${cD}${m}:${cA}${m}`); m++; };
       const tot = (t, v) => { put(`${cW}${m}`, t, st.ttext); put(`${cA}${m}`, v, st.tint); m++; };
       put(`${cD}${m}`, k === "owner" ? t.owner : t.came, st.ttext); ws.merges.push(`${cD}${m}:${cW}${m}`); m++;
-      if (k === "owner") { grp(t.gFast); S.fast.forEach(one); grp(t.gCard); S.card.forEach(one); grp(t.gGiv); S.giv.forEach(one); grp(t.gBal); one(S.balLine); tot(t.tot1, S.owner); }
-      else { S.rec.forEach(one); tot(t.tot2, S.came); }
+      if (k === "owner") { grp(t.gFast); S.fast.forEach(one); grp(t.gCard); S.card.forEach(one); grp(t.gGiv); S.giv.forEach(one); if (!S.loss) { grp(t.gBal); one(S.balLine); } tot(t.tot1, S.owner); }
+      else { S.rec.forEach(one); if (S.loss) { grp(t.vbalLoss); one(S.balLine); } tot(t.tot2, S.came); }
       return m;
     };
     const two = [sec.owner && "owner", sec.came && "came"].filter(Boolean);
@@ -14660,7 +14821,7 @@ function rtSheetXlsx(r, S, sec, withSum, t = RT_T.en) {
     const ws = XL.sheet(t.sheets[1]), put = (ref, v, s) => XL.put(ws, ref, v, s); sheets.push(ws);
     Object.assign(ws.widths, { A: 25, B: 40, C: 13, D: 13, E: 14, F: 40, G: 13 }); top(ws, put, t.summary);
     rtSumRows(S, r, t).forEach(([l, v], i) => { put(`A${5 + i}`, l, st.label); const raw = typeof v === "string" ? +v.replace(/,/g, "") : v;
-      put(`B${5 + i}`, i < 2 ? { d: i ? r.to : r.from } : Number.isFinite(raw) ? raw : v, i < 2 ? st.date : Number.isFinite(raw) ? (Number.isInteger(raw) ? st.int : st.dec) : st.text); });
+      put(`B${5 + i}`, i < 2 ? { d: i ? S.endDate : S.startDate } : Number.isFinite(raw) ? raw : v, i < 2 ? st.date : Number.isFinite(raw) ? (Number.isInteger(raw) ? st.int : st.dec) : st.text); });
   }
   return XL.build(sheets);
 }
