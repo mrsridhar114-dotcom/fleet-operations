@@ -1508,7 +1508,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .bstage.ts-submitted { background: var(--warn-soft); color: var(--warn); border: 1px dashed var(--warn); }
 .bstage.ts-approved { background: var(--ok-soft); color: var(--ok); }
 .bstage.ts-rejected { background: var(--danger-soft); color: var(--danger); }
-.bstage.ts-none { border: 1px dashed var(--muted); color: var(--muted); }
+.bstage.ts-none { border: 1px dashed var(--muted); color: var(--muted); } .bstage.ts-pend { border: 1px dashed var(--warn); color: var(--warn); }
 .bkappr b { font-weight: 700; }
 .bkappr-act { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; align-items: center; }
 .bkappr-act input { font: inherit; font-size: 13px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 15em; }
@@ -10264,7 +10264,7 @@ function renderOps() {
 
 /* ---------- Dashboard: trip sheet work still to do ----------
    Route bus days this month (up to yesterday) with no entry, and spare bus trips that ended before today whose trip sheet
-   is not started. Each row opens the place to do it. */
+   is not started (trip completed, accounts pending). Each row opens the place to do it. */
 var dtMonth = [], dtKey = "", dtUnsub = null;
 function dtTrips() {
   const ym = todayISO().slice(0, 7), y = shiftDay(todayISO(), -1);
@@ -10291,7 +10291,7 @@ function dashTodoRows() {
     ops.bookings.filter(b => ["booked", "ontrip", "completed"].includes(b.status) && !tripClosed(b) && !b.tsStatus && b.from && bkEnd(b) < today)
       .sort((a, c) => String(bkEnd(a)).localeCompare(String(bkEnd(c)))).forEach(b => {
         const v = vehicles.find(x => x.id === b.vehicleId);
-        out.push({ kind: "spare", html: `<div class="what"><span class="plate psv">${esc(v ? plateOf(v) : "No bus")}</span><span><b>Trip sheet not started</b> · booking ${esc(b.no || "")}</span>` +
+        out.push({ kind: "spare", html: `<div class="what"><span class="plate psv">${esc(v ? plateOf(v) : "No bus")}</span><span><b>Trip completed · Accounts pending</b> · booking ${esc(b.no || "")}</span>` +
           `<span class="sub">${esc(b.party || "")}${b.places ? ` · ${esc(b.places)}` : ""} · trip ended ${fmtShort(bkEnd(b))}</span></div><button class="btn primary" type="button" data-dtbk="${b.id}">Fill in</button>` });
       });
   }
@@ -10302,7 +10302,7 @@ function renderDashTodo() {
   let rows; try { rows = dashTodoRows(); } catch { return; } if (rows === null) return;
   el.hidden = !rows.length; if (!rows.length) { el.innerHTML = ""; return; }
   const r = rows.filter(x => x.kind === "route"), sp = rows.filter(x => x.kind === "spare");
-  el.innerHTML = `<div class="sechead"><h2 class="sec">Trip sheets · to do</h2><p>${[r.length ? `${r.reduce((a, x) => a + x.n, 0)} route bus day${r.reduce((a, x) => a + x.n, 0) > 1 ? "s" : ""} not entered` : "", sp.length ? `${sp.length} spare bus trip sheet${sp.length > 1 ? "s" : ""} not started` : ""].filter(Boolean).join(" · ")}</p></div>` +
+  el.innerHTML = `<div class="sechead"><h2 class="sec">Trip sheets · to do</h2><p>${[r.length ? `${r.reduce((a, x) => a + x.n, 0)} route bus day${r.reduce((a, x) => a + x.n, 0) > 1 ? "s" : ""} not entered` : "", sp.length ? `${sp.length} spare bus trip${sp.length > 1 ? "s" : ""} completed, accounts pending` : ""].filter(Boolean).join(" · ")}</p></div>` +
     `<div class="dtlist">${rows.map(x => `<div class="orow dt-${x.kind}">${x.html}</div>`).join("")}</div>`;
 }
 $("dashTodo").addEventListener("click", e => {
@@ -10344,7 +10344,7 @@ function renderHub() {
   if (ready) pend.forEach(b => { const sh = rsDoc(b.id, opDate), sent = sh?.status === "submitted";
     rows.push(line("day", b.id, `<span class="plate ${b.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(b))}</span><span>Route bus</span><span class="pill d30">${sent ? "Conductor sent · review" : sh && sh.status !== "approved" ? "Conductor filling" : "Not entered"}</span>`, canTrips ? (sent ? "Review" : "Enter now") : "View", canTrips)); });
   if (acc.tripsheets && acc.tripsheets !== "none") { const L = tsLists(), by = (a, c) => String(a.from).localeCompare(String(c.from));
-    [...L.back.sort(by), ...L.fill.sort(by), ...(canBookings ? L.sent.sort(by) : [])].forEach(b => { const bus = vehicles.find(v => v.id === b.vehicleId), k = b.tsStatus === "rejected" ? "back" : b.tsStatus === "submitted" ? "sent" : "fill";
+    [...L.back.sort(by), ...L.fill.filter(b => b.from && b.from <= todayISO()).sort(by), ...(canBookings ? L.sent.sort(by) : [])].forEach(b => { const bus = vehicles.find(v => v.id === b.vehicleId), k = b.tsStatus === "rejected" ? "back" : b.tsStatus === "submitted" ? "sent" : "fill";
       rows.push(line("booking", b.id, `<span class="plate psv">${esc(bus ? plateOf(bus) : "No bus yet")}</span><span>Spare bus${b.no ? ` · ${esc(b.no)}` : ""}</span><span class="sub">${esc(b.party || "")}${b.party ? " · " : ""}${fmtShort(b.from)}${b.to && b.to !== b.from ? ` – ${fmtShort(b.to)}` : ""}</span>${tsTag(b)}`,
         k === "back" ? "Correct" : k === "sent" ? "Review" : b.tsStatus === "draft" ? "Continue" : "Fill in", k !== "sent")); }); }
   openR.forEach(r => { const b = vehicles.find(v => v.id === r.vehicleId), un = [...r.legs.flatMap(l => (l.payments || []).filter(p => p.settled === false)), ...(r.doc?.payments || []).filter(p => p.settled === false)].reduce((a, p) => a + num(p.amount), 0);
@@ -12607,10 +12607,12 @@ function tsOpenDate(b) {
   return bkEnd(b);
 }
 const tsIsOpen = b => canBookings || b.status === "completed" || (!!b.from && tsOpenDate(b) <= todayISO());
-// A trip sheet not started yet reads On trip while a confirmed trip is running (start date to last day), else Not started.
+// A trip sheet not started yet reads On trip while a confirmed trip is running (start date to last day),
+// Trip completed · Accounts pending once the last day has passed, else Not started.
 const tsOnTrip = b => !b.tsStatus && ["booked", "ontrip"].includes(b.status) && !!b.from && b.from <= todayISO() && bkEnd(b) >= todayISO();
-const tsStageTxt = b => TS_STAGES[b.tsStatus] || (tsOnTrip(b) ? "On trip" : "Not started");
-const tsTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ${tsOnTrip(b) ? "ontrip" : `ts-${b.tsStatus || "none"}`}">${tsStageTxt(b)}</span>`;
+const tsPast = b => !b.tsStatus && ["booked", "ontrip", "completed"].includes(b.status) && !!b.from && bkEnd(b) < todayISO();
+const tsStageTxt = b => TS_STAGES[b.tsStatus] || (tsOnTrip(b) ? "On trip" : tsPast(b) ? "Trip completed · Accounts pending" : "Not started");
+const tsTag = b => tripClosed(b) ? '<span class="bstage closed">🔒 Closed</span>' : `<span class="bstage ${tsOnTrip(b) ? "ontrip" : tsPast(b) ? "ts-pend" : `ts-${b.tsStatus || "none"}`}">${tsStageTxt(b)}</span>`;
 // The trip sheet as it is on screen, laid over the saved booking; nothing else on the booking changes.
 function tripFromForm(cur) {
   const f = bkRead(), next = { ...cur };
