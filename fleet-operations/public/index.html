@@ -588,8 +588,8 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtst.hi { background: var(--accent-soft); } .rtst.hi span, .rtst.hi b { color: var(--accent); } .rtst.hi.neg { background: var(--danger-soft, #fde8e6); } .rtst.hi.neg span, .rtst.hi.neg b { color: var(--danger); }
 .rtst.ed input { font: inherit; font-size: 14px; font-weight: 700; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 96px; box-sizing: border-box; }
 .rtst.ed .dmy { width: 142px; } .icon.rtbin { color: var(--danger); display: inline-flex; align-items: center; justify-content: center; padding: 6px; } .icon.rtbin:hover { background: var(--danger-soft, #FDECEC); }
-/* Diesel place: a plain text box; earlier places are suggested only while typing (no dropdown arrow). */
-input[data-fp]::-webkit-calendar-picker-indicator { display: none !important; }
+/* Diesel place and the description of money given to the driver: plain text boxes; earlier entries are suggested only while typing (no dropdown arrow). */
+input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-webkit-calendar-picker-indicator { display: none !important; }
 .lgact { font: 600 12px var(--mono); color: var(--accent); } .lgact:empty { display: none; }
 .rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst .rtact.rtmeter { color: var(--muted); } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
