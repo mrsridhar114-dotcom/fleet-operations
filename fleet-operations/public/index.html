@@ -593,6 +593,7 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
 .rttab tr.adv td { background: var(--accent-soft); } .rttab tr.dim td { color: var(--muted); } .rtpendn { margin: 8px 0 0; color: var(--warn); }
 .rttab td input { font: inherit; font-size: 13px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); box-sizing: border-box; } .rttab td.n input { text-align: right; width: 110px; }
+.rtadvin { display: inline-flex; align-items: center; gap: 4px; } .rtadvin.typed input { border-color: var(--warn); background: var(--warn-soft); } .rtadvn { margin: 8px 0 0; color: var(--warn); }
 .rttab td.num .dmy { width: 138px; }
 .rtsrow { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; } .rtsrow > i { align-self: center; font-style: normal; font-size: 26px; font-weight: 700; color: var(--muted); }
 .rtsb { flex: 1 1 200px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
@@ -14693,7 +14694,9 @@ function rtCalc(r, prev, lang = "en") {
     what: [num(f.litres) ? `${nf(num(f.litres), num(f.litres) % 1 ? 2 : 0)} ${t.L}${f.rate ? ` @ ₹${nf(f.rate, 2)}` : ""}` : "", f.place].filter(Boolean).join(" · "), amt: Math.round(num(f.amount)) }))
     .sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
   const card = dsl(false), cash = dsl(true);
-  const adv = prev ? { date: r.from, what: t.advPrev, amt: prev.amt, adv: "auto" }
+  // The advance comes from the last round trip's settlement; it can be typed over (kept as advEdit, ↺ goes back).
+  const advTyped = prev && D.advEdit != null && D.advEdit !== "";
+  const adv = prev ? { date: r.from, what: t.advPrev, amt: advTyped ? num(D.advEdit) : prev.amt, adv: "auto", auto: prev.amt, typed: advTyped }
     : { date: r.from, what: t.advPrev, amt: num(D.advIn), adv: "typed" };
   const giv = [adv, ...(D.given || []).map(g => ({ date: g.date, what: `${t.giv[g.desc] || g.desc || t.given}${pm(g.pay)}`, amt: num(g.amount) }))];
   // The vehicle balance is the owner's money; a loss is shown with the money that came to the owner instead (the same result).
@@ -14732,7 +14735,8 @@ function rtSumRender() {
   const row = (x, o = {}) => `<tr${x.pend ? ' class="pend"' : o.cls ? ` class="${o.cls}"` : ""}><td class="num">${o.date || (x.pend ? "Not settled" : fmtShort(x.date))}</td><td>${esc(x.what)}</td><td class="n">${o.amt || nf(x.amt)}</td></tr>`;
   const lines = (list, empty) => list.length ? list.map(x => row(x)).join("") : `<tr><td colspan="3" class="sub">${empty}</td></tr>`;
   const sh = t => `<tr class="sh"><td colspan="3">${t}</td></tr>`, A = S.giv[0];
-  const advRow = row(A, { cls: "adv", amt: A.adv === "typed" && edit ? `<input type="number" inputmode="numeric" min="0" data-rtk="advIn" value="${num(D.advIn) || ""}" placeholder="0" aria-label="Advance from the previous trip, ₹">` : "" });
+  const advRow = row(A, { cls: "adv", amt: !edit ? "" : A.adv === "typed" ? `<input type="number" inputmode="numeric" min="0" data-rtk="advIn" value="${num(D.advIn) || ""}" placeholder="0" aria-label="Advance from the previous trip, ₹">`
+    : `<span class="rtadvin${A.typed ? " typed" : ""}">${A.typed ? `<button type="button" class="rtrst" data-rtreset="advEdit" title="Go back to ${rs(A.auto)} from the last round trip" aria-label="Go back to the worked-out advance">↺</button>` : ""}<input type="number" inputmode="numeric" data-rtk="advEdit" value="${A.amt}" aria-label="Advance from the previous trip, ₹"></span>` });
   const balRow = row(S.balLine, { cls: S.loss ? "loss" : "", date: edit ? `<input type="date" data-rtk="balDate" value="${S.balLine.date}" aria-label="Date of the vehicle balance">` : "" });
   $("rtSum").innerHTML = `<div class="rtstrip"><div class="rtstats">` + st("Truck", esc(bus ? plateOf(bus) : "—")) + ed("startDate", "Start date", S.startDate, S.autoStart, 1) + ed("endDate", "End date", S.endDate, S.autoEnd, 1) +
     st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK, 0, S.odoK.conv ? `<small class="rtact">Actual ${nf(S.odoK.sA)}</small>` : "") + ed("endKm", "End km", S.endKm, S.autoEK, 0, S.odoK.conv ? `<small class="rtact">Actual ${nf(S.odoK.eA)}</small>` : "") + st(S.odoK.conv ? "Meter km" : "Total km", S.km ? nf(S.km) : "—") + (S.odoK.conv ? st("Actual km", S.act ? nf(S.act) : "—", " hi") : "") +
@@ -14745,7 +14749,8 @@ function rtSumRender() {
     (S.cash.length ? sh(RT_T.en.gCash) + S.cash.map(x => row(x, { cls: "dim" })).join("") : "") +
     sh("Given to the driver") + advRow + S.giv.slice(1).map(x => row(x)).join("") + (S.loss ? "" : sh("Balance with the vehicle") + balRow) +
     `</tbody><tfoot><tr><td></td><td>Total ①</td><td class="n">${nf(S.owner)}</td></tr></tfoot></table></div>` +
-    (A.adv === "typed" && edit ? `<p class="sub" style="margin:8px 0 0">This is the truck's first round trip in the app, so type the advance the driver already had.</p>` : "") + `</div>` +
+    (A.adv === "typed" && edit ? `<p class="sub" style="margin:8px 0 0">This is the truck's first round trip in the app, so type the advance the driver already had.</p>` : "") +
+    (A.typed ? `<p class="sub rtadvn">Advance typed in. From the last round trip it was ${rs(A.auto)}; ↺ puts that back.</p>` : "") + `</div>` +
     `<div class="rtcard"><h3>② Came to the owner</h3><div class="rttscroll"><table class="rttab"><tbody>${lines(S.rec, "No payments yet. Add them under Payments.")}${S.loss ? sh("Vehicle balance (loss)") + balRow : ""}</tbody><tfoot><tr><td></td><td>Total ②</td><td class="n">${nf(S.came)}</td></tr></tfoot></table></div>` +
     (S.pendAmt ? `<p class="sub rtpendn">Lines in orange are not settled yet. They have no date and are counted in the total.</p>` : "") +
     (S.loss ? `<p class="sub" style="margin:8px 0 0">The vehicle made a loss on this round trip, so its balance is shown here, with the money that came to the owner.</p>` : "") + `</div></div>` +
@@ -14758,6 +14763,7 @@ $("rtSum").addEventListener("change", async e => {
   const k = e.target.dataset.rtk, r = rtGet(); if (!k || !r || !canTrips || r.status === "Closed") return;
   const S = rtCalcOf(r), v = e.target.value;
   if (k === "advIn") { if (await rtDocSave(r, { advIn: Math.max(0, Math.round(num(v))) || "" })) toast("Advance saved"); return; }
+  if (k === "advEdit") { const A = S.giv[0], n = Math.round(num(v)); if (await rtDocSave(r, { advEdit: v === "" || n === A.auto ? "" : n })) toast(v === "" || n === A.auto ? "Back to the advance from the last round trip" : "Advance saved"); return; }
   if (k === "balDate") { if (!v) { e.target.value = S.balLine.date; return; } if (await rtDocSave(r, { balDate: v === S.endDate ? "" : v })) toast("Date saved"); return; }
   if (k === "startDate" || k === "endDate") {
     const s = k === "startDate" ? v : S.startDate, en = k === "endDate" ? v : S.endDate;
