@@ -1508,7 +1508,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .bstage.ts-submitted { background: var(--warn-soft); color: var(--warn); border: 1px dashed var(--warn); }
 .bstage.ts-approved { background: var(--ok-soft); color: var(--ok); }
 .bstage.ts-rejected { background: var(--danger-soft); color: var(--danger); }
-.bstage.ts-none { border: 1px dashed var(--muted); color: var(--muted); } .bstage.ts-pend { border: 1px dashed var(--warn); color: var(--warn); }
+.bstage.ts-none { border: 1px dashed var(--muted); color: var(--muted); } .bstage.ts-pend { background: var(--danger); color: #fff; }
 .bkappr b { font-weight: 700; }
 .bkappr-act { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; align-items: center; }
 .bkappr-act input { font: inherit; font-size: 13px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 15em; }
@@ -10291,7 +10291,7 @@ function dashTodoRows() {
     ops.bookings.filter(b => ["booked", "ontrip", "completed"].includes(b.status) && !tripClosed(b) && !b.tsStatus && b.from && bkEnd(b) < today)
       .sort((a, c) => String(bkEnd(a)).localeCompare(String(bkEnd(c)))).forEach(b => {
         const v = vehicles.find(x => x.id === b.vehicleId);
-        out.push({ kind: "spare", html: `<div class="what"><span class="plate psv">${esc(v ? plateOf(v) : "No bus")}</span><span><b>Trip completed · Accounts pending</b> · booking ${esc(b.no || "")}</span>` +
+        out.push({ kind: "spare", html: `<div class="what"><span class="plate psv">${esc(v ? plateOf(v) : "No bus")}</span><span class="bstage ts-pend">Trip completed · Accounts pending</span><span>booking ${esc(b.no || "")}</span>` +
           `<span class="sub">${esc(b.party || "")}${b.places ? ` · ${esc(b.places)}` : ""} · trip ended ${fmtShort(bkEnd(b))}</span></div><button class="btn primary" type="button" data-dtbk="${b.id}">Fill in</button>` });
       });
   }
