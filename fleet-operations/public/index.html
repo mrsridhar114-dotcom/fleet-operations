@@ -554,6 +554,10 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtnav button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
 .rtnav .rtadd { color: var(--accent); justify-content: center; }
 .rtnav .rtnh { display: none; }
+.rtnav .rtleg { display: flex; align-items: center; flex: none; position: relative; }
+.rtnav .rtleg > button[data-rp] { padding-right: 34px; }
+.rtnav .rtdel { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); padding: 5px; border-radius: 6px; cursor: pointer; display: inline-flex; }
+.rtnav .rtdel:hover { color: var(--danger); background: var(--danger-soft, #FDECEC); }
 .rtlegh { margin: 0; font-size: 18px; }
 .rtpane { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 .rtpane > * { flex-shrink: 0; }
@@ -583,7 +587,8 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtst span { font: 600 10px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; } .rtst b { font-size: 15px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .rtst.hi { background: var(--accent-soft); } .rtst.hi span, .rtst.hi b { color: var(--accent); } .rtst.hi.neg { background: var(--danger-soft, #fde8e6); } .rtst.hi.neg span, .rtst.hi.neg b { color: var(--danger); }
 .rtst.ed input { font: inherit; font-size: 14px; font-weight: 700; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 96px; box-sizing: border-box; }
-.rtst.ed .dmy { width: 142px; } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
+.rtst.ed .dmy { width: 142px; } .icon.rtbin { color: var(--danger); display: inline-flex; align-items: center; justify-content: center; padding: 6px; } .icon.rtbin:hover { background: var(--danger-soft, #FDECEC); }
+.rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
 .rttab tr.adv td { background: var(--accent-soft); } .rtpendn { margin: 8px 0 0; color: var(--warn); }
@@ -595,6 +600,10 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtsb.main { flex: 1.3 1 240px; background: var(--accent); border-color: var(--accent); color: #fff; } .rtsb.main.neg { background: var(--danger); border-color: var(--danger); } .rtsb.main span, .rtsb.main small { color: rgba(255,255,255,.88); }
 .rtpdlg { width: min(1180px, calc(100vw - 32px)); height: min(900px, calc(100vh - 32px)); }
 .rtpv { overflow: auto; background: var(--bg); padding: 16px; display: flex; flex-direction: column; gap: 18px; } .rtpv.busy img { opacity: .45; } .rtsecs { display: flex; flex-direction: column; gap: 6px; padding-left: 24px; } .rtpv figure { margin: 0; } .rtpv figcaption { max-width: 760px; margin: 0 auto 6px; font: 600 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.rtsdsec { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+.rtsdrows { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow: auto; padding-left: 22px; }
+.rtsdrows label { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 6px; align-items: center; font-size: 12.5px; cursor: pointer; }
+.rtsdrows label .w { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .rtsdrows label.pend { color: #8A4B00; }
 .rtpv img { display: block; width: 100%; max-width: 760px; margin: 0 auto; background: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.18); }
 @media (max-width: 700px) { .rtpane { padding: 14px; } #lgDrawer > header { flex-wrap: wrap; } #lgDrawer .rthbtns { width: 100%; justify-content: flex-start; } #lgDrawer .rthbtns .icon { margin-left: auto; }
   .rtnav button { max-width: 210px; } }
@@ -654,6 +663,7 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
   #lgDrawer > header { grid-column: 1 / -1; }
   #lgDrawer > .rtnav { grid-column: 1; grid-row: 2 / span 3; flex-direction: column; gap: 3px; border-bottom: 0; border-right: 1px solid var(--line); padding: 14px 10px; overflow-y: auto; }
   #lgDrawer > .rtnav button { width: 100%; max-width: none; border-radius: 10px; padding: 10px 14px; }
+  #lgDrawer > .rtnav .rtleg { width: 100%; } #lgDrawer > .rtnav .rtleg > button[data-rp] { padding-right: 38px; } #lgDrawer > .rtnav .rtdel { width: auto; padding: 6px; }
   #lgDrawer > .rtnav button[aria-selected="true"] { box-shadow: none; }
   #lgDrawer > .rtnav .rtnh { display: block; font: 600 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 14px 14px 4px; }
   #lgDrawer > #lgShut { grid-column: 2; grid-row: 2; margin: 16px 32px 0; }
@@ -3483,7 +3493,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   <footer>
     <button class="btn danger" type="button" id="lgDelete" hidden>Delete trip</button>
     <span style="flex:1"></span>
-    <button class="btn" type="button" id="lgCancel">Close</button>
     <button class="btn primary" type="submit" form="lgForm" id="lgSave">Save trip</button>
     <button class="btn primary" type="button" id="rtPaySave" hidden>Save payments</button>
   </footer>
@@ -3798,6 +3807,7 @@ const changeKind = (h, info = FIELD_INFO) => {
 };
 const EYE_SVG = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const FILE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>`;
+const TRASH_SVG = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`;
 const HIST_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>`;
 let hVid = null, hKind = "vehicle", VEH_HIST_OPTS = "";
 // What the history panel is showing: a vehicle or a driver.
@@ -14162,9 +14172,11 @@ function renderTruck() {
   const cols = 24;
   const head = `<thead><tr><th class="sticky">Dates</th><th class="n">Days</th><th>Starting place</th><th>Destination</th><th>Driver</th><th class="n">Trip rent</th><th class="n">Commission</th><th class="n">Litres</th><th class="n">Diesel ₹</th><th class="n">Toll</th><th class="n">Driver padi</th><th class="n">RTO</th><th class="n">Loading</th><th class="n">Weighbridge</th><th class="n">Other</th><th class="n">Bill exp.</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Received</th><th class="n">Start km</th><th class="n">End km</th><th class="n">Km</th><th class="n">Km / L</th><th>Remarks</th></tr></thead>`;
   let body = "";
-  [...rounds].forEach((r, i) => {
+  // Newest round trip first, so the latest is at the top; each keeps its number.
+  rounds.map((r, i) => [r, i]).reverse().forEach(([r, i]) => {
     body += `<tr class="grp" data-rid="${r.id}" tabindex="0"><td colspan="${cols}"><span class="grpin"><b>Round trip ${i + 1}</b><span>${fmtShort(r.from)} – ${fmtShort(r.to)} · ${esc(r.path)}</span><span>${r.legs.length} trip${r.legs.length > 1 ? "s" : ""} · rent <b>${rs(r.rent)}</b></span><span>Trip balance <b style="color:${r.bal < 0 ? "var(--danger)" : "var(--ok)"}">${rs(r.bal)}</b></span><span>Received ${rs(r.received)}</span>
       <span class="pill ${r.status === "Closed" ? "ok" : "d30"}">${r.status === "Closed" ? `Closed${r.closedOn ? " " + fmtShort(r.closedOn) : ""}` : "Open"}</span>
+      <button class="rbtn send" type="button" data-round="${r.id}" data-act="send" title="FASTag, payments, diesel and money given to the driver, as a picture to save or share">📤 Send details</button>
       ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="${r.status === "Closed" ? "open" : "close"}">${r.status === "Closed" ? "Reopen" : "Mark closed"}</button>${r.status !== "Closed" ? `<button class="rbtn add" type="button" data-round="${r.id}" data-act="add">+ Add trip to this round</button><button class="rbtn del" type="button" data-round="${r.id}" data-act="del">Delete round trip</button>` : ""}` : ""}</span></td></tr>`;
     r.legs.forEach(l => {
       const c = legCalc(l), d1 = l.driver1Id ? (drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name) : l.driver1Name, d2 = l.driver2Id ? (drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name) : l.driver2Name;
@@ -14247,6 +14259,8 @@ $("kTable").addEventListener("click", async e => {
   const b = e.target.closest("button[data-round]");
   if (b) {
     const r = roundsOf(kBusId).find(x => x.id === b.dataset.round); if (!r) return;
+    if (b.dataset.act === "send") { rtSendOpen(r); return; }
+    if (!canTrips) return;
     if (b.dataset.act === "add") { openRound(r.id, "leg", null); return; }
     if (b.dataset.act === "del") {
       const n = r.legs.length; if (!await askYesNo(`Delete this round trip completely?\n${fmtShort(r.from)} – ${fmtShort(r.to)} · ${r.path}\n${n} trip${n > 1 ? "s" : ""}, rent ${rs(r.rent)}, with all their diesel fills and payments. This cannot be undone.`, { yes: "Delete round trip", danger: true })) return;
@@ -14261,7 +14275,22 @@ $("kTable").addEventListener("click", async e => {
 });
 $("kTable").addEventListener("keydown", e => { if (e.key !== "Enter" || e.target.closest("button")) return; const r = e.target.closest("tr[data-lid], tr[data-rid]"); if (r) r.click(); });
 // Close or reopen a round trip, keeping its payments and money given to the driver.
+// Closing with payments not settled asks first: Yes marks them settled with the note "Settled with driver" and closes;
+// No leaves the round trip open.
 async function rtSetLock(r, closing) {
+  if (closing) {
+    const legs = r.legs.filter(l => (l.payments || []).some(p => p.settled === false)), D0 = ops.truckRounds.find(x => x.id === r.id), dp = (D0?.payments || []).filter(p => p.settled === false);
+    const open = [...legs.flatMap(l => l.payments.filter(p => p.settled === false)), ...dp];
+    if (open.length) {
+      const tot = open.reduce((a, p) => a + num(p.amount), 0);
+      if (!await askYesNo(`${open.length} payment${open.length > 1 ? "s" : ""} of ${rs(tot)} ${open.length > 1 ? "are" : "is"} not settled. Mark ${open.length > 1 ? "them" : "it"} as settled with the driver and close the round trip?`, { yes: "Yes, settled with driver", no: "No, keep it open" })) return false;
+      const settle = (p, leg) => p.settled === false ? { ...p, settled: true, desc: `${p.desc || rtDefDesc(r, leg)} · Settled with driver`, settledOn: todayISO() } : p;
+      try {
+        for (const l of legs) await opsSave("truckTrips", { ...l, payments: l.payments.map(p => settle(p, l.id)) });
+        if (dp.length) await opsSave("truckRounds", { ...D0, payments: D0.payments.map(p => settle(p, p.leg || "")) });
+      } catch { toast("Couldn't save. Try again."); return false; }
+    }
+  }
   const d = { ...(ops.truckRounds.find(x => x.id === r.id) || { id: r.id, vehicleId: r.vehicleId, fy: fyOf(r.from) }), status: closing ? "Closed" : "Open" };
   if (closing) d.closedOn = todayISO(); else delete d.closedOn;
   try { await opsSave("truckRounds", d); toast(closing ? "Round trip closed" : "Round trip reopened"); return true; }
@@ -14273,7 +14302,7 @@ function payRow(p = {}) {
   const by = p.pay || "Bank transfer";
   return `<tr class="lgprow"><td><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></td><td><input data-pdesc maxlength="120" value="${esc(p.desc || "")}" aria-label="Description"></td>` +
     `<td><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td><td><select data-pby aria-label="Paid by">${LG_PAYBY.map(x => `<option${x === by ? " selected" : ""}>${x}</option>`).join("")}</select></td>` +
-    `<td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td><td><button class="icon" type="button" data-prm aria-label="Remove this payment">✕</button></td></tr>`;
+    `<td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td><td><button class="icon rtbin" type="button" data-prm aria-label="Remove this payment" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 // The trip form of the round trip screen: one trip (load), or a new one when id is null.
 function lgLoad(id, roundId) {
@@ -14330,7 +14359,7 @@ function lgFuelRow(f = {}) {
     `<td><input type="number" inputmode="decimal" min="0" step="0.01" data-fr value="${f.rate ?? ""}" aria-label="Rate per litre"></td><td><input type="number" inputmode="decimal" min="0" step="0.01" data-fa value="${f.amount ?? ""}"${f.amount ? ' data-typed="1"' : ""} aria-label="Amount"></td>` +
     `<td><select data-fpay aria-label="Paid by"><option${pay === "Card" ? " selected" : ""}>Card</option><option${pay === "Cash" ? " selected" : ""}>Cash</option></select></td>` +
     `<td><input data-fp list="lgBunks" autocomplete="off" maxlength="80" placeholder="e.g. IOCL, Nellore" value="${esc(f.place || "")}" aria-label="Place"></td><td><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>` +
-    `<td><button class="icon" type="button" data-frm aria-label="Remove this fill">✕</button></td></tr>`;
+    `<td><button class="icon rtbin" type="button" data-frm aria-label="Remove this fill" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function lgFuelRead() {
   return [...$("lgFuels").querySelectorAll(".lgfuel")].map(r => { const v = s => r.querySelector(s).value, litres = Math.round(num(v("[data-fl]")) * 100) / 100, amount = Math.round(num(v("[data-fa]")) * 100) / 100, rate = Math.round(num(v("[data-fr]")) * 100) / 100;
@@ -14403,7 +14432,7 @@ $("lgDelete").onclick = async () => {
   const b = $("lgDelete"); if (!b.dataset.confirm) { b.dataset.confirm = "1"; b.textContent = "Click again to delete"; return; }
   try { await opsDelete("truckTrips", lgEditId); toast("Trip deleted"); if (rt && rtGet()) { rt.pane = "sum"; rt.leg = null; rtShow(); } else closeLgDrawer(); } catch { toast("Couldn't delete. Try again."); }
 };
-$("lgClose").onclick = $("lgCancel").onclick = async () => { if (await rtLeaveOk()) closeLgDrawer(); };
+$("lgClose").onclick = async () => { if (await rtLeaveOk()) closeLgDrawer(); };
 
 /* ---------- Round trip screen ----------
    A round trip opens as one screen: its summary, each trip (load) and its payments, chosen on the left (tabs on a phone).
@@ -14460,17 +14489,30 @@ function rtNavRender() {
   const giv = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0), nfl = (r.doc?.files || []).length;
   const dl = rtDslAll(r).reduce((a, f) => ({ n: a.n + 1, L: a.L + num(f.litres), A: a.A + num(f.amount) }), { n: 0, L: 0, A: 0 });
   $("rtNav").innerHTML = btn("sum", null, "Summary", `Rent ${rs(r.rent)} · balance ${rs(r.bal)}`) + `<span class="rtnh">Trips</span>` +
-    r.legs.map((l, i) => btn("leg", l.id, `${i + 1} · ${esc(rtLegName(l))}`, `${fmtShort(l.from)} · ${rs(num(l.rent))}`)).join("") + fresh +
+    r.legs.map((l, i) => `<span class="rtleg">${btn("leg", l.id, `${i + 1} · ${esc(rtLegName(l))}`, `${fmtShort(l.from)} · ${rs(num(l.rent))}`)}` +
+      (canTrips && !shut ? `<button type="button" class="rtdel" data-rtdel="${l.id}" title="Delete this trip" aria-label="Delete trip ${i + 1}">${TRASH_SVG}</button>` : "") + `</span>`).join("") + fresh +
     (canTrips && !shut && !fresh ? `<button type="button" class="rtadd" data-rp="leg" data-new="1"><span>+ Add trip</span></button>` : "") +
     `<span class="rtnh">Money</span>` + btn("pay", null, "Payments", `Received ${rs(r.received)} · given ${rs(giv)}`) +
     btn("dsl", null, "Diesel", dl.n ? `${dl.n} fill${dl.n > 1 ? "s" : ""} · ${nf(dl.L, dl.L % 1 ? 2 : 0)} L · ${rs(dl.A)}` : "No fills yet") +
     `<span class="rtnh">Papers</span>` + btn("files", null, "Files", nfl ? `${nfl} file${nfl > 1 ? "s" : ""}` : "None attached");
 }
 $("rtNav").addEventListener("click", async e => {
+  const del = e.target.closest("[data-rtdel]"); if (del) { rtDelLeg(del.dataset.rtdel); return; }
   const b = e.target.closest("button[data-rp]"); if (!b || b.getAttribute("aria-selected") === "true") return;
   if (!await rtLeaveOk()) return;
   rt.pane = b.dataset.rp; rt.leg = b.dataset.rl || null; rtShow();
 });
+// Delete a trip from the menu, after asking. Its payments and diesel fills go with it.
+async function rtDelLeg(id) {
+  const r = rtGet(), i = r ? r.legs.findIndex(l => l.id === id) : -1; if (i < 0 || !canTrips || r.status === "Closed") return;
+  const l = r.legs[i], np = (l.payments || []).length, nfl = (l.fuels || []).length;
+  if (!await askYesNo(`Delete trip ${i + 1} · ${rtLegName(l)} (${fmtShort(l.from)}, rent ${rs(num(l.rent))})?${np || nfl ? ` Its ${[np && `${np} payment${np > 1 ? "s" : ""}`, nfl && `${nfl} diesel fill${nfl > 1 ? "s" : ""}`].filter(Boolean).join(" and ")} will be deleted with it.` : ""}`, { yes: "Delete trip", no: "Keep it", danger: true })) return;
+  if (!(rt.pane === "leg" && rt.leg === id) && !await rtLeaveOk()) return;
+  try { await opsDelete("truckTrips", id); toast("Trip deleted"); } catch { toast("Couldn't delete. Try again."); return; }
+  if (!rtGet()) { closeLgDrawer(); return; }
+  if (rt.pane === "leg") { rt.pane = "sum"; rt.leg = null; }
+  rtShow();
+}
 $("rtLock").onclick = async () => {
   const r = rtGet(); if (!r || !canTrips) return;
   const closing = r.status !== "Closed"; if (closing && !await rtLeaveOk()) return;
@@ -14485,12 +14527,12 @@ function rtRecRow(r, p = {}) {
   return `<tr class="rtrow"><td><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Date"></td><td><select data-pleg aria-label="For">${rtForOpts(r, p.leg)}</select></td>` +
     `<td><input data-pdesc maxlength="120" value="${esc(p.desc || "")}"${p.auto ? ' data-auto="1"' : ""} placeholder="${esc(rtDefDesc(r, p.leg || ""))}" aria-label="Description"></td><td><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td>` +
     `<td><select data-pby aria-label="Paid by">${rtByOpts(LG_PAYBY, p.pay || "Bank transfer")}</select></td><td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td>` +
-    `<td><button class="icon" type="button" data-prm aria-label="Remove">✕</button></td></tr>`;
+    `<td><button class="icon rtbin" type="button" data-prm aria-label="Remove" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function rtGivRow(r, g = {}) {
   return `<tr class="rtrow"><td><input type="date" data-pd value="${esc(g.date || "")}" aria-label="Date"></td><td><select data-pleg aria-label="For">${rtForOpts(r, g.leg)}</select></td>` +
     `<td><input data-pdesc list="rtGivList" maxlength="120" value="${esc(g.desc || "")}" aria-label="Description"></td><td><input type="number" inputmode="numeric" min="0" data-pa value="${g.amount ?? ""}" aria-label="Amount"></td>` +
-    `<td><select data-pby aria-label="Paid by">${rtByOpts(RT_GIVE, g.pay || "Cash")}</select></td><td><button class="icon" type="button" data-prm aria-label="Remove">✕</button></td></tr>`;
+    `<td><select data-pby aria-label="Paid by">${rtByOpts(RT_GIVE, g.pay || "Cash")}</select></td><td><button class="icon rtbin" type="button" data-prm aria-label="Remove" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function rtPayRender() {
   const r = rtGet(), D = r.doc || {}, edit = canTrips && r.status !== "Closed";
@@ -14551,7 +14593,7 @@ function rtDslRow(r, f = {}) {
     `<td><input type="number" inputmode="decimal" min="0" step="0.01" data-fa value="${f.amount ?? ""}"${f.amount ? ' data-typed="1"' : ""} aria-label="Amount"></td>` +
     `<td><select data-fpay aria-label="Paid by"><option${pay === "Card" ? " selected" : ""}>Card</option><option${pay === "Cash" ? " selected" : ""}>Cash</option></select></td>` +
     `<td><input data-fp list="rtBunks" autocomplete="off" maxlength="80" value="${esc(f.place || "")}" aria-label="Place"></td><td><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>` +
-    `<td><button class="icon" type="button" data-prm aria-label="Remove this fill">✕</button></td></tr>`;
+    `<td><button class="icon rtbin" type="button" data-prm aria-label="Remove this fill" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function rtDslRender() {
   const r = rtGet(), edit = canTrips && r.status !== "Closed";
@@ -14613,7 +14655,7 @@ function rtFilesRender() {
   $("rtFileHint").textContent = assetsCap ? "PDF or photo. Saved with the round trip straight away." : "Attaching files isn't available in this view.";
   $("rtFileList").innerHTML = F.length ? `<div class="tscroll"><table class="ctable bkftbl"><thead><tr><th>Kind</th><th>File</th><th>Added on</th><th>Added by</th><th class="c">View</th>${edit ? "<th></th>" : ""}</tr></thead><tbody>` +
       F.map((f, i) => { const u = `/_blob/${encodeURIComponent(f.id)}`; return `<tr><td><span class="fk">${esc(f.kind || "Others")}</span></td><td class="fn"><a href="${u}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(f.name)}</a></td><td>${f.at ? fmtDate(f.at.slice(0, 10)) : "—"}</td><td>${esc(f.byName || "—")}</td>` +
-        `<td class="c"><a class="fview" href="${u}" target="_blank" rel="noopener" aria-label="View ${esc(f.name)}" title="View">${EYE_SVG}</a></td>${edit ? `<td class="c"><button class="icon fdel" type="button" data-frm="${i}" aria-label="Remove ${esc(f.name)}" title="Remove">✕</button></td>` : ""}</tr>`; }).join("") + "</tbody></table></div>"
+        `<td class="c"><a class="fview" href="${u}" target="_blank" rel="noopener" aria-label="View ${esc(f.name)}" title="View">${EYE_SVG}</a></td>${edit ? `<td class="c"><button class="icon fdel" type="button" data-frm="${i}" aria-label="Remove ${esc(f.name)}" title="Remove">${TRASH_SVG}</button></td>` : ""}</tr>`; }).join("") + "</tbody></table></div>"
     : `<p class="sub" style="margin:0">No files attached. Keep the diesel bills, commission bill, rent slip, weighbridge slip and the trip sheet here.</p>`;
 }
 const rtUploadFiles = async e => {
@@ -14680,13 +14722,13 @@ async function rtDocSave(r, patch) {
 }
 function rtSumRender() {
   const r = rtGet(), S = rtCalcOf(r), bus = vehicles.find(v => v.id === r.vehicleId), edit = canTrips && r.status !== "Closed", d = S.diff, D = r.doc || {};
-  const st = (k, v, cls = "") => `<div class="rtst${cls}"><span>${k}</span><b>${v}</b></div>`;
-  // Start and end: worked out, or typed over (↺ goes back to the worked-out value).
-  const ed = (k, label, val, auto, date) => {
+  const st = (k, v, cls = "", note = "") => `<div class="rtst${cls}"><span>${k}</span><b>${v}</b>${note}</div>`;
+  // Start and end: worked out, or typed over (↺ goes back to the worked-out value). Start and end km show the actual km below them.
+  const ed = (k, label, val, auto, date, note = "") => {
     const typed = D[k] != null && D[k] !== "", shown = date ? fmtShort(val) : val || "—";
-    if (!edit) return st(label, shown);
+    if (!edit) return st(label, shown, "", note);
     return `<div class="rtst ed${typed ? " typed" : ""}" title="${typed ? `Typed in. Worked out: ${date ? fmtShort(auto) : auto || "—"}` : "Worked out from the trips. Type to change."}"><span>${label}${typed ? ` <button type="button" class="rtrst" data-rtreset="${k}" aria-label="Go back to the worked-out ${label.toLowerCase()}">↺</button>` : ""}</span>` +
-      (date ? `<input type="date" data-rtk="${k}" value="${val || ""}" aria-label="${label}">` : `<input type="number" inputmode="numeric" min="0" data-rtk="${k}" value="${val || ""}" aria-label="${label}">`) + `</div>`;
+      (date ? `<input type="date" data-rtk="${k}" value="${val || ""}" aria-label="${label}">` : `<input type="number" inputmode="numeric" min="0" data-rtk="${k}" value="${val || ""}" aria-label="${label}">`) + `${note}</div>`;
   };
   const row = (x, o = {}) => `<tr${x.pend ? ' class="pend"' : o.cls ? ` class="${o.cls}"` : ""}><td class="num">${o.date || (x.pend ? "Not settled" : fmtShort(x.date))}</td><td>${esc(x.what)}</td><td class="n">${o.amt || nf(x.amt)}</td></tr>`;
   const lines = (list, empty) => list.length ? list.map(x => row(x)).join("") : `<tr><td colspan="3" class="sub">${empty}</td></tr>`;
@@ -14694,7 +14736,7 @@ function rtSumRender() {
   const advRow = row(A, { cls: "adv", amt: A.adv === "typed" && edit ? `<input type="number" inputmode="numeric" min="0" data-rtk="advIn" value="${num(D.advIn) || ""}" placeholder="0" aria-label="Advance from the previous trip, ₹">` : "" });
   const balRow = row(S.balLine, { cls: S.loss ? "loss" : "", date: edit ? `<input type="date" data-rtk="balDate" value="${S.balLine.date}" aria-label="Date of the vehicle balance">` : "" });
   $("rtSum").innerHTML = `<div class="rtstrip"><div class="rtstats">` + st("Truck", esc(bus ? plateOf(bus) : "—")) + ed("startDate", "Start date", S.startDate, S.autoStart, 1) + ed("endDate", "End date", S.endDate, S.autoEnd, 1) +
-    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK) + ed("endKm", "End km", S.endKm, S.autoEK) + st(S.odoK.conv ? "Meter km" : "Total km", S.km ? nf(S.km) : "—") + (S.odoK.conv ? st("Actual km", S.act ? nf(S.act) : "—", " hi") : "") +
+    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK, 0, S.odoK.conv ? `<small class="rtact">Actual ${nf(S.odoK.sA)}</small>` : "") + ed("endKm", "End km", S.endKm, S.autoEK, 0, S.odoK.conv ? `<small class="rtact">Actual ${nf(S.odoK.eA)}</small>` : "") + st(S.odoK.conv ? "Meter km" : "Total km", S.km ? nf(S.km) : "—") + (S.odoK.conv ? st("Actual km", S.act ? nf(S.act) : "—", " hi") : "") +
     st("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—") + st("Mileage", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L` : "—") + st("Vehicle bal.", rs(S.bal), S.bal < 0 ? " hi neg" : " hi") + `</div>` + rtOdoNote(S) + `</div>` +
     `<div class="rtcard"><h3>Loads${S.drivers.length ? ` <span class="sub">· ${esc(S.drivers.join(", "))}</span>` : ""}</h3><div class="rttscroll"><table class="rttab"><thead><tr><th>#</th><th>Dates</th><th>Trip</th><th class="n">Rent</th><th class="n">Expense</th><th class="n">Balance</th></tr></thead><tbody>` +
     S.loads.map(({ l, c }, i) => `<tr><td>${i + 1}</td><td class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</td><td>${esc(rtLegName(l))}</td><td class="n">${nf(num(l.rent))}</td><td class="n">${nf(c.exp)}</td><td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td></tr>`).join("") +
@@ -14744,28 +14786,29 @@ const RT_T = {
     owner: "① OWNER'S MONEY", came: "② CAME TO THE OWNER", gFast: "FASTag", gCard: "Diesel paid by card", gGiv: "Given to the driver", gBal: "Balance with the vehicle", none: "None", nopay: "No payments yet",
     tot1: "Total ①", tot2: "Total ②", notSet: "Not settled", adv: "③ ADVANCE", ownerM: "Owner's Money", cameM: "Came to owner", balance: "Balance", next: "Advance for next trip",
     pend: n => `Came to owner includes ${n} not settled.`, sheets: ["Trip sheet", "Trip summary"],
-    sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"], meterKm: "Meter km", actKm: "Actual km",
-    fast: "FASTag", card: "Diesel by card", L: "L", advPrev: "Advance from the previous trip", advSet: (no, fy) => `settlement of round trip ${no} (FY ${fy})`, given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {} },
+    sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
+    fast: "FASTag", card: "Diesel by card", L: "L", advPrev: "Advance from the previous trip", advSet: (no, fy) => `settlement of round trip ${no} (FY ${fy})`, given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {},
+    details: "TRIP DETAILS", sFast: "FASTag", sRec: "Payments received", sDsl: "Diesel fill-ups", sGiv: "Money given to the driver", dCols: ["Date", "Details", "Amount"], whole: "Whole round trip" },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
     cols: ["தேதி", "பயணம்", "வாடகை", "செலவு", "மீதம்"], total: "மொத்தம்", owner: "① முதலாளி பணம்", came: "② முதலாளிக்கு வந்தது", gFast: "ஃபாஸ்டேக்", gCard: "கார்டு மூலம் டீசல்",
     gGiv: "ஓட்டுநரிடம் கொடுத்தது", gBal: "வண்டி மீதம்", none: "இல்லை", nopay: "இன்னும் பணம் வரவில்லை", tot1: "மொத்தம் ①", tot2: "மொத்தம் ②", notSet: "நிலுவை", adv: "③ முன்பணம்",
     ownerM: "முதலாளி பணம்", cameM: "முதலாளிக்கு வந்தது", balance: "மீதம்", next: "அடுத்த பயணத்திற்கான முன்பணம்", pend: n => `முதலாளிக்கு வந்ததில் ${n} நிலுவை உள்ளது.`,
     sheets: ["பயணக் கணக்கு", "பயணச் சுருக்கம்"],
-    sum: ["தொடக்க தேதி", "முடிவு தேதி", "மொத்த நாட்கள்", "மொத்த வாடகை", "தொடக்க கி.மீ", "முடிவு கி.மீ", "மொத்த கி.மீ", "மொத்த டீசல் (லி)", "மைலேஜ் (கி.மீ/லி)", "வண்டி மீதம்"], meterKm: "மீட்டர் கி.மீ", actKm: "உண்மையான கி.மீ",
+    sum: ["தொடக்க தேதி", "முடிவு தேதி", "மொத்த நாட்கள்", "மொத்த வாடகை", "தொடக்க கி.மீ", "முடிவு கி.மீ", "மொத்த கி.மீ", "மொத்த டீசல் (லி)", "மைலேஜ் (கி.மீ/லி)", "வண்டி மீதம்"],
     fast: "ஃபாஸ்டேக்", card: "டீசல் (கார்டு)", L: "லி", advPrev: "முந்தைய பயண முன்பணம்", advSet: (no, fy) => `சுற்றுப் பயணம் ${no} கணக்கு (நிதியாண்டு ${fy})`, given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்", vbalLoss: "வண்டி நஷ்டம்", rfuel: "முழு சுற்றுப் பயணத்திற்கான டீசல்",
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
-    giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" } }
+    giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" },
+    details: "பயண விவரம்", sFast: "ஃபாஸ்டேக்", sRec: "வந்த பணம்", sDsl: "டீசல் நிரப்பியது", sGiv: "ஓட்டுநரிடம் கொடுத்தது", dCols: ["தேதி", "விவரம்", "தொகை"], whole: "முழு சுற்றுப் பயணம்" }
 };
 // Tamil letters for the pictures: the Noto Sans Tamil font, loaded the first time it is needed.
 function rtTamilFont() {
   if (!document.getElementById("rtTaFont")) { const l = document.createElement("link"); l.id = "rtTaFont"; l.rel = "stylesheet"; l.href = "https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&display=swap"; document.head.append(l); }
   return Promise.race([Promise.all([document.fonts.load("400 20px 'Noto Sans Tamil'", "தமிழ்"), document.fonts.load("700 20px 'Noto Sans Tamil'", "தமிழ்")]), new Promise(ok => setTimeout(ok, 4000))]).catch(() => {});
 }
-// The trip summary lines. A truck whose meter reads extra gets an "Actual km" line, and the mileage is on the actual km.
+// The trip summary lines. With actual km from the vehicle master, Total km is the actual km (and the mileage is on it).
 function rtSumRows(S, r, t = RT_T.en) {
-  const rows = [fmtShort(S.startDate), fmtShort(S.endDate), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.km ? nf(S.km) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
+  const rows = [fmtShort(S.startDate), fmtShort(S.endDate), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.act ? nf(S.act) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
     S.act && S.litres ? nf(S.act / S.litres, 2) : "—", rtSigned(S.bal)].map((v, i) => [t.sum[i], v]);
-  if (S.odoK.conv) { rows[6][0] = t.meterKm; rows.splice(7, 0, [t.actKm, S.act ? nf(S.act) : "—"]); }
   return rows;
 }
 // Under the strip: how the actual km were worked out from the vehicle master's readings.
@@ -14920,6 +14963,86 @@ function rtSheetXlsx(r, S, sec, withSum, t = RT_T.en) {
 }
 $("rtPrint").insertAdjacentHTML("afterbegin", ICON_PRINT);
 $("rtPrint").onclick = () => { const r = rtGet(); if (r) rtPrintOpen(r); };
+/* Send details: FASTag, payments received, diesel fill-ups and money given to the driver of one round trip, on one screen.
+   Tick the sections and lines to send; they are drawn as one picture under the company header, to save or share (e.g. to the driver). */
+function rtSendData(r, lang) {
+  const t = RT_T[lang], S = rtCalcOf(r, lang), forOf = leg => { const i = r.legs.findIndex(l => l.id === leg); return i < 0 ? t.whole : `${i + 1} · ${rtLegName(r.legs[i])}`; };
+  const line = (date, what, amt, o = {}) => ({ date, what, amt: Math.round(num(amt)), ...o });
+  return [
+    { k: "fast", title: t.sFast, rows: r.legs.filter(l => num(l.toll) > 0).map(l => line(l.from, rtLegName(l), l.toll)) },
+    { k: "rec", title: t.sRec, rows: S.rec.map(x => line(x.date, x.what, x.amt, { pend: x.pend })) },
+    { k: "dsl", title: t.sDsl, rows: rtDslAll(r).map(f => line(f.date, [forOf(f.leg), num(f.litres) ? `${nf(num(f.litres), num(f.litres) % 1 ? 2 : 0)} ${t.L}${num(f.rate) ? ` @ ₹${nf(num(f.rate), 2)}` : ""}` : "", f.place, t.pay[f.pay] || f.pay].filter(Boolean).join(" · "), f.amount)) },
+    { k: "giv", title: t.sGiv, rows: S.giv.filter(x => num(x.amt)).map(x => line(x.date, x.what, x.amt)) }
+  ];
+}
+function rtSendPage(r, data, pick, t) {
+  const bus = vehicles.find(v => v.id === r.vehicleId), S = rtCalcOf(r), [veh, drv] = rtWho(r, S, t);
+  return rtPaint(K => {
+    const { P, IN, z } = K; let y = K.header(veh, t.details, drv);
+    K.txt(`${fmtShort(r.from)} – ${fmtShort(r.to)} · ${r.path}`, P, y - z(4), { size: 16, bold: true }); y += z(16);
+    const cols = [{ w: 170 }, { w: IN - 170 - 180 }, { w: 180, r: 1 }];
+    data.forEach(sec => {
+      const rows = sec.rows.filter((_, i) => pick[sec.k]?.has(i)); if (!rows.length) return;
+      y = K.sect(sec.title, P, y);
+      y = K.table(P, y, cols, [{ cells: t.dCols, bold: true, bg: K.head }, ...rows.map(x => ({ cells: [x.pend ? t.notSet : fmtShort(x.date), x.what, nf(x.amt)], ...(x.pend ? { bg: "#FDF1DC", color: "#8A4B00" } : {}) })),
+        { cells: ["", t.total, nf(rows.reduce((a, x) => a + x.amt, 0))], bold: true, right: [1] }], 16) + z(22);
+    });
+    return y;
+  }, t);
+}
+function rtSendOpen(r) {
+  pbClose();
+  let lang = "en"; try { lang = localStorage.getItem("fleet-rtlang") === "ta" ? "ta" : "en"; } catch {}
+  const bus = vehicles.find(v => v.id === r.vehicleId), name0 = `${bus ? plateOf(bus) : ""} trip details ${fmtShort(r.from)}`;
+  const D = { en: rtSendData(r, "en"), ta: rtSendData(r, "ta") }, pick = Object.fromEntries(D.en.map(x => [x.k, new Set(x.rows.map((_, i) => i))]));
+  let url = "", seq = 0;
+  const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
+  const secHtml = sec => `<div class="rtsdsec"><label class="dall"><input type="checkbox" data-ss="${sec.k}"${sec.rows.length ? " checked" : " disabled"}> <b>${esc(RT_T.en["s" + sec.k[0].toUpperCase() + sec.k.slice(1)])}</b> <span class="sub">${sec.rows.length ? `${sec.rows.length} · ${rs(sec.rows.reduce((a, x) => a + x.amt, 0))}` : "none"}</span></label>` +
+    (sec.rows.length ? `<div class="rtsdrows">${sec.rows.map((x, i) => `<label${x.pend ? ' class="pend"' : ""}><input type="checkbox" data-sr="${sec.k}" data-i="${i}" checked> <span class="num">${x.pend ? "Not settled" : fmtShort(x.date)}</span> <span class="w">${esc(x.what)}</span> <b class="num">${nf(x.amt)}</b></label>`).join("")}</div>` : "") + `</div>`;
+  box.innerHTML = `<div class="xodlg rtpdlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">📤 Send details · preview</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
+    `<div class="xobody"><div class="xoleft"><label class="xotl">File name<input type="text" data-title maxlength="80" value="${esc(name0)}"></label>` +
+    `<div class="xosub">Language</div><div class="xofmt" role="radiogroup"><button type="button" data-lang="en">English</button><button type="button" data-lang="ta" lang="ta">தமிழ்</button></div>` +
+    `<div class="xosub">What to send</div>${D.en.map(secHtml).join("")}` +
+    `<p class="dnote">Untick the sections or lines you don't want. The picture shows only what is ticked.</p></div>` +
+    `<div class="xoright rtpv"></div></div>` +
+    `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span>Save as image</span></button></footer></div>`;
+  const fname = () => (box.querySelector("[data-title]").value.trim() || name0) + (lang === "ta" ? " Tamil" : "");
+  const any = () => Object.values(pick).some(x => x.size);
+  const fonts = async () => { try { await document.fonts?.ready; } catch {} if (lang === "ta") await rtTamilFont(); };
+  const toBlob = (cv, png) => new Promise((ok, fail) => cv.toBlob(b => b ? ok(b) : fail(new Error("image failed")), png ? "image/png" : "image/jpeg", 0.92));
+  const make = async png => { await fonts(); return { filename: pbName(png ? "png" : "jpg", fname()), data: await toBlob(rtSendPage(r, D[lang], pick, RT_T[lang]), png) }; };
+  const draw = async () => {
+    const k = ++seq, pv = box.querySelector(".rtpv"); pv.classList.add("busy"); await fonts(); if (k !== seq) return;
+    if (!any()) { pv.classList.remove("busy"); pv.innerHTML = `<p class="sub">Tick something to send.</p>`; return; }
+    const b = await toBlob(rtSendPage(r, D[lang], pick, RT_T[lang])); if (k !== seq || !box.isConnected) return;
+    if (url) URL.revokeObjectURL(url); url = URL.createObjectURL(b); pv.classList.remove("busy"); pv.innerHTML = `<figure><img src="${url}" alt="Preview of the trip details"></figure>`;
+  };
+  const sync = () => {
+    box.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+    D.en.forEach(sec => { const m = box.querySelector(`[data-ss="${sec.k}"]`), n = pick[sec.k].size; if (!sec.rows.length) return; m.checked = n > 0; m.indeterminate = n > 0 && n < sec.rows.length; });
+    box.querySelector(".duesave").disabled = box.querySelector(".dshare").disabled = !any();
+  };
+  const close = () => { if (url) URL.revokeObjectURL(url); pbClose(); };
+  box.addEventListener("change", e => {
+    const ss = e.target.dataset.ss, sr = e.target.dataset.sr;
+    if (ss) { const sec = D.en.find(x => x.k === ss); pick[ss] = new Set(e.target.checked ? sec.rows.map((_, i) => i) : []); box.querySelectorAll(`[data-sr="${ss}"]`).forEach(c => c.checked = e.target.checked); }
+    if (sr) { const i = +e.target.dataset.i; e.target.checked ? pick[sr].add(i) : pick[sr].delete(i); }
+    if (ss || sr) { sync(); draw(); }
+  });
+  box.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-title]")) e.preventDefault(); });
+  box.addEventListener("click", e => {
+    if (e.target === box || e.target.closest("[data-xoclose]")) { close(); return; }
+    const l = e.target.closest("[data-lang]"); if (l && l.dataset.lang !== lang) { lang = l.dataset.lang; try { localStorage.setItem("fleet-rtlang", lang); } catch {} sync(); draw(); }
+  });
+  box.querySelector(".duesave").onclick = async ev => {
+    const b = ev.currentTarget; b.disabled = true;
+    try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } const f = await make(); await dl.save(f); toast(`Saved ${f.filename}`); close(); }
+    catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the picture. Try again."); }
+    finally { if (b.isConnected) b.disabled = false; }
+  };
+  box.querySelector(".dshare").onclick = ev => pbShare(ev.currentTarget, "jpg", make, fname());
+  document.body.append(box); sync(); draw();
+}
 function rtPrintOpen(r) {
   pbClose();
   let lang = "en"; try { lang = localStorage.getItem("fleet-rtlang") === "ta" ? "ta" : "en"; } catch {}
