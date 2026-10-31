@@ -178,7 +178,11 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .pill.expired { background: var(--danger-soft); color: var(--danger); }
 .pill.d7 { background: var(--hot-soft); color: var(--hot); }
-.pill.d30, .pill.due { background: var(--warn-soft); color: var(--warn); }
+.pill.d30, .pill.due { background: var(--warn-soft); color: var(--warn); } .pill.mlow { background: var(--danger); color: #fff; }
+.pktable { min-width: 1350px; } .pktable td.neg { color: var(--danger); } .pktable td.pos { color: var(--ok); } .pktable tr.pkidle td { color: var(--muted); } .pktable tbody tr[data-pkt]:hover td { background: var(--bg); }
+.pklow { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.pklrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font: inherit; color: var(--ink); cursor: pointer; }
+.pklrow:hover { border-color: var(--danger); } .pklrow .w { display: flex; flex-direction: column; min-width: 0; flex: 1 1 220px; } .pklrow small { color: var(--muted); } .pklrow .go { color: var(--muted); font-size: 18px; }
 .pill.ok { background: var(--ok-soft); color: var(--ok); }
 .pill.off { background: var(--chip-bg); color: var(--muted); }
 tr.retired td { opacity: .55; }
@@ -986,19 +990,26 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
 .lgftab { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13.5px; } .lgftab th { text-align: left; font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: .03em; color: var(--muted); padding: 6px 3px; border-bottom: 1px solid var(--line); } .lgftab th.n { text-align: right; }
 .lgftab td { padding: 4px; border-bottom: 1px solid var(--line); } .lgftab input, .lgftab select { font: inherit; font-size: 13.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 7px; width: 100%; min-width: 0; }
 .lgftab input[type="number"] { text-align: right; } .lgftab th:nth-child(1) { width: 16%; } .lgftab th:nth-child(2) { width: 12%; } .lgftab th:nth-child(3) { width: 11%; } .lgftab th:nth-child(4) { width: 13%; } .lgftab th:nth-child(5) { width: 9%; } .lgftab th:nth-child(6) { width: 22%; } .lgftab th:nth-child(7) { width: 13%; } .lgftab th:last-child { width: 4%; min-width: 24px; } .lgftab td { padding: 4px 2px; } .lgftab input, .lgftab select { padding: 6px 5px; } .lgftab select { padding-right: 2px; } .lgftab :is(input[type="date"], .dmyt) { font-size: 12.5px; padding: 6px 2px; } .lgftab td:last-child { text-align: center; } .lgftab :is(input[type="date"], .dmyt) { padding: 6px 4px; font-size: 13px; }
-@media (max-width: 700px) { .lgftab { min-width: 660px; } }
+@media (max-width: 700px) { .lgftab { min-width: 700px; } }
 .lgftab tfoot td { border-bottom: 0; padding-top: 8px; font-weight: 700; font-family: var(--mono); } .lgftab tfoot td.n { text-align: right; padding-right: 10px; } .lgftab tfoot .sub { font-family: var(--body); font-weight: 400; } .lgftab tfoot .btn { padding: 5px 10px; font-size: 13px; font-family: var(--body); white-space: nowrap; }
 .lgftab [data-frm] { padding: 2px 6px; }
 .rtdtab th:nth-child(1) { width: 13%; } .rtdtab th:nth-child(2) { width: 16%; } .rtdtab th:nth-child(3), .rtdtab th:nth-child(4) { width: 8%; } .rtdtab th:nth-child(5) { width: 10%; }
 .rtdtab th:nth-child(6) { width: 8%; } .rtdtab th:nth-child(7) { width: auto; } .rtdtab th:nth-child(8) { width: 10%; } .rtdtab th:nth-child(9) { width: 4%; min-width: 24px; }
-@media (max-width: 700px) { .rtdtab { min-width: 900px; } }
+@media (max-width: 700px) { .rtdtab { min-width: 950px; } }
 .lgptab th:nth-child(1) { width: 17%; } .lgptab th:nth-child(2) { width: auto; } .lgptab th:nth-child(3) { width: 15%; } .lgptab th:nth-child(4) { width: 18%; } .lgptab th:nth-child(5) { width: 9%; } .lgptab th:last-child { width: 5%; }
 .lgptab .c { text-align: center; } .lgptab input[type="checkbox"] { width: 18px; height: 18px; padding: 0; margin: 0; vertical-align: middle; accent-color: var(--accent); }
-@media (max-width: 700px) { .lgptab { min-width: 620px; } }
+@media (max-width: 700px) { .lgptab { min-width: 660px; } }
 .rtptab th:nth-child(1), .rtgtab th:nth-child(1) { width: 14%; } .rtptab th:nth-child(2), .rtgtab th:nth-child(2) { width: 21%; } .rtptab th:nth-child(3), .rtgtab th:nth-child(3) { width: auto; }
 .rtptab th:nth-child(4), .rtgtab th:nth-child(4) { width: 12%; } .rtptab th:nth-child(5), .rtgtab th:nth-child(5) { width: 15%; } .rtptab th:nth-child(6) { width: 7%; } .rtgtab th:nth-child(6), .rtptab th:nth-child(7) { width: 4%; min-width: 24px; }
 .rtptab .c { text-align: center; } .rtptab input[type="checkbox"] { width: 18px; height: 18px; padding: 0; margin: 0; vertical-align: middle; accent-color: var(--accent); }
-@media (max-width: 700px) { .rtptab, .rtgtab { min-width: 760px; } }
+@media (max-width: 700px) { .rtptab, .rtgtab { min-width: 810px; } }
+/* Bill photo on a diesel fill or payment line */
+.lgftab th.blh { width: 48px !important; text-align: center; } .lgftab td.bill { text-align: center; white-space: nowrap; }
+td.bill .bla { color: var(--muted); padding: 4px; } td.bill .bla:hover { color: var(--accent); } td.bill .bla svg { width: 20px; height: 20px; display: block; }
+td.bill .blv { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--bg); font: 700 9px var(--mono); color: var(--accent); vertical-align: middle; text-decoration: none; }
+td.bill .blv img { width: 100%; height: 100%; object-fit: cover; } td.bill .blx { font-size: 12px; padding: 2px 4px; color: var(--muted); vertical-align: middle; } td.bill .blx:hover { color: var(--danger); }
+td.bill button:disabled { display: none; } .lbh { margin: 16px 0 6px; font-size: 14px; }
+#lgForm.mwiz .lgftab td.bill { flex-direction: row; align-items: center; gap: 8px; } #lgForm.mwiz .lgftab td.bill::before { margin-right: auto; }
 .payrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .paylist { display: flex; flex-direction: column; gap: 8px; }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
@@ -2118,6 +2129,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li data-mod="trips" id="navTrips"><a class="nav" href="#trips" data-view="trips">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"/></svg>
             Trip sheet<span class="badge" id="tsBadge" hidden></span></a></li>
+          <li data-mod="trips" id="navTkRep"><a class="nav" href="#truck-profit" data-view="tkrep">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+            Truck profit</a></li>
           <li data-mod="expenses"><a class="nav" href="#expenses" data-view="texp">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
             Expenses<span class="badge" id="xrBadge" hidden></span></a></li>
@@ -2800,6 +2814,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf"><label for="kFy">Financial year</label><select id="kFy"></select></div>
           <button class="btn" type="button" id="kPrint" title="Print or download the trips and expenses of this truck, as Excel or as an image">Print</button>
           <button class="btn" type="button" id="kFast" title="Download the FASTag amounts of this truck">FASTag</button>
+          <a class="btn" href="#truck-profit" title="Rent, expenses, profit and mileage of every truck, month by month">Profit report</a>
           <button class="btn primary" type="button" id="kAdd">+ Add trip</button>
         </div>
       </header>
@@ -2809,6 +2824,26 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <section class="summary tsum" id="kSummary" aria-label="Truck summary"></section>
         <label class="kchk"><input type="checkbox" id="kLegs" checked> Show the trips inside each round trip</label>
         <div class="tscroll"><table class="ttable otable" id="kTable" style="min-width:2050px"></table></div>
+      </div>
+    </section>
+
+    <!-- ================= Truck profit report ================= -->
+    <section class="wrap twrap" id="view-tkrep" hidden>
+      <header class="top">
+        <div>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Operations</span><span class="slash">/</span><a href="#trips">Trip sheet</a><span class="slash">/</span><a href="#trips-truck">Trucks</a><span class="slash">/</span><span>Profit</span></nav>
+          <h1>Truck profit report</h1>
+          <p class="sync">Rent, expenses and profit of each truck, month by month. A trip counts in the month it started. Km are actual km, and mileage is actual km for each litre of diesel.</p>
+        </div>
+        <div class="tcontrols"><div class="hf"><label for="pkFy">Financial year</label><select id="pkFy"></select></div><a class="btn" href="#trips-truck">Trucks · trips</a></div>
+      </header>
+      <nav class="ttabs" id="pkTabs" role="tablist" aria-label="Truck"></nav>
+      <div class="empty panel" id="pkNone" hidden><strong>No trucks yet</strong>Add a vehicle with class 12 Wheeler Truck under Masters › Vehicle.</div>
+      <div id="pkBody" style="display:flex;flex-direction:column;gap:16px">
+        <section class="summary tsum" id="pkSum" aria-label="Profit summary"></section>
+        <section class="panel" id="pkTrucksP"><div class="sechead"><h2 class="sec">Trucks</h2><p>Click a truck to see its months.</p></div><div class="tscroll"><table class="ttable pktable" id="pkTrucks"></table></div></section>
+        <section class="panel"><div class="sechead"><h2 class="sec" id="pkMonH">Month by month</h2><p id="pkMonP"></p></div><div class="tscroll"><table class="ttable pktable" id="pkMonths"></table></div></section>
+        <section class="panel" id="pkLowP"><div class="sechead"><h2 class="sec">Low mileage</h2><p>Round trips more than 15% below the truck's usual mileage. Check their diesel fills and km.</p></div><div class="pklow" id="pkLow"></div></section>
       </div>
     </section>
 
@@ -3521,8 +3556,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </fieldset>
     <fieldset class="docs" data-mstep="3"><legend>Diesel</legend>
       <p class="sub" style="margin:0 0 6px">One row for each fill. Amount is litres × rate unless you type it.</p>
-      <div class="tscroll"><table class="lgftab"><thead><tr><th>Date</th><th class="n">Litres</th><th class="n">Rate / L</th><th class="n">Amount ₹</th><th>Paid by</th><th>Place</th><th class="n">Odometer</th><th></th></tr></thead>
-        <tbody id="lgFuels"></tbody><tfoot><tr><td><button class="btn" type="button" id="lgAddFuel">+ Add fill</button></td><td class="n" id="lgFtL"></td><td class="n" id="lgFtR"></td><td class="n" id="lgFtA"></td><td colspan="4" class="sub" id="lgFuelTot"></td></tr></tfoot></table></div><datalist id="lgBunks"></datalist>
+      <div class="tscroll"><table class="lgftab"><thead><tr><th>Date</th><th class="n">Litres</th><th class="n">Rate / L</th><th class="n">Amount ₹</th><th>Paid by</th><th>Place</th><th class="n">Odometer</th><th class="blh">Bill</th><th></th></tr></thead>
+        <tbody id="lgFuels"></tbody><tfoot><tr><td><button class="btn" type="button" id="lgAddFuel">+ Add fill</button></td><td class="n" id="lgFtL"></td><td class="n" id="lgFtR"></td><td class="n" id="lgFtA"></td><td colspan="5" class="sub" id="lgFuelTot"></td></tr></tfoot></table></div><datalist id="lgBunks"></datalist>
       <span class="err" id="e-lgFuels"></span>
     </fieldset>
     <fieldset class="docs" data-mstep="4"><legend>Kilometres</legend>
@@ -3532,8 +3567,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </div>
     </fieldset>
     <fieldset class="docs" data-mstep="4"><legend>Payments received</legend>
-      <div class="tscroll"><table class="lgftab lgptab"><thead><tr><th>Date</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th class="c">Settled</th><th></th></tr></thead><tbody id="lgPays"></tbody>
-        <tfoot><tr><td><button class="btn" type="button" id="lgAddPay">+ Add payment</button></td><td class="sub" id="lgPayTot"></td><td class="n" id="lgPayAmt"></td><td colspan="3"></td></tr></tfoot></table></div>
+      <div class="tscroll"><table class="lgftab lgptab"><thead><tr><th>Date</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th class="c">Settled</th><th class="blh">Bill</th><th></th></tr></thead><tbody id="lgPays"></tbody>
+        <tfoot><tr><td><button class="btn" type="button" id="lgAddPay">+ Add payment</button></td><td class="sub" id="lgPayTot"></td><td class="n" id="lgPayAmt"></td><td colspan="4"></td></tr></tfoot></table></div>
       <div class="field"><label for="lgRemarks">Remarks</label><input id="lgRemarks" autocomplete="off" maxlength="300"></div>
     </fieldset>
     <div class="lgcheck" id="lgCheck" hidden></div><div class="lgdone" id="lgDone" hidden></div>
@@ -3543,21 +3578,21 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   <div class="rtpane" id="rtPay" hidden>
     <fieldset class="docs"><legend>Money received</legend>
       <p class="sub" style="margin:0 0 6px">Payments that came to the owner for this round trip. Choose the trip a payment is for: it also shows in that trip. Untick Settled while it is still to be confirmed.</p>
-      <div class="tscroll"><table class="lgftab rtptab"><thead><tr><th>Date</th><th>For</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th class="c">Settled</th><th></th></tr></thead><tbody id="rtRec"></tbody>
-        <tfoot><tr><td><button class="btn" type="button" id="rtAddRec">+ Add payment</button></td><td colspan="2" class="sub" id="rtRecTot"></td><td class="n" id="rtRecAmt"></td><td colspan="3"></td></tr></tfoot></table></div>
+      <div class="tscroll"><table class="lgftab rtptab"><thead><tr><th>Date</th><th>For</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th class="c">Settled</th><th class="blh">Bill</th><th></th></tr></thead><tbody id="rtRec"></tbody>
+        <tfoot><tr><td><button class="btn" type="button" id="rtAddRec">+ Add payment</button></td><td colspan="2" class="sub" id="rtRecTot"></td><td class="n" id="rtRecAmt"></td><td colspan="4"></td></tr></tfoot></table></div>
     </fieldset>
     <fieldset class="docs"><legend>Money given to the driver</legend>
       <p class="sub" style="margin:0 0 6px">The advance before the trip and any money sent to the driver during the trip.</p>
-      <div class="tscroll"><table class="lgftab rtgtab"><thead><tr><th>Date</th><th>For</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th></th></tr></thead><tbody id="rtGiv"></tbody>
-        <tfoot><tr><td><button class="btn" type="button" id="rtAddGiv">+ Add money given</button></td><td colspan="2" class="sub" id="rtGivTot"></td><td class="n" id="rtGivAmt"></td><td colspan="2"></td></tr></tfoot></table></div>
+      <div class="tscroll"><table class="lgftab rtgtab"><thead><tr><th>Date</th><th>For</th><th>Description</th><th class="n">Amount ₹</th><th>Paid by</th><th class="blh">Bill</th><th></th></tr></thead><tbody id="rtGiv"></tbody>
+        <tfoot><tr><td><button class="btn" type="button" id="rtAddGiv">+ Add money given</button></td><td colspan="2" class="sub" id="rtGivTot"></td><td class="n" id="rtGivAmt"></td><td colspan="3"></td></tr></tfoot></table></div>
       <datalist id="rtGivList"><option value="Advance"><option value="Sent during the trip"><option value="Driver took"><option value="Diesel in cash"></datalist>
     </fieldset>
   </div>
   <div class="rtpane" id="rtDsl" hidden>
     <fieldset class="docs"><legend>Diesel fill-ups</legend>
       <p class="sub" style="margin:0 0 6px">Every diesel fill of the round trip in one place. Choose the trip a fill is for (it also shows in that trip), or leave it as the whole round trip. Amount is litres × rate unless you type it.</p>
-      <div class="tscroll"><table class="lgftab rtdtab"><thead><tr><th>Date</th><th>For</th><th class="n">Litres</th><th class="n">Rate / L</th><th class="n">Amount ₹</th><th>Paid by</th><th>Place</th><th class="n">Odometer</th><th></th></tr></thead><tbody id="rtDslRows"></tbody>
-        <tfoot><tr><td><button class="btn" type="button" id="rtAddDsl">+ Add fill</button></td><td class="sub" id="rtDslTot"></td><td class="n" id="rtDslL"></td><td class="n" id="rtDslR"></td><td class="n" id="rtDslA"></td><td colspan="4"></td></tr></tfoot></table></div>
+      <div class="tscroll"><table class="lgftab rtdtab"><thead><tr><th>Date</th><th>For</th><th class="n">Litres</th><th class="n">Rate / L</th><th class="n">Amount ₹</th><th>Paid by</th><th>Place</th><th class="n">Odometer</th><th class="blh">Bill</th><th></th></tr></thead><tbody id="rtDslRows"></tbody>
+        <tfoot><tr><td><button class="btn" type="button" id="rtAddDsl">+ Add fill</button></td><td class="sub" id="rtDslTot"></td><td class="n" id="rtDslL"></td><td class="n" id="rtDslR"></td><td class="n" id="rtDslA"></td><td colspan="5"></td></tr></tfoot></table></div>
       <datalist id="rtBunks"></datalist>
     </fieldset>
   </div>
@@ -3565,9 +3600,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <fieldset class="docs"><legend>Files</legend>
       <div class="bkupl" id="rtUpl"><select id="rtFileKind" aria-label="What the file is"><option>Diesel bill</option><option>Commission bill</option><option>Rent slip</option><option>Weight scale slip</option><option>Trip sheet</option><option>Others</option></select>
         <label class="btn filebtn" for="rtFileIn" style="padding:6px 12px;font-size:13px">+ Attach file</label><input id="rtFileIn" type="file" accept="image/*,application/pdf" hidden multiple>
-        <label class="btn filebtn camonly" for="rtFileCam" style="padding:6px 12px;font-size:13px">📷 Take photo</label><input id="rtFileCam" type="file" accept="image/*" capture="environment" hidden>
+        <label class="btn filebtn camonly" for="rtFileCam" style="padding:6px 12px;font-size:13px">📷 Take photo</label><input id="rtFileCam" type="file" accept="image/*" capture="environment" hidden><input id="billIn" type="file" accept="image/*,application/pdf" hidden>
         <span class="hint" id="rtFileHint"></span></div>
-      <div class="bkfiles" id="rtFileList"></div>
+      <div class="bkfiles" id="rtFileList"></div><div id="rtLineBills"></div>
     </fieldset>
   </div>
   <footer>
@@ -3890,6 +3925,13 @@ const EYE_SVG = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" str
 const FILE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>`;
 const COPY_SVG = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>`;
 const TRASH_SVG = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`;
+// A bill photo (or PDF) on one diesel fill or payment line. It is uploaded straight away and kept on the line when the line is saved.
+const CAM_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+const billUrl = b => `/_blob/${encodeURIComponent(b.id)}`;
+const billInner = b => b ? `<a class="blv" href="${billUrl(b)}" target="_blank" rel="noopener" title="View the bill${b.name ? ` (${esc(b.name)})` : ""}" aria-label="View the bill">${String(b.type || "").startsWith("image/") ? `<img src="${billUrl(b)}" alt="" loading="lazy">` : "PDF"}</a><button class="icon blx" type="button" data-billrm aria-label="Remove the bill" title="Remove the bill">✕</button>`
+  : `<button class="icon bla" type="button" data-billadd aria-label="Add a bill photo" title="Add a bill photo">${CAM_SVG}</button>`;
+const billCell = b => `<td class="bill" data-l="Bill"${b ? ` data-bill="${esc(JSON.stringify(b))}"` : ""}>${billInner(b)}</td>`;
+const billOf = tr => { const c = tr.querySelector("td.bill"); try { return c?.dataset.bill ? JSON.parse(c.dataset.bill) : null; } catch { return null; } };
 const HIST_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>`;
 let hVid = null, hKind = "vehicle", VEH_HIST_OPTS = "";
 // What the history panel is showing: a vehicle or a driver.
@@ -3989,16 +4031,16 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
   // Someone without the dashboard (the booking office, say) lands on the first application they can use.
   if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tmaint", "maintenance"], ["texp", "expenses"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
   // A conductor (route trip sheet: fill & submit) only has his own day sheet.
-  if (acc.trips === "update" && ["thub", "trips", "trexp", "tpadi", "ttruck"].includes(want)) want = "trsheet";
+  if (acc.trips === "update" && ["thub", "trips", "trexp", "tpadi", "ttruck", "tkrep"].includes(want)) want = "trsheet";
   // Trip sheet with only the spare bus trip sheets: open them directly.
   if (want === "thub" && acc.trips === "none" && acc.tripsheets && acc.tripsheets !== "none") want = "ttsheet";
   // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
@@ -4008,8 +4050,8 @@ function showView() {
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = ["texp", "tmaint", "tmsum"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = ["texp", "tmaint", "tmsum"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
@@ -8986,7 +9028,7 @@ function renderApprovals() {
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
 const AU_PAGE = { trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Route bus day sheet", tspare: "Booking planner",
-  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", trexp: "Route expenses", tpadi: "Padi calculation", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
+  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", trexp: "Route expenses", tpadi: "Padi calculation", tkrep: "Truck profit report", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
   if (!auditDb || !auditSess) return;
@@ -10250,6 +10292,7 @@ function renderOps() {
   if (view === "ttsheet") { renderTsList(); return; }
   if (view === "trexp") { renderRxp(); return; }
   if (view === "tpadi") { renderPadi(); return; }
+  if (view === "tkrep") { renderPk(); return; }
   if (view === "tutil") { renderUpload(); return; }
   if (view === "texp") { renderExp(); return; }
   if (view === "tmaint") { renderMaint(); return; }
@@ -14244,6 +14287,90 @@ function roundsOf(vid, fy) {
       path: [r.legs[0].origin, ...r.legs.map(l => l.dest)].filter(Boolean).map(p => p.replace(/^[A-Z]{2}\s*-\s*/, "")).join(" → ") };
   });
 }
+/* ---------- Truck profit report ----------
+   Each truck's rent, expenses and profit for the financial year, by truck and by month. A trip counts in the month it started;
+   a diesel fill kept on the round trip counts in the month of its date. Other = RTO, loading, weighbridge, other and bill expenses. */
+var pkFy = null, pkBus = "";
+const PK_Z = () => ({ trips: 0, rent: 0, fuel: 0, lit: 0, toll: 0, padi: 0, comm: 0, other: 0, act: 0, low: 0 });
+function pkAdd(a, l) {
+  a.trips++; a.rent += num(l.rent); a.fuel += num(l.fuelCost); a.lit += num(l.litres); a.toll += num(l.toll); a.padi += num(l.padi); a.comm += num(l.commission);
+  a.other += ["rto", "loading", "bridge", "otherExp", "billExp"].reduce((s, k) => s + num(l[k]), 0); a.act += legCalc(l).act;
+}
+const pkExp = a => a.fuel + a.toll + a.padi + a.comm + a.other;
+function pkSumUp(list) { const T = PK_Z(); list.forEach(a => Object.keys(T).forEach(k => T[k] += a[k])); return T; }
+function pkData(fy) {
+  const months = Array.from({ length: 12 }, (_, i) => { const m = (i + 3) % 12 + 1; return `${m >= 4 ? fy : fy + 1}-${String(m).padStart(2, "0")}`; });
+  const tks = kSorted(truckList()), by = {};
+  tks.forEach(t => {
+    const M = Object.fromEntries(months.map(m => [m, PK_Z()])), T = PK_Z(), MF = mileFlags(t.id), low = [];
+    roundsOf(t.id, fy).forEach((r, i) => {
+      r.legs.forEach(l => { pkAdd(T, l); const a = M[l.from.slice(0, 7)]; if (a) pkAdd(a, l); });
+      (r.doc?.fuels || []).forEach(f => { const a = M[String(f.date || "").slice(0, 7)] || M[r.from.slice(0, 7)]; [T, a].forEach(x => { if (x) { x.fuel += num(f.amount); x.lit += num(f.litres); } }); });
+      const f = MF.get(r.id); if (f?.low) { T.low++; const a = M[r.from.slice(0, 7)]; if (a) a.low++; low.push({ r, f, n: i + 1 }); }
+    });
+    by[t.id] = { t, M, T, low };
+  });
+  return { months, tks, by };
+}
+const PK_HEAD = first => `<thead><tr><th class="sticky">${first}</th><th class="n">Trips</th><th class="n">Rent</th><th class="n">Diesel</th><th class="n">FASTag / toll</th><th class="n">Padi</th><th class="n">Commission</th><th class="n">Other</th><th class="n">Expenses</th><th class="n">Profit</th><th class="n">Actual km</th><th class="n">Rent / km</th><th class="n">Cost / km</th><th class="n">Profit / km</th><th class="n">Litres</th><th class="n">km / L</th><th class="n">Low mileage</th></tr></thead>`;
+function pkCells(a) {
+  const e = pkExp(a), p = a.rent - e, k = a.act, c = v => `<td class="n">${v ? nf(Math.round(v)) : "—"}</td>`, pk = v => `<td class="n">${k && v ? nf(v / k, 2) : "—"}</td>`;
+  return `<td class="n">${a.trips || "—"}</td>${c(a.rent)}${c(a.fuel)}${c(a.toll)}${c(a.padi)}${c(a.comm)}${c(a.other)}${c(e)}<td class="n ${p < 0 ? "neg" : "pos"}"><b>${a.trips || e ? nf(Math.round(p)) : "—"}</b></td>` +
+    `${c(k)}${pk(a.rent)}${pk(e)}<td class="n ${p < 0 ? "neg" : ""}">${k && (a.rent || e) ? nf(p / k, 2) : "—"}</td><td class="n">${a.lit ? nf(a.lit, a.lit % 1 ? 2 : 0) : "—"}</td><td class="n">${k && a.lit ? nf(k / a.lit, 2) : "—"}</td>` +
+    `<td class="n">${a.low ? `<span class="pill mlow">${a.low}</span>` : "—"}</td>`;
+}
+function renderPk() {
+  if (pkFy == null) pkFy = fyOf(todayISO());
+  const D = pkData(pkFy), ids = D.tks.map(t => t.id); if (pkBus && !ids.includes(pkBus)) pkBus = "";
+  $("pkNone").hidden = !!D.tks.length; $("pkBody").hidden = !D.tks.length; $("pkTabs").hidden = D.tks.length < 2; if (!D.tks.length) return;
+  $("pkTabs").innerHTML = (D.tks.length > 1 ? `<button type="button" role="tab" data-pk="" aria-selected="${!pkBus}">All trucks</button>` : "") +
+    D.tks.map(t => `<button type="button" role="tab" data-pk="${t.id}" aria-selected="${pkBus === t.id || D.tks.length === 1}">${esc(plateOf(t))}</button>`).join("");
+  const one = pkBus || (D.tks.length === 1 ? D.tks[0].id : ""), sel = one ? [D.by[one]] : D.tks.map(t => D.by[t.id]);
+  const T = pkSumUp(sel.map(x => x.T)), e = pkExp(T), p = T.rent - e;
+  $("pkSum").innerHTML = ostat("Rent", rs(T.rent), `${T.trips} trip${T.trips === 1 ? "" : "s"}`) + ostat("Expenses", rs(Math.round(e)), `Diesel ${rs(Math.round(T.fuel))} · Toll ${rs(T.toll)}`) +
+    ostat("Profit", rs(Math.round(p)), T.rent ? `${Math.round(p / T.rent * 100)}% of the rent` : "", p < 0 ? "var(--danger)" : "var(--ok)") +
+    ostat("Actual km", T.act ? nf(T.act) : "—", T.act ? `Rent ₹${nf(T.rent / T.act, 2)} · cost ₹${nf(e / T.act, 2)} a km` : "End km not entered") +
+    ostat("Profit per km", T.act ? `₹${nf(p / T.act, 2)}` : "—", "", p < 0 ? "var(--danger)" : "") +
+    ostat("Mileage", T.act && T.lit ? `${nf(T.act / T.lit, 2)} km/L` : "—", `${nf(Math.round(T.lit))} L of diesel`) +
+    ostat("Low mileage", T.low, T.low ? `round trip${T.low === 1 ? "" : "s"} to check` : "None this year", T.low ? "var(--danger)" : "");
+  $("pkTrucksP").hidden = !!one;
+  if (!one) $("pkTrucks").innerHTML = PK_HEAD("Truck") + `<tbody>${D.tks.map(t => `<tr data-pkt="${t.id}" tabindex="0" style="cursor:pointer"><td class="sticky"><b>${esc(plateOf(t))}</b></td>${pkCells(D.by[t.id].T)}</tr>`).join("")}</tbody>` +
+    `<tfoot><tr><td class="sticky">Total</td>${pkCells(T)}</tr></tfoot>`;
+  const cur = todayISO().slice(0, 7), mLab = m => new Date(m + "-01T00:00:00").toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+  const rows = D.months.filter(m => m <= cur || sel.some(x => x.M[m].trips)).map(m => [m, pkSumUp(sel.map(x => x.M[m]))]);
+  $("pkMonH").textContent = `Month by month · ${one ? plateOf(D.by[one].t) : "all trucks"}`; $("pkMonP").textContent = `FY ${fyLabel(pkFy)}`;
+  $("pkMonths").innerHTML = PK_HEAD("Month") + `<tbody>${rows.map(([m, a]) => `<tr${a.trips ? "" : ' class="pkidle"'}><td class="sticky">${mLab(m)}</td>${pkCells(a)}</tr>`).join("") || `<tr><td colspan="17" class="sub">This year has not started yet.</td></tr>`}</tbody>` +
+    (rows.length ? `<tfoot><tr><td class="sticky">Total</td>${pkCells(T)}</tr></tfoot>` : "");
+  const low = sel.flatMap(x => x.low.map(y => ({ ...y, t: x.t }))).sort((a, b) => b.r.from.localeCompare(a.r.from));
+  $("pkLowP").hidden = !low.length;
+  $("pkLow").innerHTML = low.map(({ r, f, n, t }) => `<button type="button" class="pklrow" data-pkr="${r.id}"><span class="plate psv">${esc(plateOf(t))}</span><span class="w"><b>Round trip ${n} · ${esc(r.path)}</b><small>${fmtShort(r.from)} – ${fmtShort(r.to)} · ${nf(f.act)} km · ${nf(f.lit, f.lit % 1 ? 2 : 0)} L</small></span><span class="pill mlow">${nf(f.kmpl, 2)} km/L</span><span class="sub">usual ${nf(f.usual, 2)} · ${f.pct}% lower</span><span class="go" aria-hidden="true">›</span></button>`).join("");
+}
+$("pkFy").addEventListener("change", () => { pkFy = +$("pkFy").value; renderPk(); });
+$("pkTabs").addEventListener("click", e => { const b = e.target.closest("[data-pk]"); if (b) { pkBus = b.dataset.pk; renderPk(); } });
+$("pkTrucks").addEventListener("click", e => { const r = e.target.closest("[data-pkt]"); if (r) { pkBus = r.dataset.pkt; renderPk(); scrollTo({ top: 0 }); } });
+$("pkTrucks").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-pkt]")) e.target.click(); });
+$("pkLow").addEventListener("click", e => { const b = e.target.closest("[data-pkr]"); if (b) openRound(b.dataset.pkr, "dsl"); });
+
+/* Mileage of a round trip: actual km of its trips ÷ every litre filled in it (on the trips and on the round trip). It is
+   worked out once every trip has its start and end km. A round trip more than 15% below the truck's usual mileage (the middle
+   value of its other round trips, once it has at least 3) is flagged: the fills or the km may be wrong, or diesel is going missing. */
+const MILE_LOW = 0.85;
+function rtMile(r) {
+  const done = r.legs.every(l => num(l.startKm) && num(l.endKm)), act = r.legs.reduce((a, l) => a + legCalc(l).act, 0);
+  const lit = r.legs.reduce((a, l) => a + num(l.litres), 0) + (r.doc?.fuels || []).reduce((a, f) => a + num(f.litres), 0);
+  return { act, lit, kmpl: done && act > 0 && lit > 0 ? act / lit : 0 };
+}
+// Every round trip of a truck: id → { act, lit, kmpl, usual, low, pct }.
+function mileFlags(vid) {
+  const all = roundsOf(vid).map(r => ({ id: r.id, ...rtMile(r) })), out = new Map();
+  all.forEach(x => {
+    const v = all.filter(y => y.id !== x.id && y.kmpl > 0).map(y => y.kmpl).sort((a, b) => a - b), n = v.length;
+    const usual = n >= 3 ? (n % 2 ? v[(n - 1) / 2] : (v[n / 2 - 1] + v[n / 2]) / 2) : 0, low = !!(x.kmpl && usual && x.kmpl < usual * MILE_LOW);
+    out.set(x.id, { ...x, usual, low, pct: low ? Math.round((1 - x.kmpl / usual) * 100) : 0 });
+  });
+  return out;
+}
+const mileTxt = f => `${nf(f.kmpl, 2)} km/L is ${f.pct}% below this truck's usual ${nf(f.usual, 2)} km/L`;
 function renderTruck() {
   const tks = kSorted(truckList());
   if (!tks.some(b => b.id === kBusId)) kBusId = tks[0]?.id || "";
@@ -14254,7 +14381,7 @@ function renderTruck() {
   $("kTabs").hidden = tks.length < 1; $("kTabs").classList.toggle("arr", kArrange);
   $("kNone").hidden = !!tks.length; $("kBody").hidden = !tks.length; $("kAdd").hidden = !canTrips || !tks.length;
   if (!tks.length) return;
-  const rounds = roundsOf(kBusId, kFy), legs = rounds.flatMap(r => r.legs);
+  const rounds = roundsOf(kBusId, kFy), legs = rounds.flatMap(r => r.legs), MF = mileFlags(kBusId);
   const T = legs.reduce((a, l) => { const c = legCalc(l); a.days += c.days; a.rent += num(l.rent); a.exp += c.exp; a.km += c.km; a.act += c.act; a.lit += num(l.litres); a.rec += c.received;
     ["commission", "fuelCost", "toll", "padi", "rto", "loading", "bridge", "otherExp", "billExp"].forEach(k => a[k] += num(l[k])); return a; },
     { days: 0, rent: 0, exp: 0, km: 0, act: 0, lit: 0, rec: 0, commission: 0, fuelCost: 0, toll: 0, padi: 0, rto: 0, loading: 0, bridge: 0, otherExp: 0, billExp: 0 });
@@ -14272,7 +14399,7 @@ function renderTruck() {
   // Newest round trip first, so the latest is at the top; each keeps its number.
   rounds.map((r, i) => [r, i]).reverse().forEach(([r, i]) => {
     body += `<tr class="grp" data-rid="${r.id}" tabindex="0"><td colspan="${cols}"><span class="grpin"><b>Round trip ${i + 1}</b><span>${fmtShort(r.from)} – ${fmtShort(r.to)} · ${esc(r.path)}</span><span>${r.legs.length} trip${r.legs.length > 1 ? "s" : ""} · rent <b>${rs(r.rent)}</b></span><span>Trip balance <b style="color:${r.bal < 0 ? "var(--danger)" : "var(--ok)"}">${rs(r.bal)}</b></span><span>Received ${rs(r.received)}</span>
-      <span class="pill ${r.status === "Closed" ? "ok" : "d30"}">${r.status === "Closed" ? `Closed${r.closedOn ? " " + fmtShort(r.closedOn) : ""}` : "Open"}</span>
+      <span class="pill ${r.status === "Closed" ? "ok" : "d30"}">${r.status === "Closed" ? `Closed${r.closedOn ? " " + fmtShort(r.closedOn) : ""}` : "Open"}</span>${MF.get(r.id)?.low ? `<span class="pill mlow" title="${mileTxt(MF.get(r.id))}. Check the diesel fills and km.">⚠ Low mileage ${nf(MF.get(r.id).kmpl, 2)} km/L</span>` : ""}
       ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="copy" title="Copy this round trip to another round trip or another truck">⧉ Copy</button>` : ""}
       <button class="rbtn send" type="button" data-round="${r.id}" data-act="send" title="FASTag, payments, diesel and money given to the driver, as a picture to save or share">📤 Send details</button>
       ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="${r.status === "Closed" ? "open" : "close"}">${r.status === "Closed" ? "Reopen" : "Mark closed"}</button>${r.status !== "Closed" ? `<button class="rbtn add" type="button" data-round="${r.id}" data-act="add">+ Add trip to this round</button><button class="rbtn del" type="button" data-round="${r.id}" data-act="del">Delete round trip</button>` : ""}` : ""}</span></td></tr>`;
@@ -14401,7 +14528,7 @@ function payRow(p = {}) {
   const by = p.pay || "Bank transfer";
   return `<tr class="lgprow"><td data-l="Date"><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></td><td data-l="Description" class="wide"><input data-pdesc maxlength="120" value="${esc(p.desc || "")}" aria-label="Description"></td>` +
     `<td data-l="Amount ₹"><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td><td data-l="Paid by"><select data-pby aria-label="Paid by">${LG_PAYBY.map(x => `<option${x === by ? " selected" : ""}>${x}</option>`).join("")}</select></td>` +
-    `<td class="c" data-l="Settled"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td><td class="bin"><button class="icon rtbin" type="button" data-prm aria-label="Remove this payment" title="Remove">${TRASH_SVG}</button></td></tr>`;
+    `<td class="c" data-l="Settled"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td>${billCell(p.bill)}<td class="bin"><button class="icon rtbin" type="button" data-prm aria-label="Remove this payment" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 // The trip form of the round trip screen: one trip (load), or a new one when id is null.
 function lgLoad(id, roundId) {
@@ -14451,7 +14578,7 @@ function lgRead() {
   const f = lgFuelRead(); if (f.length) { l.fuels = f; l.litres = Math.round(f.reduce((a, x) => a + x.litres, 0) * 100) / 100; l.fuelCost = Math.round(f.reduce((a, x) => a + num(x.amount), 0)); }
   l.days = num($("lgDays").value);
   l.payments = [...$("lgPays").querySelectorAll(".lgprow")].map(r => { const d = r.querySelector("[data-pdesc]").value.trim().replace(/\s+/g, " "), p = { date: r.querySelector("[data-pd]").value, amount: Math.round(num(r.querySelector("[data-pa]").value)), pay: r.querySelector("[data-pby]").value };
-    if (d) p.desc = d; if (!r.querySelector("[data-pset]").checked) p.settled = false; return p; }).filter(p => p.amount > 0);
+    if (d) p.desc = d; if (!r.querySelector("[data-pset]").checked) p.settled = false; const bl = billOf(r); if (bl) p.bill = bl; return p; }).filter(p => p.amount > 0);
   return l;
 }
 // Diesel fills of a truck trip, like the spare bus trip sheet: date, litres, rate per litre, amount, paid by (card or cash), place, odometer.
@@ -14460,14 +14587,14 @@ function lgFuelRow(f = {}) {
   return `<tr class="lgfuel"><td data-l="Date"><input type="date" data-fd value="${esc(f.date || "")}" aria-label="Date"></td><td data-l="Litres"><input type="number" inputmode="decimal" min="0" step="0.01" data-fl value="${f.litres ?? ""}" aria-label="Litres"></td>` +
     `<td data-l="Rate / L"><input type="number" inputmode="decimal" min="0" step="0.01" data-fr value="${f.rate ?? ""}" aria-label="Rate per litre"></td><td data-l="Amount ₹"><input type="number" inputmode="decimal" min="0" step="0.01" data-fa value="${f.amount ?? ""}"${f.amount ? ' data-typed="1"' : ""} aria-label="Amount"></td>` +
     `<td data-l="Paid by"><select data-fpay aria-label="Paid by"><option${pay === "Card" ? " selected" : ""}>Card</option><option${pay === "Cash" ? " selected" : ""}>Cash</option></select></td>` +
-    `<td data-l="Place" class="wide"><input data-fp list="lgBunks" autocomplete="off" maxlength="80" placeholder="e.g. IOCL, Nellore" value="${esc(f.place || "")}" aria-label="Place"></td><td data-l="Odometer"><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>` +
+    `<td data-l="Place" class="wide"><input data-fp list="lgBunks" autocomplete="off" maxlength="80" placeholder="e.g. IOCL, Nellore" value="${esc(f.place || "")}" aria-label="Place"></td><td data-l="Odometer"><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>${billCell(f.bill)}` +
     `<td class="bin"><button class="icon rtbin" type="button" data-frm aria-label="Remove this fill" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function lgFuelRead() {
   return [...$("lgFuels").querySelectorAll(".lgfuel")].map(r => { const v = s => r.querySelector(s).value, litres = Math.round(num(v("[data-fl]")) * 100) / 100, amount = Math.round(num(v("[data-fa]")) * 100) / 100, rate = Math.round(num(v("[data-fr]")) * 100) / 100;
     const f = { date: v("[data-fd]"), litres, pay: v("[data-fpay]") || "Card" };
     if (rate > 0) f.rate = rate; if (amount > 0) f.amount = amount; const pl = v("[data-fp]").trim().replace(/\s+/g, " "); if (pl) f.place = pl; const o = Math.round(num(v("[data-fo]"))); if (o > 0) f.odo = o;
-    return f; }).filter(f => f.litres > 0 || f.amount > 0);
+    const bl = billOf(r); if (bl) f.bill = bl; return f; }).filter(f => f.litres > 0 || f.amount > 0);
 }
 function lgFuelTot() { const f = lgFuelRead(), L = f.reduce((a, x) => a + x.litres, 0), A = f.reduce((a, x) => a + num(x.amount), 0), card = f.filter(x => x.pay === "Card").reduce((a, x) => a + num(x.amount), 0);
   $("lgFtL").textContent = L ? nf(L, 2) : ""; $("lgFtA").textContent = A ? nf(Math.round(A)) : ""; $("lgFtR").textContent = L && A ? nf(A / L, 2) : "";
@@ -14728,25 +14855,25 @@ const rtByOpts = (list, cur) => list.map(x => `<option${x === cur ? " selected" 
 function rtRecRow(r, p = {}) {
   return `<tr class="rtrow"><td><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Date"></td><td><select data-pleg aria-label="For">${rtForOpts(r, p.leg)}</select></td>` +
     `<td><input data-pdesc maxlength="120" value="${esc(p.desc || "")}"${p.auto ? ' data-auto="1"' : ""} placeholder="${esc(rtDefDesc(r, p.leg || ""))}" aria-label="Description"></td><td><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" aria-label="Amount"></td>` +
-    `<td><select data-pby aria-label="Paid by">${rtByOpts(LG_PAYBY, p.pay || "Bank transfer")}</select></td><td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td>` +
+    `<td><select data-pby aria-label="Paid by">${rtByOpts(LG_PAYBY, p.pay || "Bank transfer")}</select></td><td class="c"><input type="checkbox" data-pset${p.settled === false ? "" : " checked"} aria-label="Settled"></td>${billCell(p.bill)}` +
     `<td><button class="icon rtbin" type="button" data-prm aria-label="Remove" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function rtGivRow(r, g = {}) {
   return `<tr class="rtrow"><td><input type="date" data-pd value="${esc(g.date || "")}" aria-label="Date"></td><td><select data-pleg aria-label="For">${rtForOpts(r, g.leg)}</select></td>` +
     `<td><input data-pdesc list="rtGivList" maxlength="120" value="${esc(g.desc || "")}" aria-label="Description"></td><td><input type="number" inputmode="numeric" min="0" data-pa value="${g.amount ?? ""}" aria-label="Amount"></td>` +
-    `<td><select data-pby aria-label="Paid by">${rtByOpts(RT_GIVE, g.pay || "Cash")}</select></td><td><button class="icon rtbin" type="button" data-prm aria-label="Remove" title="Remove">${TRASH_SVG}</button></td></tr>`;
+    `<td><select data-pby aria-label="Paid by">${rtByOpts(RT_GIVE, g.pay || "Cash")}</select></td>${billCell(g.bill)}<td><button class="icon rtbin" type="button" data-prm aria-label="Remove" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function rtPayRender() {
   const r = rtGet(), D = r.doc || {}, edit = canTrips && r.status !== "Closed";
   const rec = [...r.legs.flatMap(l => (l.payments || []).map(p => ({ ...p, leg: l.id }))), ...(D.payments || [])].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
   $("rtRec").innerHTML = rec.map(p => rtRecRow(r, p)).join(""); $("rtGiv").innerHTML = (D.given || []).map(g => rtGivRow(r, g)).join("");
-  $("rtPay").querySelectorAll("input, select").forEach(x => x.disabled = !edit); $("rtPay").querySelectorAll("[data-prm], #rtAddRec, #rtAddGiv").forEach(x => x.hidden = !edit);
+  $("rtPay").querySelectorAll("input, select").forEach(x => x.disabled = !edit); $("rtPay").querySelectorAll("[data-prm], [data-billadd], [data-billrm], #rtAddRec, #rtAddGiv").forEach(x => x.hidden = !edit);
   rtPayTot();
 }
 function rtPayRead() {
   const rows = id => [...$(id).querySelectorAll(".rtrow")].map(tr => { const q = k => tr.querySelector(k), d = q("[data-pdesc]").value.trim().replace(/\s+/g, " "), set = q("[data-pset]");
     const p = { date: q("[data-pd]").value, amount: Math.round(num(q("[data-pa]").value)), pay: q("[data-pby]").value, leg: q("[data-pleg]").value };
-    if (d) p.desc = d; if (set && !set.checked) p.settled = false; return p; }).filter(p => p.amount > 0);
+    if (d) p.desc = d; if (set && !set.checked) p.settled = false; const bl = billOf(tr); if (bl) p.bill = bl; return p; }).filter(p => p.amount > 0);
   return { rec: rows("rtRec"), giv: rows("rtGiv") };
 }
 function rtPayTot() {
@@ -14794,14 +14921,14 @@ function rtDslRow(r, f = {}) {
     `<td><input type="number" inputmode="decimal" min="0" step="0.01" data-fl value="${f.litres ?? ""}" aria-label="Litres"></td><td><input type="number" inputmode="decimal" min="0" step="0.01" data-fr value="${f.rate ?? ""}" aria-label="Rate per litre"></td>` +
     `<td><input type="number" inputmode="decimal" min="0" step="0.01" data-fa value="${f.amount ?? ""}"${f.amount ? ' data-typed="1"' : ""} aria-label="Amount"></td>` +
     `<td><select data-fpay aria-label="Paid by"><option${pay === "Card" ? " selected" : ""}>Card</option><option${pay === "Cash" ? " selected" : ""}>Cash</option></select></td>` +
-    `<td><input data-fp list="rtBunks" autocomplete="off" maxlength="80" value="${esc(f.place || "")}" aria-label="Place"></td><td><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>` +
+    `<td><input data-fp list="rtBunks" autocomplete="off" maxlength="80" value="${esc(f.place || "")}" aria-label="Place"></td><td><input type="number" inputmode="numeric" min="0" data-fo value="${f.odo ?? ""}" aria-label="Odometer km"></td>${billCell(f.bill)}` +
     `<td><button class="icon rtbin" type="button" data-prm aria-label="Remove this fill" title="Remove">${TRASH_SVG}</button></td></tr>`;
 }
 function rtDslRender() {
   const r = rtGet(), edit = canTrips && r.status !== "Closed";
   $("rtDslRows").innerHTML = rtDslAll(r).map(f => rtDslRow(r, f)).join("");
   $("rtBunks").innerHTML = [...new Set([...ops.truckTrips.flatMap(x => (x.fuels || []).map(f => f.place)), ...ops.truckRounds.flatMap(x => (x.fuels || []).map(f => f.place))].filter(Boolean))].sort().map(p => `<option value="${esc(p)}">`).join("");
-  $("rtDsl").querySelectorAll("input, select").forEach(x => x.disabled = !edit); $("rtDsl").querySelectorAll("[data-prm], #rtAddDsl").forEach(x => x.hidden = !edit);
+  $("rtDsl").querySelectorAll("input, select").forEach(x => x.disabled = !edit); $("rtDsl").querySelectorAll("[data-prm], [data-billadd], [data-billrm], #rtAddDsl").forEach(x => x.hidden = !edit);
   rtDslTot();
 }
 function rtDslRead() {
@@ -14809,7 +14936,7 @@ function rtDslRead() {
     const v = k => tr.querySelector(k).value, litres = Math.round(num(v("[data-fl]")) * 100) / 100, amount = Math.round(num(v("[data-fa]")) * 100) / 100, rate = Math.round(num(v("[data-fr]")) * 100) / 100;
     const f = { date: v("[data-fd]"), litres, pay: v("[data-fpay]") || "Card", leg: v("[data-pleg]") };
     if (rate > 0) f.rate = rate; if (amount > 0) f.amount = amount; const pl = v("[data-fp]").trim().replace(/\s+/g, " "); if (pl) f.place = pl; const o = Math.round(num(v("[data-fo]"))); if (o > 0) f.odo = o;
-    return f;
+    const bl = billOf(tr); if (bl) f.bill = bl; return f;
   }).filter(f => f.litres > 0 || f.amount > 0);
 }
 function rtDslTot() {
@@ -14859,6 +14986,10 @@ function rtFilesRender() {
       F.map((f, i) => { const u = `/_blob/${encodeURIComponent(f.id)}`; return `<tr><td><span class="fk">${esc(f.kind || "Others")}</span></td><td class="fn"><a href="${u}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(f.name)}</a></td><td>${f.at ? fmtDate(f.at.slice(0, 10)) : "—"}</td><td>${esc(f.byName || "—")}</td>` +
         `<td class="c"><a class="fview" href="${u}" target="_blank" rel="noopener" aria-label="View ${esc(f.name)}" title="View">${EYE_SVG}</a></td>${edit ? `<td class="c"><button class="icon fdel" type="button" data-frm="${i}" aria-label="Remove ${esc(f.name)}" title="Remove">${TRASH_SVG}</button></td>` : ""}</tr>`; }).join("") + "</tbody></table></div>"
     : `<p class="sub" style="margin:0">No files attached. Keep the diesel bills, commission bill, rent slip, weighbridge slip and the trip sheet here.</p>`;
+  const LB = rtLineBills(r);
+  $("rtLineBills").innerHTML = LB.length ? `<h4 class="lbh">Bills on diesel fills and payments (${LB.length})</h4><div class="tscroll"><table class="ctable bkftbl"><thead><tr><th>Kind</th><th>Line</th><th>Trip</th><th class="c">View</th></tr></thead><tbody>` +
+    LB.map(x => `<tr><td><span class="fk">${x.kind}</span></td><td>${esc(x.what)}</td><td>${esc(x.of)}</td><td class="c"><a class="fview" href="${billUrl(x.b)}" target="_blank" rel="noopener" aria-label="View the bill" title="View">${EYE_SVG}</a></td></tr>`).join("") +
+    `</tbody></table></div><p class="sub" style="margin:6px 0 0">Add or remove these from the camera button on each line in Diesel and Payments.</p>` : "";
 }
 const rtUploadFiles = async e => {
   const files = [...e.target.files]; e.target.value = ""; const r = rtGet();
@@ -14877,6 +15008,34 @@ $("rtFileList").addEventListener("click", async e => {
   if (!await askYesNo(`Remove ${f.name} from this round trip?`, { yes: "Remove", danger: true })) return;
   F.splice(+x.dataset.frm, 1); if (await rtDocSave(r, { files: F.length ? F : "" })) toast("File removed");
 });
+
+// Bill on a line: the camera button picks a photo (or PDF); it is uploaded at once and saved with the line.
+let billTd = null;
+const billChanged = td => td.closest("tr")?.dispatchEvent(new Event("input", { bubbles: true }));
+document.addEventListener("click", async e => {
+  const a = e.target.closest("[data-billadd]");
+  if (a) { if (!assetsCap) { toast("Attaching files isn't available in this view."); return; } billTd = a.closest("td.bill"); $("billIn").click(); return; }
+  const x = e.target.closest("[data-billrm]"); if (!x) return; const td = x.closest("td.bill");
+  if (!await askYesNo("Remove the bill from this line?", { yes: "Remove", danger: true })) return;
+  delete td.dataset.bill; td.innerHTML = billInner(null); billChanged(td); toast("Bill removed. Save to keep the change.");
+});
+$("billIn").addEventListener("change", async e => {
+  const file = e.target.files[0], td = billTd; e.target.value = ""; billTd = null; if (!file || !td || !assetsCap) return;
+  const was = td.innerHTML; td.innerHTML = '<span class="sub">…</span>';
+  try { const u = await assetsCap.upload(file, { type: file.type }), b = { id: u.id, name: file.name, type: file.type, at: new Date().toISOString(), byName: whoAmI() };
+    td.dataset.bill = JSON.stringify(b); td.innerHTML = billInner(b); billChanged(td); toast("Bill attached. Save to keep it."); }
+  catch (er) { td.innerHTML = was; toast(er?.code === "too_large" ? "That file is too large." : er?.code === "unsupported_type" ? "Attach a PDF or a photo." : er?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the bill. Try again."); }
+});
+// Bills kept on the diesel fills and payments of a round trip, for the Files list.
+function rtLineBills(r) {
+  const out = [], D = r.doc || {}, nm = l => l ? rtLegName(l) : "Whole round trip";
+  r.legs.forEach(l => { (l.fuels || []).forEach(f => f.bill && out.push({ b: f.bill, kind: "Diesel bill", what: `${fmtShort(f.date)} · ${nf(num(f.litres), num(f.litres) % 1 ? 2 : 0)} L${f.place ? ` · ${f.place}` : ""}`, of: nm(l) }));
+    (l.payments || []).forEach(p => p.bill && out.push({ b: p.bill, kind: "Payment", what: `${fmtShort(p.date)} · ${rs(num(p.amount))}`, of: nm(l) })); });
+  (D.fuels || []).forEach(f => f.bill && out.push({ b: f.bill, kind: "Diesel bill", what: `${fmtShort(f.date)} · ${nf(num(f.litres), num(f.litres) % 1 ? 2 : 0)} L${f.place ? ` · ${f.place}` : ""}`, of: nm(null) }));
+  (D.payments || []).forEach(p => p.bill && out.push({ b: p.bill, kind: "Payment", what: `${fmtShort(p.date)} · ${rs(num(p.amount))}`, of: nm(null) }));
+  (D.given || []).forEach(g => g.bill && out.push({ b: g.bill, kind: "Money given", what: `${fmtShort(g.date)} · ${rs(num(g.amount))}`, of: nm(r.legs.find(l => l.id === g.leg)) }));
+  return out;
+}
 
 /* Summary, in the driver's account format.
    ① The owner's money: FASTag, diesel by card, money given to the driver (first, the advance carried forward from the
@@ -14938,12 +15097,13 @@ function rtOvRender() {
   const rec = l => (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0), pend = l => (l.payments || []).filter(p => p.settled === false).reduce((a, p) => a + num(p.amount), 0);
   const pill = l => { const a = rec(l), b = pend(l); return !a && !b ? '<span class="pill d7">Not paid</span>' : b ? `<span class="pill d30">Part · ${rs(b)} pending</span>` : a >= num(l.rent) ? '<span class="pill ok">Paid</span>' : '<span class="pill d30">Part paid</span>'; };
   const card = (k, v, sub = "", cls = "") => `<div class="ovc${cls}"><span>${k}</span><b>${v}</b>${sub ? `<small>${sub}</small>` : ""}</div>`;
-  const go = (pane, leg) => `data-ovgo="${pane}"${leg ? ` data-ovleg="${leg}"` : ""}`;
+  const go = (pane, leg) => `data-ovgo="${pane}"${leg ? ` data-ovleg="${leg}"` : ""}`, ML = mileFlags(r.vehicleId).get(r.id);
   const todo = shut ? [] : [
+    ML?.low ? ["warn", `Low mileage: ${mileTxt(ML)}. Check the diesel fills and the km.`, go("dsl"), "Diesel"] : null,
     S.pendAmt ? ["warn", `${rs(S.pendAmt)} of payments not settled`, go("pay"), "Payments"] : null,
     ...r.legs.filter(l => !rec(l) && !pend(l)).map(l => ["warn", `No payment yet for ${rtLegName(l)} (rent ${rs(num(l.rent))})`, go("pay"), "Payments"]),
     ...r.legs.filter(l => !num(l.endKm)).map(l => ["info", `End km not entered for ${rtLegName(l)}`, go("leg", l.id), "Open trip"]),
-    !(D.files || []).length ? ["info", "No bills attached: diesel bills, rent slip, weighbridge slip", go("files"), "Files"] : null].filter(Boolean);
+    !(D.files || []).length && !rtLineBills(r).length ? ["info", "No bills attached: diesel bills, rent slip, weighbridge slip", go("files"), "Files"] : null].filter(Boolean);
   $("rtOv").innerHTML =
     `<div class="ovtop"><span class="pill ${shut ? "ok" : "d30"}">${shut ? `Closed${r.closedOn ? ` on ${fmtShort(r.closedOn)}` : ""}` : "Open"}</span><b>${fmtShort(S.startDate)} – ${fmtShort(S.endDate)}</b>` +
       `<span class="m">${S.days} day${S.days === 1 ? "" : "s"} · ${esc(r.path)}</span>${S.drivers.length ? `<span class="m">Driver: ${esc(S.drivers.join(", "))}</span>` : ""}</div>` +
@@ -14951,7 +15111,7 @@ function rtOvRender() {
       `${card("Vehicle balance", rs(S.bal), "Rent − expenses", S.bal < 0 ? " neg" : "")}${card(S.diff < 0 ? "To pay the driver" : "Advance for next trip", rs(Math.abs(S.diff)), "From the trip sheet (office)", " hi")}` +
       `${card("Money received", rs(r.received), S.pendAmt ? `+ ${rs(S.pendAmt)} not settled` : r.received ? "All settled" : "None yet")}${card("Given to driver", rs(adv + giv), `Advance ${rs(adv)} + sent ${rs(giv)}`)}` +
       `${card("Diesel", dl.L ? `${nf(dl.L, dl.L % 1 ? 2 : 0)} L` : "—", dl.n ? `${dl.n} fill${dl.n > 1 ? "s" : ""} · ${rs(dl.A)}` : "No fills yet")}` +
-      `${card(S.odoK?.conv ? "Actual km" : "Km", S.act ? nf(S.act) : "—", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L${S.odoK?.conv ? ` · meter ${nf(S.km)}` : ""}` : "End km not entered")}</div>` +
+      `${card(S.odoK?.conv ? "Actual km" : "Km", S.act ? nf(S.act) : "—", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L${ML?.low ? ` · ${ML.pct}% below usual ${nf(ML.usual, 2)}` : S.odoK?.conv ? ` · meter ${nf(S.km)}` : ""}` : "End km not entered", ML?.low ? " neg" : "")}</div>` +
     `<div class="rtcard"><h3>Trips</h3><div class="ovlist">` + r.legs.map((l, i) => { const c = legCalc(l), dn = [l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name, l.driver2Id ? drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name : l.driver2Name].filter(Boolean);
       return `<button type="button" class="ovtrip" ${go("leg", l.id)}><b class="n1">${i + 1}</b><span class="w"><b>${esc(rtLegName(l))}</b><small>${fmtShort(l.from)} – ${fmtShort(l.to || l.from)}${dn.length ? " · " + esc(dn.join(", ")) : ""}</small></span>` +
         `<span class="f"><small>Rent</small><b>${nf(num(l.rent))}</b></span><span class="f"><small>Balance</small><b class="${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</b></span>${pill(l)}<span class="go" aria-hidden="true">›</span></button>`; }).join("") + `</div></div>` +
@@ -15262,18 +15422,18 @@ async function cpDo(r, leg, o) {
     ["createdAt", "updatedAt", "closedOn", "by", "byName"].forEach(k => delete l[k]);
     if (!o.drv) ["driver1Id", "driver1Name", "driver2Id", "driver2Name"].forEach(k => delete l[k]);
     if (!o.km) { delete l.startKm; delete l.endKm; }
-    if (o.dsl) (l.fuels || []).forEach(f => { f.date = mv(f.date); if (!o.km) delete f.odo; });
+    if (o.dsl) (l.fuels || []).forEach(f => { f.date = mv(f.date); delete f.bill; if (!o.km) delete f.odo; });
     else { delete l.fuels; delete l.litres; delete l.fuelCost; }
-    if (o.pay) (l.payments || []).forEach(p => { p.date = mv(p.date); }); else delete l.payments;
+    if (o.pay) (l.payments || []).forEach(p => { p.date = mv(p.date); delete p.bill; }); else delete l.payments;
     const c = legCalc(l); l.expense = c.exp; l.balance = c.bal; l.fy = fyOf(l.from);
     out.push(l);
   }
   for (const l of out) await opsSave("truckTrips", l);
   if (!leg) {
     const D = ops.truckRounds.find(x => x.id === r.id) || {}, n = { id: rid, vehicleId: o.vid, fy: fyOf(out[0].from), status: "Open" };
-    if (o.dsl && D.fuels?.length) n.fuels = D.fuels.map(f => { const x = { ...f, date: mv(f.date) }; if (!o.km) delete x.odo; return x; });
-    if (o.pay && D.payments?.length) n.payments = D.payments.map(p => ({ ...p, date: mv(p.date) }));
-    if (o.giv && D.given?.length) n.given = D.given.map(g => ({ ...g, date: mv(g.date), ...(g.leg ? { leg: ids.get(g.leg) || "" } : {}) }));
+    if (o.dsl && D.fuels?.length) n.fuels = D.fuels.map(({ bill, ...f }) => { const x = { ...f, date: mv(f.date) }; if (!o.km) delete x.odo; return x; });
+    if (o.pay && D.payments?.length) n.payments = D.payments.map(({ bill, ...p }) => ({ ...p, date: mv(p.date) }));
+    if (o.giv && D.given?.length) n.given = D.given.map(({ bill, ...g }) => ({ ...g, date: mv(g.date), ...(g.leg ? { leg: ids.get(g.leg) || "" } : {}) }));
     if (n.fuels || n.payments || n.given) await opsSave("truckRounds", n);
   }
   return { vid: o.vid, rid, leg: out[0].id, from: out[0].from };
@@ -15509,7 +15669,7 @@ $("oTodo").addEventListener("click", e => {
   if (b.dataset.go === "round") openRound(b.dataset.id);
 });
 $("oTodo").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches(".orow[data-go]")) { e.preventDefault(); e.target.click(); } });
-kFy = fyOptions("kFy");
+kFy = fyOptions("kFy"); pkFy = fyOptions("pkFy");
 
 buildForm();
 buildUserForm();
