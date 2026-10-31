@@ -571,11 +571,12 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtstrip { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
 .odoch { display: grid; gap: 6px; }
 .odoch:empty { display: none; }
-.odoch .ochr { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 6px; align-items: end; }
+.odoch .ochr { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; align-items: end; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+.odoch .ochr label:first-child { grid-column: 1 / 4; grid-row: 1; max-width: 220px; } .odoch .ochr button { grid-column: 4; grid-row: 1; }
+.odoch .ochx { grid-column: 1 / -1; font-size: 12px; color: var(--muted); margin-top: -2px; }
 .odoch .ochr label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
 .odoch .ochr input { width: 100%; font-family: var(--mono); }
 .odoch .ochr button { margin-bottom: 4px; }
-@media (max-width: 560px) { .odoch .ochr { grid-template-columns: 1fr 1fr auto; padding-bottom: 8px; border-bottom: 1px dashed var(--line); } .odoch .ochr label:first-child { grid-column: 1 / 3; grid-row: 1; } .odoch .ochr button { grid-column: 3; grid-row: 1; } }
 .rtodo { margin: 0; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.5; }
 .rtstats { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); }
 .rtst { padding: 9px 9px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; min-width: 0; } .rtst:last-child { border-right: 0; }
@@ -2895,14 +2896,10 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <fieldset class="docs">
       <legend>Odometer</legend>
       <div class="field" style="max-width:50%;min-width:12em"><label for="odoStart">Odometer when added (km)</label><input id="odoStart" type="number" inputmode="numeric" min="0" max="9999999" placeholder="e.g. 182450"><span class="err" id="e-odoStart"></span></div>
-      <div class="two">
-        <div class="field"><label for="odoErr">Meter reads extra (%) <span class="hint" style="font-weight:400">(optional)</span></label><input id="odoErr" type="number" inputmode="decimal" min="0" max="50" step="0.001" placeholder="e.g. 12.812"><span class="hint" id="odoErrHint">Leave empty if the meter is right.</span><span class="err" id="e-odoErr"></span></div>
-        <div class="field"><label for="odoErrFrom">From <span class="hint" style="font-weight:400">(optional)</span></label><input id="odoErrFrom" type="date"><span class="hint">Trips before this date are not corrected.</span><span class="err" id="e-odoErrFrom"></span></div>
-      </div>
-      <div class="field"><span class="lbl">Meter changes</span>
-        <div id="odoChList" class="odoch"></div>
-        <button type="button" class="btn" id="odoChAdd" style="align-self:flex-start">+ Add meter change</button>
-        <span class="hint">When a new meter is fitted, enter the date, the old meter's last reading and the new meter's first reading. Truck round trips then count the km on both meters.</span><span class="err" id="e-odoChanges"></span></div>
+      <div class="field"><span class="lbl">Meter and actual km</span>
+        <div id="odoPrList" class="odoch"></div>
+        <button type="button" class="btn" id="odoPrAdd" style="align-self:flex-start">+ Add reading</button>
+        <span class="hint" id="odoPrHint">Note the date, the meter reading, your actual km at that reading, and how many km the meter shows for 1 actual km (1 if it is right). Trips are worked out as actual = actual km + (meter reading − meter) ÷ meter km per actual km. Add a new line when you correct the actual km or a new meter is fitted.</span><span class="err" id="e-odoPairs"></span></div>
     </fieldset>
     <fieldset class="docs">
       <legend>Owner</legend>
@@ -3755,7 +3752,7 @@ const TRACKED = [
   ["seats", "Seating capacity"], ["staffSeats", "Seating capacity (+ staff)"], ["gvw", "Gross vehicle weight", "kg"], ["ulw", "Unladen weight", "kg"], ["fuelTank", "Fuel tank capacity", "litres"],
   ["tyreCount", "No. of tyres"], ["tyreSize", "Tyre size"], ["batteryMake", "Battery make & model"], ["batteryDate", "Battery installed on", "date"],
   ["usage", "Usage category", "usage"], ["opType", "Operation type"], ["odoStart", "Odometer when added", "km"],
-  ["odoErr", "Meter reads extra", "pct"], ["odoErrFrom", "Meter correction from", "date"], ["odoChanges", "Meter changes", "text"],
+  ["odoPairs", "Meter and actual km", "text"],
   ["ownerName", "Owner name"], ["ownerAddress", "Owner address", "text"], ["remarks", "Remarks", "text"], ["extraDocFileName", "Other document", "file"]
 ];
 const FIELD_INFO = Object.fromEntries([
@@ -3770,8 +3767,9 @@ const inr = n => `₹${Number(n).toLocaleString("en-IN")}`;
 const COMPLIANCE_KEYS = () => DOCS.flatMap(([k]) => [k, ...(DOC_DETAILS[k] || []).map(d => d.k), k + "FileName"]);
 const ALL_KEYS = () => [...TRACKED.map(t => t[0]), ...COMPLIANCE_KEYS(), ...FIN_FIELDS.map(f => f[0])];
 const fieldLabel = (k, info = FIELD_INFO) => k === "_created" ? "Record" : info[k]?.label || k;
-// A list (the meter changes) is kept in the history as text: "dd/mm/yyyy: old meter's last → new meter's first".
-const histVal = v => v == null ? "" : Array.isArray(v) ? v.map(c => `${fmtShort(c.date)}: ${nf(num(c.oldKm))} → ${nf(num(c.newKm))}`).join("; ") : String(v);
+// A list (the meter and actual km readings) is kept in the history as text.
+const histVal = v => v == null ? "" : Array.isArray(v) ? v.map(odoPairText).join("; ") : String(v);
+const odoPairText = p => `${fmtShort(p.date)}: meter ${nf(num(p.meter))} = actual ${nf(num(p.actual))}, ${num(p.ratio)} meter km for 1 actual km`;
 const MON_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function fmtMfg(v) { const m = v?.mfgMonth; if (m && /^\d{4}-\d{2}$/.test(m)) return `${MON_SHORT[Number(m.slice(5)) - 1] || ""} ${m.slice(0, 4)}`.trim(); return v?.mfgYear ? String(v.mfgYear) : ""; }
 function fmtVal(field, val, info = FIELD_INFO) {
@@ -3784,7 +3782,6 @@ function fmtVal(field, val, info = FIELD_INFO) {
   if (f === "inr") return inr(val);
   if (f === "litres") return `${Number(val).toLocaleString("en-IN")} litres`;
   if (f === "km") return `${Number(val).toLocaleString("en-IN")} km`;
-  if (f === "pct") return `${val}% extra`;
   if (f === "yesno") return val === "yes" ? "Yes, on loan" : "No";
   if (f === "bus") return plateOf(vehicles.find(v => v.id === val)) || val;
   if (f === "stage") return BK_STAGES[val] || val;
@@ -4448,8 +4445,7 @@ function fillVDrawer(v) {
     row("Usage category", v.usage ? (v.usage === "Public service" ? "Public service vehicle" : esc(v.usage)) : null) +
     (v.type === "Bus" ? row("Operation type", v.opType ? esc(v.opType) : null) : "") +
     row("Odometer when added", v.odoStart != null ? `<span class="num">${fmtVal("odoStart", v.odoStart)}</span>` : null) +
-    (v.odoErr ? row("Meter reads extra", `<span class="num">${v.odoErr}%</span> <span class="sub">· shows ${nf(1 + v.odoErr / 100, 5)} km for each real km${v.odoErrFrom ? ` · from ${fmtDate(v.odoErrFrom)}` : ""}</span>`) : "") +
-    (odoChanges(v).length ? row("Meter changes", odoChanges(v).map(c => `<span class="num">${fmtDate(c.date)}</span> <span class="sub">· old meter ended at ${nf(num(c.oldKm))} · new meter started at ${nf(num(c.newKm))}</span>`).join("<br>")) : "");
+    (odoPairs(v).length ? row("Meter and actual km", odoPairs(v).map(p => `<span class="num">${fmtDate(p.date)}</span> <span class="sub">· meter ${nf(num(p.meter))} = actual ${nf(num(p.actual))} · ${num(p.ratio)} meter km for 1 actual km</span>`).join("<br>")) : "");
   $("vOwner").innerHTML = row("Owner name", v.ownerName ? esc(v.ownerName) : null) +
     (v.ownerAddress ? `<dt>Address</dt><dd class="addr">${esc(v.ownerAddress)}</dd>` : row("Address", null));
   $("vDocs").innerHTML = DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).map(([k, label]) => {
@@ -4818,8 +4814,8 @@ function openDrawer(v, focusKey) {
   $("mfgOld").hidden = !(v?.mfgYear && !v?.mfgMonth); $("mfgOld").textContent = v?.mfgYear && !v?.mfgMonth ? `Saved earlier as ${v.mfgYear} only. Pick the month.` : "";
   DETAIL_FIELDS.forEach(d => $(d.k).value = v?.[d.k] ?? "");
   syncPermitTypes(v?.permitType ?? "");
-  ["rto", "fastag", "bodyType", "bodyColour", "fuelTank", "tyreCount", "tyreSize", "batteryMake", "batteryDate", "odoStart", "odoErr", "odoErrFrom", "remarks"].forEach(id => $(id).value = v?.[id] ?? "");
-  odoChRender(v?.odoChanges || []); odoErrHint();
+  ["rto", "fastag", "bodyType", "bodyColour", "fuelTank", "tyreCount", "tyreSize", "batteryMake", "batteryDate", "odoStart", "remarks"].forEach(id => $(id).value = v?.[id] ?? "");
+  odoPrRender(v?.odoPairs || []);
   pendingFiles = {}; renderFileLines();
   $("finYes").checked = v?.financed === "yes"; $("finNo").checked = v?.financed === "no";
   $("financier").value = v?.financier || ""; $("loanEndDate").value = v?.loanEndDate || "";
@@ -4847,32 +4843,39 @@ function openDrawer(v, focusKey) {
   }, 30);
 }
 function closeDrawer() { $("drawer").hidden = true; editingId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
-function clearErrors() { ["staffSeats", "permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "odoErr", "odoErrFrom", "odoChanges", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
+function clearErrors() { ["staffSeats", "permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "odoPairs", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
 function setErr(k, msg) { $("e-" + k).textContent = msg; $(k)?.setAttribute("aria-invalid", "true"); }
 
-// Meter changes in the vehicle form: one row each (date, old meter's last reading, new meter's first reading).
-function odoChRender(list) {
-  $("odoChList").innerHTML = list.map(c => `<div class="ochr"><label>Date changed<input type="date" data-oc="date" value="${esc(c.date || "")}"></label>` +
-    `<label>Old meter's last km<input type="number" inputmode="numeric" min="0" max="9999999" data-oc="oldKm" value="${c.oldKm ?? ""}" placeholder="e.g. 987345"></label>` +
-    `<label>New meter's first km<input type="number" inputmode="numeric" min="0" max="9999999" data-oc="newKm" value="${c.newKm ?? ""}" placeholder="e.g. 156789"></label>` +
-    `<button type="button" class="icon" data-ocdel title="Remove this meter change" aria-label="Remove this meter change">✕</button></div>`).join("");
+// Meter and actual km in the vehicle form: one line per reading noted (date, meter reading, actual km, meter km for 1 actual km),
+// each with a worked example so the figures can be checked.
+function odoPrRender(list) {
+  const f = (k, l, v, ph, step = "1") => `<label>${l}<input type="number" inputmode="decimal" min="0" step="${step}" data-op="${k}" value="${v ?? ""}" placeholder="${ph}"></label>`;
+  $("odoPrList").innerHTML = list.map(p => `<div class="ochr"><label>Date noted<input type="date" data-op="date" value="${esc(p.date || "")}"></label>` +
+    f("meter", "Meter reading", p.meter, "e.g. 726764") + f("actual", "Actual km", p.actual, "e.g. 640003") + f("ratio", "Meter km for 1 actual", p.ratio, "e.g. 1.12812", "any") +
+    `<button type="button" class="icon" data-opdel title="Remove this line" aria-label="Remove this line">✕</button><div class="ochx"></div></div>`).join("");
+  odoPrEx();
 }
-function odoChRead() {
-  const list = [...$("odoChList").querySelectorAll(".ochr")].map(r => { const g = k => r.querySelector(`[data-oc="${k}"]`).value; return { date: g("date"), oldKm: g("oldKm"), newKm: g("newKm") }; })
-    .filter(c => c.date || c.oldKm !== "" || c.newKm !== "");
-  for (const c of list) {
-    if (!c.date) return { err: "Enter the date of each meter change." };
-    if (c.date > todayISO()) return { err: "A meter change date can't be in the future." };
-    if (!(Number(c.oldKm) > 0)) return { err: "Enter the old meter's last reading for each meter change." };
-    if (c.newKm === "" || !(Number(c.newKm) >= 0)) return { err: "Enter the new meter's first reading for each meter change." };
+const odoPrRows = () => [...$("odoPrList").querySelectorAll(".ochr")].map(r => { const g = k => r.querySelector(`[data-op="${k}"]`).value; return { date: g("date"), meter: g("meter"), actual: g("actual"), ratio: g("ratio") }; });
+// Under each line: what a reading 2,700 meter km later comes to, e.g. meter 729,464 → actual 642,396.
+function odoPrEx() {
+  $("odoPrList").querySelectorAll(".ochr").forEach((r, i) => { const p = odoPrRows()[i], m = Number(p.meter), a = Number(p.actual), k = Number(p.ratio);
+    r.querySelector(".ochx").textContent = p.meter !== "" && a > 0 && k > 0 ? `Example: meter ${nf(m + 2700)} → actual ${nf(Math.round(a + 2700 / k))} (2,700 meter km = ${nf(2700 / k, 0)} actual km)` : ""; });
+}
+function odoPrRead() {
+  const list = odoPrRows().filter(p => p.date || p.meter !== "" || p.actual !== "" || p.ratio !== "");
+  for (const p of list) {
+    if (!p.date) return { err: "Enter the date for each line." };
+    if (p.date > todayISO()) return { err: "A date can't be in the future." };
+    if (p.meter === "" || !(Number(p.meter) >= 0)) return { err: "Enter the meter reading for each line." };
+    if (!(Number(p.actual) > 0)) return { err: "Enter the actual km for each line." };
+    if (!(Number(p.ratio) >= 0.5 && Number(p.ratio) <= 2)) return { err: "Enter the meter km for 1 actual km, e.g. 1.12812 (1 if the meter is right)." };
   }
-  return { list: list.map(c => ({ date: c.date, oldKm: Math.round(Number(c.oldKm)), newKm: Math.round(Number(c.newKm)) })).sort((a, b) => a.date.localeCompare(b.date)) };
+  return { list: list.map(p => ({ date: p.date, meter: Math.round(Number(p.meter)), actual: Math.round(Number(p.actual)), ratio: Number(p.ratio) })).sort((a, b) => a.date.localeCompare(b.date)) };
 }
-const odoErrHint = () => { const p = Number($("odoErr").value); $("odoErrHint").textContent = p > 0 && p <= 50 ? `The meter shows ${nf(1 + p / 100, 5)} km for each real km. Actual km = meter km ÷ ${nf(1 + p / 100, 5)}.` : "Leave empty if the meter is right."; };
-$("odoErr").addEventListener("input", odoErrHint);
-$("odoChAdd").onclick = () => { const L = [...$("odoChList").querySelectorAll(".ochr")].map(r => ({ date: r.querySelector('[data-oc="date"]').value, oldKm: r.querySelector('[data-oc="oldKm"]').value, newKm: r.querySelector('[data-oc="newKm"]').value }));
-  odoChRender([...L, {}]); $("odoChList").querySelector(".ochr:last-child input")?.focus(); };
-$("odoChList").addEventListener("click", e => { if (e.target.closest("[data-ocdel]")) e.target.closest(".ochr").remove(); });
+// A new line starts with today's date and the last line's meter km for 1 actual km.
+$("odoPrAdd").onclick = () => { const L = odoPrRows(), last = L[L.length - 1]; odoPrRender([...L, { date: todayISO(), ratio: last?.ratio || "" }]); $("odoPrList").querySelector('.ochr:last-child [data-op="meter"]')?.focus(); };
+$("odoPrList").addEventListener("click", e => { if (e.target.closest("[data-opdel]")) { e.target.closest(".ochr").remove(); } });
+$("odoPrList").addEventListener("input", odoPrEx);
 $("form").addEventListener("submit", async e => {
   e.preventDefault(); clearErrors();
   const v = {
@@ -4965,10 +4968,8 @@ $("form").addEventListener("submit", async e => {
   intField("fuelTank", 1, 2000, "Enter litres between 1 and 2,000.");
   intField("tyreCount", 2, 40, "Enter a number between 2 and 40.");
   intField("odoStart", 0, 9999999, "Enter the odometer reading in km.");
-  // Odometer: the extra % (up to 3 decimals), the date it applies from, and the meter changes.
-  { const raw = $("odoErr").value, p = Number(raw);
-    if (raw !== "") { if (!Number.isFinite(p) || p <= 0 || p > 50) { setErr("odoErr", "Enter the extra % between 0 and 50, e.g. 12.812."); ok = false; } else { v.odoErr = Math.round(p * 1000) / 1000; if ($("odoErrFrom").value) v.odoErrFrom = $("odoErrFrom").value; } } }
-  { const L = odoChRead(); if (L.err) { setErr("odoChanges", L.err); ok = false; } else if (L.list.length) v.odoChanges = L.list; }
+  // Odometer: the meter and actual km readings.
+  { const L = odoPrRead(); if (L.err) { setErr("odoPairs", L.err); ok = false; } else if (L.list.length) v.odoPairs = L.list; }
   if (tx("tyreSize")) v.tyreSize = tx("tyreSize").toUpperCase();
   if (tx("batteryMake")) v.batteryMake = tx("batteryMake");
   if ($("batteryDate").value) { if ($("batteryDate").value > todayISO()) { setErr("batteryDate", "The date can't be in the future."); ok = false; } else v.batteryDate = $("batteryDate").value; }
@@ -5811,14 +5812,8 @@ function tKmStartHtml(ym, open) {
   return `<div class="tsl"><span>Kilometer starting${KM_SRC[open.src] ? `<small class="tkmsrc">${KM_SRC[open.src]}</small>` : ""}</span><b>${open.km != null ? nf(open.km) : "—"}` +
     `${canTrips ? `<button class="icon tkmbtn" type="button" data-km="edit" title="Type the odometer reading at the start of ${day1}">${open.km != null ? "Change" : "Set"}</button>` : ""}</b></div>` + odd;
 }
-// Km from the month's starting km to its first reading, across a meter change.
-function tKmGap(ym, startKm, first) { return odoRun(vehicles.find(v => v.id === tBusId), ym + "-01", startKm, first.date, first.odo).km || first.odo - startKm; }
-// Under the Kilometres card: a meter change this month, and the meter correction.
-function tOdoNote(M, bus) {
-  const n = [...M.odoCh.map(c => `Meter changed on ${fmtShort(c.date)}: old meter ended at ${nf(num(c.oldKm))}, new meter started at ${nf(num(c.newKm))}. The km are counted on both meters.`),
-    ...(M.odoF !== 1 ? [`This bus's meter reads ${nf((M.odoF - 1) * 100, 3)}% extra (vehicle master). Actual km = meter km ÷ ${nf(M.odoF, 5)}; per-km figures and mileage use the actual km.`] : [])];
-  return n.length ? `<p class="hint" style="margin:6px 0 0">${n.join("<br>")}</p>` : "";
-}
+// Km from the month's starting km to its first reading (across a new meter, from the vehicle master's readings).
+function tKmGap(ym, startKm, first) { const K = odoKm(vehicles.find(v => v.id === tBusId), ym + "-01", startKm, first.date, first.odo); return K.split ? K.km : first.odo - startKm; }
 function monthTrips(ym) { return trips.filter(t => t.date.startsWith(ym)).sort((a, b) => a.date.localeCompare(b.date)); }
 function openingKm(ym) {
   const stored = tripMonths.find(m => m.month === ym);
@@ -5918,7 +5913,7 @@ function meDays(ym) {
     [["pd", "driver"], ["pc", "conductor"], ["pk", "checker"]].forEach(([k, r]) => { auto[k] = touched[k] ? f[k] : col && sys[r] ? String(sys[r]) : ""; });
     const dsl = num(auto.dsl), pay = num(auto.pd) + num(auto.pc) + num(auto.pk), route = num(f.route), told = num(f.exp);
     const parts = dsl + pay + route, unsplit = Math.max(0, told - parts), exp = parts + unsplit;
-    const odo = num(f.odo), run = odo && prevOdo != null ? odoRun(V, prevD, prevOdo, date, odo).km || odo - prevOdo : null;
+    const odo = num(f.odo), K = odo && prevOdo != null ? odoKm(V, prevD, prevOdo, date, odo) : null, run = K ? (K.split ? K.km : odo - prevOdo) : null;
     const changed = !!dr && Object.keys(dr.f).some(k => String(dr.f[k]) !== String(base[k] ?? ""));
     out.push({ date, d, t, f, auto, touched, has, sum, col, exp, parts, dsl, pay, route, unsplit, bal: col - exp, odo, run, changed, idle: !!t?.notRun, future: date > todayISO(), routeLocked: meRouteLocked(t), notSplit: num(f.tot) ? num(f.tot) - sum : 0 });
     if (odo) { prevOdo = odo; prevD = date; }
@@ -5965,7 +5960,7 @@ function renderMonthEntry(ym, M) {
   $("tFoot").innerHTML = `<tr><td class="sticky">Total</td><td colspan="5">${ran.length} day${ran.length === 1 ? "" : "s"} · ${days.filter(r => r.idle).length} not run</td>` +
     `<td></td><td class="n">${nf(sumK("lit"))}</td><td class="n">${nf(sumK("dsl"))}</td><td class="n">${nf(sumK("pd"))}</td><td class="n">${nf(sumK("pc"))}</td><td class="n">${nf(sumK("pk"))}</td>` +
     `${[1, 2, 3, 4, 5].map(i => `<td class="n">${nf(sumK("s" + i))}</td>`).join("")}<td class="n">${nf(totCol)}</td><td class="n">${nf(totExp)}</td>` +
-    `<td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n" title="${M.odoF !== 1 ? `Meter km this month. Actual km: ${km != null ? nf(km) : "—"}` : "Km run this month"}">${M.mkm != null ? nf(M.mkm) + " km" : "—"}</td><td></td></tr>`;
+    `<td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n" title="${M.odoK?.conv ? `Meter km this month. Actual km: ${km != null ? nf(km) : "—"}` : "Km run this month"}">${M.mkm != null ? nf(M.mkm) + " km" : "—"}</td><td></td></tr>`;
 }
 // Typing updates the draft and the worked-out boxes of the month, without redrawing the box being typed in.
 function meInput(e) {
@@ -6091,7 +6086,7 @@ function renderTrips() {
       stat("Profit per km", perKm(bal, km), km && tot.col ? `${nf(bal / tot.col * 100, 1)}% of collection` : "", bal < 0 ? "var(--danger)" : "") +
     `</div><div class="tscards">` +
       `<section class="tscard"><h3>Money</h3>${line("Total collection", rs(tot.col))}${line("Total expense", rs(tot.exp))}${line("Total balance", rs(bal), bal < 0 ? "neg" : "pos")}</section>` +
-      `<section class="tscard"><h3>Kilometres</h3>${tKmStartHtml(ym, open)}${line("Kilometer ending", M.lastOdo ? nf(M.lastOdo) : "—")}${line(M.odoF !== 1 ? "Meter kilometers" : "Total kilometers", M.mkm != null ? nf(M.mkm) : "—")}${M.odoF !== 1 ? line("Actual kilometers", km != null ? nf(km) : "—") : ""}${line("Per day average kms", km != null && days ? nf(km / days) : "—")}${km && tot.lit ? `<p class="hint" style="margin:4px 0 0">Mileage ${nf(km / tot.lit, 2)} km/L</p>` : ""}${tOdoNote(M, vehicles.find(v => v.id === tBusId))}</section>` +
+      `<section class="tscard"><h3>Kilometres</h3>${tKmStartHtml(ym, open)}${line("Kilometer ending", M.lastOdo ? nf(M.lastOdo) : "—")}${line(M.odoK?.conv ? "Meter kilometers" : "Total kilometers", M.mkm != null ? nf(M.mkm) : "—")}${M.odoK?.conv ? line("Actual kilometers", km != null ? nf(km) : "—") : ""}${line("Per day average kms", km != null && days ? nf(km / days) : "—")}${km && tot.lit ? `<p class="hint" style="margin:4px 0 0">Mileage ${nf(km / tot.lit, 2)} km/L</p>` : ""}${M.odoK?.conv ? `<p class="hint" style="margin:6px 0 0">${odoExplain(M.odoK, M.open.km, M.lastOdo)}</p>` : ""}</section>` +
       `<section class="tscard"><h3>Salary</h3>${line("Driver salary", rs(tot.pd))}${line("Conductor salary", rs(tot.pc))}${line("Checker salary", rs(tot.pk))}${line("Total", rs(crewPay), "pos")}</section>` +
     `</div>` + meCrewTable(M);
 
@@ -6135,7 +6130,7 @@ function monthStats(ym) {
   const first = ym + "-01", lastDay = `${ym}-${pad2(daysIn(ym))}`;
   const elapsed = today < first ? 0 : today >= lastDay ? daysIn(ym) : +today.slice(8, 10);
   const entered = new Set(list.filter(t => t.date <= today).map(t => t.date)).size;
-  return { list, idle, tot, days, singles, tripDays, shortDays, bal: tot.col - tot.exp, open, lastOdo, km, mkm, odoF: K ? K.f : odoFactor(V, ym + "-01"), odoCh: K ? K.ch : [], kmBy, elapsed, noEntry: Math.max(0, elapsed - entered),
+  return { list, idle, tot, days, singles, tripDays, shortDays, bal: tot.col - tot.exp, open, lastOdo, km, mkm, odoK: K, kmBy, elapsed, noEntry: Math.max(0, elapsed - entered),
     rates: ranList.map(t => num(t.dieselRate)).filter(Boolean) };
 }
 
@@ -9558,8 +9553,8 @@ function rsHow(k) { const r = padiFor(rsCol(), rsRules(!!rsh.crew.checker)); ret
 function rsKmHtml() {
   const s = num(rsh.startKm), e = num(rsh.endKm), lit = num(rsh.dsl.litres), K = odoKm(vehicles.find(v => v.id === rsh.bus), "", s, rsh.date, e);
   if (!(s && K.km > 0)) return e && s && e <= s ? `<span class="bwerr">End km must be more than start km.</span>` : "";
-  // A meter change today is counted on both meters; a meter that reads extra gives the average on the actual km.
-  const a = lit ? K.act / lit : 0, run = `${nf(K.km)} km run` + (K.ch.length ? " (meter changed)" : "") + (a ? ` · <span class="avg">Average ${nf(a, 2)} km per litre</span>` : "");
+  // A new meter today is counted from the vehicle master's readings; the average is on the actual km.
+  const a = lit ? K.act / lit : 0, run = `${nf(K.km)} km run` + (K.split ? " (new meter)" : "") + (a ? ` · <span class="avg">Average ${nf(a, 2)} km per litre</span>` : "");
   if (!a) return run;
   const past = rsPast(), last = past.at(-1), best = past.length ? Math.max(...past.map(x => x.avg)) : 0, r2 = n => Math.round(n * 100) / 100, top = past.length && r2(a) > r2(best);
   const cmp = !last ? "" : r2(a) > r2(last.avg) ? `<p>📈 You have improved from the last day: ${nf(last.avg, 2)} → ${nf(a, 2)} km per litre. Great going!</p>`
@@ -9853,7 +9848,7 @@ function rsDayKm(bus, day, T, src = winTrips()) {
   if (!T?.odo) return null;
   // The office's view of a bus uses the same chain as the monthly table: the reading before this day in the month, else the month's opening km.
   const before = bus === tBusId && canTrips ? prevOdo(day) : src.filter(y => y.vehicleId === bus && y.date < day && y.odo).sort((a, b) => b.date.localeCompare(a.date))[0]?.odo;
-  const k = before != null ? odoRun(vehicles.find(v => v.id === bus), "", before, day, T.odo).km : null; return k > 0 && k < 2000 ? k : null;
+  const K = before != null ? odoKm(vehicles.find(v => v.id === bus), "", before, day, T.odo) : null, k = K ? (K.split ? K.km : T.odo - before) : null; return k > 0 && k < 2000 ? k : null;
 }
 // The days the phone page reads. The office reads the bus's whole financial year (the same data as the monthly screen),
 // so any month can be shown; a conductor reads the recent days only.
@@ -14024,10 +14019,10 @@ function meXlsx(ym) {
   lab("Q4", "Checker Salary", "Q4:S4"); put(ws, "T4", tot.pk, S.sum, `ROUND(SUM(${rg("L")}),0)`);
   lab("Q5", "Total", "Q5:S5"); put(ws, "T5", crewPay, S.sum, "SUM(T2:T4)");
   // Kilometres
-  // A meter change or a meter that reads extra: the figures are written as worked out (Total = meter km, per day = actual km), not as formulas.
-  const kmPlain = M.odoCh.length || M.odoF !== 1;
+  // Actual km from the vehicle master's readings: the figures are written as worked out (Total = meter km, per day = actual km), not as formulas.
+  const kmPlain = !!M.odoK?.conv;
   lab("J6", "Kilometer Starting", "J6:M6"); put(ws, "N6", M.open.km ?? "", S.sum); ws.merges.push("N6:O6");
-  lab("J7", "Kilometer Ending", "J7:M7"); put(ws, "N7", M.lastOdo || 0, S.sum, M.odoCh.length ? undefined : `MAX(${rg("V")})`); ws.merges.push("N7:O7");
+  lab("J7", "Kilometer Ending", "J7:M7"); put(ws, "N7", M.lastOdo || 0, S.sum, M.odoK?.split ? undefined : `MAX(${rg("V")})`); ws.merges.push("N7:O7");
   lab("J8", "Total Kilometers", "J8:M8"); put(ws, "N8", M.mkm ?? 0, S.sum, kmPlain ? undefined : "IF(N6>0,N7-N6,0)"); ws.merges.push("N8:O8");
   lab("J9", "Per Day Average Kms", "J9:M9"); put(ws, "N9", M.km && days ? Math.round(M.km / days) : 0, S.sum, kmPlain ? undefined : "IF(B2>0,ROUND(N8/B2,0),0)"); ws.merges.push("N9:O9");
   // Driver and conductor table (the template's formulas: days are the dates each person is on)
@@ -14099,24 +14094,34 @@ $("bkPrint").onclick = () => slipPrint(slipForm(), $("bkPrint"));
 let kBusId = "", kFy = 0, lgEditId = null, lgDaysTouched = false;
 const LG_NUM = { lgRent: "rent", lgCommission: "commission", lgToll: "toll", lgPadi: "padi", lgRto: "rto", lgLoading: "loading", lgBridge: "bridge", lgOther: "otherExp", lgBill: "billExp", lgStartKm: "startKm", lgEndKm: "endKm" };
 const LG_EXP = ["commission", "fuelCost", "toll", "padi", "rto", "loading", "bridge", "otherExp", "billExp"];
-/* Odometer, from the vehicle master: how much extra the meter reads (e.g. 12.812% when it shows 1.12812 km for each real km),
-   and the dates the meter was changed, with the old meter's last reading and the new meter's first reading. */
-function odoFactor(v, date) { const p = num(v?.odoErr); return p > 0 && (!v.odoErrFrom || !date || date >= v.odoErrFrom) ? 1 + p / 100 : 1; }
-function odoChanges(v) { return (v?.odoChanges || []).filter(c => c.date && num(c.newKm) >= 0 && num(c.oldKm) > 0).sort((a, b) => a.date.localeCompare(b.date)); }
-// Km shown on the meter between two readings. A meter change between the two dates is counted in two parts,
-// (old meter's last − start) + (end − new meter's first), when the start reading is nearer the old meter and the end reading nearer the new one.
-function odoRun(v, sDate, sKm, eDate, eKm) {
-  sKm = num(sKm); eKm = num(eKm); if (!sKm || !eKm) return { km: 0, ch: [] };
-  let pos = sKm, run = 0; const ch = [];
-  for (const c of odoChanges(v)) {
-    if ((sDate && c.date < sDate) || (eDate && c.date > eDate)) continue;
-    const o = num(c.oldKm), n = num(c.newKm);
-    if (pos <= o && Math.abs(pos - o) <= Math.abs(pos - n) && Math.abs(eKm - n) < Math.abs(eKm - o) && eKm >= n) { run += o - pos; pos = n; ch.push(c); }
-  }
-  return { km: eKm > pos ? run + eKm - pos : ch.length ? run : 0, ch };
+/* Odometer, from the vehicle master: pairs of readings noted on a date, "meter reading M = actual km A", with how many
+   meter km the meter shows for 1 actual km (e.g. 1.12812). A reading is turned into actual km from its pair:
+   actual = A + (reading − M) ÷ ratio. A new pair starts a new count (a corrected figure, or a new meter). */
+function odoPairs(v) { return (v?.odoPairs || []).filter(p => p.date && num(p.meter) >= 0 && num(p.actual) > 0 && num(p.ratio) > 0).sort((a, b) => a.date.localeCompare(b.date)); }
+// The pair a reading belongs to: noted on or before the reading's date, at or below the reading, and the nearest such one.
+function odoPairFor(v, date, reading) {
+  const P = odoPairs(v).filter(p => !date || p.date <= date), m = num(reading);
+  const below = P.filter(p => num(p.meter) <= m);
+  const L = below.length ? below : P.length ? P : odoPairs(v);
+  return L.reduce((b, p) => !b || Math.abs(m - num(p.meter)) < Math.abs(m - num(b.meter)) || (Math.abs(m - num(p.meter)) === Math.abs(m - num(b.meter)) && p.date > b.date) ? p : b, null);
 }
-// Meter km and the real km (meter km taken back by the vehicle's extra %).
-function odoKm(v, sDate, sKm, eDate, eKm) { const R = odoRun(v, sDate, sKm, eDate, eKm), f = odoFactor(v, sDate || eDate); return { ...R, f, act: f === 1 ? R.km : Math.round(R.km / f) }; }
+// In words, for the screens: the pair(s) used and the start and end turned into actual km.
+function odoExplain(K, sKm, eKm) {
+  const pr = p => `meter ${nf(num(p.meter))} = actual ${nf(num(p.actual))} on ${fmtShort(p.date)}, ${nf(num(p.ratio), 5)} meter km for 1 actual km`;
+  return `Actual km from the vehicle master (${pr(K.ps)}${K.split ? `; then ${pr(K.pe)}` : ""}): start ${nf(sKm)} → actual ${nf(K.sA)}, end ${nf(eKm)} → actual ${nf(K.eA)}. ` +
+    `Actual km = ${nf(K.eA)} − ${nf(K.sA)} = ${nf(K.act)}${K.split ? "" : ` (${nf(K.km)} meter km ÷ ${nf(num(K.pe.ratio), 5)})`}. Mileage uses the actual km.`;
+}
+function odoActual(v, date, reading, p = odoPairFor(v, date, reading)) { return p ? num(p.actual) + (num(reading) - num(p.meter)) / num(p.ratio) : null; }
+// Meter km and actual km between two readings. Without pairs the actual km is the meter km. Across two pairs
+// (a new meter) the meter km is not end − start, so it is shown from the actual km.
+function odoKm(v, sDate, sKm, eDate, eKm) {
+  sKm = num(sKm); eKm = num(eKm);
+  if (!sKm || !eKm) return { km: 0, act: 0, conv: false };
+  const ps = odoPairFor(v, sDate, sKm), pe = odoPairFor(v, eDate, eKm);
+  if (!ps || !pe) { const k = eKm > sKm ? eKm - sKm : 0; return { km: k, act: k, conv: false }; }
+  const a = odoActual(v, sDate, sKm, ps), b = odoActual(v, eDate, eKm, pe), act = Math.max(0, Math.round(b - a)), split = ps !== pe;
+  return { km: split ? Math.round(act * num(pe.ratio)) : Math.max(0, eKm - sKm), act, conv: true, split, sA: Math.round(a), eA: Math.round(b), ps, pe };
+}
 const legCalc = l => {
   const exp = LG_EXP.reduce((a, k) => a + num(l[k]), 0), K = odoKm(vehicles.find(v => v.id === l.vehicleId), l.from, l.startKm, l.to || l.from, l.endKm);
   return { exp, bal: num(l.rent) - exp, km: K.km, act: K.act, days: num(l.days), received: (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0) };
@@ -14657,7 +14662,7 @@ function rtCalc(r, prev, lang = "en") {
   const rec = pays.map(p => ({ date: p.settled === false ? "" : p.date, what: `${p.desc || (p.l ? rtLegName(p.l) : r.path)}${pm(p.pay)}`, amt: num(p.amount), pend: p.settled === false }));
   const owner = rtSum(fast) + rtSum(card) + rtSum(giv) + (loss ? 0 : bal), came = rtSum(rec) + (loss ? -bal : 0);
   const K = odoKm(vehicles.find(v => v.id === r.vehicleId), startDate, startKm, endDate, endKm);
-  return { startDate, endDate, autoStart, autoEnd, days: inclDays(startDate, endDate) || 0, startKm, endKm, autoSK, autoEK, km: K.km, act: K.act, odoF: K.f, odoCh: K.ch, litres, rfuel,
+  return { startDate, endDate, autoStart, autoEnd, days: inclDays(startDate, endDate) || 0, startKm, endKm, autoSK, autoEK, km: K.km, act: K.act, odoK: K, litres, rfuel,
     fast, card, giv, balLine, loss, rec, pendAmt: rtSum(rec.filter(x => x.pend)), bal, owner, came, diff: owner - came,
     loads: legs.map((l, i) => ({ l, c: C[i] })), drivers: [...new Set(legs.flatMap(l => [dn(l.driver1Id, l.driver1Name), dn(l.driver2Id, l.driver2Name)]).filter(Boolean))] };
 }
@@ -14689,8 +14694,8 @@ function rtSumRender() {
   const advRow = row(A, { cls: "adv", amt: A.adv === "typed" && edit ? `<input type="number" inputmode="numeric" min="0" data-rtk="advIn" value="${num(D.advIn) || ""}" placeholder="0" aria-label="Advance from the previous trip, ₹">` : "" });
   const balRow = row(S.balLine, { cls: S.loss ? "loss" : "", date: edit ? `<input type="date" data-rtk="balDate" value="${S.balLine.date}" aria-label="Date of the vehicle balance">` : "" });
   $("rtSum").innerHTML = `<div class="rtstrip"><div class="rtstats">` + st("Truck", esc(bus ? plateOf(bus) : "—")) + ed("startDate", "Start date", S.startDate, S.autoStart, 1) + ed("endDate", "End date", S.endDate, S.autoEnd, 1) +
-    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK) + ed("endKm", "End km", S.endKm, S.autoEK) + st(S.odoF !== 1 ? "Meter km" : "Total km", S.km ? nf(S.km) : "—") + (S.odoF !== 1 ? st("Actual km", S.act ? nf(S.act) : "—", " hi") : "") +
-    st("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—") + st("Mileage", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L` : "—") + st("Vehicle bal.", rs(S.bal), S.bal < 0 ? " hi neg" : " hi") + `</div>` + rtOdoNote(S, bus) + `</div>` +
+    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK) + ed("endKm", "End km", S.endKm, S.autoEK) + st(S.odoK.conv ? "Meter km" : "Total km", S.km ? nf(S.km) : "—") + (S.odoK.conv ? st("Actual km", S.act ? nf(S.act) : "—", " hi") : "") +
+    st("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—") + st("Mileage", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L` : "—") + st("Vehicle bal.", rs(S.bal), S.bal < 0 ? " hi neg" : " hi") + `</div>` + rtOdoNote(S) + `</div>` +
     `<div class="rtcard"><h3>Loads${S.drivers.length ? ` <span class="sub">· ${esc(S.drivers.join(", "))}</span>` : ""}</h3><div class="rttscroll"><table class="rttab"><thead><tr><th>#</th><th>Dates</th><th>Trip</th><th class="n">Rent</th><th class="n">Expense</th><th class="n">Balance</th></tr></thead><tbody>` +
     S.loads.map(({ l, c }, i) => `<tr><td>${i + 1}</td><td class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</td><td>${esc(rtLegName(l))}</td><td class="n">${nf(num(l.rent))}</td><td class="n">${nf(c.exp)}</td><td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td></tr>`).join("") +
     (S.rfuel ? `<tr><td></td><td class="num">—</td><td>Diesel for the whole round trip</td><td class="n"></td><td class="n">${nf(S.rfuel)}</td><td class="n neg">-${nf(S.rfuel)}</td></tr>` : "") +
@@ -14760,15 +14765,11 @@ function rtTamilFont() {
 function rtSumRows(S, r, t = RT_T.en) {
   const rows = [fmtShort(S.startDate), fmtShort(S.endDate), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.km ? nf(S.km) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
     S.act && S.litres ? nf(S.act / S.litres, 2) : "—", rtSigned(S.bal)].map((v, i) => [t.sum[i], v]);
-  if (S.odoF !== 1) { rows[6][0] = t.meterKm; rows.splice(7, 0, [t.actKm, S.act ? nf(S.act) : "—"]); }
+  if (S.odoK.conv) { rows[6][0] = t.meterKm; rows.splice(7, 0, [t.actKm, S.act ? nf(S.act) : "—"]); }
   return rows;
 }
-// Under the strip: how the km were worked out when the meter was changed or reads extra.
-function rtOdoNote(S, bus) {
-  const n = [...S.odoCh.map(c => `Meter changed on ${fmtShort(c.date)}: old meter ended at ${nf(num(c.oldKm))}, new meter started at ${nf(num(c.newKm))}. The km are counted on both meters.`),
-    ...(S.odoF !== 1 ? [`${bus ? esc(plateOf(bus)) : "This truck"}'s meter reads ${nf((S.odoF - 1) * 100, 3)}% extra (set in the vehicle master). Actual km = meter km ÷ ${nf(S.odoF, 5)}, and the mileage is on the actual km.`] : [])];
-  return n.length ? `<p class="sub rtodo">${n.join("<br>")}</p>` : "";
-}
+// Under the strip: how the actual km were worked out from the vehicle master's readings.
+function rtOdoNote(S) { return S.odoK.conv ? `<p class="sub rtodo">${odoExplain(S.odoK, S.startKm, S.endKm)}</p>` : ""; }
 // Drawing kit for one A4 page (1240 × 1754 px) at text scale k: the company header, a title line, tables whose text wraps
 // and whose figures shrink to fit their column, and the footer.
 function rtKit(g, k, t = RT_T.en) {
