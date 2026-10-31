@@ -588,6 +588,7 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtst.hi { background: var(--accent-soft); } .rtst.hi span, .rtst.hi b { color: var(--accent); } .rtst.hi.neg { background: var(--danger-soft, #fde8e6); } .rtst.hi.neg span, .rtst.hi.neg b { color: var(--danger); }
 .rtst.ed input { font: inherit; font-size: 14px; font-weight: 700; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 96px; box-sizing: border-box; }
 .rtst.ed .dmy { width: 142px; } .icon.rtbin { color: var(--danger); display: inline-flex; align-items: center; justify-content: center; padding: 6px; } .icon.rtbin:hover { background: var(--danger-soft, #FDECEC); }
+.lgact { font: 600 12px var(--mono); color: var(--accent); } .lgact:empty { display: none; }
 .rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst .rtact.rtmeter { color: var(--muted); } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
@@ -3450,8 +3451,8 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </fieldset>
     <fieldset class="docs"><legend>Kilometres</legend>
       <div class="two">
-        <div class="field"><label for="lgStartKm">Start km</label><input id="lgStartKm" type="number" inputmode="numeric" min="0"></div>
-        <div class="field"><label for="lgEndKm">End km</label><input id="lgEndKm" type="number" inputmode="numeric" min="0"><span class="err" id="e-lgEndKm"></span></div>
+        <div class="field"><label for="lgStartKm">Start km</label><input id="lgStartKm" type="number" inputmode="numeric" min="0"><span class="lgact" id="lgStartAct"></span></div>
+        <div class="field"><label for="lgEndKm">End km</label><input id="lgEndKm" type="number" inputmode="numeric" min="0"><span class="lgact" id="lgEndAct"></span><span class="err" id="e-lgEndKm"></span></div>
       </div>
     </fieldset>
     <fieldset class="docs"><legend>Payments received</legend>
@@ -14386,6 +14387,9 @@ function lgCalcRender() {
   if (!lgDaysTouched) { const d = inclDays($("lgFrom").value, $("lgTo").value); if (d) $("lgDays").value = d; }
   const l = lgRead(), c = legCalc(l);
   const cell = (k, v, col = "") => `<div><div class="k">${k}</div><div class="v"${col ? ` style="color:${col}"` : ""}>${v}</div></div>`;
+  // Under the odometer readings: the actual km from the vehicle master's meter and actual km lines.
+  const V = vehicles.find(v => v.id === (rt?.vid || kBusId)), from = $("lgFrom").value, to = $("lgTo").value || from;
+  [["lgStartAct", from, l.startKm], ["lgEndAct", to, l.endKm]].forEach(([id, d, km]) => { const a = km && odoPairs(V).length ? odoActual(V, d, km) : null; $(id).textContent = a != null ? `Actual ${nf(Math.round(a))}` : ""; });
   $("lgCalc").innerHTML = cell("Trip rent", rs(num(l.rent))) + cell("Expense", rs(c.exp)) + cell("Balance", rs(c.bal), c.bal < 0 ? "var(--danger)" : "var(--ok)");
   const P = l.payments || [], set = P.filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0), pend = P.reduce((a, p) => a + num(p.amount), 0) - set;
   $("lgPayAmt").textContent = P.length ? nf(set + pend) : ""; $("lgPayTot").textContent = P.length ? `${P.length} payment${P.length > 1 ? "s" : ""}${pend ? ` · ${rs(pend)} not settled` : ""}` : "";
