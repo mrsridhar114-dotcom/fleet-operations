@@ -556,8 +556,8 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtnav .rtnh { display: none; }
 .rtnav .rtleg { display: flex; align-items: center; flex: none; position: relative; }
 .rtnav .rtleg > button[data-rp] { padding-right: 34px; }
-.rtnav .rtdel { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); padding: 5px; border-radius: 6px; cursor: pointer; display: inline-flex; }
-.rtnav .rtdel:hover { color: var(--danger); background: var(--danger-soft, #FDECEC); }
+.rtnav .rtdel { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--danger); padding: 5px; border-radius: 6px; cursor: pointer; display: inline-flex; }
+.rtnav .rtdel:hover { background: var(--danger-soft, #FDECEC); }
 .rtlegh { margin: 0; font-size: 18px; }
 .rtpane { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 .rtpane > * { flex-shrink: 0; }
@@ -591,7 +591,7 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
-.rttab tr.adv td { background: var(--accent-soft); } .rtpendn { margin: 8px 0 0; color: var(--warn); }
+.rttab tr.adv td { background: var(--accent-soft); } .rttab tr.dim td { color: var(--muted); } .rtpendn { margin: 8px 0 0; color: var(--warn); }
 .rttab td input { font: inherit; font-size: 13px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); box-sizing: border-box; } .rttab td.n input { text-align: right; width: 110px; }
 .rttab td.num .dmy { width: 138px; }
 .rtsrow { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; } .rtsrow > i { align-self: center; font-style: normal; font-size: 26px; font-weight: 700; color: var(--muted); }
@@ -3491,7 +3491,6 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </fieldset>
   </div>
   <footer>
-    <button class="btn danger" type="button" id="lgDelete" hidden>Delete trip</button>
     <span style="flex:1"></span>
     <button class="btn primary" type="submit" form="lgForm" id="lgSave">Save trip</button>
     <button class="btn primary" type="button" id="rtPaySave" hidden>Save payments</button>
@@ -14338,7 +14337,7 @@ function lgLoad(id, roundId) {
   $("lgAddPay").hidden = !edit; $("lgAddFuel").hidden = !edit; $("lgForm").querySelectorAll("[data-prm], [data-frm]").forEach(b => b.hidden = !edit);
   $("lgDrawer").querySelector("footer").hidden = !edit;
   $("lgForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("lgForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
-  $("lgSave").hidden = !edit; $("lgDelete").hidden = !(edit && l); $("lgDelete").textContent = "Delete trip"; delete $("lgDelete").dataset.confirm;
+  $("lgSave").hidden = !edit;
   lgCalcRender(); $("lgForm").scrollTop = 0;
   if (!l && edit) setTimeout(() => $("lgFrom").focus({ preventScroll: true }), 30);
 }
@@ -14428,10 +14427,6 @@ $("lgForm").addEventListener("submit", async e => {
   } catch { toast("Couldn't save. Check your connection and try again."); }
   finally { $("lgSave").disabled = false; }
 });
-$("lgDelete").onclick = async () => {
-  const b = $("lgDelete"); if (!b.dataset.confirm) { b.dataset.confirm = "1"; b.textContent = "Click again to delete"; return; }
-  try { await opsDelete("truckTrips", lgEditId); toast("Trip deleted"); if (rt && rtGet()) { rt.pane = "sum"; rt.leg = null; rtShow(); } else closeLgDrawer(); } catch { toast("Couldn't delete. Try again."); }
-};
 $("lgClose").onclick = async () => { if (await rtLeaveOk()) closeLgDrawer(); };
 
 /* ---------- Round trip screen ----------
@@ -14456,7 +14451,7 @@ function rtShow() {
   $("rtPrint").hidden = !r; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = shut ? "Reopen" : "Mark closed"; $("lgShut").hidden = !shut;
   rtNavRender();
   ["lgForm", "rtSum", "rtPay", "rtDsl", "rtFiles"].forEach(id => $(id).hidden = true);
-  $("rtPaySave").hidden = true; $("lgSave").hidden = true; $("lgDelete").hidden = true;
+  $("rtPaySave").hidden = true; $("lgSave").hidden = true;
   if (rt.pane === "leg") { $("lgForm").hidden = false; lgLoad(rt.leg, rt.rid); }
   else if (rt.pane === "pay" || rt.pane === "dsl") { const pay = rt.pane === "pay"; $(pay ? "rtPay" : "rtDsl").hidden = false; pay ? rtPayRender() : rtDslRender();
     foot.hidden = !edit; $("rtPaySave").hidden = !edit; $("rtPaySave").textContent = pay ? "Save payments" : "Save diesel"; }
@@ -14691,10 +14686,14 @@ function rtCalc(r, prev, lang = "en") {
   const last = legs[legs.length - 1], autoStart = prev?.end || r.from, autoEnd = r.to;
   const autoEK = num(last?.endKm) || (odo.length ? Math.max(...odo) : 0), autoSK = prev?.km || num(legs[0]?.startKm) || (odo.length ? Math.min(...odo) : 0);
   const startDate = D.startDate || autoStart, endDate = D.endDate || autoEnd, startKm = num(D.startKm) || autoSK, endKm = num(D.endKm) || autoEK;
-  const fast = legs.filter(l => num(l.toll) > 0).map(l => ({ date: l.from, what: `${t.fast} · ${rtLegName(l)}`, amt: num(l.toll) }));
-  const card = fills.filter(f => f.pay !== "Cash" && num(f.amount) > 0).map(f => ({ date: f.date, what: `${t.card} · ${nf(num(f.litres), 2)} ${t.L}${f.rate ? ` @ ₹${nf(f.rate, 2)}` : ""}${f.place ? " · " + f.place : ""}`, amt: Math.round(num(f.amount)) }))
+  // FASTag lines are the trips; diesel lines keep the place, litres and rate. Diesel paid by card is the owner's money;
+  // diesel paid in cash was paid by the driver, so it is listed but not added to ①.
+  const fast = legs.filter(l => num(l.toll) > 0).map(l => ({ date: l.from, what: rtLegName(l), amt: num(l.toll) }));
+  const dsl = cash => fills.filter(f => (f.pay === "Cash") === cash && num(f.amount) > 0).map(f => ({ date: f.date, place: f.place || "", litres: num(f.litres), rate: num(f.rate),
+    what: [num(f.litres) ? `${nf(num(f.litres), num(f.litres) % 1 ? 2 : 0)} ${t.L}${f.rate ? ` @ ₹${nf(f.rate, 2)}` : ""}` : "", f.place].filter(Boolean).join(" · "), amt: Math.round(num(f.amount)) }))
     .sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
-  const adv = prev ? { date: r.from, what: `${t.advPrev} · ${t.advSet(prev.no, fyLabel(prev.fy))}`, amt: prev.amt, adv: "auto" }
+  const card = dsl(false), cash = dsl(true);
+  const adv = prev ? { date: r.from, what: t.advPrev, amt: prev.amt, adv: "auto" }
     : { date: r.from, what: t.advPrev, amt: num(D.advIn), adv: "typed" };
   const giv = [adv, ...(D.given || []).map(g => ({ date: g.date, what: `${t.giv[g.desc] || g.desc || t.given}${pm(g.pay)}`, amt: num(g.amount) }))];
   // The vehicle balance is the owner's money; a loss is shown with the money that came to the owner instead (the same result).
@@ -14705,7 +14704,7 @@ function rtCalc(r, prev, lang = "en") {
   const owner = rtSum(fast) + rtSum(card) + rtSum(giv) + (loss ? 0 : bal), came = rtSum(rec) + (loss ? -bal : 0);
   const K = odoKm(vehicles.find(v => v.id === r.vehicleId), startDate, startKm, endDate, endKm);
   return { startDate, endDate, autoStart, autoEnd, days: inclDays(startDate, endDate) || 0, startKm, endKm, autoSK, autoEK, km: K.km, act: K.act, odoK: K, litres, rfuel,
-    fast, card, giv, balLine, loss, rec, pendAmt: rtSum(rec.filter(x => x.pend)), bal, owner, came, diff: owner - came,
+    fast, card, cash, giv, balLine, loss, rec, pendAmt: rtSum(rec.filter(x => x.pend)), bal, owner, came, diff: owner - came,
     loads: legs.map((l, i) => ({ l, c: C[i] })), drivers: [...new Set(legs.flatMap(l => [dn(l.driver1Id, l.driver1Name), dn(l.driver2Id, l.driver2Name)]).filter(Boolean))] };
 }
 // Every round trip of the truck in date order. Each takes the last one's settlement as its advance, and the last one's
@@ -14743,6 +14742,7 @@ function rtSumRender() {
     (S.rfuel ? `<tr><td></td><td class="num">—</td><td>Diesel for the whole round trip</td><td class="n"></td><td class="n">${nf(S.rfuel)}</td><td class="n neg">-${nf(S.rfuel)}</td></tr>` : "") +
     `</tbody><tfoot><tr><td colspan="3" class="n">Total</td><td class="n">${nf(r.rent)}</td><td class="n">${nf(r.rent - S.bal)}</td><td class="n${S.bal < 0 ? " neg" : ""}">${nf(S.bal)}</td></tr></tfoot></table></div></div><div class="rtcols">` +
     `<div class="rtcard"><h3>① Owner's money</h3><div class="rttscroll"><table class="rttab"><tbody>` + sh("FASTag") + lines(S.fast, "No FASTag entered") + sh("Diesel paid by card") + lines(S.card, "No diesel by card") +
+    (S.cash.length ? sh(RT_T.en.gCash) + S.cash.map(x => row(x, { cls: "dim" })).join("") : "") +
     sh("Given to the driver") + advRow + S.giv.slice(1).map(x => row(x)).join("") + (S.loss ? "" : sh("Balance with the vehicle") + balRow) +
     `</tbody><tfoot><tr><td></td><td>Total ①</td><td class="n">${nf(S.owner)}</td></tr></tfoot></table></div>` +
     (A.adv === "typed" && edit ? `<p class="sub" style="margin:8px 0 0">This is the truck's first round trip in the app, so type the advance the driver already had.</p>` : "") + `</div>` +
@@ -14787,7 +14787,7 @@ const RT_T = {
     tot1: "Total ①", tot2: "Total ②", notSet: "Not settled", adv: "③ ADVANCE", ownerM: "Owner's Money", cameM: "Came to owner", balance: "Balance", next: "Advance for next trip",
     pend: n => `Came to owner includes ${n} not settled.`, sheets: ["Trip sheet", "Trip summary"],
     sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
-    fast: "FASTag", card: "Diesel by card", L: "L", advPrev: "Advance from the previous trip", advSet: (no, fy) => `settlement of round trip ${no} (FY ${fy})`, given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {},
+    fast: "FASTag", L: "L", gCash: "Diesel paid in cash (by the driver) · not added to ①", dslCols: ["Date", "Place", "Litres", "Rate / L", "Amount"], advPrev: "Advance from the previous trip", given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {},
     details: "TRIP DETAILS", sFast: "FASTag", sRec: "Payments received", sDsl: "Diesel fill-ups", sGiv: "Money given to the driver", dCols: ["Date", "Details", "Amount"], whole: "Whole round trip" },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
     cols: ["தேதி", "பயணம்", "வாடகை", "செலவு", "மீதம்"], total: "மொத்தம்", owner: "① முதலாளி பணம்", came: "② முதலாளிக்கு வந்தது", gFast: "ஃபாஸ்டேக்", gCard: "கார்டு மூலம் டீசல்",
@@ -14795,7 +14795,7 @@ const RT_T = {
     ownerM: "முதலாளி பணம்", cameM: "முதலாளிக்கு வந்தது", balance: "மீதம்", next: "அடுத்த பயணத்திற்கான முன்பணம்", pend: n => `முதலாளிக்கு வந்ததில் ${n} நிலுவை உள்ளது.`,
     sheets: ["பயணக் கணக்கு", "பயணச் சுருக்கம்"],
     sum: ["தொடக்க தேதி", "முடிவு தேதி", "மொத்த நாட்கள்", "மொத்த வாடகை", "தொடக்க கி.மீ", "முடிவு கி.மீ", "மொத்த கி.மீ", "மொத்த டீசல் (லி)", "மைலேஜ் (கி.மீ/லி)", "வண்டி மீதம்"],
-    fast: "ஃபாஸ்டேக்", card: "டீசல் (கார்டு)", L: "லி", advPrev: "முந்தைய பயண முன்பணம்", advSet: (no, fy) => `சுற்றுப் பயணம் ${no} கணக்கு (நிதியாண்டு ${fy})`, given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்", vbalLoss: "வண்டி நஷ்டம்", rfuel: "முழு சுற்றுப் பயணத்திற்கான டீசல்",
+    fast: "ஃபாஸ்டேக்", L: "லி", gCash: "ரொக்கமாக டீசல் (ஓட்டுநர் செலுத்தியது) · ① இல் சேர்க்கப்படவில்லை", dslCols: ["தேதி", "இடம்", "லிட்டர்", "லிட்டர் விலை", "தொகை"], advPrev: "முந்தைய பயண முன்பணம்", given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்", vbalLoss: "வண்டி நஷ்டம்", rfuel: "முழு சுற்றுப் பயணத்திற்கான டீசல்",
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
     giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" },
     details: "பயண விவரம்", sFast: "ஃபாஸ்டேக்", sRec: "வந்த பணம்", sDsl: "டீசல் நிரப்பியது", sGiv: "ஓட்டுநரிடம் கொடுத்தது", dCols: ["தேதி", "விவரம்", "தொகை"], whole: "முழு சுற்றுப் பயணம்" }
@@ -14893,8 +14893,16 @@ function rtPage1(r, S, sec, t = RT_T.en) {
         const x0 = P + i * (cw + gap), cols = [{ w: 128 }, { w: cw - 128 - 118 }, { w: 118, r: 1 }];
         const one = x => ({ cells: [x.pend ? t.notSet : fmtShort(x.date), x.what, rtSigned(x.amt)], ...(x.pend ? { bg: "#FDF1DC", color: "#8A4B00" } : x.amt < 0 || x.red ? { color: [0, 0, red] } : {}) });
         let yy = K.sect(k2 === "owner" ? t.owner : t.came, x0, y0), rows;
-        if (k2 === "owner") rows = [{ group: t.gFast }, ...(S.fast.length ? S.fast.map(one) : [{ cells: ["", t.none, ""] }]), { group: t.gCard }, ...(S.card.length ? S.card.map(one) : [{ cells: ["", t.none, ""] }]),
-          { group: t.gGiv }, ...S.giv.map(one), ...(S.loss ? [] : [{ group: t.gBal }, one(S.balLine)]), { cells: ["", t.tot1, nf(S.owner)], bold: true, right: [1] }];
+        // Diesel is a table of its own: date, place, litres, rate a litre and amount, under a header line.
+        const dc = [{ w: 128 }, { w: cw - 128 - 66 - 112 - 112 }, { w: 66, r: 1 }, { w: 112, r: 1 }, { w: 112, r: 1 }];
+        const dRows = (list, grey) => [{ cells: t.dslCols, bold: true, bg: K.head, right: [2, 3, 4] },
+          ...(list.length ? list.map(x => ({ cells: [fmtShort(x.date), x.place, x.litres ? nf(x.litres, x.litres % 1 ? 2 : 0) : "", x.rate ? nf(x.rate, 2) : "", nf(x.amt)], ...(grey ? { color: "#667085" } : {}) })) : [{ cells: ["", t.none, "", "", ""] }])];
+        if (k2 === "owner") {
+          yy = K.table(x0, yy, cols, [{ group: t.gFast }, ...(S.fast.length ? S.fast.map(one) : [{ cells: ["", t.none, ""] }])], 15);
+          yy = K.table(x0, yy, dc, [{ group: t.gCard }, ...dRows(S.card)], 15);
+          if (S.cash.length) yy = K.table(x0, yy, dc, [{ group: t.gCash }, ...dRows(S.cash, 1), { cells: ["", t.total, "", "", nf(S.cash.reduce((a, x) => a + x.amt, 0))], color: "#667085", right: [1] }], 15);
+          rows = [{ group: t.gGiv }, ...S.giv.map(one), ...(S.loss ? [] : [{ group: t.gBal }, one(S.balLine)]), { cells: ["", t.tot1, nf(S.owner)], bold: true, right: [1] }];
+        }
         else rows = [...(S.rec.length ? S.rec.map(one) : [{ cells: ["", t.nopay, ""] }]), ...(S.loss ? [{ group: t.vbalLoss }, one({ ...S.balLine, red: 1 })] : []), { cells: ["", t.tot2, nf(S.came)], bold: true, right: [1] }];
         yy = K.table(x0, yy, cols, rows, 15); yEnd = Math.max(yEnd, yy);
       });
@@ -14941,7 +14949,7 @@ function rtSheetXlsx(r, S, sec, withSum, t = RT_T.en) {
       const grp = t => { put(`${cD}${m}`, t, st.label); ws.merges.push(`${cD}${m}:${cA}${m}`); m++; };
       const tot = (t, v) => { put(`${cW}${m}`, t, st.ttext); put(`${cA}${m}`, v, st.tint); m++; };
       put(`${cD}${m}`, k === "owner" ? t.owner : t.came, st.ttext); ws.merges.push(`${cD}${m}:${cW}${m}`); m++;
-      if (k === "owner") { grp(t.gFast); S.fast.forEach(one); grp(t.gCard); S.card.forEach(one); grp(t.gGiv); S.giv.forEach(one); if (!S.loss) { grp(t.gBal); one(S.balLine); } tot(t.tot1, S.owner); }
+      if (k === "owner") { grp(t.gFast); S.fast.forEach(one); grp(t.gCard); S.card.forEach(one); if (S.cash.length) { grp(t.gCash); S.cash.forEach(one); } grp(t.gGiv); S.giv.forEach(one); if (!S.loss) { grp(t.gBal); one(S.balLine); } tot(t.tot1, S.owner); }
       else { S.rec.forEach(one); if (S.loss) { grp(t.vbalLoss); one(S.balLine); } tot(t.tot2, S.came); }
       return m;
     };
