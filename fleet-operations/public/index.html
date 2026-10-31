@@ -633,6 +633,17 @@ input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-web
 .lgdone .dok { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 32px; } .lgdone h2 { margin: 4px 0 0; } .lgdone p { margin: 0; color: var(--muted); }
 .lgdone .dbtns { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 10px; } .lgdone .dbtns .btn { min-height: 50px; font-size: 16px; }
 #lgDrawer footer #lgBack, #lgDrawer footer #lgNext { min-height: 48px; } @media (max-width: 700px) { #lgDrawer footer:has(#lgNext:not([hidden])) #lgNext, #lgDrawer footer:has(#lgSave:not([hidden])) #lgSave { flex: 2; } #lgDrawer footer:has(#lgBack:not([hidden])) #lgBack { flex: 1; } }
+/* Copy dialog */
+.cpdlg { width: min(460px, calc(100vw - 24px)); max-height: calc(100vh - 32px); overflow: auto; background: var(--surface); color: var(--ink); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.3); padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+.cpdlg header { display: flex; justify-content: space-between; align-items: center; gap: 10px; } .cpdlg h2 { margin: 0; font-size: 19px; }
+.cpf { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; } .cpf > span { font-size: 13px; } .cpf small { font-weight: 400; color: var(--muted); }
+.cpf select, .cpf input[type="date"] { min-height: 44px; font: inherit; font-size: 15px; font-weight: 500; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; background: var(--field, var(--surface)); color: var(--ink); }
+.cpf .dmy > .dmyt { min-height: 44px; box-sizing: border-box; font: inherit; font-size: 15px; font-weight: 500; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; background: var(--surface); color: var(--ink); }
+.cpopt { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; font-size: 14px; padding: 6px 0; } .cpopt input { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
+.cpopt span { display: flex; flex-direction: column; } .cpopt small { color: var(--muted); font-size: 12px; }
+.cpdlg footer { display: flex; justify-content: flex-end; gap: 8px; } .cpdlg footer .btn { min-height: 44px; }
+.rtnav .rtcp { position: absolute; right: 34px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--accent); padding: 5px; border-radius: 6px; cursor: pointer; display: inline-flex; } .rtnav .rtcp:hover { background: var(--accent-soft); }
+.rtnav .rtleg > button[data-rp] { padding-right: 66px; }
 /* Round trip overview */
 .ovtop { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; } .ovtop .m { color: var(--muted); font-size: 14px; }
 .ovg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; } @media (max-width: 700px) { .ovg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -724,7 +735,7 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
   #lgDrawer > header { grid-column: 1 / -1; }
   #lgDrawer > .rtnav { grid-column: 1; grid-row: 2 / span 3; flex-direction: column; gap: 3px; border-bottom: 0; border-right: 1px solid var(--line); padding: 14px 10px; overflow-y: auto; }
   #lgDrawer > .rtnav button { width: 100%; max-width: none; border-radius: 10px; padding: 10px 14px; }
-  #lgDrawer > .rtnav .rtleg { width: 100%; } #lgDrawer > .rtnav .rtleg > button[data-rp] { padding-right: 38px; } #lgDrawer > .rtnav .rtdel { width: auto; padding: 6px; }
+  #lgDrawer > .rtnav .rtleg { width: 100%; } #lgDrawer > .rtnav .rtleg > button[data-rp] { padding-right: 70px; } #lgDrawer > .rtnav .rtcp { width: auto; padding: 6px; right: 36px; } #lgDrawer > .rtnav .rtdel { width: auto; padding: 6px; }
   #lgDrawer > .rtnav button[aria-selected="true"] { box-shadow: none; }
   #lgDrawer > .rtnav .rtnh { display: block; font: 600 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 14px 14px 4px; }
   #lgDrawer > #lgShut { grid-column: 2; grid-row: 2; margin: 16px 32px 0; }
@@ -3460,7 +3471,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 </div>
 <aside class="drawer fullpage lgfull" id="lgDrawer" role="dialog" aria-modal="true" aria-labelledby="lgTitle" hidden>
   <header><div style="min-width:0"><h2 id="lgTitle">Round trip</h2><div class="vsub" id="lgSub"></div></div>
-    <span class="rthbtns"><button class="btn" type="button" id="rtPrint" title="Print or download this round trip, as Excel or as an image">Print</button><button class="btn" type="button" id="rtLock"></button><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></span></header>
+    <span class="rthbtns"><button class="btn" type="button" id="rtCopy" title="Copy this round trip to another round trip or another truck">⧉ Copy</button><button class="btn" type="button" id="rtPrint" title="Print or download this round trip, as Excel or as an image">Print</button><button class="btn" type="button" id="rtLock"></button><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></span></header>
   <nav class="rtnav" id="rtNav" role="tablist" aria-label="Round trip"></nav>
   <p class="lgshut" id="lgShut" hidden>🔒 This round trip is closed, so it is view-only. To change it, press <b>Reopen</b> at the top.</p>
   <form id="lgForm" novalidate><h3 class="rtlegh" id="rtLegH"></h3><div class="lgwiz" id="lgWizHd" hidden></div><div class="tfgrid"><div class="tfmain">
@@ -3876,6 +3887,7 @@ const changeKind = (h, info = FIELD_INFO) => {
 };
 const EYE_SVG = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const FILE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>`;
+const COPY_SVG = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>`;
 const TRASH_SVG = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`;
 const HIST_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>`;
 let hVid = null, hKind = "vehicle", VEH_HIST_OPTS = "";
@@ -14252,6 +14264,7 @@ function renderTruck() {
   rounds.map((r, i) => [r, i]).reverse().forEach(([r, i]) => {
     body += `<tr class="grp" data-rid="${r.id}" tabindex="0"><td colspan="${cols}"><span class="grpin"><b>Round trip ${i + 1}</b><span>${fmtShort(r.from)} – ${fmtShort(r.to)} · ${esc(r.path)}</span><span>${r.legs.length} trip${r.legs.length > 1 ? "s" : ""} · rent <b>${rs(r.rent)}</b></span><span>Trip balance <b style="color:${r.bal < 0 ? "var(--danger)" : "var(--ok)"}">${rs(r.bal)}</b></span><span>Received ${rs(r.received)}</span>
       <span class="pill ${r.status === "Closed" ? "ok" : "d30"}">${r.status === "Closed" ? `Closed${r.closedOn ? " " + fmtShort(r.closedOn) : ""}` : "Open"}</span>
+      ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="copy" title="Copy this round trip to another round trip or another truck">⧉ Copy</button>` : ""}
       <button class="rbtn send" type="button" data-round="${r.id}" data-act="send" title="FASTag, payments, diesel and money given to the driver, as a picture to save or share">📤 Send details</button>
       ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="${r.status === "Closed" ? "open" : "close"}">${r.status === "Closed" ? "Reopen" : "Mark closed"}</button>${r.status !== "Closed" ? `<button class="rbtn add" type="button" data-round="${r.id}" data-act="add">+ Add trip to this round</button><button class="rbtn del" type="button" data-round="${r.id}" data-act="del">Delete round trip</button>` : ""}` : ""}</span></td></tr>`;
     r.legs.forEach(l => {
@@ -14336,6 +14349,7 @@ $("kTable").addEventListener("click", async e => {
   if (b) {
     const r = roundsOf(kBusId).find(x => x.id === b.dataset.round); if (!r) return;
     if (b.dataset.act === "send") { rtSendOpen(r); return; }
+    if (b.dataset.act === "copy") { if (canTrips) cpOpen(r); return; }
     if (!canTrips) return;
     if (b.dataset.act === "add") { openRound(r.id, "leg", null); return; }
     if (b.dataset.act === "del") {
@@ -14628,7 +14642,7 @@ function rtShow() {
   if (rt.rid && !r) { closeLgDrawer(); return; }
   $("lgTitle").textContent = r ? `Round trip ${rtNo(r)}` : "New round trip";
   $("lgSub").textContent = [bus ? plateOf(bus) : "", r ? `${fmtShort(r.from)} – ${fmtShort(r.to)}` : "", r?.path].filter(Boolean).join(" · ");
-  $("rtPrint").hidden = !r; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = shut ? "Reopen" : "Mark closed"; $("lgShut").hidden = !shut;
+  $("rtPrint").hidden = !r; $("rtCopy").hidden = !r || !canTrips; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = shut ? "Reopen" : "Mark closed"; $("lgShut").hidden = !shut;
   rtNavRender();
   ["lgForm", "rtOv", "rtSum", "rtPay", "rtDsl", "rtFiles"].forEach(id => $(id).hidden = true);
   $("rtPaySave").hidden = true; $("lgSave").hidden = true; $("lgBack").hidden = $("lgNext").hidden = true;
@@ -14666,6 +14680,7 @@ function rtNavRender() {
   const dl = rtDslAll(r).reduce((a, f) => ({ n: a.n + 1, L: a.L + num(f.litres), A: a.A + num(f.amount) }), { n: 0, L: 0, A: 0 });
   $("rtNav").innerHTML = btn("ov", null, "Overview", `Rent ${rs(r.rent)} · balance ${rs(r.bal)}`) + `<span class="rtnh">Trips</span>` +
     r.legs.map((l, i) => `<span class="rtleg">${btn("leg", l.id, `${i + 1} · ${esc(rtLegName(l))}`, `${fmtShort(l.from)} · ${rs(num(l.rent))}`)}` +
+      (canTrips ? `<button type="button" class="rtcp" data-rtcp="${l.id}" title="Copy this trip" aria-label="Copy trip ${i + 1}">${COPY_SVG}</button>` : "") +
       (canTrips && !shut ? `<button type="button" class="rtdel" data-rtdel="${l.id}" title="Delete this trip" aria-label="Delete trip ${i + 1}">${TRASH_SVG}</button>` : "") + `</span>`).join("") + fresh +
     (canTrips && !shut && !fresh ? `<button type="button" class="rtadd" data-rp="leg" data-new="1"><span>+ Add trip</span></button>` : "") +
     `<span class="rtnh">Money</span>` + btn("pay", null, "Payments", `Received ${rs(r.received)} · given ${rs(giv)}`) +
@@ -14675,6 +14690,7 @@ function rtNavRender() {
 }
 $("rtNav").addEventListener("click", async e => {
   const del = e.target.closest("[data-rtdel]"); if (del) { rtDelLeg(del.dataset.rtdel); return; }
+  const cp = e.target.closest("[data-rtcp]"); if (cp) { const r = rtGet(); if (r) cpOpen(r, cp.dataset.rtcp); return; }
   const b = e.target.closest("button[data-rp]"); if (!b || b.getAttribute("aria-selected") === "true") return;
   if (!await rtLeaveOk()) return;
   rt.pane = b.dataset.rp; rt.leg = b.dataset.rl || null; rtShow();
@@ -15189,8 +15205,70 @@ function rtSheetXlsx(r, S, sec, withSum, t = RT_T.en) {
 }
 $("rtPrint").insertAdjacentHTML("afterbegin", ICON_PRINT);
 $("rtPrint").onclick = () => { const r = rtGet(); if (r) rtPrintOpen(r); };
+$("rtCopy").onclick = async () => { const r = rtGet(); if (r && await rtLeaveOk()) cpOpen(r); };
 /* Send details: FASTag, payments received, diesel fill-ups and money given to the driver of one round trip, on one screen.
    Tick the sections and lines to send; they are drawn as one picture under the company header, to save or share (e.g. to the driver). */
+/* Copy: a whole round trip, or one trip of it, to a new round trip of any truck (a trip can also go into an open round trip).
+   Everything is copied — rent, expenses, diesel, payments and money given to the driver — with all the dates moved by the
+   same number of days; drivers and km readings only when asked. Bills attached and the closed state are not copied. */
+function cpOpen(r, legId = null) {
+  pbClose();
+  const leg = legId ? r.legs.find(l => l.id === legId) : null, from0 = leg ? leg.from : r.from;
+  const trucks = kSorted(truckList()), what = leg ? `trip ${r.legs.indexOf(leg) + 1} · ${rtLegName(leg)}` : `round trip ${rtNo(r)} · ${r.path}`;
+  const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
+  const opt = (k, label, on, sub = "") => `<label class="cpopt"><input type="checkbox" data-cp="${k}"${on ? " checked" : ""}> <span>${label}${sub ? `<small>${sub}</small>` : ""}</span></label>`;
+  box.innerHTML = `<div class="cpdlg" role="dialog" aria-modal="true" aria-labelledby="cpHead"><header><h2 id="cpHead">⧉ Copy ${leg ? "trip" : "round trip"}</h2><button type="button" class="btn mclose" data-cpx>Close ✕</button></header>` +
+    `<p class="sub" style="margin:0">${esc(what)} · ${fmtShort(from0)}</p>` +
+    `<label class="cpf">Copy to truck<select data-cpv>${trucks.map(v => `<option value="${v.id}"${v.id === r.vehicleId ? " selected" : ""}>${esc(plateOf(v))}</option>`).join("")}</select></label>` +
+    (leg ? `<label class="cpf">Into round trip<select data-cpr></select></label>` : "") +
+    `<label class="cpf">Start date of the copy<input type="date" data-cpd value="${from0}"><small>Every date moves by the same number of days.</small></label>` +
+    `<div class="cpf"><span>What to copy</span>` + opt("base", "Trip, rent and expenses", 1) + opt("dsl", "Diesel fills", 1) + opt("pay", "Payments received", 1) +
+      (leg ? "" : opt("giv", "Money given to the driver", 1)) + opt("drv", "Drivers", 1) + opt("km", "Km readings", 0, "Odometer readings are different for each truck") + `</div>` +
+    `<p class="sub" style="margin:0">Bills attached are not copied. The copy opens so you can change what is different.</p>` +
+    `<footer><button type="button" class="btn" data-cpx>Cancel</button><button type="button" class="btn primary" data-cpgo>⧉ Copy</button></footer></div>`;
+  const $$ = q => box.querySelector(q), on = k => !!$$(`[data-cp="${k}"]`)?.checked;
+  $$('[data-cp="base"]').disabled = true;
+  const rounds = () => { if (!leg) return; const vid = $$("[data-cpv]").value, cur = $$("[data-cpr]").value;
+    $$("[data-cpr]").innerHTML = `<option value="new">A new round trip</option>` + roundsOf(vid).filter(x => x.status !== "Closed").reverse().map(x => `<option value="${x.id}">Round trip ${rtNo(x)} · from ${fmtShort(x.from)} · ${esc(x.path)}</option>`).join("");
+    $$("[data-cpr]").value = [...$$("[data-cpr]").options].some(o => o.value === cur) ? cur : vid === r.vehicleId && r.status !== "Closed" ? r.id : "new"; };
+  rounds();
+  box.addEventListener("change", e => { if (e.target.matches("[data-cpv]")) { rounds(); $$('[data-cp="drv"]').checked = e.target.value === r.vehicleId; } });
+  box.addEventListener("click", async e => {
+    if (e.target === box || e.target.closest("[data-cpx]")) { pbClose(); return; }
+    if (!e.target.closest("[data-cpgo]")) return;
+    const d = $$("[data-cpd]").value; if (!d) { toast("Enter the start date of the copy."); return; }
+    const b = e.target.closest("[data-cpgo]"); b.disabled = true;
+    try { const go = await cpDo(r, leg, { vid: $$("[data-cpv]").value, into: leg ? $$("[data-cpr]").value : "new", shift: dayDiff(from0, d), dsl: on("dsl"), pay: on("pay"), giv: on("giv"), drv: on("drv"), km: on("km") });
+      pbClose(); toast(leg ? "Trip copied. Change what is different and save." : "Round trip copied. Open each trip to change what is different.");
+      kBusId = go.vid; kFy = fyOf(go.from); if ($("kFy")) $("kFy").value = String(kFy); renderTruck(); openRound(go.rid, leg ? "leg" : "ov", leg ? go.leg : null); }
+    catch { toast("Couldn't copy. Check your connection and try again."); b.disabled = false; }
+  });
+  document.body.append(box); $$("[data-cpv]").focus();
+}
+async function cpDo(r, leg, o) {
+  const mv = d => d ? shiftDay(d, o.shift) : d, legs = leg ? [leg] : r.legs, ids = new Map(legs.map(l => [l.id, genId("tt")]));
+  const rid = o.into !== "new" ? o.into : ids.get(legs[0].id), out = [];
+  for (const l0 of legs) {
+    const l = JSON.parse(JSON.stringify(l0)); l.id = ids.get(l0.id); l.roundId = rid; l.vehicleId = o.vid; l.from = mv(l.from); l.to = mv(l.to);
+    ["createdAt", "updatedAt", "closedOn", "by", "byName"].forEach(k => delete l[k]);
+    if (!o.drv) ["driver1Id", "driver1Name", "driver2Id", "driver2Name"].forEach(k => delete l[k]);
+    if (!o.km) { delete l.startKm; delete l.endKm; }
+    if (o.dsl) (l.fuels || []).forEach(f => { f.date = mv(f.date); if (!o.km) delete f.odo; });
+    else { delete l.fuels; delete l.litres; delete l.fuelCost; }
+    if (o.pay) (l.payments || []).forEach(p => { p.date = mv(p.date); }); else delete l.payments;
+    const c = legCalc(l); l.expense = c.exp; l.balance = c.bal; l.fy = fyOf(l.from);
+    out.push(l);
+  }
+  for (const l of out) await opsSave("truckTrips", l);
+  if (!leg) {
+    const D = ops.truckRounds.find(x => x.id === r.id) || {}, n = { id: rid, vehicleId: o.vid, fy: fyOf(out[0].from), status: "Open" };
+    if (o.dsl && D.fuels?.length) n.fuels = D.fuels.map(f => { const x = { ...f, date: mv(f.date) }; if (!o.km) delete x.odo; return x; });
+    if (o.pay && D.payments?.length) n.payments = D.payments.map(p => ({ ...p, date: mv(p.date) }));
+    if (o.giv && D.given?.length) n.given = D.given.map(g => ({ ...g, date: mv(g.date), ...(g.leg ? { leg: ids.get(g.leg) || "" } : {}) }));
+    if (n.fuels || n.payments || n.given) await opsSave("truckRounds", n);
+  }
+  return { vid: o.vid, rid, leg: out[0].id, from: out[0].from };
+}
 function rtSendData(r, lang) {
   const t = RT_T[lang], S = rtCalcOf(r, lang), forOf = leg => { const i = r.legs.findIndex(l => l.id === leg); return i < 0 ? t.whole : `${i + 1} · ${rtLegName(r.legs[i])}`; };
   const line = (date, what, amt, o = {}) => ({ date, what, amt: Math.round(num(amt)), ...o });
