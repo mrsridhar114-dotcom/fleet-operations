@@ -569,12 +569,20 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .rttab .neg { color: var(--danger); } .rttab .pos { color: var(--ok); }
 #rtPrint, #kPrint { display: inline-flex; gap: 6px; align-items: center; } .rttscroll { overflow-x: auto; }
 .rtstrip { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.odoch { display: grid; gap: 6px; }
+.odoch:empty { display: none; }
+.odoch .ochr { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 6px; align-items: end; }
+.odoch .ochr label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
+.odoch .ochr input { width: 100%; font-family: var(--mono); }
+.odoch .ochr button { margin-bottom: 4px; }
+@media (max-width: 560px) { .odoch .ochr { grid-template-columns: 1fr 1fr auto; padding-bottom: 8px; border-bottom: 1px dashed var(--line); } .odoch .ochr label:first-child { grid-column: 1 / 3; grid-row: 1; } .odoch .ochr button { grid-column: 3; grid-row: 1; } }
+.rtodo { margin: 0; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.5; }
 .rtstats { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); }
-.rtst { padding: 9px 11px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; min-width: 0; } .rtst:last-child { border-right: 0; }
+.rtst { padding: 9px 9px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; min-width: 0; } .rtst:last-child { border-right: 0; }
 .rtst span { font: 600 10px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; } .rtst b { font-size: 15px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .rtst.hi { background: var(--accent-soft); } .rtst.hi span, .rtst.hi b { color: var(--accent); } .rtst.hi.neg { background: var(--danger-soft, #fde8e6); } .rtst.hi.neg span, .rtst.hi.neg b { color: var(--danger); }
-.rtst.ed input { font: inherit; font-size: 14px; font-weight: 700; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 118px; box-sizing: border-box; }
-.rtst.ed .dmy { width: 158px; } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
+.rtst.ed input { font: inherit; font-size: 14px; font-weight: 700; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 96px; box-sizing: border-box; }
+.rtst.ed .dmy { width: 142px; } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
 .rttab tr.adv td { background: var(--accent-soft); } .rtpendn { margin: 8px 0 0; color: var(--warn); }
@@ -2883,7 +2891,18 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <label><input type="radio" name="usage" id="usagePvt" value="Private use"><span>Private use</span></label>
       </div><span class="err" id="e-usage"></span></div>
       <div class="field" id="opField" hidden><label for="opType">Operation type</label><select id="opType"></select><span class="err" id="e-opType"></span></div>
+    </fieldset>
+    <fieldset class="docs">
+      <legend>Odometer</legend>
       <div class="field" style="max-width:50%;min-width:12em"><label for="odoStart">Odometer when added (km)</label><input id="odoStart" type="number" inputmode="numeric" min="0" max="9999999" placeholder="e.g. 182450"><span class="err" id="e-odoStart"></span></div>
+      <div class="two">
+        <div class="field"><label for="odoErr">Meter reads extra (%) <span class="hint" style="font-weight:400">(optional)</span></label><input id="odoErr" type="number" inputmode="decimal" min="0" max="50" step="0.001" placeholder="e.g. 12.812"><span class="hint" id="odoErrHint">Leave empty if the meter is right.</span><span class="err" id="e-odoErr"></span></div>
+        <div class="field"><label for="odoErrFrom">From <span class="hint" style="font-weight:400">(optional)</span></label><input id="odoErrFrom" type="date"><span class="hint">Trips before this date are not corrected.</span><span class="err" id="e-odoErrFrom"></span></div>
+      </div>
+      <div class="field"><span class="lbl">Meter changes</span>
+        <div id="odoChList" class="odoch"></div>
+        <button type="button" class="btn" id="odoChAdd" style="align-self:flex-start">+ Add meter change</button>
+        <span class="hint">When a new meter is fitted, enter the date, the old meter's last reading and the new meter's first reading. Truck round trips then count the km on both meters.</span><span class="err" id="e-odoChanges"></span></div>
     </fieldset>
     <fieldset class="docs">
       <legend>Owner</legend>
@@ -3736,6 +3755,7 @@ const TRACKED = [
   ["seats", "Seating capacity"], ["staffSeats", "Seating capacity (+ staff)"], ["gvw", "Gross vehicle weight", "kg"], ["ulw", "Unladen weight", "kg"], ["fuelTank", "Fuel tank capacity", "litres"],
   ["tyreCount", "No. of tyres"], ["tyreSize", "Tyre size"], ["batteryMake", "Battery make & model"], ["batteryDate", "Battery installed on", "date"],
   ["usage", "Usage category", "usage"], ["opType", "Operation type"], ["odoStart", "Odometer when added", "km"],
+  ["odoErr", "Meter reads extra", "pct"], ["odoErrFrom", "Meter correction from", "date"], ["odoChanges", "Meter changes", "text"],
   ["ownerName", "Owner name"], ["ownerAddress", "Owner address", "text"], ["remarks", "Remarks", "text"], ["extraDocFileName", "Other document", "file"]
 ];
 const FIELD_INFO = Object.fromEntries([
@@ -3750,7 +3770,8 @@ const inr = n => `₹${Number(n).toLocaleString("en-IN")}`;
 const COMPLIANCE_KEYS = () => DOCS.flatMap(([k]) => [k, ...(DOC_DETAILS[k] || []).map(d => d.k), k + "FileName"]);
 const ALL_KEYS = () => [...TRACKED.map(t => t[0]), ...COMPLIANCE_KEYS(), ...FIN_FIELDS.map(f => f[0])];
 const fieldLabel = (k, info = FIELD_INFO) => k === "_created" ? "Record" : info[k]?.label || k;
-const histVal = v => v == null ? "" : String(v);
+// A list (the meter changes) is kept in the history as text: "dd/mm/yyyy: old meter's last → new meter's first".
+const histVal = v => v == null ? "" : Array.isArray(v) ? v.map(c => `${fmtShort(c.date)}: ${nf(num(c.oldKm))} → ${nf(num(c.newKm))}`).join("; ") : String(v);
 const MON_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function fmtMfg(v) { const m = v?.mfgMonth; if (m && /^\d{4}-\d{2}$/.test(m)) return `${MON_SHORT[Number(m.slice(5)) - 1] || ""} ${m.slice(0, 4)}`.trim(); return v?.mfgYear ? String(v.mfgYear) : ""; }
 function fmtVal(field, val, info = FIELD_INFO) {
@@ -3763,6 +3784,7 @@ function fmtVal(field, val, info = FIELD_INFO) {
   if (f === "inr") return inr(val);
   if (f === "litres") return `${Number(val).toLocaleString("en-IN")} litres`;
   if (f === "km") return `${Number(val).toLocaleString("en-IN")} km`;
+  if (f === "pct") return `${val}% extra`;
   if (f === "yesno") return val === "yes" ? "Yes, on loan" : "No";
   if (f === "bus") return plateOf(vehicles.find(v => v.id === val)) || val;
   if (f === "stage") return BK_STAGES[val] || val;
@@ -4425,7 +4447,9 @@ function fillVDrawer(v) {
   $("vUse").innerHTML =
     row("Usage category", v.usage ? (v.usage === "Public service" ? "Public service vehicle" : esc(v.usage)) : null) +
     (v.type === "Bus" ? row("Operation type", v.opType ? esc(v.opType) : null) : "") +
-    row("Odometer when added", v.odoStart != null ? `<span class="num">${fmtVal("odoStart", v.odoStart)}</span>` : null);
+    row("Odometer when added", v.odoStart != null ? `<span class="num">${fmtVal("odoStart", v.odoStart)}</span>` : null) +
+    (v.odoErr ? row("Meter reads extra", `<span class="num">${v.odoErr}%</span> <span class="sub">· shows ${nf(1 + v.odoErr / 100, 5)} km for each real km${v.odoErrFrom ? ` · from ${fmtDate(v.odoErrFrom)}` : ""}</span>`) : "") +
+    (odoChanges(v).length ? row("Meter changes", odoChanges(v).map(c => `<span class="num">${fmtDate(c.date)}</span> <span class="sub">· old meter ended at ${nf(num(c.oldKm))} · new meter started at ${nf(num(c.newKm))}</span>`).join("<br>")) : "");
   $("vOwner").innerHTML = row("Owner name", v.ownerName ? esc(v.ownerName) : null) +
     (v.ownerAddress ? `<dt>Address</dt><dd class="addr">${esc(v.ownerAddress)}</dd>` : row("Address", null));
   $("vDocs").innerHTML = DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).map(([k, label]) => {
@@ -4794,7 +4818,8 @@ function openDrawer(v, focusKey) {
   $("mfgOld").hidden = !(v?.mfgYear && !v?.mfgMonth); $("mfgOld").textContent = v?.mfgYear && !v?.mfgMonth ? `Saved earlier as ${v.mfgYear} only. Pick the month.` : "";
   DETAIL_FIELDS.forEach(d => $(d.k).value = v?.[d.k] ?? "");
   syncPermitTypes(v?.permitType ?? "");
-  ["rto", "fastag", "bodyType", "bodyColour", "fuelTank", "tyreCount", "tyreSize", "batteryMake", "batteryDate", "odoStart", "remarks"].forEach(id => $(id).value = v?.[id] ?? "");
+  ["rto", "fastag", "bodyType", "bodyColour", "fuelTank", "tyreCount", "tyreSize", "batteryMake", "batteryDate", "odoStart", "odoErr", "odoErrFrom", "remarks"].forEach(id => $(id).value = v?.[id] ?? "");
+  odoChRender(v?.odoChanges || []); odoErrHint();
   pendingFiles = {}; renderFileLines();
   $("finYes").checked = v?.financed === "yes"; $("finNo").checked = v?.financed === "no";
   $("financier").value = v?.financier || ""; $("loanEndDate").value = v?.loanEndDate || "";
@@ -4822,9 +4847,32 @@ function openDrawer(v, focusKey) {
   }, 30);
 }
 function closeDrawer() { $("drawer").hidden = true; editingId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
-function clearErrors() { ["staffSeats", "permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
+function clearErrors() { ["staffSeats", "permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "odoErr", "odoErrFrom", "odoChanges", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
 function setErr(k, msg) { $("e-" + k).textContent = msg; $(k)?.setAttribute("aria-invalid", "true"); }
 
+// Meter changes in the vehicle form: one row each (date, old meter's last reading, new meter's first reading).
+function odoChRender(list) {
+  $("odoChList").innerHTML = list.map(c => `<div class="ochr"><label>Date changed<input type="date" data-oc="date" value="${esc(c.date || "")}"></label>` +
+    `<label>Old meter's last km<input type="number" inputmode="numeric" min="0" max="9999999" data-oc="oldKm" value="${c.oldKm ?? ""}" placeholder="e.g. 987345"></label>` +
+    `<label>New meter's first km<input type="number" inputmode="numeric" min="0" max="9999999" data-oc="newKm" value="${c.newKm ?? ""}" placeholder="e.g. 156789"></label>` +
+    `<button type="button" class="icon" data-ocdel title="Remove this meter change" aria-label="Remove this meter change">✕</button></div>`).join("");
+}
+function odoChRead() {
+  const list = [...$("odoChList").querySelectorAll(".ochr")].map(r => { const g = k => r.querySelector(`[data-oc="${k}"]`).value; return { date: g("date"), oldKm: g("oldKm"), newKm: g("newKm") }; })
+    .filter(c => c.date || c.oldKm !== "" || c.newKm !== "");
+  for (const c of list) {
+    if (!c.date) return { err: "Enter the date of each meter change." };
+    if (c.date > todayISO()) return { err: "A meter change date can't be in the future." };
+    if (!(Number(c.oldKm) > 0)) return { err: "Enter the old meter's last reading for each meter change." };
+    if (c.newKm === "" || !(Number(c.newKm) >= 0)) return { err: "Enter the new meter's first reading for each meter change." };
+  }
+  return { list: list.map(c => ({ date: c.date, oldKm: Math.round(Number(c.oldKm)), newKm: Math.round(Number(c.newKm)) })).sort((a, b) => a.date.localeCompare(b.date)) };
+}
+const odoErrHint = () => { const p = Number($("odoErr").value); $("odoErrHint").textContent = p > 0 && p <= 50 ? `The meter shows ${nf(1 + p / 100, 5)} km for each real km. Actual km = meter km ÷ ${nf(1 + p / 100, 5)}.` : "Leave empty if the meter is right."; };
+$("odoErr").addEventListener("input", odoErrHint);
+$("odoChAdd").onclick = () => { const L = [...$("odoChList").querySelectorAll(".ochr")].map(r => ({ date: r.querySelector('[data-oc="date"]').value, oldKm: r.querySelector('[data-oc="oldKm"]').value, newKm: r.querySelector('[data-oc="newKm"]').value }));
+  odoChRender([...L, {}]); $("odoChList").querySelector(".ochr:last-child input")?.focus(); };
+$("odoChList").addEventListener("click", e => { if (e.target.closest("[data-ocdel]")) e.target.closest(".ochr").remove(); });
 $("form").addEventListener("submit", async e => {
   e.preventDefault(); clearErrors();
   const v = {
@@ -4917,6 +4965,10 @@ $("form").addEventListener("submit", async e => {
   intField("fuelTank", 1, 2000, "Enter litres between 1 and 2,000.");
   intField("tyreCount", 2, 40, "Enter a number between 2 and 40.");
   intField("odoStart", 0, 9999999, "Enter the odometer reading in km.");
+  // Odometer: the extra % (up to 3 decimals), the date it applies from, and the meter changes.
+  { const raw = $("odoErr").value, p = Number(raw);
+    if (raw !== "") { if (!Number.isFinite(p) || p <= 0 || p > 50) { setErr("odoErr", "Enter the extra % between 0 and 50, e.g. 12.812."); ok = false; } else { v.odoErr = Math.round(p * 1000) / 1000; if ($("odoErrFrom").value) v.odoErrFrom = $("odoErrFrom").value; } } }
+  { const L = odoChRead(); if (L.err) { setErr("odoChanges", L.err); ok = false; } else if (L.list.length) v.odoChanges = L.list; }
   if (tx("tyreSize")) v.tyreSize = tx("tyreSize").toUpperCase();
   if (tx("batteryMake")) v.batteryMake = tx("batteryMake");
   if ($("batteryDate").value) { if ($("batteryDate").value > todayISO()) { setErr("batteryDate", "The date can't be in the future."); ok = false; } else v.batteryDate = $("batteryDate").value; }
@@ -14035,9 +14087,27 @@ $("bkPrint").onclick = () => slipPrint(slipForm(), $("bkPrint"));
 let kBusId = "", kFy = 0, lgEditId = null, lgDaysTouched = false;
 const LG_NUM = { lgRent: "rent", lgCommission: "commission", lgToll: "toll", lgPadi: "padi", lgRto: "rto", lgLoading: "loading", lgBridge: "bridge", lgOther: "otherExp", lgBill: "billExp", lgStartKm: "startKm", lgEndKm: "endKm" };
 const LG_EXP = ["commission", "fuelCost", "toll", "padi", "rto", "loading", "bridge", "otherExp", "billExp"];
+/* Odometer, from the vehicle master: how much extra the meter reads (e.g. 12.812% when it shows 1.12812 km for each real km),
+   and the dates the meter was changed, with the old meter's last reading and the new meter's first reading. */
+function odoFactor(v, date) { const p = num(v?.odoErr); return p > 0 && (!v.odoErrFrom || !date || date >= v.odoErrFrom) ? 1 + p / 100 : 1; }
+function odoChanges(v) { return (v?.odoChanges || []).filter(c => c.date && num(c.newKm) >= 0 && num(c.oldKm) > 0).sort((a, b) => a.date.localeCompare(b.date)); }
+// Km shown on the meter between two readings. A meter change between the two dates is counted in two parts,
+// (old meter's last − start) + (end − new meter's first), when the end reading is nearer the new meter than the old one.
+function odoRun(v, sDate, sKm, eDate, eKm) {
+  sKm = num(sKm); eKm = num(eKm); if (!sKm || !eKm) return { km: 0, ch: [] };
+  let pos = sKm, run = 0; const ch = [];
+  for (const c of odoChanges(v)) {
+    if ((sDate && c.date < sDate) || (eDate && c.date > eDate)) continue;
+    const o = num(c.oldKm), n = num(c.newKm);
+    if (pos <= o && Math.abs(eKm - n) < Math.abs(eKm - o) && eKm >= n) { run += o - pos; pos = n; ch.push(c); }
+  }
+  return { km: eKm > pos ? run + eKm - pos : ch.length ? run : 0, ch };
+}
+// Meter km and the real km (meter km taken back by the vehicle's extra %).
+function odoKm(v, sDate, sKm, eDate, eKm) { const R = odoRun(v, sDate, sKm, eDate, eKm), f = odoFactor(v, sDate || eDate); return { ...R, f, act: f === 1 ? R.km : Math.round(R.km / f) }; }
 const legCalc = l => {
-  const exp = LG_EXP.reduce((a, k) => a + num(l[k]), 0), km = l.endKm && l.startKm && l.endKm > l.startKm ? l.endKm - l.startKm : 0;
-  return { exp, bal: num(l.rent) - exp, km, days: num(l.days), received: (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0) };
+  const exp = LG_EXP.reduce((a, k) => a + num(l[k]), 0), K = odoKm(vehicles.find(v => v.id === l.vehicleId), l.from, l.startKm, l.to || l.from, l.endKm);
+  return { exp, bal: num(l.rent) - exp, km: K.km, act: K.act, days: num(l.days), received: (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0) };
 };
 function roundsOf(vid, fy) {
   const legs = ops.truckTrips.filter(l => (!vid || l.vehicleId === vid) && (fy == null || fyOf(l.from) === fy)).sort((a, b) => a.from.localeCompare(b.from) || String(a.id).localeCompare(String(b.id)));
@@ -14061,15 +14131,15 @@ function renderTruck() {
   $("kNone").hidden = !!tks.length; $("kBody").hidden = !tks.length; $("kAdd").hidden = !canTrips || !tks.length;
   if (!tks.length) return;
   const rounds = roundsOf(kBusId, kFy), legs = rounds.flatMap(r => r.legs);
-  const T = legs.reduce((a, l) => { const c = legCalc(l); a.days += c.days; a.rent += num(l.rent); a.exp += c.exp; a.km += c.km; a.lit += num(l.litres); a.rec += c.received;
+  const T = legs.reduce((a, l) => { const c = legCalc(l); a.days += c.days; a.rent += num(l.rent); a.exp += c.exp; a.km += c.km; a.act += c.act; a.lit += num(l.litres); a.rec += c.received;
     ["commission", "fuelCost", "toll", "padi", "rto", "loading", "bridge", "otherExp", "billExp"].forEach(k => a[k] += num(l[k])); return a; },
-    { days: 0, rent: 0, exp: 0, km: 0, lit: 0, rec: 0, commission: 0, fuelCost: 0, toll: 0, padi: 0, rto: 0, loading: 0, bridge: 0, otherExp: 0, billExp: 0 });
+    { days: 0, rent: 0, exp: 0, km: 0, act: 0, lit: 0, rec: 0, commission: 0, fuelCost: 0, toll: 0, padi: 0, rto: 0, loading: 0, bridge: 0, otherExp: 0, billExp: 0 });
   rounds.forEach(r => { const F = r.doc?.fuels || [], A = Math.round(F.reduce((a, f) => a + num(f.amount), 0)); T.exp += A; T.fuelCost += A; T.lit += F.reduce((a, f) => a + num(f.litres), 0); });
   const bal = T.rent - T.exp, open = rounds.filter(r => r.status !== "Closed");
   $("kSummary").innerHTML = ostat("Trips", legs.length, `${rounds.length} round trip${rounds.length === 1 ? "" : "s"} · ${fmtDays(T.days)} days`) +
     ostat("Trip rent", rs(T.rent), T.days ? `${rs(T.rent / T.days)} a day` : "") + ostat("Expense", rs(T.exp), `Diesel ${rs(T.fuelCost)} · Toll ${rs(T.toll)}`) +
     ostat("Balance", rs(bal), T.days ? `${rs(bal / T.days)} a day` : "", bal < 0 ? "var(--danger)" : "var(--ok)") +
-    ostat("Kilometres", nf(T.km), T.km ? `Earns ₹${nf(T.rent / T.km, 2)} a km` : "") + ostat("Mileage", T.km && T.lit ? `${nf(T.km / T.lit, 2)} km/L` : "—", `${nf(T.lit)} L of diesel`) +
+    ostat("Kilometres", nf(T.act), T.act ? `${T.act !== T.km ? `Meter ${nf(T.km)} · ` : ""}Earns ₹${nf(T.rent / T.act, 2)} a km` : "") + ostat("Mileage", T.act && T.lit ? `${nf(T.act / T.lit, 2)} km/L` : "—", `${nf(T.lit)} L of diesel`) +
     ostat("Commission and RTO", rs(T.commission + T.rto), `Commission ${rs(T.commission)} · RTO ${rs(T.rto)}`) +
     ostat("Not settled", open.length, open.length ? `${rs(open.reduce((a, r) => a + r.rent, 0))} rent · ${rs(open.reduce((a, r) => a + r.received, 0))} received` : "All round trips closed", open.length ? "var(--warn)" : "");
   const cols = 24;
@@ -14083,10 +14153,10 @@ function renderTruck() {
       const c = legCalc(l), d1 = l.driver1Id ? (drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name) : l.driver1Name, d2 = l.driver2Id ? (drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name) : l.driver2Name;
       body += `<tr data-lid="${l.id}" tabindex="0" class="${c.bal < 0 ? "loss" : ""}"><td class="sticky"><span class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</span></td><td class="n">${fmtDays(c.days)}</td>
         <td>${esc(l.origin || "")}</td><td>${esc(l.dest || "")}</td><td>${esc([d1, d2].filter(Boolean).join(", "))}</td><td class="n"><b>${nf(num(l.rent))}</b></td>${ncell(l.commission)}<td class="n">${l.litres ? nf(l.litres) : "—"}</td>${ncell(l.fuelCost)}${ncell(l.toll)}${ncell(l.padi)}${ncell(l.rto)}${ncell(l.loading)}${ncell(l.bridge)}${ncell(l.otherExp)}${ncell(l.billExp)}${ncell(c.exp)}
-        <td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td>${ncell(c.received)}${ncell(l.startKm)}${ncell(l.endKm)}${ncell(c.km)}<td class="n">${c.km && l.litres ? nf(c.km / l.litres, 2) : "—"}</td><td class="rm" title="${esc(l.remarks || "")}">${esc(l.remarks || "")}</td></tr>`;
+        <td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td>${ncell(c.received)}${ncell(l.startKm)}${ncell(l.endKm)}${ncell(c.km)}<td class="n">${c.act && l.litres ? nf(c.act / l.litres, 2) : "—"}</td><td class="rm" title="${esc(l.remarks || "")}">${esc(l.remarks || "")}</td></tr>`;
     });
   });
-  const foot = legs.length ? `<tfoot><tr><td class="sticky">Total</td><td class="n">${fmtDays(T.days)}</td><td colspan="3">${legs.length} trips</td><td class="n">${nf(T.rent)}</td><td class="n">${nf(T.commission)}</td><td class="n">${nf(T.lit)}</td><td class="n">${nf(T.fuelCost)}</td><td class="n">${nf(T.toll)}</td><td class="n">${nf(T.padi)}</td><td class="n">${nf(T.rto)}</td><td class="n">${nf(T.loading)}</td><td class="n">${nf(T.bridge)}</td><td class="n">${nf(T.otherExp)}</td><td class="n">${nf(T.billExp)}</td><td class="n">${nf(T.exp)}</td><td class="n">${nf(bal)}</td><td class="n">${nf(T.rec)}</td><td></td><td></td><td class="n">${nf(T.km)}</td><td class="n">${T.km && T.lit ? nf(T.km / T.lit, 2) : "—"}</td><td></td></tr></tfoot>` : "";
+  const foot = legs.length ? `<tfoot><tr><td class="sticky">Total</td><td class="n">${fmtDays(T.days)}</td><td colspan="3">${legs.length} trips</td><td class="n">${nf(T.rent)}</td><td class="n">${nf(T.commission)}</td><td class="n">${nf(T.lit)}</td><td class="n">${nf(T.fuelCost)}</td><td class="n">${nf(T.toll)}</td><td class="n">${nf(T.padi)}</td><td class="n">${nf(T.rto)}</td><td class="n">${nf(T.loading)}</td><td class="n">${nf(T.bridge)}</td><td class="n">${nf(T.otherExp)}</td><td class="n">${nf(T.billExp)}</td><td class="n">${nf(T.exp)}</td><td class="n">${nf(bal)}</td><td class="n">${nf(T.rec)}</td><td></td><td></td><td class="n">${nf(T.km)}</td><td class="n">${T.act && T.lit ? nf(T.act / T.lit, 2) : "—"}</td><td></td></tr></tfoot>` : "";
   $("kTable").classList.toggle("ronly", !$("kLegs").checked);
   $("kTable").innerHTML = head + `<tbody>${body || `<tr><td colspan="${cols}" class="sub" style="padding:18px">No trips entered for FY ${fyLabel(kFy)}.${canTrips ? " Use + Add trip to enter one." : ""}</td></tr>`}</tbody>` + foot;
   rtRefresh();
@@ -14560,7 +14630,7 @@ function rtCalc(r, prev, lang = "en") {
   const odo = [...legs.flatMap(l => [num(l.startKm), num(l.endKm)]), ...fills.map(f => num(f.odo))].filter(x => x > 0), litres = fills.reduce((a, f) => a + num(f.litres), 0);
   // Dates and kilometres: from where the last round trip ended to where this one ends; each can be typed over.
   const last = legs[legs.length - 1], autoStart = prev?.end || r.from, autoEnd = r.to;
-  const autoEK = num(last?.endKm) || (odo.length ? Math.max(...odo) : 0), autoSK = prev?.km || (odo.length ? Math.min(...odo) : 0);
+  const autoEK = num(last?.endKm) || (odo.length ? Math.max(...odo) : 0), autoSK = prev?.km || num(legs[0]?.startKm) || (odo.length ? Math.min(...odo) : 0);
   const startDate = D.startDate || autoStart, endDate = D.endDate || autoEnd, startKm = num(D.startKm) || autoSK, endKm = num(D.endKm) || autoEK;
   const fast = legs.filter(l => num(l.toll) > 0).map(l => ({ date: l.from, what: `${t.fast} · ${rtLegName(l)}`, amt: num(l.toll) }));
   const card = fills.filter(f => f.pay !== "Cash" && num(f.amount) > 0).map(f => ({ date: f.date, what: `${t.card} · ${nf(num(f.litres), 2)} ${t.L}${f.rate ? ` @ ₹${nf(f.rate, 2)}` : ""}${f.place ? " · " + f.place : ""}`, amt: Math.round(num(f.amount)) }))
@@ -14574,7 +14644,8 @@ function rtCalc(r, prev, lang = "en") {
     .sort((a, b) => (a.settled === false) - (b.settled === false) || String(a.date || "").localeCompare(String(b.date || "")));
   const rec = pays.map(p => ({ date: p.settled === false ? "" : p.date, what: `${p.desc || (p.l ? rtLegName(p.l) : r.path)}${pm(p.pay)}`, amt: num(p.amount), pend: p.settled === false }));
   const owner = rtSum(fast) + rtSum(card) + rtSum(giv) + (loss ? 0 : bal), came = rtSum(rec) + (loss ? -bal : 0);
-  return { startDate, endDate, autoStart, autoEnd, days: inclDays(startDate, endDate) || 0, startKm, endKm, autoSK, autoEK, km: endKm > startKm ? endKm - startKm : 0, litres, rfuel,
+  const K = odoKm(vehicles.find(v => v.id === r.vehicleId), startDate, startKm, endDate, endKm);
+  return { startDate, endDate, autoStart, autoEnd, days: inclDays(startDate, endDate) || 0, startKm, endKm, autoSK, autoEK, km: K.km, act: K.act, odoF: K.f, odoCh: K.ch, litres, rfuel,
     fast, card, giv, balLine, loss, rec, pendAmt: rtSum(rec.filter(x => x.pend)), bal, owner, came, diff: owner - came,
     loads: legs.map((l, i) => ({ l, c: C[i] })), drivers: [...new Set(legs.flatMap(l => [dn(l.driver1Id, l.driver1Name), dn(l.driver2Id, l.driver2Name)]).filter(Boolean))] };
 }
@@ -14606,8 +14677,8 @@ function rtSumRender() {
   const advRow = row(A, { cls: "adv", amt: A.adv === "typed" && edit ? `<input type="number" inputmode="numeric" min="0" data-rtk="advIn" value="${num(D.advIn) || ""}" placeholder="0" aria-label="Advance from the previous trip, ₹">` : "" });
   const balRow = row(S.balLine, { cls: S.loss ? "loss" : "", date: edit ? `<input type="date" data-rtk="balDate" value="${S.balLine.date}" aria-label="Date of the vehicle balance">` : "" });
   $("rtSum").innerHTML = `<div class="rtstrip"><div class="rtstats">` + st("Truck", esc(bus ? plateOf(bus) : "—")) + ed("startDate", "Start date", S.startDate, S.autoStart, 1) + ed("endDate", "End date", S.endDate, S.autoEnd, 1) +
-    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK) + ed("endKm", "End km", S.endKm, S.autoEK) + st("Total km", S.km ? nf(S.km) : "—") +
-    st("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—") + st("Mileage", S.km && S.litres ? `${nf(S.km / S.litres, 2)} km/L` : "—") + st("Vehicle bal.", rs(S.bal), S.bal < 0 ? " hi neg" : " hi") + `</div></div>` +
+    st("Days", S.days || "—") + st("Total rent", rs(r.rent)) + ed("startKm", "Start km", S.startKm, S.autoSK) + ed("endKm", "End km", S.endKm, S.autoEK) + st(S.odoF !== 1 ? "Meter km" : "Total km", S.km ? nf(S.km) : "—") + (S.odoF !== 1 ? st("Actual km", S.act ? nf(S.act) : "—", " hi") : "") +
+    st("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—") + st("Mileage", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L` : "—") + st("Vehicle bal.", rs(S.bal), S.bal < 0 ? " hi neg" : " hi") + `</div>` + rtOdoNote(S, bus) + `</div>` +
     `<div class="rtcard"><h3>Loads${S.drivers.length ? ` <span class="sub">· ${esc(S.drivers.join(", "))}</span>` : ""}</h3><div class="rttscroll"><table class="rttab"><thead><tr><th>#</th><th>Dates</th><th>Trip</th><th class="n">Rent</th><th class="n">Expense</th><th class="n">Balance</th></tr></thead><tbody>` +
     S.loads.map(({ l, c }, i) => `<tr><td>${i + 1}</td><td class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</td><td>${esc(rtLegName(l))}</td><td class="n">${nf(num(l.rent))}</td><td class="n">${nf(c.exp)}</td><td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td></tr>`).join("") +
     (S.rfuel ? `<tr><td></td><td class="num">—</td><td>Diesel for the whole round trip</td><td class="n"></td><td class="n">${nf(S.rfuel)}</td><td class="n neg">-${nf(S.rfuel)}</td></tr>` : "") +
@@ -14656,14 +14727,14 @@ const RT_T = {
     owner: "① OWNER'S MONEY", came: "② CAME TO THE OWNER", gFast: "FASTag", gCard: "Diesel paid by card", gGiv: "Given to the driver", gBal: "Balance with the vehicle", none: "None", nopay: "No payments yet",
     tot1: "Total ①", tot2: "Total ②", notSet: "Not settled", adv: "③ ADVANCE", ownerM: "Owner's Money", cameM: "Came to owner", balance: "Balance", next: "Advance for next trip",
     pend: n => `Came to owner includes ${n} not settled.`, sheets: ["Trip sheet", "Trip summary"],
-    sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
+    sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"], meterKm: "Meter km", actKm: "Actual km",
     fast: "FASTag", card: "Diesel by card", L: "L", advPrev: "Advance from the previous trip", advSet: (no, fy) => `settlement of round trip ${no} (FY ${fy})`, given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {} },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
     cols: ["தேதி", "பயணம்", "வாடகை", "செலவு", "மீதம்"], total: "மொத்தம்", owner: "① முதலாளி பணம்", came: "② முதலாளிக்கு வந்தது", gFast: "ஃபாஸ்டேக்", gCard: "கார்டு மூலம் டீசல்",
     gGiv: "ஓட்டுநரிடம் கொடுத்தது", gBal: "வண்டி மீதம்", none: "இல்லை", nopay: "இன்னும் பணம் வரவில்லை", tot1: "மொத்தம் ①", tot2: "மொத்தம் ②", notSet: "நிலுவை", adv: "③ முன்பணம்",
     ownerM: "முதலாளி பணம்", cameM: "முதலாளிக்கு வந்தது", balance: "மீதம்", next: "அடுத்த பயணத்திற்கான முன்பணம்", pend: n => `முதலாளிக்கு வந்ததில் ${n} நிலுவை உள்ளது.`,
     sheets: ["பயணக் கணக்கு", "பயணச் சுருக்கம்"],
-    sum: ["தொடக்க தேதி", "முடிவு தேதி", "மொத்த நாட்கள்", "மொத்த வாடகை", "தொடக்க கி.மீ", "முடிவு கி.மீ", "மொத்த கி.மீ", "மொத்த டீசல் (லி)", "மைலேஜ் (கி.மீ/லி)", "வண்டி மீதம்"],
+    sum: ["தொடக்க தேதி", "முடிவு தேதி", "மொத்த நாட்கள்", "மொத்த வாடகை", "தொடக்க கி.மீ", "முடிவு கி.மீ", "மொத்த கி.மீ", "மொத்த டீசல் (லி)", "மைலேஜ் (கி.மீ/லி)", "வண்டி மீதம்"], meterKm: "மீட்டர் கி.மீ", actKm: "உண்மையான கி.மீ",
     fast: "ஃபாஸ்டேக்", card: "டீசல் (கார்டு)", L: "லி", advPrev: "முந்தைய பயண முன்பணம்", advSet: (no, fy) => `சுற்றுப் பயணம் ${no} கணக்கு (நிதியாண்டு ${fy})`, given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்", vbalLoss: "வண்டி நஷ்டம்", rfuel: "முழு சுற்றுப் பயணத்திற்கான டீசல்",
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
     giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" } }
@@ -14673,9 +14744,18 @@ function rtTamilFont() {
   if (!document.getElementById("rtTaFont")) { const l = document.createElement("link"); l.id = "rtTaFont"; l.rel = "stylesheet"; l.href = "https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&display=swap"; document.head.append(l); }
   return Promise.race([Promise.all([document.fonts.load("400 20px 'Noto Sans Tamil'", "தமிழ்"), document.fonts.load("700 20px 'Noto Sans Tamil'", "தமிழ்")]), new Promise(ok => setTimeout(ok, 4000))]).catch(() => {});
 }
+// The trip summary lines. A truck whose meter reads extra gets an "Actual km" line, and the mileage is on the actual km.
 function rtSumRows(S, r, t = RT_T.en) {
-  return [fmtShort(S.startDate), fmtShort(S.endDate), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.km ? nf(S.km) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
-    S.km && S.litres ? nf(S.km / S.litres, 2) : "—", rtSigned(S.bal)].map((v, i) => [t.sum[i], v]);
+  const rows = [fmtShort(S.startDate), fmtShort(S.endDate), S.days || "—", nf(r.rent), S.startKm || "—", S.endKm || "—", S.km ? nf(S.km) : "—", S.litres ? nf(S.litres, S.litres % 1 ? 2 : 0) : "—",
+    S.act && S.litres ? nf(S.act / S.litres, 2) : "—", rtSigned(S.bal)].map((v, i) => [t.sum[i], v]);
+  if (S.odoF !== 1) { rows[6][0] = t.meterKm; rows.splice(7, 0, [t.actKm, S.act ? nf(S.act) : "—"]); }
+  return rows;
+}
+// Under the strip: how the km were worked out when the meter was changed or reads extra.
+function rtOdoNote(S, bus) {
+  const n = [...S.odoCh.map(c => `Meter changed on ${fmtShort(c.date)}: old meter ended at ${nf(num(c.oldKm))}, new meter started at ${nf(num(c.newKm))}. The km are counted on both meters.`),
+    ...(S.odoF !== 1 ? [`${bus ? esc(plateOf(bus)) : "This truck"}'s meter reads ${nf((S.odoF - 1) * 100, 3)}% extra (set in the vehicle master). Actual km = meter km ÷ ${nf(S.odoF, 5)}, and the mileage is on the actual km.`] : [])];
+  return n.length ? `<p class="sub rtodo">${n.join("<br>")}</p>` : "";
 }
 // Drawing kit for one A4 page (1240 × 1754 px) at text scale k: the company header, a title line, tables whose text wraps
 // and whose figures shrink to fit their column, and the footer.
@@ -14733,7 +14813,7 @@ function rtPaint(fn, t = RT_T.en) {
     else { hi = k; k = lo !== null ? (lo + hi) / 2 : Math.max(0.55, k * (room - 230) / (end - 230) * 0.98); }
   }
   // The page ends just below the last section, so only what is used gets printed.
-  const { cv, g, K, end } = best, h = Math.ceil(end + 24);
+  const { cv, g, K, end } = best, h = Math.ceil(end + 24 + M);
   g.strokeStyle = K.ink; g.lineWidth = 3; g.strokeRect(M, M, W - 2 * M, h - 2 * M);
   const out = document.createElement("canvas"); out.width = W; out.height = h; out.getContext("2d").drawImage(cv, 0, 0); return out;
 }
@@ -14782,7 +14862,7 @@ function rtPage2(r, S, t = RT_T.en) {
   const [veh, drv] = rtWho(r, S, t);
   return rtPaint(K => {
     const y = K.header(null, t.summary, `${veh}     ${drv}`) + K.z(10), w = 960, x = (K.W - w) / 2;
-    return K.table(x, y, [{ w: 520 }, { w: 440, r: 1 }], rtSumRows(S, r, t).map(([l, v], i) => ({ cells: [l, String(v)], bold: i === 9, bg: i % 2 ? "#F6F7FA" : 0, color: i === 9 && S.bal < 0 ? [0, K.red] : 0 })), 30, 46);
+    return K.table(x, y, [{ w: 520 }, { w: 440, r: 1 }], rtSumRows(S, r, t).map(([l, v], i, a) => ({ cells: [l, String(v)], bold: i === a.length - 1, bg: i % 2 ? "#F6F7FA" : 0, color: i === a.length - 1 && S.bal < 0 ? [0, K.red] : 0 })), 30, 46);
   }, t);
 }
 // The same pages as Excel: sheet 1 the trip sheet, sheet 2 the summary.
