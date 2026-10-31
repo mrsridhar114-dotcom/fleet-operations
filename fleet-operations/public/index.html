@@ -223,7 +223,7 @@ tbody tr:hover { background: var(--accent-soft); }
 .chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .rowact { display: flex; gap: 6px; justify-content: flex-end; }
 /* renewal schedule: a date being updated in its row */
-tr.redit > td { background: var(--accent-soft); } .rnew { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; } .rfile { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .rfile .sub { font-size: 12px; overflow-wrap: anywhere; } .rdate { font: 600 14px var(--body); padding: 6px 8px; border: 1px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--ink); max-width: 100%; }
+tr.redit > td { background: var(--accent-soft); } .rnew { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; } .rfile { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .rfile .sub { font-size: 12px; overflow-wrap: anywhere; } :is(.rdate, .rnew .dmyt) { font: 600 14px var(--body); padding: 6px 8px; border: 1px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--ink); max-width: 100%; }
 tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width: 760px) { tr.redit .rowact .btn { flex: 1; } }
 .icon { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 5px 9px; border-radius: 5px; font-size: 13px; font-weight: 600; }
 .icon:hover { border-color: var(--line); color: var(--ink); }
@@ -350,7 +350,7 @@ fieldset.docs legend { font-family: var(--mono); font-size: 11px; letter-spacing
 .docblock { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
 .docblock:first-child { border-top: 0; padding-top: 0; }
 .docblock .dbh { font-weight: 600; font-size: 14px; }
-.docblock.flash input[type="date"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.docblock.flash :is(input[type="date"], .dmyt) { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .docx { font-size: 12px; color: var(--muted); font-weight: 400; line-height: 1.6; }
 .docx b { color: var(--ink); font-weight: 600; }
 .fileline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; }
@@ -529,6 +529,14 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .tentry { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .rbtn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 5px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
 .rbtn.add { border-color: var(--accent); color: var(--accent); } .rbtn.del { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); color: var(--danger); } .rbtn.del:hover { background: var(--danger); border-color: var(--danger); }
+/* Date boxes: the dd/mm/yyyy text box with a calendar button; the browser's own date box underneath, invisible. */
+.dmy { position: relative; display: block; min-width: 0; }
+.dmy > input.dmyn { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; opacity: 0 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; min-width: 0 !important; z-index: 0; }
+.dmy > .dmyt { width: 100%; padding-right: 27px !important; font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+.dmy > .dmyb { position: absolute; z-index: 2; right: 2px; top: 50%; transform: translateY(-50%); width: 24px; height: 28px; display: grid; place-items: center; border: 0; background: none; color: var(--muted); cursor: pointer; border-radius: 6px; padding: 0; }
+.dmy > .dmyb:hover { color: var(--accent); background: var(--chip-bg); } .dmy > .dmyb svg { width: 16px; height: 16px; } .dmy > .dmyb:disabled { display: none; }
+.dmy > .dmyt.dmybad { border-color: var(--danger) !important; }
+.bwin > .dmy { flex: 1; min-width: 0; align-self: stretch; display: flex; align-items: center; } .bwin > .dmy > .dmyt { height: 100%; }
 .lgshut { margin: 12px 20px 0; padding: 10px 14px; border-radius: 8px; background: var(--chip-bg); border: 1px solid var(--line); font-size: 14px; flex: none; }
 /* Round trip screen: summary, each trip and the payments as tabs (on a computer, a menu on the left). */
 .rthbtns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
@@ -626,7 +634,7 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
   #lgDrawer .tfmain { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px 22px; align-items: start; }
   #lgDrawer .tfmain > fieldset:nth-of-type(3), #lgDrawer .tfmain > fieldset:nth-of-type(5) { grid-column: 1 / -1; }
   #lgDrawer .tfmain > fieldset { margin: 0; }
-  #lgDrawer .tfmain > fieldset:first-of-type .three { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 76px; } #lgDrawer input[type="date"] { padding-left: 8px; padding-right: 6px; }
+  #lgDrawer .tfmain > fieldset:first-of-type .three { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 62px; } #lgDrawer :is(input[type="date"], .dmyt) { padding-left: 8px; padding-right: 6px; }
 }
 .dochead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
 .dochead h3 { margin: 0; }
@@ -787,7 +795,7 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 .dsf { display: flex; flex-direction: column; gap: 4px; }
 .dsf .k { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .dsf input#dbStart { font: inherit; font-size: 15px; font-weight: 600; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); width: 150px; }
-.dsf input#dbDate { font: inherit; font-weight: 600; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+.dsf :is(input#dbDate, .dmyt) { font: inherit; font-weight: 600; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
 .dsbody { display: grid; grid-template-columns: 180px minmax(0, 1fr); background: var(--bg); } .dsbody.one { grid-template-columns: minmax(0, 1fr); }
 .dblist { display: flex; flex-direction: column; gap: 3px; background: var(--surface); border-right: 1px solid var(--line); padding: 10px 8px; }
 .dbl-h { font-size: 12px; color: var(--muted); margin: 4px 8px 6px; font-weight: 600; }
@@ -864,7 +872,7 @@ table.ttable td.route { max-width: 260px; overflow: hidden; text-overflow: ellip
 #lgDrawer { width: min(940px, 100%); }
 .lgftab { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13.5px; } .lgftab th { text-align: left; font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: .03em; color: var(--muted); padding: 6px 3px; border-bottom: 1px solid var(--line); } .lgftab th.n { text-align: right; }
 .lgftab td { padding: 4px; border-bottom: 1px solid var(--line); } .lgftab input, .lgftab select { font: inherit; font-size: 13.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 7px; width: 100%; min-width: 0; }
-.lgftab input[type="number"] { text-align: right; } .lgftab th:nth-child(1) { width: 16%; } .lgftab th:nth-child(2) { width: 12%; } .lgftab th:nth-child(3) { width: 11%; } .lgftab th:nth-child(4) { width: 13%; } .lgftab th:nth-child(5) { width: 9%; } .lgftab th:nth-child(6) { width: 22%; } .lgftab th:nth-child(7) { width: 13%; } .lgftab th:last-child { width: 4%; min-width: 24px; } .lgftab td { padding: 4px 2px; } .lgftab input, .lgftab select { padding: 6px 5px; } .lgftab select { padding-right: 2px; } .lgftab input[type="date"] { font-size: 12.5px; padding: 6px 2px; } .lgftab td:last-child { text-align: center; } .lgftab input[type="date"] { padding: 6px 4px; font-size: 13px; }
+.lgftab input[type="number"] { text-align: right; } .lgftab th:nth-child(1) { width: 16%; } .lgftab th:nth-child(2) { width: 12%; } .lgftab th:nth-child(3) { width: 11%; } .lgftab th:nth-child(4) { width: 13%; } .lgftab th:nth-child(5) { width: 9%; } .lgftab th:nth-child(6) { width: 22%; } .lgftab th:nth-child(7) { width: 13%; } .lgftab th:last-child { width: 4%; min-width: 24px; } .lgftab td { padding: 4px 2px; } .lgftab input, .lgftab select { padding: 6px 5px; } .lgftab select { padding-right: 2px; } .lgftab :is(input[type="date"], .dmyt) { font-size: 12.5px; padding: 6px 2px; } .lgftab td:last-child { text-align: center; } .lgftab :is(input[type="date"], .dmyt) { padding: 6px 4px; font-size: 13px; }
 @media (max-width: 700px) { .lgftab { min-width: 660px; } }
 .lgftab tfoot td { border-bottom: 0; padding-top: 8px; font-weight: 700; font-family: var(--mono); } .lgftab tfoot td.n { text-align: right; padding-right: 10px; } .lgftab tfoot .sub { font-family: var(--body); font-weight: 400; } .lgftab tfoot .btn { padding: 5px 10px; font-size: 13px; font-family: var(--body); white-space: nowrap; }
 .lgftab [data-frm] { padding: 2px 6px; }
@@ -1466,7 +1474,7 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwb.s0 h2 { font-size: 22px; }
 .s0 .bw2 .bwf1 > span:first-child { min-height: 0; font-size: 14px; }
 .s0 .bwf1 { gap: 4px; }
-.bwdt .bwin { height: 48px; padding: 0 10px; border-radius: 12px; } .bwdt input[type=date] { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: inherit; font: 700 17px var(--body); outline: none; padding: 0; }
+.bwdt .bwin { height: 48px; padding: 0 10px; border-radius: 12px; } .bwf1.bwdt :is(input[type=date], .dmyt) { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: inherit; font: 700 17px var(--body); outline: none; padding: 0; }
 .s0 .bwnote { font-size: 13px; }
 .s0 .bwsum { padding: 8px 10px; border-radius: 12px; } .s0 .bwsum.bwsr { flex-direction: row; align-items: center; gap: 10px; }
 .s0 .bwdays { min-width: 44px; height: 44px; border-radius: 10px; } .s0 .bwdays b { font-size: 20px; } .s0 .bwdays span { font-size: 11px; }
@@ -1656,7 +1664,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .xpsegs button:first-child { border-radius: 8px 0 0 8px; } .xpsegs button:last-child { border-radius: 0 8px 8px 0; } .xpsegs button + button { border-left: 0; } .xpsegs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 #mtw .bwb, #msgw .bwb, #mtw .bwf, #msgw .bwf { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
 #mtw .bwf, #msgw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
-.bwf1 input[type=date], .bwf1 select { box-sizing: border-box; width: 100%; height: 60px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); }
+.bwf1 :is(input[type=date], .dmyt), .bwf1 select { box-sizing: border-box; width: 100%; height: 60px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); }
 .bwin input[type=number] { flex: 1; min-width: 0; height: 58px; border: 0; background: none; color: inherit; font: inherit; padding: 0 12px; outline: none; } .bwin > b { padding-left: 14px; color: var(--muted); }
 .bwchips.mtplates { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } .bwchips.mtplates button { font-family: var(--mono); letter-spacing: .02em; }
 .mthome { display: flex; flex-direction: column; gap: 12px; max-width: 760px; }
@@ -14419,6 +14427,74 @@ $("rtPrint").onclick = () => {
     lineCols: ["sec", "date", "det", "amt"], val: (x, k) => k === "date" ? (x.date ? fmtShort(x.date) : "") : k === "amt" ? nf(x.amt) : x[k] || "", raw: (x, k) => k === "date" ? x.date || null : k === "amt" ? x.amt : null });
 };
 
+/* ---------- Dates as dd/mm/yyyy everywhere ----------
+   The browser's own date box follows the computer's language, often mm/dd/yyyy. Each date box is shown as a dd/mm/yyyy
+   text box with a calendar button. The browser's box stays underneath, invisible: it keeps the yyyy-mm-dd value the app
+   reads and writes, sends the input and change events, and opens the calendar. */
+const DMY_V = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+const dmyFmt = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || "") ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : "";
+// dd/mm/yyyy, d/m/yy, ddmmyyyy, ddmmyy or yyyy-mm-dd ("" when empty, null when not a date). Without a year: this year.
+function dmyParse(s) {
+  const t = String(s || "").trim().toLowerCase(); if (!t) return "";
+  if (t === "t" || t === "today") return todayISO();
+  const mk = (y, m, d) => { if (y < 100) y += 2000; const iso = `${y}-${pad2(m)}-${pad2(d)}`, dt = new Date(iso + "T00:00:00"); return y >= 1900 && y <= 2100 && m >= 1 && m <= 12 && dt.getDate() === d ? iso : null; };
+  let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return mk(+m[1], +m[2], +m[3]);
+  m = t.match(/^(\d{1,2})[\/\-. ](\d{1,2})(?:[\/\-. ](\d{2}|\d{4}))?$/); if (m) return mk(m[3] ? +m[3] : +todayISO().slice(0, 4), +m[2], +m[1]);
+  m = t.match(/^(\d{2})(\d{2})(\d{2}|\d{4})$/); if (m) return mk(+m[3], +m[2], +m[1]);
+  return null;
+}
+const DMY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`;
+function dmyWrap(n) {
+  if (n.dataset.dmy || n.classList.contains("xdpin")) return; n.dataset.dmy = "1";
+  const w = document.createElement("span"), t = document.createElement("input"), b = document.createElement("button");
+  w.className = "dmy"; t.type = "text"; t.className = "dmyt"; t.inputMode = "numeric"; t.autocomplete = "off"; t.spellcheck = false; t.placeholder = "dd/mm/yyyy"; t.maxLength = 10;
+  t.setAttribute("aria-label", n.getAttribute("aria-label") || (n.id && document.querySelector(`label[for="${CSS.escape(n.id)}"]`)?.textContent.replace(/\*/g, "").trim()) || "Date");
+  b.type = "button"; b.className = "dmyb"; b.tabIndex = -1; b.title = "Pick from the calendar"; b.setAttribute("aria-label", "Pick the date from a calendar"); b.innerHTML = DMY_ICON;
+  n.before(w); w.append(n, t, b); n.tabIndex = -1; n.setAttribute("aria-hidden", "true"); n.classList.add("dmyn");
+  // Shown again from the real value, unless it is the date being typed.
+  const sync = () => { const v = DMY_V.get.call(n); if (document.activeElement === t && dmyParse(t.value) === v) return; t.value = dmyFmt(v); t.classList.remove("dmybad"); };
+  Object.defineProperty(n, "value", { configurable: true, get() { return DMY_V.get.call(this); }, set(v) { DMY_V.set.call(this, v); sync(); } });
+  const attrs = () => { t.disabled = n.disabled; t.readOnly = n.readOnly; b.disabled = n.disabled || n.readOnly; w.hidden = n.hidden; if (n.title) t.title = n.title;
+    const ai = n.getAttribute("aria-invalid"); ai ? t.setAttribute("aria-invalid", ai) : t.removeAttribute("aria-invalid"); };
+  new MutationObserver(attrs).observe(n, { attributes: true, attributeFilter: ["disabled", "readonly", "hidden", "aria-invalid", "title"] });
+  new MutationObserver(() => { if (t.disabled !== n.disabled) t.disabled = n.disabled; }).observe(t, { attributes: true, attributeFilter: ["disabled"] });
+  attrs(); sync();
+  n.addEventListener("input", sync); n.addEventListener("change", sync);
+  n.addEventListener("focus", () => { if (!w.dataset.pick) t.focus(); });
+  const put = iso => { DMY_V.set.call(n, iso); n.dispatchEvent(new Event("input", { bubbles: true })); };
+  t.addEventListener("input", e => {
+    e.stopPropagation();
+    if (/\/\//.test(t.value)) t.value = t.value.replace(/\/{2,}/g, "/"); // a slash typed after the one added
+    else if (e.inputType === "insertText" && /^\d{2}$|^\d{2}\/\d{2}$/.test(t.value)) t.value += "/";
+    const iso = dmyParse(t.value); t.classList.toggle("dmybad", iso === null && t.value.length >= 8);
+    if (iso && iso !== DMY_V.get.call(n) && /\d{4}$/.test(t.value) && t.value.replace(/\D/g, "").length >= 8) put(iso);
+  });
+  // Typing is finished (Enter, or leaving the box): the date is kept, or a wrong one is put back.
+  const commit = () => {
+    if (t.value === t.dataset.done) return true; const iso = dmyParse(t.value), old = DMY_V.get.call(n);
+    if (iso === null) { toast("Type the date as dd/mm/yyyy, for example 15/10/2026."); t.value = dmyFmt(old); t.classList.remove("dmybad"); t.dataset.done = t.value; return false; }
+    t.value = t.dataset.done = dmyFmt(iso); if (iso !== old) put(iso);
+    n.dispatchEvent(new Event("change", { bubbles: true })); return true;
+  };
+  t.addEventListener("focus", () => { t.dataset.done = t.value; if (t.value) setTimeout(() => { if (document.activeElement === t) t.select(); }, 0); }); // typing replaces the date
+  t.addEventListener("change", e => { e.stopPropagation(); commit(); });
+  const pick = () => { if (n.disabled || n.readOnly) return; w.dataset.pick = "1"; setTimeout(() => delete w.dataset.pick, 800); try { n.showPicker(); } catch { n.focus(); n.click(); } };
+  // Enter, Escape and the up and down arrows reach the app as keys pressed in the date box itself.
+  t.addEventListener("keydown", e => {
+    if (e.altKey && e.key === "ArrowDown") { e.preventDefault(); pick(); return; }
+    if (!["Enter", "Escape", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+    if (e.key === "Enter") commit();
+    const k = new KeyboardEvent("keydown", { key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey, bubbles: true, cancelable: true });
+    e.stopPropagation(); n.dispatchEvent(k); if (k.defaultPrevented) e.preventDefault();
+  });
+  b.addEventListener("mousedown", e => e.preventDefault()); b.addEventListener("click", pick);
+}
+function dmyScan(el) { if (el.matches?.('input[type="date"]')) dmyWrap(el); el.querySelectorAll?.('input[type="date"]').forEach(dmyWrap); }
+function dmyInstall() {
+  dmyScan(document.body);
+  new MutationObserver(ms => { for (const m of ms) for (const x of m.addedNodes) if (x.nodeType === 1) dmyScan(x); }).observe(document.body, { childList: true, subtree: true });
+}
+
 /* ---------- home wiring ---------- */
 $("oDate").addEventListener("change", () => { const v = $("oDate").value; if (v && v <= todayISO()) { opDate = v; dbFilledKey = ""; renderHub(); } else $("oDate").value = opDate; });
 $("oTodo").addEventListener("click", e => {
@@ -14447,6 +14523,7 @@ subscribeOps();
 applyAccess();
 route();
 connect();
+dmyInstall();
 </script>
 
 </body>
