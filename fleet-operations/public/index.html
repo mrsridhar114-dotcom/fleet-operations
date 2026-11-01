@@ -11942,7 +11942,7 @@ function bwHomeHtml(b) {
       (canBookings && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", "Driver advance", b.drvSettle ? "Settled" : !d.total && !d.ext ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle", b.drvSettle ? "ok" : (d.total || d.ext) && d.net ? "due" : ""))(drvCalc(b)) : "") +
       (bw.driver ? "" : tile('data-bw="slipprint"', "🖨️", "Booking slip", "Image or PDF to print or share")) +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
-      (b.tsStatus === "approved" || tsFill(b).pct === 100 ? tile('data-bw="tsprint" aria-label="Print trip sheet" title="Print trip sheet"', "🖨️", "") : "") +
+      (b.tsStatus === "approved" || tripClosed(b) || fp.pct === 100 ? tile('data-bw="tsprint" aria-label="Print trip sheet" title="Print trip sheet"', "🖨️", "") : "") +
       (tripClosed(b) ? `<div class="bhlock"><b>🔒 Trip closed</b><span>On ${fmtDate(b.closedOn)}${b.closedByName ? ` by ${esc(b.closedByName)}` : ""}. Everything here is view only.</span>` +
         `</div>` +
         (canCloseTrips ? `<button type="button" class="bhclose" data-bw="lockask" data-how="reopen">Reopen trip</button>` : "")
