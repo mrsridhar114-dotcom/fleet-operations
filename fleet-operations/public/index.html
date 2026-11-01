@@ -12212,6 +12212,7 @@ function openBooking(id, preset, full) {
   $("bkNo").value = b?.no || nextBkNo(); $("bkBookedOn").value = b?.bookedOn || todayISO();
   $("bkStatus").value = b?.status || "booked";
   ["party", "phone", "address", "places", "remarks", "cleanerName", "tripNote"].forEach(k => { const el = { party: "bkParty", phone: "bkPhone", address: "bkAddress", places: "bkPlaces", remarks: "bkRemarks", cleanerName: "bkCleaner", tripNote: "bkTripNote" }[k]; $(el).value = b?.[k] || ""; });
+  if (b?.noCleaner && !b.cleanerName) $("bkCleaner").value = "No cleaner";
   const from = b?.from || preset?.from || todayISO(), to = b ? bkEnd(b) : preset?.to || from;
   $("bkFrom").value = from; $("bkTo").value = to; $("bkDays").value = b?.days ?? inclDays(from, to);
   bkDaysTouched = !!b && num(b.days) !== inclDays(b.from, bkEnd(b));
@@ -12662,7 +12663,7 @@ function tripFromForm(cur) {
   TS_KEYS.forEach(k => delete next[k]);
   TS_KEYS.forEach(k => { if (f[k] != null && f[k] !== "") next[k] = f[k]; });
   const cl = $("bkCleaner").value.trim().replace(/\s+/g, " "), tn = $("bkTripNote").value.trim().replace(/\s+/g, " ");
-  if (cl) next.cleanerName = cl; if (tn) next.tripNote = tn;
+  delete next.noCleaner; if (isNoCleaner(cl)) next.noCleaner = true; else if (cl) next.cleanerName = cl; if (tn) next.tripNote = tn;
   Object.entries(PP_FIELD).forEach(([p, fl]) => { if (cur.partyPays?.[p]) delete next[fl]; });
   const c = bkCalc(next); next.due = c.due; next.received = c.received; next.balance = c.balance; next.expense = c.exp; next.profit = c.profit;
   return next;
@@ -12839,11 +12840,14 @@ $("tsPrint").addEventListener("click", () => {
 $("tsGroups").addEventListener("keydown", e => { const r = e.target.closest("tr[data-bk]"); if (r && e.key === "Enter") openBooking(r.dataset.bk); });
 
 // The main driver is left out of the cleaner list.
+// The computer's cleaner box takes a name or "No cleaner" (the same choice as on the phone).
+const isNoCleaner = v => /^\s*no\s*cleaner\s*$/i.test(String(v || ""));
 const bkDriverName = () => { const v = $("bkDriver").value; return v.startsWith("id:") ? drivers.find(d => d.id === v.slice(3))?.name || "" : v.startsWith("name:") ? v.slice(5) : ""; };
 function buildCleaners() {
   const spareIds = new Set(spareBuses().map(v => v.id)), drove = new Set(ops.bookings.filter(x => spareIds.has(x.vehicleId) && x.driverId).map(x => x.driverId));
   const act = drivers.filter(d => d.status !== "Inactive"), opts = [], main = bkDriverName().trim().toUpperCase();
   const seen = new Set(main ? [main] : []), push = (nm, lbl) => { const k = String(nm || "").trim().toUpperCase(); if (!k || seen.has(k)) return; seen.add(k); opts.push(`<option value="${esc(nm)}" label="${esc(lbl)}">`); };
+  push("No cleaner", "This trip had no cleaner");
   act.filter(d => drove.has(d.id)).forEach(d => push(d.name, "Driver · spare bus"));
   act.filter(d => !drove.has(d.id)).forEach(d => push(d.name, "Driver"));
   conductors.filter(c => c.status !== "Inactive").forEach(c => push(c.name, "Conductor"));
@@ -13011,6 +13015,7 @@ $("bkForm").addEventListener("submit", async e => {
   const tx = id => $(id).value.trim().replace(/\s+/g, " ");
   b.no = tx("bkNo"); b.bookedOn = $("bkBookedOn").value || todayISO();
   [["bkParty", "party"], ["bkPhone", "phone"], ["bkAddress", "address"], ["bkPlaces", "places"], ["bkRemarks", "remarks"], ["bkCleaner", "cleanerName"], ["bkTripNote", "tripNote"]].forEach(([el, k]) => { const v = tx(el); if (v) b[k] = v; });
+  if (isNoCleaner(b.cleanerName)) { delete b.cleanerName; b.noCleaner = true; }
   // Only the date and a payment are needed to make a booking; everything else can be filled in later.
   if (!b.no) { b.no = nextBkNo(); $("bkNo").value = b.no; }
   else if (ops.bookings.some(x => x.id !== b.id && String(x.no) === b.no)) err("bkNo", "This number is already used by another booking.");
