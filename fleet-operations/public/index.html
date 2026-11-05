@@ -10154,8 +10154,9 @@ function rsDaysHtml(bus, ym, src) {
   const today = todayISO(), cur = today.slice(0, 7);
   if (ym > cur) return `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><p class="sub" style="margin:8px 0 0">This month has not started yet.</p></section>`;
   const chip = S => `<span class="bstage ${S.cls}">${S.label}</span>`, lastDay = ym === cur ? today : `${ym}-${pad2(daysIn(ym))}`;
-  const days = [...Array(+lastDay.slice(8, 10))].map((_, i) => shiftDay(lastDay, -i));
-  return `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><div class="rsdays">` +
+  // A conductor sees only today and the two days before (also across the start of a month); the office sees the whole month.
+  const few = !canTrips, days = few ? [0, 1, 2].map(i => shiftDay(today, -i)) : [...Array(+lastDay.slice(8, 10))].map((_, i) => shiftDay(lastDay, -i));
+  return `<section class="panel"><h2 class="sec">${few ? "Last 3 days · கடந்த 3 நாட்கள்" : `Days of ${ymLabel(ym)}`}</h2><div class="rsdays">` +
     days.map(day => { const S = rsDayState(bus, day, src), T = S.t || (S.x && rsTripFrom(S.x)), km = rsDayKm(bus, day, T, src), lit = num(T?.litres);
       const f = (k, v, cls = "") => `<span${cls ? ` class="${cls}"` : ""}><i>${k}</i>${v}</span>`;
       // A day that ran is green, a loss red, a part day yellow. Days in the trip sheet need no tag; who sent or entered them is in the sheet itself.
