@@ -9482,23 +9482,25 @@ const XL = (() => {
   const col = n => { let s = ""; n++; while (n) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
   const idx = L => [...L].reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1;
   // Styles: 0 plain, 1 title, 2 label, 3 heading, 4 text, 5 whole number, 6 date, 7 two decimals, 8 bold number,
-  // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number, 15 text format, 16 bold 14pt heading, 17–29 the office truck sheet
+  // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number, 15 text format, 16 bold 14pt heading, 17–47 the office truck sheet
   const S = { plain: 0, title: 1, label: 2, head: 3, text: 4, int: 5, date: 6, dec: 7, sum: 8, mtext: 9, tint: 10, ttext: 11, head2: 12, note: 13, mint: 14, tx: 15, h14: 16,
-    oTitle: 17, oLab: 18, oVal: 19, oVal2: 20, oHeadR: 21, oHeadC: 22, oHeadL: 23, oDate: 24, oInt: 25, oDec: 26, oText: 27, oMint: 28, oStatus: 29 };
+    oTitle: 17, oLab: 18, oVal: 19, oVal2: 20, oHeadR: 21, oHeadC: 22, oHeadL: 23,
+    oRow: [0, 1, 2, 3].map(i => { const b = 24 + i * 6; return { date: b, int: b + 1, dec: b + 2, text: b + 3, mint: b + 4, status: b + 5 }; }) };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
     xf(0, 0, 0, 1, 'vertical="center"'), xf(165, 0, 0, 1), xf(164, 0, 0, 1, 'horizontal="center"'), xf(166, 0, 0, 1), xf(165, 1, 0, 1), xf(0, 0, 0, 1, 'horizontal="center" vertical="center" wrapText="1"'),
     xf(165, 1, 3, 1), xf(0, 1, 3, 1), xf(0, 1, 4, 1, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 3, 0, 0), xf(165, 1, 0, 1, 'vertical="center"'), xf(49, 0, 0, 1), xf(0, 2, 0, 1, 'vertical="center"'),
-    // 17–29: the office truck sheet (Trip Download): title, summary labels and values, headings, the trip rows.
+    // 17–23: the office truck sheet (Trip Download): title, summary labels and values, headings.
     xf(0, 4, 3, 2, 'horizontal="center" vertical="center"'), xf(0, 5, 3, 2, 'horizontal="left" vertical="center"'), xf(165, 5, 3, 2, 'horizontal="left" vertical="center"'), xf(165, 1, 5, 2, 'vertical="center"'),
     xf(0, 2, 6, 2, 'horizontal="right" vertical="center"'), xf(0, 2, 6, 2, 'horizontal="center" vertical="center"'), xf(0, 2, 6, 2, 'horizontal="left" vertical="center"'),
-    xf(164, 0, 7, 2, 'horizontal="right"'), xf(165, 0, 7, 2), xf(166, 0, 7, 2), xf(0, 0, 7, 2), xf(165, 1, 7, 2, 'vertical="center"'), xf(0, 0, 0, 2, 'horizontal="center" vertical="center" wrapText="1"')];
+    // the trip rows, one set per round trip colour (light orange, light blue, light green, light yellow): date, whole number, two decimals, text, Trip Balance, status
+    ...[7, 8, 9, 4].flatMap(fl => [xf(164, 0, fl, 2, 'horizontal="right"'), xf(165, 0, fl, 2), xf(166, 0, fl, 2), xf(0, 0, fl, 2), xf(165, 1, fl, 2, 'vertical="center"'), xf(0, 0, fl, 2, 'horizontal="center" vertical="center" wrapText="1"')])];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="6"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font></fonts>` +
-    `<fills count="8"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
-    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
+    `<fills count="10"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
+    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
     `<borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="${XFS.length}">${XFS.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const serial = iso => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(1899, 11, 30)) / 864e5;
@@ -9564,7 +9566,7 @@ const xlSum = (rows, k) => rows.reduce((a, r) => a + (typeof r[k] === "number" &
 
 /* Truck trips in the office "Trip Download" template: one sheet per truck (named with its number). Row 1 the title
    "<truck> - Income / Expense Details"; rows 2–4 the summary (totals worked out by formulas over the trip rows); row 5 the
-   headings; one row per trip from row 6, oldest first, shaded as in the template. Trip Balance and Trip Payment Status are
+   headings; one row per trip from row 6, oldest first, each round trip in its own colour (four colours in turn). Trip Balance and Trip Payment Status are
    written once per round trip, merged over its trips. Diesel Rate is the diesel amount (as in the office sheet, where Total
    Expenses adds it); diesel entered for a whole round trip goes on its last trip. Bill expenses go in Bill Exp 1. Remarks
    keep the trip's remarks and each payment as "Bank Input - Rs.… on d/m/yyyy", so the file loads back with Utility › Data upload. */
@@ -9593,8 +9595,9 @@ function xlTruckDownload(recs) {
     const ws = sheet(String(C.plate(id)).replace(/\s+/g, "")), T = { C: 0, D: 0, I: 0, J: 0, K: 0, L: 0, M: 0, N: 0, O: 0, V: 0, X: 0, AB: 0 };
     const groups = new Map(); legs.filter(l => l.vehicleId === id).forEach(l => { const k = l.roundId || l.id; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(l); });
     let r = F;
+    let gi = 0;
     for (const [rid, rl] of groups) {
-      const doc = (recs.truckRounds || []).find(z => z.id === rid) || {}, RF = doc.fuels || [], a = r;
+      const doc = (recs.truckRounds || []).find(z => z.id === rid) || {}, RF = doc.fuels || [], a = r, Z = S.oRow[gi++ % S.oRow.length];
       const rfL = RF.reduce((s, f) => s + (C.n(f.litres) || 0), 0), rfA = Math.round(RF.reduce((s, f) => s + (C.n(f.amount) || 0), 0));
       let tb = 0;
       rl.forEach((l, i) => {
@@ -9602,19 +9605,19 @@ function xlTruckDownload(recs) {
         const ex = { I: g("commission"), K: dsl, L: g("toll"), M: g("padi"), N: g("rto"), O: g("loading"), P: g("bridge"), Q: g("otherExp"), R: g("billExp") };
         const tot = Object.values(ex).reduce((s, v) => s + v, 0), bal = g("rent") - tot, sk = g("startKm"), ek = g("endKm"), km = sk && ek > sk ? ek - sk : 0; tb += bal;
         T.C += g("days"); T.D += g("rent"); T.J += lit; T.V += tot; T.AB += km; ["I", "K", "L", "M", "N", "O"].forEach(k => T[k] += ex[k]);
-        put(ws, `A${r}`, l.from ? { d: l.from } : "", S.oDate); put(ws, `B${r}`, l.to || l.from ? { d: l.to || l.from } : "", S.oDate);
-        put(ws, `C${r}`, g("days") || null, Number.isInteger(g("days")) ? S.oInt : S.oDec); put(ws, `D${r}`, g("rent"), S.oInt);
-        put(ws, `E${r}`, lgPlace(l.origin), S.oText); put(ws, `F${r}`, lgPlace(l.dest), S.oText); put(ws, `G${r}`, C.driver(l.driver1Id, l.driver1Name), S.oText); put(ws, `H${r}`, C.driver(l.driver2Id, l.driver2Name), S.oText);
-        put(ws, `J${r}`, lit || null, S.oDec); Object.entries(ex).forEach(([k, v]) => put(ws, k + r, v || null, S.oInt)); ["S", "T", "U"].forEach(k => put(ws, k + r, null, S.oInt));
-        put(ws, `V${r}`, tot, S.oInt, `SUM(I${r},K${r}:U${r})`); put(ws, `W${r}`, bal, S.oInt, `D${r}-V${r}`);
-        put(ws, `Z${r}`, sk || null, S.oInt); put(ws, `AA${r}`, ek || null, S.oInt); put(ws, `AB${r}`, km || null, S.oInt, `IF(AND(Z${r}>0,AA${r}>Z${r}),AA${r}-Z${r},"")`);
+        put(ws, `A${r}`, l.from ? { d: l.from } : "", Z.date); put(ws, `B${r}`, l.to || l.from ? { d: l.to || l.from } : "", Z.date);
+        put(ws, `C${r}`, g("days") || null, Number.isInteger(g("days")) ? Z.int : Z.dec); put(ws, `D${r}`, g("rent"), Z.int);
+        put(ws, `E${r}`, lgPlace(l.origin), Z.text); put(ws, `F${r}`, lgPlace(l.dest), Z.text); put(ws, `G${r}`, C.driver(l.driver1Id, l.driver1Name), Z.text); put(ws, `H${r}`, C.driver(l.driver2Id, l.driver2Name), Z.text);
+        put(ws, `J${r}`, lit || null, Z.dec); Object.entries(ex).forEach(([k, v]) => put(ws, k + r, v || null, Z.int)); ["S", "T", "U"].forEach(k => put(ws, k + r, null, Z.int));
+        put(ws, `V${r}`, tot, Z.int, `SUM(I${r},K${r}:U${r})`); put(ws, `W${r}`, bal, Z.int, `D${r}-V${r}`);
+        put(ws, `Z${r}`, sk || null, Z.int); put(ws, `AA${r}`, ek || null, Z.int); put(ws, `AB${r}`, km || null, Z.int, `IF(AND(Z${r}>0,AA${r}>Z${r}),AA${r}-Z${r},"")`);
         // Payments for the whole round trip go with the remarks of its last trip.
-        put(ws, `AC${r}`, [l.remarks, ...(l.payments || []).filter(p => num(p.amount) > 0).map(payTxt), ...(last ? (doc.payments || []).filter(p => num(p.amount) > 0).map(payTxt) : [])].filter(Boolean).join(", "), S.oText);
+        put(ws, `AC${r}`, [l.remarks, ...(l.payments || []).filter(p => num(p.amount) > 0).map(payTxt), ...(last ? (doc.payments || []).filter(p => num(p.amount) > 0).map(payTxt) : [])].filter(Boolean).join(", "), Z.text);
         r++;
       });
       const b = r - 1; T.X += tb;
-      put(ws, `X${a}`, tb, S.oMint, `SUM(W${a}:W${b})`); put(ws, `Y${a}`, doc.status === "Closed" ? "Closed" : "Open", S.oStatus);
-      for (let k = a + 1; k <= b; k++) { put(ws, `X${k}`, null, S.oMint); put(ws, `Y${k}`, null, S.oStatus); }
+      put(ws, `X${a}`, tb, Z.mint, `SUM(W${a}:W${b})`); put(ws, `Y${a}`, doc.status === "Closed" ? "Closed" : "Open", Z.status);
+      for (let k = a + 1; k <= b; k++) { put(ws, `X${k}`, null, Z.mint); put(ws, `Y${k}`, null, Z.status); }
       if (b > a) ws.merges.push(`X${a}:X${b}`, `Y${a}:Y${b}`);
     }
     top(ws, C.plate(id), r - 1, T); sheets.push(ws);
@@ -16609,7 +16612,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05o";
+const APP_VER = "2026-11-05p";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
