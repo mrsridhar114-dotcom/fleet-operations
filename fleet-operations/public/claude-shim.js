@@ -34,13 +34,57 @@ html.fo-boot.fo-login body::before{content:none}`;
   const ready = (async () => {
     await null; // let the rest of this file set up first
     const pc = pinCfg();
-    try { me = (await api("auth")).user; }
-    catch (e) { if (e.status === 401) { pc ? showPin(pc, { signedOut: true }) : showLogin(); return new Promise(() => {}); } throw e; }
+    try { me = (await api("auth")).user; saveMe(me); }
+    catch (e) {
+      if (e.status === 401) { saveMe(null); pc ? showPin(pc, { signedOut: true }) : showLogin(); return new Promise(() => {}); }
+      // No signal: a phone that keeps an offline copy (truck drivers) opens with the last login and records.
+      const c = cachedMe();
+      if (!e.status && c && await snapHas(c.id)) { me = { ...c, offline: true }; markUnlocked(); return me; }
+      if (!e.status) { showOffline(); return new Promise(() => {}); }
+      throw e;
+    }
     if (pc && pc.uid !== me.id) savePin(null);
     else if (pc && needsUnlock()) { await new Promise(res => showPin(pc, { onOk: res })); document.documentElement.classList.remove("fo-login"); }
     markUnlocked();
     return me;
   })();
+
+  /* ---------- offline: the last login and an offline copy of the records ----------
+     Only for logins whose records are small and needed on the road (truck drivers, read scope "driver"). The copy is kept in
+     IndexedDB on the phone and removed at sign-out. */
+  const ME_KEY = "fo-me";
+  function saveMe(m) { try { m ? localStorage.setItem(ME_KEY, JSON.stringify({ id: m.id, name: m.name, email: m.email, login: m.login || "", isOwner: !!m.isOwner, member: !!m.member, admin: !!m.admin })) : localStorage.removeItem(ME_KEY); } catch {} }
+  function cachedMe() { try { return JSON.parse(localStorage.getItem(ME_KEY) || "null"); } catch { return null; } }
+  function idb() {
+    return new Promise((res, rej) => { try { const r = indexedDB.open("fo-cache", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } });
+  }
+  async function kv(op, key, val) {
+    const d = await idb();
+    return new Promise((res, rej) => { const t = d.transaction("kv", op === "get" ? "readonly" : "readwrite"), s = t.objectStore("kv");
+      const r = op === "get" ? s.get(key) : op === "del" ? s.delete(key) : s.put(val, key); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  }
+  async function snapHas(uid) { try { const x = await kv("get", "snap"); return !!x && x.uid === uid; } catch { return false; } }
+  let snapTimer = null;
+  function snapSoon() {
+    if (store.scope !== "driver" || !me) return;
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(() => { kv("put", "snap", { uid: me.id, ver: store.ver, scope: store.scope, colls: [...store.colls].map(([c, m]) => [c, [...m]]) }).catch(() => {}); }, 2000);
+  }
+  async function snapLoad() {
+    let x = null; try { x = await kv("get", "snap"); } catch {}
+    if (!x || !me || x.uid !== me.id) return false;
+    store.colls = new Map(x.colls.map(([c, rows]) => [c, new Map(rows)])); store.ver = x.ver; store.scope = x.scope;
+    notify(new Set(["*"])); return true;
+  }
+  const snapClear = () => { saveMe(null); return kv("del", "snap").catch(() => {}); };
+  function showOffline() {
+    document.documentElement.classList.add("fo-login");
+    const go = () => { const d = document.createElement("div"); d.id = "foLogin";
+      d.style.cssText = "position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#0a1f16;color:#fff;padding:24px;text-align:center;font:15px/1.5 system-ui,sans-serif";
+      d.innerHTML = `<div><h1 style="font-size:22px;margin:0 0 8px">No internet connection</h1><p style="opacity:.8;margin:0 0 16px">Connect to the internet once to sign in. After that, a driver's phone also opens without signal.</p><button type="button" style="font:inherit;padding:10px 18px;border-radius:8px;border:0;background:#3b7d1e;color:#fff">Try again</button></div>`;
+      d.querySelector("button").onclick = () => location.reload(); document.body.appendChild(d); };
+    document.body ? go() : document.addEventListener("DOMContentLoaded", go);
+  }
 
   /* ---------- quick PIN for phones ----------
      After the first email sign-in on a phone, the user can set a 4-digit PIN. The phone keeps a random device key;
@@ -199,7 +243,9 @@ html.fo-boot.fo-login body::before{content:none}`;
       const wrap = document.createElement("div"); wrap.id = "foLogin";
       wrap.innerHTML = `<style>${css}</style><form novalidate><h1>Welcome to VBS</h1><p id="foSub">Sign in to manage your fleet</p>
         <label id="foNameL" hidden>Your name<input id="foName" autocomplete="name" maxlength="80"></label>
-        <label>Email<input id="foEmail" type="email" autocomplete="username" required></label>
+        <label id="foEmailL">Email<input id="foEmail" type="email" autocomplete="username" required></label>
+        <label id="foMobL" hidden>Mobile number or user ID · மொபைல் எண் / பயனர் ID<input id="foMob" type="text" autocomplete="username" autocapitalize="characters" maxlength="20" placeholder="e.g. 9876543210 or CONMANI01"></label>
+        <label id="foMpinL" hidden>Password · கடவுச்சொல்<span class="pw"><input id="foMpin" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="64"><button type="button" class="show" id="foMShow" aria-label="Show password">Show</button></span></label>
         <label id="foPwL">Password<span class="pw"><input id="foPw" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required minlength="8"><button type="button" class="show" id="foShow" aria-label="Show password">Show</button></span></label>
         <button type="button" class="lnk fgt" id="foForgot">Forgot password?</button>
         <label id="foCodeL" hidden>6-digit code from your email<input id="foCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" style="letter-spacing:6px;font-size:20px;text-align:center"></label>
@@ -209,7 +255,8 @@ html.fo-boot.fo-login body::before{content:none}`;
         <div class="ok" id="foOk" role="status" hidden></div>
         <div class="err" id="foErr" role="alert"></div><button type="submit" id="foGo">Sign in</button>
         <button type="button" class="lnk" id="foResend" hidden>Send a new code</button>
-        <button type="button" class="lnk" id="foSwap">New here? Create an account</button></form>`;
+        <button type="button" class="lnk" id="foSwap">New here? Create an account</button>
+        <button type="button" class="lnk" id="foMobSw">Driver or conductor? Sign in with mobile number or user ID</button></form>`;
       document.body.appendChild(wrap);
       let signup = false, mode = "login";
       const $ = id => document.getElementById(id);
@@ -220,16 +267,21 @@ html.fo-boot.fo-login body::before{content:none}`;
       // Modes on one card: sign in, create an account, forgot password (email), and reset with the emailed code.
       const setMode = m => {
         mode = m; signup = m === "signup";
-        const show = (id, on) => $(id).hidden = !on;
-        show("foNameL", m === "signup"); show("foPwL", m === "login" || m === "signup"); show("foKeepL", m !== "forgot");
+        const show = (id, on) => $(id).hidden = !on, mob = m === "mobile";
+        show("foEmailL", !mob); show("foMobL", mob); show("foMpinL", mob); show("foSwap", !mob); $("foMobSw").textContent = mob ? "Sign in with email instead" : "Driver or conductor? Sign in with mobile number or user ID"; show("foMobSw", m === "login" || mob);
+        try { localStorage.setItem("fo-login-mode", mob ? "mobile" : "email"); } catch {}
+        show("foNameL", m === "signup"); show("foPwL", m === "login" || m === "signup"); show("foKeepL", m !== "forgot" && !mob);
         show("foForgot", m === "login"); show("foCodeL", m === "code"); show("foNewL", m === "code"); show("foNew2L", m === "code"); show("foResend", m === "code");
         $("foEmail").readOnly = m === "code";
-        $("foGo").textContent = { signup: "Create account", forgot: "Send code", code: "Reset password" }[m] || "Sign in";
+        $("foGo").textContent = { signup: "Create account", forgot: "Send code", code: "Reset password", mobile: "Sign in · உள்நுழை" }[m] || "Sign in";
         $("foSwap").textContent = m === "login" ? "New here? Create an account" : "Back to sign in";
-        $("foSub").textContent = { signup: "Create your login. An admin then gives you access.", forgot: "Enter your email and we'll send you a 6-digit code.", code: `We sent a 6-digit code to ${$("foEmail").value.trim()}. Check your inbox and spam folder.` }[m] || "Sign in to manage your fleet";
+        $("foSub").textContent = { mobile: "Enter your mobile number or user ID and your password", signup: "Create your login. An admin then gives you access.", forgot: "Enter your email and we'll send you a 6-digit code.", code: `We sent a 6-digit code to ${$("foEmail").value.trim()}. Check your inbox and spam folder.` }[m] || "Sign in to manage your fleet";
         $("foPw").autocomplete = m === "signup" ? "new-password" : "current-password"; $("foErr").textContent = ""; $("foOk").hidden = true; $("foGo").hidden = false;
       };
       $("foSwap").onclick = () => setMode(mode === "login" ? "signup" : "login");
+      $("foMobSw").onclick = () => { setMode(mode === "mobile" ? "login" : "mobile"); setTimeout(() => (mode === "mobile" ? ($("foMob").value ? $("foMpin") : $("foMob")) : $("foEmail")).focus(), 30); };
+      try { const mb = localStorage.getItem("fo-login-id"); if (mb) $("foMob").value = mb; } catch {}
+      $("foMShow").onclick = () => { const on = $("foMpin").type === "password"; $("foMpin").type = on ? "text" : "password"; $("foMShow").textContent = on ? "Hide" : "Show"; $("foMpin").focus(); };
       $("foForgot").onclick = () => { setMode("forgot"); $("foEmail").focus(); };
       const sendCode = async () => {
         await api("auth", { action: "forgot", email: $("foEmail").value.trim() });
@@ -239,6 +291,17 @@ html.fo-boot.fo-login body::before{content:none}`;
       wrap.querySelector("form").onsubmit = async e => {
         e.preventDefault(); $("foErr").textContent = ""; $("foGo").disabled = true;
         const keep = $("foKeep").checked, email = $("foEmail").value.trim();
+        if (mode === "mobile") {
+          try {
+            const raw = $("foMob").value.trim(), login = /^[\d\s+-]+$/.test(raw) ? raw.replace(/\D/g, "").slice(-10) : raw.toUpperCase(), password = $("foMpin").value;
+            if (!login) throw new Error("Enter your mobile number or user ID.");
+            if (!password) throw new Error("Enter your password.");
+            await api("auth", { action: "idlogin", login, password });
+            try { localStorage.setItem("fo-login-id", login); } catch {}
+            savePin(null); markUnlocked(); location.reload();
+          } catch (er) { $("foErr").textContent = er.message; $("foMpin").value = ""; } finally { if ($("foGo")) $("foGo").disabled = false; }
+          return;
+        }
         if (mode === "forgot") {
           try { await sendCode(); } catch (er) { $("foErr").textContent = er.message; } finally { $("foGo").disabled = false; }
           return;
@@ -267,7 +330,9 @@ html.fo-boot.fo-login body::before{content:none}`;
         }
         catch (er) { $("foErr").textContent = er.message; } finally { if ($("foGo")) $("foGo").disabled = false; }
       };
-      setTimeout(() => ($("foEmail").value ? $("foPw") : $("foEmail")).focus(), 50);
+      let startMob = false; try { startMob = localStorage.getItem("fo-login-mode") === "mobile"; } catch {}
+      if (startMob) setMode("mobile");
+      setTimeout(() => (startMob ? ($("foMob").value ? $("foMpin") : $("foMob")) : $("foEmail").value ? $("foPw") : $("foEmail")).focus(), 50);
     };
     document.body ? go() : document.addEventListener("DOMContentLoaded", go);
   }
@@ -277,6 +342,7 @@ html.fo-boot.fo-login body::before{content:none}`;
     const who = document.getElementById("who"); if (!who || document.getElementById("foAcct")) return;
     const box = document.createElement("div"); box.id = "foAcct"; box.style.cssText = "display:flex;gap:10px;margin:4px 0 6px;font-size:12px";
     const btn = (t, f) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.style.cssText = "background:none;border:0;padding:0;color:inherit;opacity:.8;text-decoration:underline;cursor:pointer;font:inherit"; b.onclick = f; box.appendChild(b); };
+    if (me.login) { btn("Change password", () => newIdPassword(false)); powerButtons(); who.after(box); return; }
     btn("Change password", changePassword);
     if (isPhone() || pinCfg()) btn(pinCfg() ? "Change PIN" : "Set up PIN", () => pinSetup({ after: ok => { if (ok) { alertBox("PIN saved. Use it to open the app on this phone."); } refreshAcct(); } }));
     if (pinCfg()) btn("Remove PIN", async () => { const c = pinCfg(); try { await api("auth", { action: "pinoff", device: c.device }); } catch {} savePin(null); alertBox("PIN removed from this phone."); refreshAcct(); });
@@ -310,6 +376,29 @@ html.fo-boot.fo-login body::before{content:none}`;
     };
     setTimeout(() => d.querySelector("#foN1").focus(), 50);
   }
+  // Mobile / user ID logins: choose a new password (first sign-in after the office set one, or from the side menu).
+  function newIdPassword(forced) {
+    const d = document.createElement("div"); d.id = "foMust";
+    d.style.cssText = "position:fixed;inset:0;z-index:9999;background:" + (forced ? "#0a1f16" : "rgba(0,0,0,.45)") + ";display:grid;place-items:center;padding:16px;font:15px/1.4 Barlow,system-ui,sans-serif";
+    const inp = (id, lab) => `<label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600">${lab}<input id="${id}" type="password" autocomplete="new-password" autocapitalize="off" maxlength="64" style="font:inherit;font-size:18px;padding:10px 12px;border:1px solid #d9dfe5;border-radius:8px"></label>`;
+    d.innerHTML = `<form style="background:#fff;color:#18212b;width:min(380px,100%);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:12px">
+      <b style="font:700 24px/1.1 'Barlow Condensed',system-ui,sans-serif">${forced ? "Choose your own password" : "Change password"}</b>
+      <span style="color:#5c6977;font-size:14px">${forced ? "The office gave you a starting password. Choose one only you know: 6 characters or more (6 digits is fine). · உங்கள் சொந்த கடவுச்சொல்லை தேர்ந்தெடுக்கவும்." : "Enter your current password, then the new one."}</span>
+      ${forced ? "" : inp("foP0", "Current password")}${inp("foP1", "New password (6 characters or more)")}${inp("foP2", "Enter it again")}
+      <div data-err style="color:#b42318;font-size:13px;min-height:1em"></div>
+      <div style="display:flex;gap:8px">${forced ? "" : `<button type="button" data-x style="flex:1;font:inherit;font-weight:600;padding:11px;border-radius:8px;border:1px solid #d9dfe5;background:#fff">Cancel</button>`}<button style="flex:2;font:inherit;font-weight:600;padding:11px;border-radius:8px;border:0;background:#3b7d1e;color:#fff">Save password</button></div></form>`;
+    document.body.appendChild(d);
+    const err = d.querySelector("[data-err]"); d.querySelector("[data-x]")?.addEventListener("click", () => d.remove());
+    d.querySelector("form").onsubmit = async e => {
+      e.preventDefault(); err.textContent = "";
+      const a = d.querySelector("#foP1").value, b = d.querySelector("#foP2").value;
+      if (a.length < 6) return err.textContent = "Use at least 6 characters.";
+      if (a !== b) return err.textContent = "The two passwords don't match.";
+      try { await api("auth", { action: "idpassword", next: a, current: d.querySelector("#foP0")?.value || "" }); me.mustChange = false; d.remove(); alertBox("Password saved."); }
+      catch (er) { err.textContent = er.message; }
+    };
+    setTimeout(() => d.querySelector("input").focus(), 50);
+  }
   function refreshAcct() { document.getElementById("foAcct")?.remove(); accountMenu(); }
 
   // Sign out: a power icon at the top of the side menu, next to "Fleet Operations" (on phones, seen when the menu is open). Asks first.
@@ -318,12 +407,12 @@ html.fo-boot.fo-login body::before{content:none}`;
     const d = document.createElement("div");
     d.style.cssText = "position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px";
     d.innerHTML = `<div role="dialog" aria-modal="true" aria-label="Sign out" style="background:var(--surface,#fff);color:var(--ink,#18212b);border-radius:12px;padding:20px;width:min(340px,100%);display:flex;flex-direction:column;gap:14px;font-size:15px">
-      <b style="font-size:17px">Sign out?</b><span style="color:var(--muted,#5c6977);font-size:14px">${pinCfg() ? "Next time, sign in with your PIN." : "You'll need your email and password to sign in again on this device."}</span>
+      <b style="font-size:17px">Sign out?</b><span style="color:var(--muted,#5c6977);font-size:14px">${me?.login ? "You'll need your mobile number or user ID and password, and signal, to sign in again. Entries not sent yet stay on this phone." : pinCfg() ? "Next time, sign in with your PIN." : "You'll need your email and password to sign in again on this device."}</span>
       <div style="display:flex;gap:8px"><button type="button" class="btn" data-x style="flex:1">Cancel</button><button type="button" class="btn danger" data-ok style="flex:1">Sign out</button></div></div>`;
     document.body.appendChild(d);
     d.onclick = e => { if (e.target === d) d.remove(); };
     d.querySelector("[data-x]").onclick = () => d.remove();
-    d.querySelector("[data-ok]").onclick = async e => { e.target.disabled = true; try { await api("auth", { action: "logout" }); } catch {} location.reload(); };
+    d.querySelector("[data-ok]").onclick = async e => { e.target.disabled = true; try { await api("auth", { action: "logout" }); } catch {} await snapClear(); location.reload(); };
     setTimeout(() => d.querySelector("[data-x]").focus(), 30);
   }
   function powerButtons() {
@@ -408,6 +497,7 @@ html.fo-boot.fo-login body::before{content:none}`;
       }
       store.ver = Math.max(store.ver, r.ver); more = r.more;
     }
+    if (changed.size) snapSoon();
     return changed;
   }
   function notify(changed) {
@@ -488,9 +578,12 @@ html.fo-boot.fo-login body::before{content:none}`;
 
   /* ---------- the four capabilities ---------- */
   const user = {
-    me: async () => ({ id: me.id, name: me.name, email: me.email, isOwner: !!me.isOwner }),
+    me: async () => ({ id: me.id, name: me.name, email: me.email, login: me.login || "", isOwner: !!me.isOwner }),
     can: async () => true,
-    profiles: async ids => (await api("auth", { action: "profiles", ids })).profiles || {}
+    profiles: async ids => (await api("auth", { action: "profiles", ids })).profiles || {},
+    // User master: create a login with a mobile number or user ID (or give it a new starting password). Returns { id, login }.
+    loginSet: async ({ login, name, password, account }) => api("auth", { action: "idset", login, name, password, account }),
+    online: () => navigator.onLine !== false
   };
   const OK_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"];
   const assets = {
@@ -527,7 +620,7 @@ html.fo-boot.fo-login body::before{content:none}`;
   window.claude = {
     async use(name) {
       await ready;
-      if (name === "db") { store.loaded ||= pull().then(notify).then(() => schedule()); await store.loaded; return db; }
+      if (name === "db") { store.loaded ||= pull().then(notify, async e => { if (e.status || !(await snapLoad())) throw e; }).then(() => schedule()); await store.loaded; return db; }
       if (name === "user") return user;
       if (name === "assets") return me.member || me.isOwner ? assets : null;
       if (name === "downloads") return downloads;
@@ -539,7 +632,7 @@ html.fo-boot.fo-login body::before{content:none}`;
     const wait = () => store.loaded ? store.loaded.then(() => setTimeout(() => { clearTimeout(cap); reveal(); }, 250), () => reveal()) : setTimeout(wait, 50);
     wait();
   }, () => reveal());
-  ready.then(() => { if (me?.mustChange) forceNewPassword(); });
+  ready.then(() => { if (me?.mustChange && !me.offline) me.login ? newIdPassword(true) : forceNewPassword(); });
   ready.then(() => { const t = setInterval(() => { accountMenu(); if (document.getElementById("foAcct")) clearInterval(t); }, 300); restoreButton(); });
 
   /* ---------- owner: load a backup file into the database ---------- */

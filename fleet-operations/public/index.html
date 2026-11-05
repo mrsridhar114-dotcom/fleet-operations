@@ -180,6 +180,39 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .pill.d7 { background: var(--hot-soft); color: var(--hot); }
 .pill.d30, .pill.due { background: var(--warn-soft); color: var(--warn); } .pill.mlow { background: var(--danger); color: #fff; }
 .pktable { min-width: 1350px; } .pktable td.neg { color: var(--danger); } .pktable td.pos { color: var(--ok); } .pktable tr.pkidle td { color: var(--muted); } .pktable tbody tr[data-pkt]:hover td { background: var(--bg); }
+/* Truck driver on the phone */
+.dvwrap { max-width: 520px; margin: 0 auto; padding-top: 12px; }
+.dvhd { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #0F2A1B; color: #fff; border-radius: 14px; padding: 12px 14px; }
+.dvtk { display: flex; flex-direction: column; min-width: 0; } .dvtk b { font-size: 19px; } .dvtk small { color: #B9CDBE; font-size: 12.5px; }
+.dvtk select { font: inherit; font-weight: 700; font-size: 18px; background: transparent; color: #fff; border: 0; padding: 0; max-width: 100%; } .dvtk select option { color: #17201A; }
+.dvnet { font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,.12); white-space: nowrap; } .dvnet.off { background: #FCEFD9; color: #7A4A00; } .dvnet.wait { background: #FCEFD9; color: #7A4A00; }
+.dvbody { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.dvcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; } .dvcard .sub { margin: 0; }
+.dvnow b { display: block; font-size: 16px; margin: 2px 0; }
+.dvbig { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; font: inherit; font-weight: 700; font-size: 16px; color: var(--ink); cursor: pointer; min-height: 70px; }
+.dvbig i { font-style: normal; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: var(--accent-soft); flex: none; }
+.dvbig small { display: block; font-weight: 500; font-size: 12.5px; color: var(--muted); } .dvbig.pri { background: var(--accent); color: #fff; border-color: var(--accent); } .dvbig.pri small { color: rgba(255,255,255,.8); } .dvbig.pri i { background: rgba(255,255,255,.18); }
+.dvlist .dvli { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; } .dvlist .dvli:last-child { border-bottom: 0; }
+.dvli .w { min-width: 0; } .dvli .w small { display: block; color: var(--muted); } .dvli .st { font-size: 12px; font-weight: 600; white-space: nowrap; text-align: right; } .dvli .st.ok { color: var(--ok); } .dvli .st.wait { color: var(--warn); } .dvli .st.no { color: var(--muted); } .dvli .st.err { color: var(--danger); }
+.dvform { display: flex; flex-direction: column; gap: 10px; }
+.dvform h2 { margin: 0; font-size: 19px; } .dvform h2 small { display: block; font-size: 13px; color: var(--muted); font-weight: 500; }
+.dvf { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; } .dvf .ta { font-weight: 500; color: var(--muted); font-size: 12px; }
+.dvf input, .dvf select, .dvf textarea { font: inherit; font-size: 17px; font-weight: 600; padding: 10px 12px; min-height: 48px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); width: 100%; box-sizing: border-box; }
+.dvf textarea { min-height: 70px; font-weight: 400; font-size: 15px; }
+.dv2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.dvseg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.dvseg button { font: inherit; font-weight: 600; font-size: 14px; padding: 11px 4px; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; } .dvseg button.on { background: var(--accent); color: #fff; }
+.dvtot { display: flex; justify-content: space-between; align-items: center; background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; font-size: 14px; } .dvtot b { font: 700 20px var(--mono); }
+.dvcam { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; border: 2px dashed var(--accent); border-radius: 12px; background: var(--surface); color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
+.dvcam.has { border-style: solid; } .dvcam img { width: 38px; height: 38px; object-fit: cover; border-radius: 6px; }
+.dvgo { min-height: 54px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; } .dvgo:disabled { opacity: .6; }
+.dvback { align-self: flex-start; background: none; border: 0; color: var(--accent); font: inherit; font-weight: 600; padding: 6px 0; cursor: pointer; }
+.dvform .err { color: var(--danger); font-size: 13px; min-height: 1em; }
+/* Office: checking a driver's entry */
+.dvck { width: min(520px, calc(100vw - 24px)); }
+.dvck .dvgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; } .dvck .cpf input, .dvck .cpf select { width: 100%; box-sizing: border-box; }
+.dvck .dvphoto { display: flex; align-items: center; gap: 10px; font-size: 13px; } .dvck .dvphoto img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+.dvck .dvfrom { background: var(--bg); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
 .pklow { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .pklrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font: inherit; color: var(--ink); cursor: pointer; }
 .pklrow:hover { border-color: var(--danger); } .pklrow .w { display: flex; flex-direction: column; min-width: 0; flex: 1 1 220px; } .pklrow small { color: var(--muted); } .pklrow .go { color: var(--muted); font-size: 18px; }
@@ -2127,6 +2160,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="group">
         <h3>Operations</h3>
         <ul>
+          <li id="navDrv" hidden><a class="nav" href="#driver" data-view="tdrv">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+            My truck</a></li>
           <li data-mod="trips" id="navTrips"><a class="nav" href="#trips" data-view="trips">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"/></svg>
             Trip sheet<span class="badge" id="tsBadge" hidden></span></a></li>
@@ -2390,7 +2426,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </header>
       <div class="ocards" id="oCards"></div>
       <section class="panel">
-        <div class="sechead"><h2 class="sec" id="oTodoTitle">To do</h2><p>Route buses still to enter, spare bus trip sheets to fill, and truck round trips not yet settled. Click a line to open it.</p></div>
+        <div class="sechead"><h2 class="sec" id="oTodoTitle">To do</h2><p>Route buses still to enter, spare bus trip sheets to fill, truck drivers' entries to check, and truck round trips not yet settled. Click a line to open it.</p></div>
         <div class="otodo" id="oTodo"></div>
       </section>
     </section>
@@ -2848,6 +2884,13 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </div>
     </section>
 
+    <!-- ================= Truck driver on the phone ================= -->
+    <section class="wrap dvwrap" id="view-tdrv" hidden>
+      <div class="dvhd"><div class="dvtk"><b id="dvTruck">My truck</b><small id="dvWho"></small></div><span class="dvnet" id="dvNet" role="status"></span></div>
+      <div id="dvBody" class="dvbody"></div>
+      <input id="dvPhotoIn" type="file" accept="image/*,application/pdf" hidden>
+    </section>
+
     <!-- ================= User master ================= -->
     <section class="wrap" id="view-audit" hidden>
       <header class="top">
@@ -3128,7 +3171,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
   </header>
   <form id="uForm" novalidate>
     <div class="field"><label for="uName">Full name</label><input id="uName" autocomplete="off" placeholder="e.g. Ravi Kumar"><span class="err" id="e-uName"></span></div>
-    <div class="field"><label for="uEmail">Email</label><input id="uEmail" type="email" autocomplete="off" placeholder="name@company.com"><span class="err" id="e-uEmail"></span></div>
+    <div class="field"><label for="uEmail" id="uEmailLbl">Email</label><input id="uEmail" type="email" autocomplete="off" placeholder="name@company.com"><span class="err" id="e-uEmail"></span></div>
     <div class="field"><label for="uAcct">Linked login</label><select id="uAcct"></select><span class="hint">Access applies to the account linked here. People appear in this list after they open the app and tap “Request access”.</span><span class="err" id="e-uAcct"></span></div>
     <div class="two">
       <div class="field"><label for="uRole">Role</label><select id="uRole"></select><span class="err" id="e-uRole"></span></div>
@@ -3141,6 +3184,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <legend>Module access</legend>
       <span class="hint" id="uMatrixHint">Choosing a role fills these in. Change any row to make a custom role.</span>
       <table class="matrix"><tbody id="uMatrix"></tbody></table>
+    </fieldset>
+    <fieldset class="docs" id="uDrvBox" hidden><legend>Login without email</legend>
+      <div class="field" id="uDrvRow"><label for="uDrv">Driver in the Driver master</label><select id="uDrv"></select><span class="err" id="e-uDrv"></span></div>
+      <div class="field"><label for="uLid">Mobile number or user ID</label><input id="uLid" autocomplete="off" maxlength="20" placeholder="e.g. 9876543210 or CONMANI01" style="text-transform:uppercase">
+        <div class="rxbtns" style="margin-top:4px"><button class="btn" type="button" id="uLidSug">Suggest user ID</button><button class="btn" type="button" id="uLidMob">Use mobile number</button></div><span class="err" id="e-uLid"></span></div>
+      <div class="field"><label for="uPw">Starting password</label><input id="uPw" autocomplete="off" maxlength="64" placeholder="6 characters or more"><span class="err" id="e-uPw"></span></div>
+      <div class="rxbtns" style="margin-top:4px"><button class="btn" type="button" id="uMobBtn">Create login</button></div>
+      <span class="hint" id="uMobHint"></span>
     </fieldset>
   </form>
   <footer>
@@ -3741,7 +3792,7 @@ const MODULES = [
   { id: "vehicles", name: "Vehicle", abbr: "VM" },
   { id: "drivers", name: "Driver", abbr: "DM" },
   { id: "conductors", name: "Conductor", abbr: "CM" },
-  { id: "trips", name: "Trip sheet", abbr: "TS", levels: ["none", "view", "update", "edit"] },
+  { id: "trips", name: "Trip sheet", abbr: "TS", levels: ["none", "view", "update", "driver", "edit"], lab: { driver: "Truck driver" } },
   { id: "bookings", name: "Booking planner", abbr: "BP", levels: ["none", "view", "request", "edit"] },
   { id: "tripsheets", name: "Spare bus trip sheet", abbr: "ST", levels: ["none", "view", "update", "edit"] },
   { id: "expenses", name: "Expenses", abbr: "EX", levels: ["none", "view", "request", "edit"], lab: { request: "Enter and send" } },
@@ -3766,6 +3817,8 @@ const ROLES = {
   "Maintenance entry": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "none", expenses: "none", maintenance: "update", users: "none" },
   // Expense entry: enters his own expenses (with the bill) and sends them to the office, which approves them into Expenses. Nothing else.
   "Expense entry": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "none", tripsheets: "none", expenses: "request", maintenance: "none", users: "none" },
+  // Truck driver: on his phone, enters the load slip when the truck leaves, diesel fills, payments and arrival. The office checks each one. Nothing else.
+  "Truck driver": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "driver", bookings: "none", tripsheets: "none", expenses: "none", maintenance: "none", users: "none" },
   "Booking planner + Trip update": { dashboard: "none", vehicles: "none", drivers: "none", conductors: "none", trips: "none", bookings: "request", tripsheets: "update", expenses: "none", maintenance: "none", users: "none" },
 };
 const fullAccess = () => ({ ...ROLES.Admin });
@@ -4032,16 +4085,19 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
   // Someone without the dashboard (the booking office, say) lands on the first application they can use.
   if (want === "renewals" && acc.dashboard === "none") want = [["tspare", "bookings"], ["ttsheet", "tripsheets"], ["thub", "trips"], ["tmaint", "maintenance"], ["texp", "expenses"], ["vehicles", "vehicles"], ["drivers", "drivers"], ["conductors", "conductors"], ["users", "users"]].find(([, m]) => acc[m] && acc[m] !== "none")?.[0] || want;
   // A conductor (route trip sheet: fill & submit) only has his own day sheet.
-  if (acc.trips === "update" && ["thub", "trips", "trexp", "tpadi", "ttruck", "tkrep"].includes(want)) want = "trsheet";
+  if (acc.trips === "update" && ["thub", "trips", "trexp", "tpadi", "ttruck", "tkrep", "tdrv"].includes(want)) want = "trsheet";
+  // A truck driver has only his own truck screen.
+  if (acc.trips === "driver" && (VIEW_MOD[want] === "trips" || (want === "renewals" && acc.dashboard === "none"))) want = "tdrv";
+  if (want === "tdrv" && acc.trips !== "driver") want = "thub";
   // Trip sheet with only the spare bus trip sheets: open them directly.
   if (want === "thub" && acc.trips === "none" && acc.tripsheets && acc.tripsheets !== "none") want = "ttsheet";
   // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
@@ -4051,7 +4107,7 @@ function showView() {
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
   const navKey = ["texp", "tmaint", "tmsum"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
@@ -4114,7 +4170,8 @@ function applyAccess() {
   const roTrips = acc.trips === "view" || (acc.trips === "edit" && !platformWrite);
   $("tRoBanner").hidden = !roTrips; $("tRoTag").hidden = !roTrips;
   // Trip sheet: route/truck trips, a conductor's own day sheets, or spare bus trip sheets. Route expenses and Padi calculation are for the office only.
-  document.querySelectorAll(".paths li[data-mod]").forEach(li => li.hidden = li.id === "navTrips" ? acc.trips === "none" && (acc.tripsheets || "none") === "none" : li.dataset.mod === "trips" ? acc.trips === "none" || acc.trips === "update" : acc[li.dataset.mod] === "none");
+  document.querySelectorAll(".paths li[data-mod]").forEach(li => li.hidden = li.id === "navTrips" ? (acc.trips === "none" || acc.trips === "driver") && (acc.tripsheets || "none") === "none" : li.dataset.mod === "trips" ? acc.trips === "none" || acc.trips === "update" || acc.trips === "driver" : acc[li.dataset.mod] === "none");
+  $("navDrv").hidden = acc.trips !== "driver";
   document.querySelectorAll(".paths .group").forEach(g => g.hidden = ![...g.querySelectorAll("li")].some(li => !li.hidden));
   const nm = rec?.name || me?.name || "";
   $("who").textContent = nm ? `${nm} · ${label}` : label;
@@ -4771,11 +4828,52 @@ function buildUserForm() {
   $("uMatrix").innerHTML = MODULES.map(m => `<tr><td>${esc(m.name)}${m.soon ? '<span class="soonmod">· coming soon</span>' : ""}</td><td><div class="seg" role="radiogroup" aria-label="${esc(m.name)} access">${levelsOf(m).map(l =>
     `<label><input type="radio" name="acc-${m.id}" id="acc-${m.id}-${l}" value="${l}"><span>${l === "none" ? "None" : m.lab?.[l] || LEVELS[l]}</span></label>`).join("")}</div></td></tr>`).join("");
   $("accLegend").innerHTML = `<span class="acc"><b class="edit">Ed</b></span>Edit <span class="acc"><b class="view">Vw</b></span>View only <span class="acc"><b class="request">Rq</b></span>Add for approval / Fill &amp; submit <span class="acc"><b class="none">No</b></span>No access <span>· ${MODULES.map(m => `${m.abbr} ${esc(m.name)}`).join(" · ")}</span>`;
-  $("uRole").addEventListener("change", () => { if ($("uRole").value !== "Custom") setMatrix(ROLES[$("uRole").value]); syncMatrixLock(); });
+  $("uRole").addEventListener("change", () => { if ($("uRole").value !== "Custom") setMatrix(ROLES[$("uRole").value]); syncMatrixLock(); uDrvSync(); });
   $("uMatrix").addEventListener("change", () => {
-    const r = $("uRole").value; if (r === "Custom") return;
+    uDrvSync(); const r = $("uRole").value; if (r === "Custom") return;
     const cur = getMatrix(); if (MODULES.some(m => cur[m.id] !== ROLES[r][m.id])) $("uRole").value = "Custom";
   });
+  $("uDrv").addEventListener("change", () => { const d = drivers.find(x => x.id === $("uDrv").value); if (d && !$("uName").value.trim()) $("uName").value = d.name || ""; });
+  $("uLidSug").onclick = () => { const id = uSuggestId(); if (!id) { $("e-uName").textContent = "Enter the name first."; $("uName").focus(); return; } $("uLid").value = id; $("e-uLid").textContent = ""; };
+  $("uLidMob").onclick = () => { const m = uCrewMobile(); if (m) { $("uLid").value = m; $("e-uLid").textContent = ""; } else $("e-uLid").textContent = "No mobile number in the Driver or Conductor master for this name. Type it here."; };
+  $("uMobBtn").onclick = async () => {
+    ["uLid", "uPw"].forEach(k => { $("e-" + k).textContent = ""; $(k).removeAttribute("aria-invalid"); });
+    const login = uLidNorm($("uLid").value), pw = $("uPw").value, name = $("uName").value.trim() || drivers.find(x => x.id === $("uDrv").value)?.name || "";
+    const bad = (k, m) => { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); $(k).focus(); };
+    if (!login) return bad("uLid", "Enter a 10-digit mobile number, or a user ID of 4 to 20 letters and digits starting with a letter.");
+    if (users.some(x => x.id !== uEditingId && String(x.login || "").toUpperCase() === login)) return bad("uLid", "Another user already has this mobile number or user ID.");
+    if (pw.length < 6) return bad("uPw", "Use a starting password of 6 characters or more.");
+    if (!name) { $("e-uName").textContent = "Enter the person's name."; $("uName").focus(); return; }
+    if (typeof userCap?.loginSet !== "function") { toast("Logins without email work in the website version of the app."); return; }
+    $("uMobBtn").disabled = true;
+    try {
+      const cur = users.find(x => x.id === uEditingId), r = await userCap.loginSet({ login, name, password: pw, account: cur?.login && cur?.accountId ? cur.accountId : "" });
+      if (![...$("uAcct").options].some(o => o.value === r.id)) { const o = document.createElement("option"); o.value = r.id; o.textContent = `${name} · ${r.login}`; $("uAcct").appendChild(o); }
+      $("uAcct").value = r.id; names[r.id] = `${name} (${r.login})`; $("uLid").value = r.login; uLidMade = r.login;
+      $("uMobHint").innerHTML = `<b>Login ready.</b> Tell them: <b>${esc(r.login)}</b>, password <b>${esc(pw)}</b>. They choose their own password when they first sign in. ${uEditingId ? "Save changes" : "Save the user"} to finish.`;
+      $("uMobBtn").textContent = "Set a new starting password"; $("uPw").value = "";
+    } catch (e) { toast(e?.message || "Couldn't create the login. Try again."); }
+    finally { $("uMobBtn").disabled = false; }
+  };
+}
+// Logins without email: a 10-digit mobile number, or a user ID (4 to 20 letters and digits, starting with a letter), in capitals.
+let uLidMade = "";
+function uLidNorm(v) { const t = String(v || "").trim(); if (/^[\d\s+-]+$/.test(t)) { const d = t.replace(/\D/g, "").slice(-10); return d.length === 10 ? d : ""; } return /^[A-Za-z][A-Za-z0-9]{3,19}$/.test(t) ? t.toUpperCase() : ""; }
+const uRoleKind = () => { const r = $("uRole").value, t = getMatrix().trips; return r === "Truck driver" || t === "driver" ? "driver" : r === "Conductor" || t === "update" ? "conductor" : ""; };
+// A suggested user ID: CON (conductor), DRV (driver) or USR, the first 4 letters of the name and a number, e.g. CONMANI01.
+function uSuggestId() {
+  const letters = $("uName").value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4); if (letters.length < 2) return "";
+  const pre = { driver: "DRV", conductor: "CON" }[uRoleKind()] || "USR", taken = new Set(users.filter(x => x.id !== uEditingId).map(x => String(x.login || "").toUpperCase()));
+  for (let n = 1; n < 100; n++) { const id = pre + letters + String(n).padStart(2, "0"); if (!taken.has(id)) return id; } return "";
+}
+function uCrewMobile() {
+  const nm = $("uName").value.trim().toUpperCase(), d = drivers.find(x => x.id === $("uDrv").value) || drivers.find(x => String(x.name || "").trim().toUpperCase() === nm), c = conductors.find(x => String(x.name || "").trim().toUpperCase() === nm);
+  return String((uRoleKind() === "conductor" ? c?.mobile || c?.phone : d?.mobile) || d?.mobile || c?.mobile || c?.phone || "").replace(/\D/g, "").slice(-10);
+}
+// Drivers and conductors (or anyone who already has one) can sign in with a mobile number or user ID instead of an email.
+function uDrvSync() {
+  const k = uRoleKind(), on = !!k || !!$("uLid").value.trim();
+  $("uDrvBox").hidden = !on; $("uDrvRow").hidden = k !== "driver"; $("uEmailLbl").textContent = on ? "Email (optional)" : "Email";
 }
 function setMatrix(a) { MODULES.forEach(m => { const el = $(`acc-${m.id}-${a[m.id] || "none"}`); if (el) el.checked = true; }); }
 function getMatrix() { const a = {}; MODULES.forEach(m => a[m.id] = document.querySelector(`input[name="acc-${m.id}"]:checked`)?.value || "none"); return a; }
@@ -4803,6 +4901,11 @@ function openUDrawer(u, pre) {
   $("uRole").value = u?.role || "Viewer";
   (u?.status === "Inactive" ? $("uStatusI") : $("uStatusA")).checked = true;
   setMatrix(u ? normAccess(u) : ROLES.Viewer); syncMatrixLock();
+  $("uDrv").innerHTML = `<option value="">Choose the driver…</option>` + [...drivers].sort((a, b) => String(a.name).localeCompare(String(b.name))).map(d => `<option value="${d.id}">${esc(d.name)}${d.mobile ? ` · ${esc(d.mobile)}` : ""}</option>`).join("");
+  $("uDrv").value = u?.driverId || ""; $("uLid").value = u?.login || ""; $("uPw").value = ""; uLidMade = "";
+  $("uMobBtn").textContent = u?.login && u?.accountId ? "Set a new starting password" : "Create login";
+  $("uMobHint").textContent = "They sign in with this mobile number or user ID and the starting password, then choose their own password. If they forget it, set a new starting password here.";
+  ["uLid", "uPw", "uDrv"].forEach(k => { $("e-" + k).textContent = ""; $(k).removeAttribute("aria-invalid"); }); uDrvSync();
   ["uName", "uEmail", "uAcct", "uRole", "uStatus"].forEach(k => { $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); });
   $("scrim").hidden = false; $("uDrawer").hidden = false;
   setTimeout(() => $("uName").focus(), 30);
@@ -4819,7 +4922,7 @@ async function removeUser(id) {
 }
 $("uForm").addEventListener("submit", async e => {
   e.preventDefault();
-  ["uName", "uEmail", "uAcct", "uRole", "uStatus"].forEach(k => { $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); });
+  ["uName", "uEmail", "uAcct", "uRole", "uStatus", "uDrv", "uLid"].forEach(k => { $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); });
   const role = $("uRole").value, status = document.querySelector('input[name="uStatus"]:checked')?.value || "Active";
   const u = {
     id: uEditingId || ("u" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
@@ -4829,8 +4932,15 @@ $("uForm").addEventListener("submit", async e => {
   if ($("uAcct").value) u.accountId = $("uAcct").value;
   let ok = true;
   const err = (k, m) => { $("e-" + k).textContent = m; $(k)?.setAttribute("aria-invalid", "true"); ok = false; };
+  const lidOn = !$("uDrvBox").hidden, lid = lidOn ? uLidNorm($("uLid").value) : "";
+  if (lidOn && !$("uDrvRow").hidden && $("uDrv").value) u.driverId = $("uDrv").value;
+  if (lid) u.login = lid;
   if (!u.name) err("uName", "Enter the user's name.");
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u.email)) err("uEmail", "Enter a valid email address.");
+  if (lidOn && $("uLid").value.trim() && !lid) err("uLid", "Enter a 10-digit mobile number, or a user ID of 4 to 20 letters and digits starting with a letter.");
+  if (lid && lid !== uLidMade && lid !== users.find(x => x.id === u.id)?.login) err("uLid", "Press Create login so this mobile number or user ID can sign in.");
+  if (!$("uDrvRow").hidden && lidOn && !u.driverId) err("uDrv", "Choose the driver from the Driver master.");
+  if (lid && !u.email) { /* signs in with the mobile number or user ID */ }
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u.email)) err("uEmail", "Enter a valid email address.");
   else if (users.some(x => x.id !== u.id && (x.email || "").toLowerCase() === u.email)) err("uEmail", "Another user already has this email.");
   const wasAdmin = users.find(x => x.id === u.id && x.role === "Admin" && x.status === "Active");
   if (wasAdmin && (role !== "Admin" || status !== "Active") && !activeAdmins(u.id)) err(role !== "Admin" ? "uRole" : "uStatus", "At least one active admin is required. Make another user an admin first.");
@@ -6362,8 +6472,8 @@ let tt; function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidde
 /* ================= Trip sheet home · route bus daily entry · spare bus bookings · truck trips ================= */
 // Spare bus bookings live in "bookings", truck trips in "truckTrips" (grouped into round trips by roundId),
 // and the open / closed state of each round trip in "truckRounds".
-const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1", routeSheets: "fleet-routesheets.v1", expenses: "fleet-expenses.v1", maintLog: "fleet-maintlog.v1", maintTypes: "fleet-mainttypes.v1" , expenseReqs: "fleet-expreqs.v1"};
-const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [], routeSheets: [], expenses: [], expenseReqs: [], maintLog: [], maintTypes: [] };
+const OPS_LS = { bookings: "fleet-bookings.v1", truckTrips: "fleet-trucktrips.v1", truckRounds: "fleet-truckrounds.v1", fuelLog: "fleet-fuellog.v1", routeExpenses: "fleet-routeexp.v1", padiSlabs: "fleet-padislabs.v1", routeSheets: "fleet-routesheets.v1", expenses: "fleet-expenses.v1", maintLog: "fleet-maintlog.v1", maintTypes: "fleet-mainttypes.v1" , expenseReqs: "fleet-expreqs.v1", drvEntries: "fleet-drventries.v1"};
+const ops = { bookings: [], truckTrips: [], truckRounds: [], fuelLog: [], routeExpenses: [], padiSlabs: [], routeSheets: [], expenses: [], expenseReqs: [], maintLog: [], maintTypes: [], drvEntries: [] };
 let opsUnsubs = [], allTripMonths = [], allTripYears = [], dayTrips = [], dayUnsub = null, dayKey = "", dayLoaded = "";
 let opDate = todayISO();
 const genId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -9029,7 +9139,7 @@ function renderApprovals() {
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
 const AU_PAGE = { trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Route bus day sheet", tspare: "Booking planner",
-  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", trexp: "Route expenses", tpadi: "Padi calculation", tkrep: "Truck profit report", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
+  ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", trexp: "Route expenses", tpadi: "Padi calculation", tkrep: "Truck profit report", tdrv: "Truck driver (phone)", tutil: "Data upload", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
   if (!auditDb || !auditSess) return;
@@ -10294,6 +10404,7 @@ function renderOps() {
   if (view === "trexp") { renderRxp(); return; }
   if (view === "tpadi") { renderPadi(); return; }
   if (view === "tkrep") { renderPk(); return; }
+  if (view === "tdrv") { renderDrv(); return; }
   if (view === "tutil") { renderUpload(); return; }
   if (view === "texp") { renderExp(); return; }
   if (view === "tmaint") { renderMaint(); return; }
@@ -10391,6 +10502,8 @@ function renderHub() {
     [...L.back.sort(by), ...L.fill.filter(b => b.from && b.from <= todayISO()).sort(by), ...(canBookings ? L.sent.sort(by) : [])].forEach(b => { const bus = vehicles.find(v => v.id === b.vehicleId), k = b.tsStatus === "rejected" ? "back" : b.tsStatus === "submitted" ? "sent" : "fill";
       rows.push(line("booking", b.id, `<span class="plate psv">${esc(bus ? plateOf(bus) : "No bus yet")}</span><span>Spare bus${b.no ? ` · ${esc(b.no)}` : ""}</span><span class="sub">${esc(b.party || "")}${b.party ? " · " : ""}${fmtShort(b.from)}${b.to && b.to !== b.from ? ` – ${fmtShort(b.to)}` : ""}</span>${tsTag(b)}`,
         k === "back" ? "Correct" : k === "sent" ? "Review" : b.tsStatus === "draft" ? "Continue" : "Fill in", k !== "sent")); }); }
+  if (canTrips) ops.drvEntries.filter(e => !e.checkedOn).sort((a, c) => String(a.createdAt).localeCompare(String(c.createdAt))).forEach(e => { const b = vehicles.find(v => v.id === e.vehicleId);
+    rows.push(line("drv", e.id, `<span class="plate psv">${esc(plateOf(b) || "Truck")}</span><span>${DV_T[e.kind]?.[0] || "Entry"} from driver${e.kind === "start" ? ` · ${esc(e.origin)} → ${esc(e.dest)}` : ""}</span><span class="sub">${esc(e.driverName || "")}${e.driverName ? " · " : ""}${esc(dvSummary(e))}${e.photo ? " · photo attached" : ""}</span><span class="pill d30">To check</span>`, "Check", true)); });
   openR.forEach(r => { const b = vehicles.find(v => v.id === r.vehicleId), un = [...r.legs.flatMap(l => (l.payments || []).filter(p => p.settled === false)), ...(r.doc?.payments || []).filter(p => p.settled === false)].reduce((a, p) => a + num(p.amount), 0);
     rows.push(line("round", r.id, `<span class="plate psv">${esc(plateOf(b))}</span><span>Round trip ${esc(r.path)}</span><span class="sub">from ${fmtShort(r.from)} · received ${rs(r.received)} of ${rs(r.rent)}${un ? ` · ${rs(un)} payment not settled` : ""}</span><span class="pill d30">Not settled</span>`, canTrips ? "Settle" : "View")); });
   $("oTodo").innerHTML = rows.length ? rows.join("") : `<p class="none">${ready ? "Nothing waiting for this day." : "Loading…"}</p>`;
@@ -14311,6 +14424,258 @@ function roundsOf(vid, fy) {
       path: [r.legs[0].origin, ...r.legs.map(l => l.dest)].filter(Boolean).map(p => p.replace(/^[A-Z]{2}\s*-\s*/, "")).join(" → ") };
   });
 }
+/* ---------- Truck driver on the phone ----------
+   The driver enters the load slip when the loaded truck leaves, diesel fills, payments received and arrival. Each entry is
+   kept on the phone first (with its photo) and sent as soon as there is signal. The office checks it from the Trip sheet
+   To do list; only then does it go into the truck's round trip. */
+const DV_T = { start: ["Trip started", "புறப்பாடு"], diesel: ["Diesel fill", "டீசல்"], pay: ["Payment received", "பணம் பெற்றது"], end: ["Reached / unloaded", "லோடு இறக்கியது"] };
+let dv = { scr: "home", vid: "", rt: "ton", pay: "Card", how: "Cash", photo: null, busy: false }, dvOut = [], dvFlushing = false, dvMem = new Map();
+// The phone's outbox: IndexedDB when the browser allows it, otherwise kept in memory until it is sent.
+function dvDb() { return new Promise((res, rej) => { try { const r = indexedDB.open("vbs-driver", 1); r.onupgradeneeded = () => r.result.createObjectStore("out", { keyPath: "id" }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } }); }
+async function dvOutOp(op, v) {
+  try { const d = await dvDb(); return await new Promise((res, rej) => { const t = d.transaction("out", op === "all" ? "readonly" : "readwrite"), st = t.objectStore("out");
+    const r = op === "all" ? st.getAll() : op === "del" ? st.delete(v) : st.put(v); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+  catch { if (op === "all") return [...dvMem.values()]; if (op === "del") dvMem.delete(v); else dvMem.set(v.id, v); }
+}
+async function dvOutLoad() { dvOut = ((await dvOutOp("all")) || []).sort((a, b) => String(a.doc.createdAt).localeCompare(String(b.doc.createdAt))); }
+// Send what is waiting: the photo first, then the entry. Without signal it stops and tries again later.
+async function dvFlush() {
+  if (dvFlushing) return; dvFlushing = true;
+  try {
+    await dvOutLoad();
+    for (const it of dvOut) {
+      if (navigator.onLine === false) break;
+      try {
+        if (it.photo && !it.doc.photo) {
+          if (!assetsCap) throw Object.assign(new Error("Photos can't be sent from this view."), { code: "permission_denied" });
+          const u = await assetsCap.upload(it.photo, { type: it.photo.type });
+          it.doc.photo = { id: u.id, name: it.photo.name || "photo.jpg", type: it.photo.type }; it.photo = null; delete it.err; await dvOutOp("put", it);
+        }
+        await opsSave("drvEntries", it.doc); await dvOutOp("del", it.id);
+      } catch (e) {
+        if (e?.code === "permission_denied" || e?.code === "invalid_argument" || e?.status === 403) { it.err = e.message || "The office could not accept this entry."; await dvOutOp("put", it); continue; }
+        break;
+      }
+    }
+  } finally { dvFlushing = false; await dvOutLoad(); if (view === "tdrv") renderDrv(); }
+}
+addEventListener("online", () => { if (acc.trips === "driver") dvFlush(); });
+addEventListener("offline", () => { if (view === "tdrv") renderDrv(); });
+setInterval(() => { if (dvOut.length && acc.trips === "driver") dvFlush(); }, 20000);
+// A phone photo is made smaller (longest side 1600 px) so it goes through on weak signal.
+async function dvShrink(file) {
+  if (!/^image\//.test(file.type) || /gif/.test(file.type)) return file;
+  try {
+    const bmp = await createImageBitmap(file), k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    const b = await new Promise(r => c.toBlob(r, "image/jpeg", .8));
+    return b && b.size < file.size ? new File([b], String(file.name || "photo").replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" }) : file;
+  } catch { return file; }
+}
+const dvMe = () => myId() || "local";
+const dvMine = () => [...ops.drvEntries.filter(e => e.byAcct === dvMe()), ...dvOut.map(o => ({ ...o.doc, _wait: 1, _err: o.err }))].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+const dvWhen = e => `${e.date ? fmtShort(e.date) : ""}${e.time ? " " + e.time : ""}`;
+function dvSummary(e) {
+  if (e.kind === "start") return [dvWhen(e), e.load, e.tons ? `${nf(num(e.tons), num(e.tons) % 1 ? 2 : 0)} t` : "", e.rent ? `rent ${rs(num(e.rent))}${e.rt === "ton" && e.rate ? ` (₹${nf(num(e.rate))} a ton)` : ""}` : "", e.startKm ? `km ${nf(num(e.startKm))}` : ""].filter(Boolean).join(" · ");
+  if (e.kind === "diesel") return [dvWhen(e), `${nf(num(e.litres), num(e.litres) % 1 ? 2 : 0)} L`, e.amount ? rs(num(e.amount)) : "", e.pay, e.place, e.odo ? `km ${nf(num(e.odo))}` : ""].filter(Boolean).join(" · ");
+  if (e.kind === "pay") return [dvWhen(e), rs(num(e.amount)), e.how, e.from ? `from ${e.from}` : ""].filter(Boolean).join(" · ");
+  return [dvWhen(e), e.place, e.endKm ? `end km ${nf(num(e.endKm))}` : ""].filter(Boolean).join(" · ");
+}
+// The trip the truck is on: the last "trip started" not followed by "reached".
+function dvCurrent(vid) {
+  const L = dvMine().filter(e => e.vehicleId === vid && !e.discarded).reverse();
+  let cur = null; L.forEach(e => { if (e.kind === "start") cur = e; else if (e.kind === "end") cur = null; });
+  return cur;
+}
+function dvTruck() {
+  const tks = kSorted(truckList()), mine = dvMine();
+  if (!tks.some(t => t.id === dv.vid)) dv.vid = mine.find(e => tks.some(t => t.id === e.vehicleId))?.vehicleId || tks[0]?.id || "";
+  return tks;
+}
+function renderDrv() {
+  if (!$("dvBody")) return;
+  if (!dv.loaded) { dv.loaded = true; dvFlush(); }
+  const tks = dvTruck(), rec = myRecord(), on = navigator.onLine !== false, wait = dvOut.length;
+  const dname = drivers.find(d => d.id === rec?.driverId)?.name || rec?.name || me?.name || "";
+  $("dvTruck").innerHTML = tks.length > 1 && dv.scr === "home" ? `<select id="dvTk" aria-label="Truck">${tks.map(t => `<option value="${t.id}"${t.id === dv.vid ? " selected" : ""}>${esc(plateOf(t))}</option>`).join("")}</select>` : esc(plateOf(tks.find(t => t.id === dv.vid)) || "My truck");
+  $("dvWho").textContent = [dname, "வணக்கம்"].filter(Boolean).join(" · ");
+  $("dvNet").className = "dvnet" + (!on ? " off" : wait ? " wait" : ""); $("dvNet").textContent = !on ? "No signal · சிக்னல் இல்லை" : wait ? `Sending ${wait}…` : "Online";
+  if (!tks.length) { $("dvBody").innerHTML = `<div class="dvcard"><b>No truck yet</b><p class="sub">Ask the office to add the truck in the Vehicle master.</p></div>`; return; }
+  if (dv.scr !== "home") { if (!$("dvBody").querySelector(".dvform")) dvForm(); return; }
+  const cur = dvCurrent(dv.vid), list = dvMine().filter(e => e.vehicleId === dv.vid).slice(0, 12);
+  const st = e => e._err ? `<span class="st err">Not accepted<br>${esc(e._err)}</span>` : e._wait ? `<span class="st wait">${on ? "Sending…" : "Waiting for signal"}<br>சிக்னல் வந்ததும்</span>`
+    : e.discarded ? `<span class="st no">Not used by the office</span>` : e.checkedOn ? `<span class="st ok">✓ Checked<br>சரிபார்க்கப்பட்டது</span>` : `<span class="st">Sent · office to check<br>அனுப்பப்பட்டது</span>`;
+  const big = (k, ic, en, ta, pri) => `<button type="button" class="dvbig${pri ? " pri" : ""}" data-dv="${k}"><i aria-hidden="true">${ic}</i><span>${en}<small>${ta}</small></span></button>`;
+  $("dvBody").innerHTML = `<div class="dvcard dvnow"><span class="sub">Now · இப்போது</span>${cur ? `<b>On trip: ${esc(cur.origin)} → ${esc(cur.dest)}</b><span class="sub">Left ${dvWhen(cur)}${cur.load ? " · " + esc(cur.load) : ""}${cur.tons ? ` ${nf(num(cur.tons))} t` : ""}</span>` : `<b>Not on a trip</b><span class="sub">Tap Start new trip when the truck leaves loaded.</span>`}</div>` +
+    big("start", "🚚", "Start new trip", "லோடு ஏற்றி புறப்படும் போது", !cur) + big("diesel", "⛽", "Diesel fill", "டீசல் நிரப்பியது") + big("pay", "₹", "Payment received", "பணம் பெற்றது") + big("end", "🏁", "Reached / unloaded", "லோடு இறக்கியது", !!cur) +
+    `<div class="dvcard dvlist"><span class="sub">My entries · என் பதிவுகள்</span>${list.map(e => `<div class="dvli"><span class="w"><b>${DV_T[e.kind]?.[0] || e.kind}${e.kind === "start" ? ` · ${esc(e.origin)} → ${esc(e.dest)}` : ""}</b><small>${esc(dvSummary(e))}</small></span>${st(e)}</div>`).join("") || `<p class="sub" style="margin:6px 0 0">Nothing yet.</p>`}</div>`;
+}
+const dvNow = () => { const d = new Date(); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
+function dvForm() {
+  const k = dv.scr, cur = dvCurrent(dv.vid), mine = dvMine(), [en, ta] = DV_T[k];
+  const places = [...new Set(mine.flatMap(e => [e.origin, e.dest, e.place]).filter(Boolean))];
+  const lastKm = (() => { const e = mine.find(x => x.vehicleId === dv.vid && (x.endKm || x.startKm || x.odo)); return e ? num(e.endKm || e.odo || e.startKm) : ""; })();
+  const f = (id, l, t, inp) => `<label class="dvf">${l} <span class="ta">${t}</span>${inp}</label>`;
+  const inp = (id, o = {}) => `<input id="${id}"${o.type ? ` type="${o.type}"` : ""}${o.num ? ' inputmode="decimal"' : ""}${o.list ? ` list="${o.list}"` : ""} value="${esc(o.v ?? "")}" autocomplete="off"${o.ph ? ` placeholder="${esc(o.ph)}"` : ""}>`;
+  const seg = (key, opts) => `<div class="dvseg" role="radiogroup">${opts.map(([v, l]) => `<button type="button" data-seg="${key}" data-v="${v}" class="${dv[key] === v ? "on" : ""}" aria-pressed="${dv[key] === v}">${l}</button>`).join("")}</div>`;
+  const when = `<div class="dv2">${f("", "Date", "தேதி", inp("dvDate", { type: "date", v: todayISO() }))}${f("", "Time", "நேரம்", inp("dvTime", { type: "time", v: dvNow() }))}</div>`;
+  const cam = `<button type="button" class="dvcam" id="dvCam">📷 ${k === "diesel" ? "Photo of the bill · பில்" : k === "pay" ? "Photo of the receipt · ரசீது" : k === "start" ? "Photo of slip / weighbridge · சீட்டு" : "Photo (optional) · புகைப்படம்"}</button>`;
+  let body = "";
+  const here = mine.find(x => x.vehicleId === dv.vid && (x.place || x.dest))
+  if (k === "start") body = f("", "Starting place", "வண்டி புறப்படும் இடம்", inp("dvOrigin", { list: "dvPl", v: here ? (here.kind === "start" ? here.dest : here.place) || "" : "" })) + when + f("", "Destination", "வண்டி சேரும் இடம்", inp("dvDest", { list: "dvPl" })) +
+    `<div class="dv2">${f("", "Load", "லோடு விவரம்", inp("dvLoad", { ph: "e.g. Paruppu" }))}${f("", "Total tons", "மொத்த டன்", inp("dvTons", { type: "number", num: 1 }))}</div>` +
+    `<div class="dvf">Rent <span class="ta">ஒரு டன் வாடகை அல்லது மொத்த வாடகை</span></div>` + seg("rt", [["ton", "Per ton · ஒரு டன்"], ["total", "Total · மொத்தம்"]]) +
+    `<div class="dv2">${f("", dv.rt === "ton" ? "Rent for 1 ton" : "Total rent", "வாடகை ₹", inp("dvRate", { type: "number", num: 1 }))}<div class="dvtot" style="align-self:end"><span>Total</span><b id="dvRent">—</b></div></div>` +
+    f("", "Start km (meter)", "கிலோமீட்டர்", inp("dvKm", { type: "number", num: 1, v: lastKm }));
+  if (k === "diesel") body = when + `<div class="dv2">${f("", "Litres", "லிட்டர்", inp("dvLit", { type: "number", num: 1 }))}${f("", "Rate / L", "விலை", inp("dvRateL", { type: "number", num: 1 }))}</div>` +
+    `<div class="dvtot"><span>Amount · தொகை</span><b><input id="dvAmt" type="number" inputmode="decimal" aria-label="Amount" style="width:130px;text-align:right;font:inherit;border:0;background:transparent"></b></div>` +
+    seg("pay", [["Card", "Card · கார்டு"], ["Cash", "Cash · ரொக்கம்"]]) + f("", "Place", "இடம்", inp("dvPlace", { list: "dvPl" })) + f("", "Meter km", "கிலோமீட்டர்", inp("dvKm", { type: "number", num: 1 }));
+  if (k === "pay") body = when + f("", "Amount ₹", "தொகை", inp("dvAmt", { type: "number", num: 1 })) + seg("how", [["Cash", "Cash · ரொக்கம்"], ["UPI", "UPI"], ["Bank transfer", "Bank · வங்கி"]]) +
+    f("", "Received from", "யாரிடமிருந்து", inp("dvFrom", { ph: "Party or person" }));
+  if (k === "end") body = when + f("", "Place", "இடம்", inp("dvPlace", { list: "dvPl", v: cur?.dest || "" })) + f("", "End km (meter)", "கிலோமீட்டர்", inp("dvKm", { type: "number", num: 1 }));
+  $("dvBody").innerHTML = `<form class="dvform" novalidate><button type="button" class="dvback" data-dv="home">‹ Back · பின்</button><h2>${en}<small>${ta}${cur && k !== "start" ? ` · ${esc(cur.origin)} → ${esc(cur.dest)}` : ""}</small></h2>${body}` +
+    f("", "Note (optional)", "குறிப்பு", `<textarea id="dvNote" maxlength="300"></textarea>`) + cam +
+    `<datalist id="dvPl">${places.map(p => `<option value="${esc(p)}">`).join("")}</datalist><div class="err" id="dvErr" role="alert"></div>` +
+    `<button type="submit" class="dvgo">${k === "start" ? "Start trip · அனுப்பு" : "Save · சேமி"}</button></form>`;
+  dvCalc(); setTimeout(() => $("dvBody").querySelector("input:not([type=date]):not([type=time])")?.focus(), 30);
+}
+function dvCalc() {
+  if (dv.scr === "start" && $("dvRent")) { const t = num($("dvTons").value), r = num($("dvRate").value), v = dv.rt === "ton" ? Math.round(t * r) : Math.round(r); $("dvRent").textContent = v ? nf(v) : "—"; }
+}
+$("dvBody").addEventListener("click", e => {
+  const b = e.target.closest("[data-dv]"); if (b) { dv.scr = b.dataset.dv; dv.photo = null; $("dvBody").innerHTML = ""; renderDrv(); scrollTo(0, 0); return; }
+  const sg = e.target.closest("[data-seg]"); if (sg) { dv[sg.dataset.seg] = sg.dataset.v; sg.parentElement.querySelectorAll("button").forEach(x => { x.classList.toggle("on", x === sg); x.setAttribute("aria-pressed", x === sg); });
+    if (sg.dataset.seg === "rt") { const l = $("dvRate").closest(".dvf"); l.firstChild.textContent = dv.rt === "ton" ? "Rent for 1 ton " : "Total rent "; dvCalc(); } return; }
+  if (e.target.closest("#dvCam")) $("dvPhotoIn").click();
+});
+$("dvBody").addEventListener("input", e => {
+  dvCalc();
+  if (dv.scr === "diesel" && (e.target.id === "dvLit" || e.target.id === "dvRateL") && !$("dvAmt").dataset.typed) { const v = num($("dvLit").value) * num($("dvRateL").value); $("dvAmt").value = v ? Math.round(v * 100) / 100 : ""; }
+  if (e.target.id === "dvAmt") $("dvAmt").dataset.typed = e.target.value ? "1" : "";
+});
+$("dvBody").addEventListener("change", e => { if (e.target.id === "dvTk") { dv.vid = e.target.value; renderDrv(); } });
+$("dvPhotoIn").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  dv.photo = await dvShrink(file); const c = $("dvCam"); if (!c) return;
+  c.classList.add("has"); c.innerHTML = /^image\//.test(dv.photo.type) ? `<img src="${URL.createObjectURL(dv.photo)}" alt=""> Photo added · மாற்ற தொடவும்` : "📄 PDF added · மாற்ற தொடவும்";
+});
+$("dvBody").addEventListener("submit", async e => {
+  e.preventDefault(); if (dv.busy) return;
+  const k = dv.scr, v = id => ($(id)?.value || "").trim().replace(/\s+/g, " "), n = id => num($(id)?.value), rec = myRecord();
+  const errEl = $("dvErr"), bad = m => { errEl.textContent = m; };
+  const d = { id: genId("de"), kind: k, vehicleId: dv.vid, byAcct: dvMe(), byName: whoAmI(), driverId: rec?.driverId || "", driverName: drivers.find(x => x.id === rec?.driverId)?.name || rec?.name || whoAmI(),
+    date: v("dvDate") || todayISO(), time: v("dvTime"), createdAt: new Date().toISOString() };
+  const note = v("dvNote"); if (note) d.note = note;
+  if (k === "start") {
+    Object.assign(d, { origin: v("dvOrigin"), dest: v("dvDest"), load: v("dvLoad"), tons: n("dvTons") || "", rt: dv.rt, rate: n("dvRate") || "", startKm: Math.round(n("dvKm")) || "" });
+    d.rent = dv.rt === "ton" ? Math.round(num(d.tons) * num(d.rate)) : Math.round(num(d.rate));
+    if (!d.origin) return bad("Enter the starting place. · புறப்படும் இடம்"); if (!d.dest) return bad("Enter the destination. · சேரும் இடம்");
+  }
+  if (k === "diesel") { Object.assign(d, { litres: Math.round(n("dvLit") * 100) / 100, rate: n("dvRateL") || "", amount: Math.round(n("dvAmt") * 100) / 100 || "", pay: dv.pay, place: v("dvPlace"), odo: Math.round(n("dvKm")) || "" });
+    if (!(d.litres > 0)) return bad("Enter the litres. · லிட்டர்"); if (d.litres > 1000) return bad("Check the litres: more than 1,000 L."); }
+  if (k === "pay") { Object.assign(d, { amount: Math.round(n("dvAmt")), how: dv.how, from: v("dvFrom") }); if (!(d.amount > 0)) return bad("Enter the amount. · தொகை"); }
+  if (k === "end") { Object.assign(d, { place: v("dvPlace"), endKm: Math.round(n("dvKm")) || "" }); }
+  Object.keys(d).forEach(x => d[x] === "" && delete d[x]);
+  dv.busy = true;
+  try { await dvOutOp("put", { id: d.id, doc: d, photo: dv.photo || null }); }
+  finally { dv.busy = false; }
+  dv.scr = "home"; dv.photo = null; $("dvBody").innerHTML = ""; await dvOutLoad(); renderDrv(); scrollTo(0, 0);
+  toast(navigator.onLine === false ? "Saved on the phone. It is sent when there is signal. · சேமிக்கப்பட்டது" : "Saved. Sending to the office… · அனுப்பப்படுகிறது");
+  dvFlush();
+});
+
+/* Office: check a driver's entry and put it into the round trip. Start trip adds a trip; diesel, payment and arrival go
+   into a trip of the truck's open round trips (by default the one the driver started). */
+function dvLegOpts(vid) { return roundsOf(vid).filter(r => r.status !== "Closed").reverse().flatMap(r => r.legs.map((l, i) => ({ id: l.id, label: `Round trip ${rtNo(r)} · ${i + 1} · ${rtLegName(l)} · ${fmtShort(l.from)}` }))); }
+function dvDefLeg(e) {
+  const opts = dvLegOpts(e.vehicleId), ids = new Set(opts.map(o => o.id));
+  const st = ops.drvEntries.filter(x => x.kind === "start" && x.vehicleId === e.vehicleId && x.legId && ids.has(x.legId) && String(x.createdAt) <= String(e.createdAt)).sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))).pop();
+  return st?.legId || opts[0]?.id || "";
+}
+function dvCheckOpen(id) {
+  const e = ops.drvEntries.find(x => x.id === id); if (!e) return; pbClose();
+  const trucks = kSorted(truckList()), box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
+  const fld = (l, h) => `<label class="cpf">${l}${h}</label>`, ip = (k, val, t = "text") => `<input data-k="${k}" type="${t}"${t === "number" ? ' inputmode="decimal"' : ""} value="${esc(val ?? "")}">`;
+  const legSel = () => { const o = dvLegOpts(e.vehicleId); return o.length ? fld("Put into trip", `<select data-k="leg">${o.map(x => `<option value="${x.id}">${esc(x.label)}</option>`).join("")}</select>`) : `<p class="err" style="margin:0">This truck has no open round trip. Check the driver's "Trip started" entry first, or add the trip on the Trucks page.</p>`; };
+  let body = "";
+  if (e.kind === "start") body = fld("Truck", `<select data-k="vid">${trucks.map(v => `<option value="${v.id}"${v.id === e.vehicleId ? " selected" : ""}>${esc(plateOf(v))}</option>`).join("")}</select>`) + fld("Add to", `<select data-k="round"></select>`) +
+    `<div class="dvgrid">${fld("Loading date", ip("date", e.date, "date"))}${fld("Start km", ip("startKm", e.startKm, "number"))}</div><div class="dvgrid">${fld("Starting place", ip("origin", e.origin))}${fld("Destination", ip("dest", e.dest))}</div>` +
+    `<div class="dvgrid">${fld("Load", ip("load", e.load))}${fld("Tons", ip("tons", e.tons, "number"))}</div><div class="dvgrid">${fld("Rent", `<select data-k="rt"><option value="ton"${e.rt !== "total" ? " selected" : ""}>Per ton</option><option value="total"${e.rt === "total" ? " selected" : ""}>Total</option></select>`)}${fld("Rate", ip("rate", e.rate, "number"))}</div>` +
+    fld("Trip rent (confirmed by the office)", ip("rent", e.rent, "number"));
+  if (e.kind === "diesel") body = legSel() + `<div class="dvgrid">${fld("Date", ip("date", e.date, "date"))}${fld("Litres", ip("litres", e.litres, "number"))}</div><div class="dvgrid">${fld("Rate / L", ip("rate", e.rate, "number"))}${fld("Amount ₹", ip("amount", e.amount, "number"))}</div>` +
+    `<div class="dvgrid">${fld("Paid by", `<select data-k="pay"><option${e.pay !== "Cash" ? " selected" : ""}>Card</option><option${e.pay === "Cash" ? " selected" : ""}>Cash</option></select>`)}${fld("Odometer", ip("odo", e.odo, "number"))}</div>` + fld("Place", ip("place", e.place));
+  if (e.kind === "pay") body = legSel() + `<div class="dvgrid">${fld("Date", ip("date", e.date, "date"))}${fld("Amount ₹", ip("amount", e.amount, "number"))}</div>` +
+    `<div class="dvgrid">${fld("Paid by", `<select data-k="how">${[...new Set(["Cash", ...LG_PAYBY])].map(x => `<option${x === (e.how === "Bank" ? "Bank transfer" : e.how) ? " selected" : ""}>${x}</option>`).join("")}</select>`)}${fld("Description", ip("desc", e.from ? `From ${e.from}` : ""))}</div>` +
+    `<label class="cpopt"><input type="checkbox" data-k="settled" checked> <span>Settled<small>Untick if the money is still to be confirmed</small></span></label>`;
+  if (e.kind === "end") body = legSel() + `<div class="dvgrid">${fld("Unloading date", ip("date", e.date, "date"))}${fld("End km", ip("endKm", e.endKm, "number"))}</div>`;
+  const ph = e.photo ? `<div class="dvphoto"><a href="/_blob/${encodeURIComponent(e.photo.id)}" target="_blank" rel="noopener">${String(e.photo.type || "").startsWith("image/") ? `<img src="/_blob/${encodeURIComponent(e.photo.id)}" alt="Photo from the driver">` : "📄 PDF"}</a><span>Photo from the driver. ${e.kind === "start" ? "It is kept in the round trip's Files." : "It is kept as the bill on this line."}</span></div>` : "";
+  box.innerHTML = `<div class="cpdlg dvck" role="dialog" aria-modal="true" aria-labelledby="dvHead"><header><h2 id="dvHead">${DV_T[e.kind][0]} · from the driver</h2><button type="button" class="btn mclose" data-x>Close ✕</button></header>` +
+    `<div class="dvfrom"><b>${esc(e.driverName || e.byName || "")}</b> · ${esc(plateOf(vehicles.find(v => v.id === e.vehicleId)) || "")} · sent ${esc(new Date(e.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }))}${e.note ? `<br>Note: ${esc(e.note)}` : ""}</div>` + ph + body +
+    `<footer><button type="button" class="btn danger" data-no>Not needed</button><button type="button" class="btn primary" data-ok>✓ Check and add</button></footer></div>`;
+  document.body.appendChild(box);
+  const $$ = q => box.querySelector(q), val = k => $$(`[data-k="${k}"]`)?.value?.trim() ?? "";
+  const rounds = () => { const sel = $$('[data-k="round"]'); if (!sel) return; const vid = val("vid");
+    sel.innerHTML = `<option value="new">A new round trip</option>` + roundsOf(vid).filter(r => r.status !== "Closed").reverse().map(r => `<option value="${r.id}">Round trip ${rtNo(r)} · from ${fmtShort(r.from)} · ${esc(r.path)}</option>`).join(""); };
+  rounds(); if ($$('[data-k="leg"]')) $$('[data-k="leg"]').value = dvDefLeg(e) || $$('[data-k="leg"]').value;
+  let rentTyped = false;
+  box.addEventListener("input", ev => { const k = ev.target.dataset.k; if (k === "rent") rentTyped = true;
+    if (e.kind === "start" && !rentTyped && ["tons", "rate", "rt"].includes(k)) $$('[data-k="rent"]').value = val("rt") === "ton" ? Math.round(num(val("tons")) * num(val("rate"))) || "" : Math.round(num(val("rate"))) || "";
+    if (e.kind === "diesel" && ["litres", "rate"].includes(k)) { const a = num(val("litres")) * num(val("rate")); if (a) $$('[data-k="amount"]').value = Math.round(a * 100) / 100; } });
+  box.addEventListener("change", ev => { if (ev.target.dataset.k === "vid") rounds(); if (ev.target.dataset.k === "rt") box.dispatchEvent(new Event("input")); });
+  const done = extra => ({ ...e, checkedOn: new Date().toISOString(), checkedBy: myUserId || "", checkedByName: whoAmI(), ...extra });
+  box.addEventListener("click", async ev => {
+    if (ev.target === box || ev.target.closest("[data-x]")) { pbClose(); return; }
+    if (ev.target.closest("[data-no]")) {
+      if (!await askYesNo("Mark this entry as not needed? It is not added anywhere. The driver sees “Not used by the office”.", { yes: "Not needed", danger: true })) return;
+      try { await opsSave("drvEntries", done({ discarded: true })); pbClose(); toast("Marked as not needed"); } catch { toast("Couldn't save. Try again."); } return;
+    }
+    const okB = ev.target.closest("[data-ok]"); if (!okB) return;
+    try {
+      if (e.kind === "start") {
+        const l = { id: genId("tt"), vehicleId: val("vid"), from: val("date"), to: val("date"), days: 1, origin: val("origin"), dest: val("dest"), rent: Math.round(num(val("rent"))) };
+        if (!l.from || !l.origin || !l.dest) { toast("Enter the date, starting place and destination."); return; } if (!l.rent) { toast("Enter the trip rent."); return; }
+        const km = Math.round(num(val("startKm"))); if (km) l.startKm = km;
+        if (e.driverId && drivers.some(d => d.id === e.driverId)) { l.driver1Id = e.driverId; l.driver1Name = drivers.find(d => d.id === e.driverId).name; } else if (e.driverName) l.driver1Name = e.driverName;
+        const ld = [val("load"), num(val("tons")) ? `${nf(num(val("tons")))} t` : "", val("rt") === "ton" && num(val("rate")) ? `₹${nf(num(val("rate")))} a ton` : ""].filter(Boolean).join(" · ");
+        l.remarks = [ld ? `Load: ${ld}` : "", e.note ? `Driver: ${e.note}` : ""].filter(Boolean).join(". ") || undefined; if (!l.remarks) delete l.remarks;
+        const rs0 = $$('[data-k="round"]').value; l.roundId = rs0 !== "new" ? rs0 : l.id;
+        const c = legCalc(l); l.expense = c.exp; l.balance = c.bal; l.fy = fyOf(l.from);
+        okB.disabled = true; await opsSave("truckTrips", l);
+        if (e.photo) { const D = ops.truckRounds.find(x => x.id === l.roundId) || { id: l.roundId, vehicleId: l.vehicleId, fy: l.fy, status: "Open" };
+          await opsSave("truckRounds", { ...D, files: [...(D.files || []), { id: e.photo.id, name: e.photo.name || "slip.jpg", type: e.photo.type, kind: "Rent slip", at: e.createdAt, byName: e.driverName || e.byName || "" }] }); }
+        await opsSave("drvEntries", done({ legId: l.id, roundId: l.roundId, vehicleId: l.vehicleId }));
+        pbClose(); toast("Trip added. Fill in FASTag, padi and commission, then save."); kBusId = l.vehicleId; openRound(l.roundId, "leg", l.id); return;
+      }
+      const leg0 = ops.truckTrips.find(x => x.id === val("leg")); if (!leg0) { toast("Choose the trip to put this into."); return; }
+      const n = JSON.parse(JSON.stringify(leg0)), bill = e.photo ? { id: e.photo.id, name: e.photo.name || "bill.jpg", type: e.photo.type, at: e.createdAt, byName: e.driverName || "" } : null;
+      if (e.kind === "diesel") {
+        const fl = { date: val("date"), litres: Math.round(num(val("litres")) * 100) / 100, pay: val("pay") || "Card" }, rt0 = num(val("rate")), am = num(val("amount")), pl = val("place"), od = Math.round(num(val("odo")));
+        if (!fl.date || !(fl.litres > 0)) { toast("Enter the date and litres."); return; }
+        if (rt0) fl.rate = rt0; if (am) fl.amount = Math.round(am * 100) / 100; if (pl) fl.place = pl; if (od) fl.odo = od; if (bill) fl.bill = bill;
+        const had = n.fuels?.length ? n.fuels : rtDslAll({ legs: [n], doc: {} }).map(({ leg, ...x }) => x);
+        n.fuels = [...had, fl]; n.litres = Math.round(n.fuels.reduce((a, x) => a + num(x.litres), 0) * 100) / 100; n.fuelCost = Math.round(n.fuels.reduce((a, x) => a + num(x.amount), 0));
+      }
+      if (e.kind === "pay") {
+        const p = { date: val("date"), amount: Math.round(num(val("amount"))), pay: val("how") || "Cash" }, ds = val("desc");
+        if (!p.date || !(p.amount > 0)) { toast("Enter the date and amount."); return; }
+        if (ds) p.desc = ds; if (!$$('[data-k="settled"]').checked) p.settled = false; if (bill) p.bill = bill;
+        n.payments = [...(n.payments || []), p];
+      }
+      if (e.kind === "end") {
+        const to = val("date"), ek = Math.round(num(val("endKm")));
+        if (to) { if (to < n.from) { toast("The unloading date is before the loading date."); return; } n.to = to; n.days = inclDays(n.from, to) || n.days; }
+        if (ek) { if (num(n.startKm) && ek <= num(n.startKm)) { toast("End km must be more than the start km."); return; } n.endKm = ek; }
+        if (bill) { const D = ops.truckRounds.find(x => x.id === (n.roundId || n.id)) || { id: n.roundId || n.id, vehicleId: n.vehicleId, fy: fyOf(n.from), status: "Open" };
+          await opsSave("truckRounds", { ...D, files: [...(D.files || []), { ...bill, kind: "Others" }] }); }
+      }
+      const c = legCalc(n); n.expense = c.exp; n.balance = c.bal; n.fy = fyOf(n.from);
+      okB.disabled = true; await opsSave("truckTrips", n);
+      await opsSave("drvEntries", done({ legId: n.id, roundId: n.roundId || n.id }));
+      pbClose(); toast(`${DV_T[e.kind][0]} added to ${rtLegName(n)}`);
+    } catch { toast("Couldn't save. Check your connection and try again."); okB.disabled = false; }
+  });
+}
+
 /* ---------- Truck profit report ----------
    Each truck's rent, expenses and profit for the financial year, by truck and by month. A trip counts in the month it started;
    a diesel fill kept on the round trip counts in the month of its date. Other = RTO, loading, weighbridge, other and bill expenses. */
@@ -15693,6 +16058,7 @@ $("oTodo").addEventListener("click", e => {
   if (b.dataset.go === "day") { dbBus = b.dataset.id; rsBus = b.dataset.id; dbFilledKey = ""; dbFrom = { hash: "#trips", y: scrollY }; location.hash = "#trips-day"; }
   if (b.dataset.go === "booking") openBooking(b.dataset.id);
   if (b.dataset.go === "round") openRound(b.dataset.id);
+  if (b.dataset.go === "drv") dvCheckOpen(b.dataset.id);
 });
 $("oTodo").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches(".orow[data-go]")) { e.preventDefault(); e.target.click(); } });
 kFy = fyOptions("kFy"); pkFy = fyOptions("pkFy");
