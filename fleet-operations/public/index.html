@@ -2903,6 +2903,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf"><label for="kFy">Financial year</label><select id="kFy"></select></div>
           <button class="btn" type="button" id="kPrint" title="Print or download the trips and expenses of this truck, as Excel or as an image">Print</button>
           <button class="btn" type="button" id="kFast" title="Download the FASTag amounts of this truck">FASTag</button>
+          <button class="btn" type="button" id="kDl" title="Download every truck trip in the office Trip Download format (Excel, one sheet per truck)">⬇ Download</button>
           <a class="btn" href="#truck-profit" title="Rent, expenses, profit and mileage of every truck, month by month">Profit report</a>
           <button class="btn primary" type="button" id="kAdd">+ Add trip</button>
         </div>
@@ -9481,15 +9482,15 @@ const XL = (() => {
   const col = n => { let s = ""; n++; while (n) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
   const idx = L => [...L].reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1;
   // Styles: 0 plain, 1 title, 2 label, 3 heading, 4 text, 5 whole number, 6 date, 7 two decimals, 8 bold number,
-  // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number
-  const S = { plain: 0, title: 1, label: 2, head: 3, text: 4, int: 5, date: 6, dec: 7, sum: 8, mtext: 9, tint: 10, ttext: 11, head2: 12, note: 13, mint: 14, tx: 15 };
+  // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number, 15 text format, 16 bold 14pt heading
+  const S = { plain: 0, title: 1, label: 2, head: 3, text: 4, int: 5, date: 6, dec: 7, sum: 8, mtext: 9, tint: 10, ttext: 11, head2: 12, note: 13, mint: 14, tx: 15, h14: 16 };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
     xf(0, 0, 0, 1, 'vertical="center"'), xf(165, 0, 0, 1), xf(164, 0, 0, 1, 'horizontal="center"'), xf(166, 0, 0, 1), xf(165, 1, 0, 1), xf(0, 0, 0, 1, 'horizontal="center" vertical="center" wrapText="1"'),
-    xf(165, 1, 3, 1), xf(0, 1, 3, 1), xf(0, 1, 4, 1, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 3, 0, 0), xf(165, 1, 0, 1, 'vertical="center"'), xf(49, 0, 0, 1)];
+    xf(165, 1, 3, 1), xf(0, 1, 3, 1), xf(0, 1, 4, 1, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 3, 0, 0), xf(165, 1, 0, 1, 'vertical="center"'), xf(49, 0, 0, 1), xf(0, 2, 0, 1, 'vertical="center"')];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
-    `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd-mm-yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
+    `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="4"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font></fonts>` +
     `<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill></fills>` +
     `<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>${B}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
@@ -9555,6 +9556,59 @@ function xlHeads(ws, row, heads, from = 0, style = XL.S.head) {
 }
 const xlSum = (rows, k) => rows.reduce((a, r) => a + (typeof r[k] === "number" && isFinite(r[k]) ? r[k] : 0), 0);
 
+/* Truck trips in the office "Trip Download" format: one sheet per truck (named with its number), the headings in row 1 exactly
+   as in that sheet, one row per trip from row 2, oldest first. Trip Balance and Trip Payment Status are written once per round
+   trip, merged over its trips. Diesel Rate is the diesel amount (as in the office sheet, where Total Expenses adds it); diesel
+   entered for a whole round trip goes on its last trip. Bill expenses go in Bill Exp 1. Remarks keep the trip's remarks and
+   each payment as "Bank Input - Rs.… on d/m/yyyy", so the file can be loaded back with Utility › Data upload. */
+const TK_DL_HEADS = ["From Date", "To Date", "Days", "Trip Rent", "Starting Place", "Destination", "Driver 1", "Driver 2", "Commission", "Diesel Litres", "Diesel Rate", "Toll Gate", "Driver Padi", "RTO Exp", "Loading Exp", "Bridge", "Oth.Exp", "Bill Exp 1", "Bill Exp 2", "Bill Exp 3", "Bill Exp 4", "Total Expenses", "Balance", "Trip Balance", "Trip Payment Status", "Start KM", "End KM", "Kms", "Remarks"];
+const TK_DL_WIDTHS = { A: 12.2, B: 11, C: 6.1, D: 10.7, E: 15.6, F: 18.2, G: 12, H: 12, I: 14, J: 13.9, K: 12.9, L: 10.5, M: 12.7, N: 9.8, O: 13.7, P: 7.8, Q: 9.5, R: 10.5, S: 10.5, T: 10.5, U: 10.5, V: 16.8, W: 11, X: 14.2, Y: 22.6, Z: 10.3, AA: 10, AB: 8, AC: 105 };
+function xlTruckDownload(recs) {
+  const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [], payTxt = p => `Bank Input - Rs.${num(p.amount)}${p.date ? ` on ${fmtDMY(p.date)}` : ""}`;
+  const legs = (recs.truckTrips || []).slice().sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.id).localeCompare(String(b.id)));
+  const ids = [...new Set(legs.map(l => l.vehicleId))].sort((a, b) => C.plate(a).localeCompare(C.plate(b)));
+  const heads = ws => { TK_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 1, h, S.h14)); ws.freeze = 1; Object.assign(ws.widths, TK_DL_WIDTHS); };
+  ids.forEach(id => {
+    const ws = sheet(String(C.plate(id)).replace(/\s+/g, "")); heads(ws);
+    const groups = new Map(); legs.filter(l => l.vehicleId === id).forEach(l => { const k = l.roundId || l.id; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(l); });
+    let r = 2;
+    for (const [rid, rl] of groups) {
+      const doc = (recs.truckRounds || []).find(z => z.id === rid) || {}, RF = doc.fuels || [], a = r;
+      const rfL = RF.reduce((s, f) => s + (C.n(f.litres) || 0), 0), rfA = Math.round(RF.reduce((s, f) => s + (C.n(f.amount) || 0), 0));
+      let tb = 0;
+      rl.forEach((l, i) => {
+        const g = k => C.n(l[k]) || 0, last = i === rl.length - 1, lit = Math.round((g("litres") + (last ? rfL : 0)) * 100) / 100, dsl = g("fuelCost") + (last ? rfA : 0);
+        const ex = { I: g("commission"), K: dsl, L: g("toll"), M: g("padi"), N: g("rto"), O: g("loading"), P: g("bridge"), Q: g("otherExp"), R: g("billExp") };
+        const tot = Object.values(ex).reduce((s, v) => s + v, 0), bal = g("rent") - tot; tb += bal;
+        put(ws, `A${r}`, l.from ? { d: l.from } : "", S.date); put(ws, `B${r}`, l.to || l.from ? { d: l.to || l.from } : "", S.date);
+        put(ws, `C${r}`, g("days") || null, Number.isInteger(g("days")) ? S.int : S.dec); put(ws, `D${r}`, g("rent"), S.int);
+        put(ws, `E${r}`, lgPlace(l.origin)); put(ws, `F${r}`, lgPlace(l.dest)); put(ws, `G${r}`, C.driver(l.driver1Id, l.driver1Name)); put(ws, `H${r}`, C.driver(l.driver2Id, l.driver2Name));
+        put(ws, `J${r}`, lit || null, S.dec); Object.entries(ex).forEach(([k, v]) => put(ws, k + r, v || null, S.int)); ["S", "T", "U"].forEach(k => put(ws, k + r, null, S.int));
+        put(ws, `V${r}`, tot, S.int, `SUM(I${r},K${r}:U${r})`); put(ws, `W${r}`, bal, S.int, `D${r}-V${r}`);
+        const sk = g("startKm"), ek = g("endKm"); put(ws, `Z${r}`, sk || null, S.int); put(ws, `AA${r}`, ek || null, S.int); put(ws, `AB${r}`, sk && ek > sk ? ek - sk : null, S.int, `IF(AND(Z${r}>0,AA${r}>Z${r}),AA${r}-Z${r},"")`);
+        // Payments for the whole round trip go with the remarks of its last trip.
+        put(ws, `AC${r}`, [l.remarks, ...(l.payments || []).filter(p => num(p.amount) > 0).map(payTxt), ...(last ? (doc.payments || []).filter(p => num(p.amount) > 0).map(payTxt) : [])].filter(Boolean).join(", "));
+        r++;
+      });
+      const b = r - 1;
+      put(ws, `X${a}`, tb, S.mint, `SUM(W${a}:W${b})`); put(ws, `Y${a}`, doc.status === "Closed" ? "Closed" : "Open", S.mtext);
+      for (let k = a + 1; k <= b; k++) { put(ws, `X${k}`, null, S.mint); put(ws, `Y${k}`, null, S.mtext); }
+      if (b > a) ws.merges.push(`X${a}:X${b}`, `Y${a}:Y${b}`);
+    }
+    sheets.push(ws);
+  });
+  if (!sheets.length) { const ws = sheet("Trips"); heads(ws); sheets.push(ws); }
+  return XL.build(sheets);
+}
+async function tkDownload(btn) {
+  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
+  if (!dl) { toast("Saving files isn't available in this view."); return; }
+  if (btn) btn.disabled = true;
+  try { const n = ops.truckTrips.length, data = xlTruckDownload({ truckTrips: ops.truckTrips, truckRounds: ops.truckRounds, vehicles, drivers });
+    await dl.save({ filename: `Trip_Download_${todayISO().split("-").reverse().join("-")}.xlsx`, data }); toast(`Downloaded ${nf(n)} trip${n === 1 ? "" : "s"}`); }
+  catch (er) { if (er?.code !== "declined") toast("Couldn't make the file. Try again."); }
+  finally { if (btn) btn.disabled = false; }
+}
 /* Bookings workbook: one sheet per spare bus in the spare bus income / expense format, plus the booking register and payments. */
 function xlBookings(recs) {
   const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [];
@@ -14770,7 +14824,8 @@ function qkHome() {
     `<small>${R.length ? `${R.length} round trip${R.length > 1 ? "s" : ""} · ${R.filter(r => r.status !== "Closed").length} open` : "No round trips yet"}</small></div>` +
     `<button type="button" class="qkbig pri" data-qk="load"><i aria-hidden="true">🚚</i><span>New load<small>Date, places, load, tonnes, rent</small></span></button>` +
     (R.length ? `<h3 class="qkadd">Round trips</h3>${show.map(qkRoundCard).join("")}${R.length > show.length ? `<div class="qklinks"><button type="button" data-qk="more">Show ${R.length - show.length} older round trip${R.length - show.length > 1 ? "s" : ""}</button></div>` : ""}`
-      : `<div class="qkcard"><p class="sub" style="margin:0">No trips for this truck yet. New load starts its first round trip.</p></div>`) ;
+      : `<div class="qkcard"><p class="sub" style="margin:0">No trips for this truck yet. New load starts its first round trip.</p></div>`) +
+    `<div class="qklinks"><button type="button" data-qk="dl">⬇ Download all truck trips (Excel)</button></div>`;
 }
 // One round trip: its figures, Add trip and the money buttons, then its trips as cards.
 function qkRoundScr() {
@@ -14983,6 +15038,7 @@ $("kQuick").addEventListener("click", async e => {
     if (a === "back" && qk.scr === "sheet" && qk.dirty && !await askYesNo("Leave the trip sheet without saving?", { yes: "Leave", no: "Stay", danger: true })) return;
     if (a === "back") { qk.dirty = false; qk.scr = qk.back; qk.bill = null; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "home") { qk.scr = "home"; qk.edit = ""; qk.leg = ""; qk.rid = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+    if (a === "dl") { tkDownload(b); return; }
     if (a === "office") { qk.scr = "office"; qk.back = "round"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "lock" && r) { const closing = r.status !== "Closed"; if (!await askYesNo(closing ? `Mark round trip ${rtNo(r)} as closed? It becomes view only until it is reopened.` : `Reopen round trip ${rtNo(r)}?`, { yes: closing ? "Mark closed" : "Reopen" })) return;
       if (await rtSetLock(r, closing)) { $("kQuick").innerHTML = ""; qkRender(); } return; }
@@ -15296,6 +15352,7 @@ $("kTabs").addEventListener("drop", e => {
   kDrag = null; renderTruck();
 });
 $("kTabs").addEventListener("dragend", () => { kDrag = null; $("kTabs").querySelectorAll(".kdrag, .kdrop-l, .kdrop-r").forEach(x => x.classList.remove("kdrag", "kdrop-l", "kdrop-r")); });
+$("kDl").onclick = e => tkDownload(e.currentTarget);
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 // + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
 $("kAdd").onclick = () => { const last = roundsOf(kBusId).filter(r => r.status !== "Closed").sort((a, b) => b.to.localeCompare(a.to))[0]; openRound(last ? last.id : null, "leg", null); };
@@ -16530,7 +16587,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05m";
+const APP_VER = "2026-11-05n";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
