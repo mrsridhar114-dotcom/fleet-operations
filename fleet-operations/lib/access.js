@@ -4,7 +4,7 @@
 
 const VE = ["none", "view", "edit"];
 const LEVELS = {
-  dashboard: ["none", "view"], vehicles: VE, drivers: VE, conductors: VE, trips: ["none", "view", "update", "edit"],
+  dashboard: ["none", "view"], vehicles: VE, drivers: VE, conductors: VE, trips: ["none", "view", "update", "driver", "edit"],
   bookings: ["none", "view", "request", "edit"], tripsheets: ["none", "view", "update", "edit"],
   expenses: ["none", "view", "request", "edit"], maintenance: ["none", "view", "update", "edit"], users: VE
 };
@@ -32,7 +32,8 @@ const MOD_OF = {
   routeSheets: "trips", // the conductor's day sheet, approved into trips by an admin
   expenses: "expenses", // payments made for each vehicle
   expenseReqs: "expenses", // expenses an Expense entry person sends for the office's approval
-  maintLog: "maintenance", maintTypes: "maintenance" // maintenance visits, and the service gaps
+  maintLog: "maintenance", maintTypes: "maintenance", // maintenance visits, and the service gaps
+  drvEntries: "trips" // a truck driver's load slips, diesel fills, payments and arrivals, checked by the office
 };
 const HISTORY = /History$/;
 const AUDIT = ["auditLog", "auditSessions"];
@@ -40,10 +41,16 @@ const isAdmin = a => a.users === "edit";
 const seesBookings = a => a.bookings !== "none" || a.tripsheets !== "none";
 const seesExpenses = a => a.expenses === "view" || a.expenses === "edit";
 
+// Truck driver (trips: "driver"): downloads only the masters his screens need and his own entries; no trips, money or bookings.
+const DRIVER_READS = ["vehicles", "drivers", "appUsers", "accessRequests", "appMeta", "drvEntries"];
+const isDriver = a => !isAdmin(a) && a.trips === "driver";
+export const readOnlyColls = a => isDriver(a) ? DRIVER_READS : null;
+
 // Collections a person may download. Master lists stay readable for every approved user because other screens
 // need them (vehicle and driver pickers); bookings (money) and the activity log are kept to those who use them.
 export function canRead(a, coll) {
   if (isAdmin(a)) return true;
+  if (isDriver(a)) return DRIVER_READS.includes(coll);
   if (coll === "bookings" || coll === "bookingHistory") return seesBookings(a);
   if (AUDIT.includes(coll)) return false;
   if (coll === "expenses") return seesExpenses(a);
@@ -51,9 +58,10 @@ export function canRead(a, coll) {
   return true;
 }
 // A fingerprint of what someone may read; when it changes, their app reloads everything it is now allowed to see.
-export const readScope = a => isAdmin(a) ? "member:all" : `member:${seesBookings(a) ? "b" : ""}${seesExpenses(a) ? "e" : a.expenses === "request" ? "r" : ""}`;
+export const readScope = a => isAdmin(a) ? "member:all" : isDriver(a) ? "driver" : `member:${seesBookings(a) ? "b" : ""}${seesExpenses(a) ? "e" : a.expenses === "request" ? "r" : ""}`;
 // Records a person may read only when they are his own: an Expense entry person's lines.
-export const ownOnly = (a, coll, data, me) => !(coll === "expenseReqs" && !isAdmin(a) && a.expenses === "request" && data && data.byAcct !== me.id);
+export const ownOnly = (a, coll, data, me) => !(coll === "expenseReqs" && !isAdmin(a) && a.expenses === "request" && data && data.byAcct !== me.id)
+  && !(coll === "drvEntries" && isDriver(a) && data && data.byAcct !== me.id);
 
 const OPEN_STATUS = ["draft", "pending", "rejected"];
 const today = () => new Date(Date.now() + 5.5 * 36e5).toISOString().slice(0, 10); // India time
@@ -124,6 +132,15 @@ export function canWrite(a, me, op, coll, id, prev, next, linkedClosed) {
     if (next.status === "rejected") return prev?.status === "rejected" && (next.rejectReason || "") === (prev.rejectReason || "") ? "" : no;
     return next.rejectReason ? no : "";
   }
+
+  // Truck driver: his own entries while the office has not checked them. Checking (checkedOn) stays with the office.
+  if (coll === "drvEntries" && isDriver(a)) {
+    const mine = d => d && d.byAcct === me.id;
+    if (op === "delete") return mine(prev) && !prev.checkedOn ? "" : no;
+    if (prev && !(mine(prev) && !prev.checkedOn)) return no;
+    return mine(next) && !next.checkedOn && !next.checkedBy && !next.discarded && !next.legId ? "" : no;
+  }
+  if (isDriver(a) && MOD_OF[coll] === "trips") return no;
 
   // Maintenance entry (add entries): adds and corrects maintenance visits; the service gaps and deleting stay with editors.
   if (coll === "maintLog" && a.maintenance === "update") return op !== "delete" ? "" : no;
