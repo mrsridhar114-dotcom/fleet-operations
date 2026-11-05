@@ -208,7 +208,7 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qkadd2 { min-height: 46px; border: 2px dashed var(--accent); border-radius: 12px; background: none; color: var(--accent); font: inherit; font-weight: 700; cursor: pointer; }
 .qkfoot { position: sticky; bottom: 0; z-index: 5; display: flex; flex-direction: column; gap: 8px; background: var(--bg); padding: 10px 0 12px; border-top: 1px solid var(--line); } .qkfline { display: flex; justify-content: space-between; font-size: 14px; } .qkfline #qkDirty { color: var(--warn); font-weight: 600; } .qkfline #qkDirty.ok { color: var(--ok); }
 .qktot b.pos { color: var(--ok); } .bhbtns > .bhbtn[data-qk="sheet"] { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; text-align: left; min-height: 84px; gap: 14px; padding: 12px 16px; }
-.qk3 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } .qk3 .qkf input { font-size: 15px; padding: 8px 10px; } .qkdsl { display: flex; flex-direction: column; gap: 6px; padding: 6px 0 10px; border-bottom: 1px solid var(--line); }
+.qk3 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } .qk3 .qkf input { font-size: 15px; padding: 8px 10px; } .qkhint { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
 .qkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qkgrid .qkbig { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 14.5px; min-height: 96px; }
 .qkli { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: var(--ink); text-align: left; width: 100%; font-size: 14px; }
 .qkli:last-child { border-bottom: 0; } .qkli small { display: block; color: var(--muted); font-size: 12.5px; } .qkli > span:first-child { min-width: 0; } button.qkli { cursor: pointer; }
@@ -14805,7 +14805,7 @@ function qkLoadFields(from0) {
     `<datalist id="qkPl">${[...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean).map(lgPlace))].sort().map(p => `<option value="${esc(p)}">`).join("")}</datalist>`;
 }
 /* The trip sheet of one trip on a phone, one page like the spare bus trip sheet: the trip (drivers, places, dates, rent, km),
-   the expenses with as many diesel fills as needed and their total, then the trip money worked out as it is typed. */
+   the expenses and their total, the diesel fills (as many as needed) in a section of their own, then the trip money worked out as it is typed. */
 const qkFillsOf = l => (l.fuels?.length ? l.fuels : rtDslAll({ legs: [l], doc: {} }).map(({ leg, ...x }) => x)).map(x => ({ ...x }));
 function qkSheetPct(l) {
   const dn = l.driver1Id || l.driver1Name, F = qkFillsOf(l);
@@ -14834,9 +14834,11 @@ function qkSheet() {
       `<div class="qk2">${f("Start km", ip("qkKm", l.startKm || "", 'type="number" inputmode="numeric"'))}${f("End km", ip("qkEndKm", l.endKm || "", 'type="number" inputmode="numeric" placeholder="When unloaded"'))}</div><p class="sub" id="qkKmInfo" style="margin:0"></p>` +
       `<datalist id="qkPl">${[...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean).map(lgPlace))].sort().map(p => `<option value="${esc(p)}">`).join("")}</datalist>`) +
     sec("Expenses", money("commission", "Commission") +
-      `<div class="qkdsl"><div class="qkrow"><span>Diesel</span><b id="qkTmD">—</b></div><div class="qkdrow qkdhead"><span>Litres</span><span>Amount</span><span>Paid</span></div><div id="qkDsl">${qkDslRows()}</div><button type="button" class="qkadd2" data-qkradd>＋ Add diesel</button></div>` +
+      `<div class="qkrow"><span>Diesel<small class="qkhint">Fills in the Diesel section below</small></span><b id="qkTmD">—</b></div>` +
       money("toll", "Tollgate") + money("padi", "Driver padi") + money("rto", "RTO") + money("loading", "Loading / unloading") + money("bridge", "Bridge") + money("otherExp", "Other expenses") + money("billExp", "Bill wise expenses") +
       `<div class="qktot"><span>Total expenses</span><b id="qkTmE">—</b></div>`) +
+    sec("Diesel", `<div class="qkdrow qkdhead"><span>Litres</span><span>Amount</span><span>Paid</span></div><div id="qkDsl">${qkDslRows()}</div><button type="button" class="qkadd2" data-qkradd>＋ Add diesel</button>` +
+      `<div class="qktot"><span id="qkDslN">Diesel</span><b id="qkTmD2">—</b></div>`) +
     sec("Trip money", `<div class="qkrow"><span>Total rent</span><b id="qkTmR">—</b></div><div class="qkrow"><span>Total expenses</span><b id="qkTmE2">—</b></div><div class="qktot"><span>Balance</span><b id="qkTmB">—</b></div>`) +
     `<div class="err" id="qkErr" role="alert"></div>` +
     `<div class="qkfoot"><div class="qkfline"><span id="qkDirty" class="${qk.dirty ? "" : "ok"}">${qk.dirty ? "Not saved yet" : "✓ Saved"}</span><span>Balance <b id="qkFootT">—</b></span></div><button type="submit" class="qkgo">Save trip sheet</button><button type="button" class="qkdone" data-qk="back">‹ Back</button></div></form>`;
@@ -14910,9 +14912,9 @@ function qkCalc() {
   const v = id => num($(id)?.value);
   if (qk.scr !== "sheet" || !$("qkTmR")) return;
   qkSheetRead(); const rent = v("qkRent"), d = qk.sheetF.reduce((a, x) => a + num(x.amount), 0), o = [...document.querySelectorAll("[data-qkexp]")].reduce((a, i) => a + num(i.value), 0), e = Math.round(d + o), km = v("qkEndKm") - v("qkKm");
-  $("qkTmR").textContent = rs(rent); $("qkTmD").textContent = rs(Math.round(d)); $("qkTmE").textContent = rs(e); $("qkTmE2").textContent = rs(e); $("qkFootT").textContent = bkNetTxt(rent - e);
+  $("qkTmR").textContent = rs(rent); $("qkTmD").textContent = rs(Math.round(d)); $("qkTmD2").textContent = rs(Math.round(d)); $("qkTmE").textContent = rs(e); $("qkTmE2").textContent = rs(e); $("qkFootT").textContent = bkNetTxt(rent - e);
   $("qkTmB").textContent = bkNetTxt(rent - e); $("qkTmB").className = rent - e < 0 ? "neg" : "pos";
-  const L = qk.sheetF.reduce((a, x) => a + num(x.litres), 0); $("qkKmInfo").textContent = v("qkEndKm") && v("qkKm") && km > 0 ? `${nf(km)} km run${L ? ` · ${nf(km / L, 2)} km/L` : ""}` : "";
+  const L = qk.sheetF.reduce((a, x) => a + num(x.litres), 0), nF = qk.sheetF.filter(x => num(x.litres) > 0).length; $("qkDslN").textContent = nF ? `${nF} fill${nF > 1 ? "s" : ""} · ${nf(L, L % 1 ? 2 : 0)} L` : "Diesel"; $("qkKmInfo").textContent = v("qkEndKm") && v("qkKm") && km > 0 ? `${nf(km)} km run${L ? ` · ${nf(km / L, 2)} km/L` : ""}` : "";
 }
 function qkOpenTrip(rid, legId) { qk.rid = rid; qk.edit = legId; qk.leg = legId; qk.scr = "trip"; qk.back = "trip"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); }
 $("kQuick").addEventListener("change", e => {
@@ -16469,7 +16471,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05h";
+const APP_VER = "2026-11-05i";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
