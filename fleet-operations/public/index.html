@@ -210,6 +210,9 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qktot b.pos { color: var(--ok); } .bhbtns > .bhbtn[data-qk="sheet"] { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; text-align: left; min-height: 84px; gap: 14px; padding: 12px 16px; }
 .qk3 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } .qk3 .qkf input { font-size: 15px; padding: 8px 10px; } .qkhint { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
 .qkfadd { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; } .qkfadd select { font: inherit; font-weight: 600; min-height: 46px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; background: var(--surface); color: var(--ink); } .qkfadd .qkadd2 { padding: 0 16px; }
+.qkres { background: var(--side-bg); color: #fff; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; } .qkres span { font-size: 13px; color: var(--side-muted); font-weight: 600; } .qkres b { font: 700 28px var(--mono); color: #9BE08A; } .qkres.neg b { color: #FF9B8F; } .qkres small { font-size: 12.5px; color: var(--side-muted); }
+.qkoh { margin: 8px 0 0; font-size: 13px; color: var(--muted); } .qkol .qkamt { font-family: var(--mono); white-space: nowrap; } .qkol.pend { background: var(--warn-soft); border-radius: 8px; padding-left: 8px; padding-right: 8px; } .qkol.dim { opacity: .6; } .qkamt.neg, .qktot.neg b { color: var(--danger); } .qkamt.pos { color: var(--ok); }
+.qkreset { border: 0; background: none; color: var(--accent); font: inherit; font-weight: 700; padding: 0 0 0 4px; cursor: pointer; } .qkoff { flex-direction: row; justify-content: flex-start; text-align: left; min-height: 76px; gap: 14px; padding: 12px 16px; }
 .qkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qkgrid .qkbig { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 14.5px; min-height: 96px; }
 .qkli { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: var(--ink); text-align: left; width: 100%; font-size: 14px; }
 .qkli:last-child { border-bottom: 0; } .qkli small { display: block; color: var(--muted); font-size: 12.5px; } .qkli > span:first-child { min-width: 0; } button.qkli { cursor: pointer; }
@@ -14778,6 +14781,7 @@ function qkRoundScr() {
     `<div><small>Received</small><b>${nf(r.received)}</b></div><div><small>To driver</small><b>${G ? nf(G) : "—"}</b></div><div><small>Diesel</small><b>${qkDsl(r)}</b></div></div>` +
     (shut ? `<p class="sub" style="margin:0">This round trip is closed${r.closedOn ? ` on ${fmtDate(r.closedOn)}` : ""}. Reopen it at the bottom to change anything.</p>` :
       big("load", "＋", "Add trip", "The next load in this round trip", " pri") + `<div class="qkgrid qkg3">${big("dsl", "⛽", "Diesel")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>`) +
+    `<button type="button" class="bhbtn qkoff" data-qk="office" data-rnd="1"><span class="bhi" aria-hidden="true">🧾</span><span class="bht"><b>Trip Sheet (Office)</b><span class="${rtCalcOf(r).diff < 0 ? "due" : ""}">Owner's money · ${rtCalcOf(r).diff < 0 ? `to pay the driver ${rs(-rtCalcOf(r).diff)}` : `advance ${rs(rtCalcOf(r).diff)}`}</span></span></button>` +
     `<h3 class="qkadd">Trips (${r.legs.length})</h3>${r.legs.map(card).join("")}` +
     `<button type="button" class="bhclose" data-qk="lock">${shut ? "Reopen round trip" : "🔒 Mark closed"}</button>` +
     `<div class="qklinks"><button type="button" data-qk="print">🖨 Print</button><button type="button" data-qk="send">📤 Send details</button></div></div>`;
@@ -14903,11 +14907,39 @@ function qkTrip() {
     (prev || next ? `<div class="qkpn">${prev ? `<button type="button" data-qkleg="${prev.id}">‹ Trip ${i}</button>` : "<span></span>"}${next ? `<button type="button" data-qkleg="${next.id}">Trip ${i + 2} ›</button>` : "<span></span>"}</div>` : "") +
     `<button type="button" class="qkdone" data-qk="toround">‹ Back to round trip ${rtNo(r)}</button></div>`;
 }
+/* Trip Sheet (Office) on a phone: the same figures as on the computer (owner's money, what came to the owner, and the
+   advance), as cards that read top to bottom. The advance from the last round trip can be typed over here too. */
+function qkOffice() {
+  const r = qkRound(); if (!r || r.id !== qk.rid) { qk.scr = "home"; return qkHome(); }
+  const S = rtCalcOf(r), D = r.doc || {}, d = S.diff, A = S.giv[0], edit = r.status !== "Closed";
+  const f = (k, val, cls = "") => `<div class="bhf${cls}"><span>${k}</span><b>${val}</b></div>`, sec = (t, b) => `<section class="qkcard qksec">${t ? `<h3>${t}</h3>` : ""}${b}</section>`;
+  const line = (x, cls = "") => `<div class="qkli qkol${x.pend ? " pend" : ""}${cls}"><span><b>${esc(x.what)}</b><small>${x.pend ? "Not settled" : fmtShort(x.date)}</small></span><b class="qkamt">${rs(x.amt)}</b></div>`;
+  const grp = (t, list, empty, cls) => `<h4 class="qkoh">${t}</h4>` + (list.length ? list.map(x => line(x, cls)).join("") : `<p class="sub" style="margin:0 0 4px">${empty}</p>`);
+  const tot = (t, v, cls = "") => `<div class="qktot${cls}"><span>${t}</span><b>${rs(v)}</b></div>`;
+  const advIn = edit ? `<label class="qkrow qkadv"><span>${A.adv === "typed" ? "Advance the driver already had" : "Advance from the last round trip"}${A.typed ? `<small class="qkhint">Typed in · worked out ${rs(A.auto)} <button type="button" class="qkreset" data-qkadvreset>↺ Put back</button></small>` : ""}</span>` +
+    `<span class="qkrs"><i>₹</i><input id="qkAdv" data-k="${A.adv === "typed" ? "advIn" : "advEdit"}" type="number" inputmode="numeric" value="${A.adv === "typed" ? num(D.advIn) || "" : A.amt}" placeholder="0"></span></label>` : line(A);
+  return `<div class="qkform qkoffice"><button type="button" class="qkback" data-qk="back">‹ Round trip ${rtNo(r)}</button>` +
+    `<header class="bwh qkbwh"><div style="flex:1;min-width:0"><b>Trip Sheet (Office)</b><span>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · Round trip ${rtNo(r)}${S.drivers.length ? " · " + esc(S.drivers.join(", ")) : ""}</span></div></header>` +
+    `<div class="qkres${d < 0 ? " neg" : ""}"><span>${d < 0 ? "To pay the driver" : "Advance for the next trip"}</span><b>${rs(Math.abs(d))}</b><small>① Owner's money ${rs(S.owner)} − ② Came to the owner ${rs(S.came)}</small></div>` +
+    sec("", `<div class="bhfacts">${f("Start date", fmtShort(S.startDate))}${f("End date", fmtShort(S.endDate))}${f("Days", S.days || "—")}${f("Total rent", rs(r.rent))}${f("Start km", S.startKm ? nf(S.startKm) : "—")}${f("End km", S.endKm ? nf(S.endKm) : "—")}` +
+      `${f("Total km", S.act ? nf(S.act) : "—")}${f("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—")}${f("Mileage", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L` : "—")}${f("Vehicle balance", bkNetTxt(S.bal), S.bal < 0 ? " neg" : " pos")}</div>`) +
+    sec("Loads", S.loads.map(({ l, c }, i) => `<div class="qkli qkol"><span><b>${i + 1} · ${esc(rtLegName(l))}</b><small>${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""} · rent ${rs(num(l.rent))} · expense ${rs(c.exp)}</small></span><b class="qkamt ${c.bal < 0 ? "neg" : "pos"}">${rs(c.bal)}</b></div>`).join("") +
+      (S.rfuel ? `<div class="qkli qkol"><span><b>Diesel for the whole round trip</b></span><b class="qkamt neg">-${rs(S.rfuel)}</b></div>` : "") + tot("Vehicle balance", S.bal, S.bal < 0 ? " neg" : "")) +
+    sec("① Owner's money", grp("FASTag", S.fast, "No FASTag entered") + grp("Diesel paid by card", S.card, "No diesel by card") + (S.cash.length ? grp(RT_T.en.gCash, S.cash, "", " dim") : "") +
+      `<h4 class="qkoh">Given to the driver</h4>` + advIn + S.giv.slice(1).map(x => line(x)).join("") + (S.loss ? "" : grp("Balance with the vehicle", [S.balLine], "")) + tot("Total ①", S.owner)) +
+    sec("② Came to the owner", (S.rec.length ? S.rec.map(x => line(x)).join("") : `<p class="sub" style="margin:0">No payments yet.</p>`) + (S.loss ? grp("Vehicle balance (loss)", [S.balLine], "") : "") + tot("Total ②", S.came) +
+      (S.pendAmt ? `<p class="sub" style="margin:0">Lines in orange are not settled yet and are counted in the total.</p>` : "")) +
+    sec("③ Advance", `<div class="qkrow"><span>① Owner's money</span><b>${rs(S.owner)}</b></div><div class="qkrow"><span>② Came to the owner</span><b>${rs(S.came)}</b></div>` + tot(d < 0 ? "To pay the driver" : "Advance for the next trip", Math.abs(d), d < 0 ? " neg" : "") +
+      `<p class="sub" style="margin:0">${d < 0 ? "The owner has to pay this to the driver. It is taken off the next round trip's advance." : "Cash with the driver. It opens the next round trip as the advance."}</p>`) +
+    `<div class="qklinks"><button type="button" data-qk="print">🖨 Print</button><button type="button" data-qk="send">📤 Send details</button></div>` +
+    `<button type="button" class="qkdone" data-qk="back">‹ Back to round trip ${rtNo(r)}</button></div>`;
+}
 function qkRender() {
   const el = $("kQuick"); if (!el) return;
   if (qk.scr === "home") { el.innerHTML = qkHome(); return; }
   if (qk.scr === "trip") { el.innerHTML = qkTrip(); return; }
   if (qk.scr === "round") { el.innerHTML = qkRoundScr(); return; }
+  if (qk.scr === "office") { if (document.activeElement?.id !== "qkAdv") el.innerHTML = qkOffice(); return; }
   if (qk.scr === "sheet") { if (!el.querySelector(".qksheet")) { el.innerHTML = qkSheet(); qkCalc(); } return; }
   if (!el.querySelector(".qkform")) { el.innerHTML = qkForm(); qkCalc(); return; }
   const L = el.querySelector("#qkList"); if (L) L.innerHTML = qkList();
@@ -14921,7 +14953,11 @@ function qkCalc() {
   const L = qk.sheetF.reduce((a, x) => a + num(x.litres), 0), nF = qk.sheetF.filter(x => num(x.litres) > 0).length; $("qkDslN").textContent = nF ? `${nF} fill${nF > 1 ? "s" : ""} · ${nf(L, L % 1 ? 2 : 0)} L` : "Diesel"; $("qkKmInfo").textContent = v("qkEndKm") && v("qkKm") && km > 0 ? `${nf(km)} km run${L ? ` · ${nf(km / L, 2)} km/L` : ""}` : "";
 }
 function qkOpenTrip(rid, legId) { qk.rid = rid; qk.edit = legId; qk.leg = legId; qk.scr = "trip"; qk.back = "trip"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); }
-$("kQuick").addEventListener("change", e => {
+$("kQuick").addEventListener("change", async e => {
+  if (e.target.id === "qkAdv" && qk.scr === "office") { const r = qkRound(); if (!r || r.status === "Closed") return; const A = rtCalcOf(r).giv[0], v = e.target.value, n = Math.round(num(v));
+    if (e.target.dataset.k === "advIn") { if (await rtDocSave(r, { advIn: Math.max(0, n) || "" })) toast("Advance saved"); }
+    else if (await rtDocSave(r, { advEdit: v === "" || n === A.auto ? "" : n })) toast(v === "" || n === A.auto ? "Back to the advance from the last round trip" : "Advance saved");
+    e.target.blur(); qkRender(); return; }
   if (e.target.id === "qkTruck") { kBusId = e.target.value; qk.rid = ""; qk.more = false; renderTruck(); }
   if (e.target.id === "qkLeg") qkCalc();
 });
@@ -14943,6 +14979,7 @@ $("kQuick").addEventListener("click", async e => {
     if (a === "back" && qk.scr === "sheet" && qk.dirty && !await askYesNo("Leave the trip sheet without saving?", { yes: "Leave", no: "Stay", danger: true })) return;
     if (a === "back") { qk.dirty = false; qk.scr = qk.back; qk.bill = null; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "home") { qk.scr = "home"; qk.edit = ""; qk.leg = ""; qk.rid = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+    if (a === "office") { qk.scr = "office"; qk.back = "round"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "lock" && r) { const closing = r.status !== "Closed"; if (!await askYesNo(closing ? `Mark round trip ${rtNo(r)} as closed? It becomes view only until it is reopened.` : `Reopen round trip ${rtNo(r)}?`, { yes: closing ? "Mark closed" : "Reopen" })) return;
       if (await rtSetLock(r, closing)) { $("kQuick").innerHTML = ""; qkRender(); } return; }
     if (a === "print" && r) { rtPrintOpen(r); return; } if (a === "send" && r) { rtSendOpen(r); return; }
@@ -14960,6 +14997,7 @@ $("kQuick").addEventListener("click", async e => {
       F.splice(+fd.dataset.qkfdel, 1); if (await rtDocSave(r, { files: F.length ? F : "" })) { toast("File removed"); $("qkFiles").innerHTML = qkFilesHtml(qkRound(), qkRound().legs.find(x => x.id === qk.leg)); } return; }
     const rb = e.target.closest("[data-qkrbill]"); if (rb) { if (!assetsCap) { toast("Attaching photos isn't available in this view."); return; } qkSheetRead(); qk.billRow = +rb.dataset.qkrbill; $("qkBillIn").click(); return; }
   }
+  if (e.target.closest("[data-qkadvreset]") && r) { if (await rtDocSave(r, { advEdit: "" })) { toast("Back to the advance from the last round trip"); qkRender(); } return; }
   const rc = e.target.closest("[data-qkr]"); if (rc) { qk.rid = rc.dataset.qkr; qk.scr = "round"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
   const lg = e.target.closest("[data-qkleg]"); if (lg && r) { qkOpenTrip(r.id, lg.dataset.qkleg); return; }
   const sg = e.target.closest("[data-qkseg]"); if (sg) { qk[sg.dataset.qkseg] = sg.dataset.v; sg.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === sg)); return; }
@@ -16488,7 +16526,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05j";
+const APP_VER = "2026-11-05k";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
