@@ -2431,6 +2431,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
           <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="month"><span>Month view</span></label><label><input type="radio" name="tView" value="table"><span>Table</span></label></div>
           <button class="btn" type="button" id="tPrint" title="Print or download the month, as Excel or as an image">Print</button>
+          <button class="btn" type="button" id="tDl" title="Download this bus's month sheets for the financial year in the office template (Excel, one sheet per month)">⬇ Download</button>
           <a class="btn primary" href="#trips-day" id="tDayLink">Day sheet</a>
           <a class="btn mclose" href="#trips" id="tClose" aria-label="Close">Close ✕</a>
         </div>
@@ -2474,7 +2475,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <h1>Trip sheet</h1>
           <p class="sync">Choose the operation to enter or review. Each one has its own format.</p>
         </div>
-        <div class="tcontrols"><div class="hf"><label for="oDate">Day</label><input type="date" id="oDate"></div></div>
+        <div class="tcontrols"><div class="hf"><label for="oDate">Day</label><input type="date" id="oDate"></div>
+          <div class="hf"><label for="oDlFy">Financial year</label><select id="oDlFy"></select></div>
+          <button class="btn" type="button" id="oDl" title="Download everything for the financial year: route bus month sheets, spare bus and trucks (Excel, one sheet each)">⬇ Download all</button></div>
       </header>
       <div class="ocards" id="oCards"></div>
       <section class="panel">
@@ -2724,7 +2727,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <h1>Spare bus · trip sheets</h1>
           <p class="sync" id="tsNote">Fill in the expenses once the trip is over, then submit the trip sheet for approval.</p>
         </div>
-        <button class="btn" type="button" id="tsPrint" title="Print or download the trip sheets listed, as Excel or as an image">🖨 Print</button>
+        <div class="tcontrols"><button class="btn" type="button" id="tsPrint" title="Print or download the trip sheets listed, as Excel or as an image">🖨 Print</button>
+          <div class="hf"><label for="tsDlFy">Financial year</label><select id="tsDlFy"></select></div>
+          <button class="btn" type="button" id="tsDl" title="Download the spare bus trips of the financial year in the office template (Excel, one sheet per spare bus)">⬇ Download</button></div>
       </header>
       <section class="summary tsum" id="tsStats" aria-label="Trip sheet summary"></section>
       <div id="tsGroups" style="display:flex;flex-direction:column;gap:16px"></div>
@@ -9482,10 +9487,12 @@ const XL = (() => {
   const col = n => { let s = ""; n++; while (n) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
   const idx = L => [...L].reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1;
   // Styles: 0 plain, 1 title, 2 label, 3 heading, 4 text, 5 whole number, 6 date, 7 two decimals, 8 bold number,
-  // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number, 15 text format, 16 bold 14pt heading, 17–47 the office truck sheet
+  // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number, 15 text format, 16 bold 14pt heading, 17–47 the office truck sheet, 48–57 the route bus month sheet, 58–65 the spare bus sheet
   const S = { plain: 0, title: 1, label: 2, head: 3, text: 4, int: 5, date: 6, dec: 7, sum: 8, mtext: 9, tint: 10, ttext: 11, head2: 12, note: 13, mint: 14, tx: 15, h14: 16,
     oTitle: 17, oLab: 18, oVal: 19, oVal2: 20, oHeadR: 21, oHeadC: 22, oHeadL: 23,
-    oRow: [0, 1, 2, 3].map(i => { const b = 24 + i * 6; return { date: b, int: b + 1, dec: b + 2, text: b + 3, mint: b + 4, status: b + 5 }; }) };
+    oRow: [0, 1, 2, 3].map(i => { const b = 24 + i * 6; return { date: b, int: b + 1, dec: b + 2, text: b + 3, mint: b + 4, status: b + 5 }; }),
+    rTitle: 48, rLab: 49, rVal: 50, rValD: 51, rCrewH: 52, rTxt: 53, rInt: 54, rHead: 55, rDay: 56, rDec: 57,
+    sTitle: 58, sLab: 59, sVal: 60, sHead: 61, sDate: 62, sInt: 63, sDec: 64, sTxt: 65 };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -9495,12 +9502,19 @@ const XL = (() => {
     xf(0, 4, 3, 2, 'horizontal="center" vertical="center"'), xf(0, 5, 3, 2, 'horizontal="left" vertical="center"'), xf(165, 5, 3, 2, 'horizontal="left" vertical="center"'), xf(165, 1, 5, 2, 'vertical="center"'),
     xf(0, 2, 6, 2, 'horizontal="right" vertical="center"'), xf(0, 2, 6, 2, 'horizontal="center" vertical="center"'), xf(0, 2, 6, 2, 'horizontal="left" vertical="center"'),
     // the trip rows, one set per round trip colour (light orange, light blue, light green, light yellow): date, whole number, two decimals, text, Trip Balance, status
-    ...[7, 8, 9, 4].flatMap(fl => [xf(164, 0, fl, 2, 'horizontal="right"'), xf(165, 0, fl, 2), xf(166, 0, fl, 2), xf(0, 0, fl, 2), xf(165, 1, fl, 2, 'vertical="center"'), xf(0, 0, fl, 2, 'horizontal="center" vertical="center" wrapText="1"')])];
+    ...[7, 8, 9, 4].flatMap(fl => [xf(164, 0, fl, 2, 'horizontal="right"'), xf(165, 0, fl, 2), xf(166, 0, fl, 2), xf(0, 0, fl, 2), xf(165, 1, fl, 2, 'vertical="center"'), xf(0, 0, fl, 2, 'horizontal="center" vertical="center" wrapText="1"')]),
+    // 48–57: the office route bus month sheet: title, figures (label, number, two decimals), driver / conductor table (heading, text, number), day headings, day number, two decimals
+    xf(0, 6, 0, 2, 'horizontal="center" vertical="center"'), xf(0, 7, 0, 2, 'horizontal="left" vertical="center"'), xf(165, 7, 0, 2, 'horizontal="left" vertical="center"'), xf(166, 7, 0, 2, 'horizontal="left" vertical="center"'),
+    xf(0, 9, 0, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 8, 0, 2, 'vertical="center"'), xf(165, 8, 0, 2, 'vertical="center"'), xf(0, 9, 6, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 9, 0, 2, 'horizontal="center" vertical="center"'), xf(166, 8, 0, 2, 'vertical="center"'),
+    // 58–65: the office spare bus sheet: title, summary label and number, headings, date, number, two decimals, text
+    xf(0, 4, 10, 2, 'horizontal="center" vertical="center"'), xf(0, 5, 10, 2, 'horizontal="left" vertical="center"'), xf(165, 5, 10, 2, 'horizontal="left" vertical="center"'), xf(0, 2, 6, 2, 'horizontal="center" vertical="center" wrapText="1"'),
+    xf(164, 0, 0, 2, 'horizontal="left"'), xf(165, 0, 0, 2), xf(166, 0, 0, 2), xf(0, 0, 0, 2)];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
-    `<fonts count="6"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font></fonts>` +
-    `<fills count="10"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
-    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
+    `<fonts count="10"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
+    [[1, 28], [1, 24], [0, 16], [1, 16]].map(([b, z]) => `<font>${b ? "<b/>" : ""}<sz val="${z}"/><name val="Calibri"/><family val="2"/></font>`).join("") + `</fonts>` +
+    `<fills count="11"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
+    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
     `<borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="${XFS.length}">${XFS.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const serial = iso => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(1899, 11, 30)) / 864e5;
@@ -9572,9 +9586,11 @@ const xlSum = (rows, k) => rows.reduce((a, r) => a + (typeof r[k] === "number" &
    keep the trip's remarks and each payment as "Bank Input - Rs.… on d/m/yyyy", so the file loads back with Utility › Data upload. */
 const TK_DL_HEADS = ["From Date", "To Date", "Days", "Trip Rent", "Starting Place", "Destination", "Driver 1", "Driver 2", "Commission", "Diesel Litres", "Diesel Rate", "Toll Gate", "Driver Padi", "RTO Exp", "Loading Exp", "Bridge", "Oth.Exp", "Bill Exp 1", "Bill Exp 2", "Bill Exp 3", "Bill Exp 4", "Total Expenses", "Balance", "Trip Balance", "Trip Payment Status", "Start KM", "End KM", "Kms", "Remarks"];
 const TK_DL_WIDTHS = { A: 12.2, B: 11, C: 6.1, D: 10.7, E: 15.6, F: 18.2, G: 18, H: 12, I: 18, J: 13.9, K: 18, L: 10.5, M: 12.7, N: 9.8, O: 13.7, P: 7.8, Q: 9.5, R: 10.5, S: 10.5, T: 10.5, U: 10.5, V: 16.8, W: 11, X: 14.2, Y: 22.6, Z: 10.3, AA: 10, AB: 8, AC: 105 };
-function xlTruckDownload(recs) {
+// fy: only the round trips that start in that financial year (all of them when it is left out).
+function xlTruckSheets(recs, fy) {
   const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [], payTxt = p => `Bank Input - Rs.${num(p.amount)}${p.date ? ` on ${fmtDMY(p.date)}` : ""}`;
-  const legs = (recs.truckTrips || []).slice().sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.id).localeCompare(String(b.id)));
+  const all = recs.truckTrips || [], rStart = new Map(); all.forEach(l => { const k = l.roundId || l.id; if (!rStart.has(k) || l.from < rStart.get(k)) rStart.set(k, l.from); });
+  const legs = all.filter(l => fy == null || fyOf(rStart.get(l.roundId || l.id) || l.from) === fy).sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.id).localeCompare(String(b.id)));
   const ids = [...new Set(legs.map(l => l.vehicleId))].sort((a, b) => C.plate(a).localeCompare(C.plate(b)));
   const F = 6; // the first trip row
   const top = (ws, plate, last, T) => {
@@ -9622,9 +9638,82 @@ function xlTruckDownload(recs) {
     }
     top(ws, C.plate(id), r - 1, T); sheets.push(ws);
   });
-  if (!sheets.length) { const ws = sheet("Trips"); top(ws, "Trucks", F, { C: 0, D: 0, I: 0, J: 0, K: 0, L: 0, M: 0, N: 0, O: 0, V: 0, X: 0, AB: 0 }); sheets.push(ws); }
+  return sheets;
+}
+function xlTruckDownload(recs) {
+  const sheets = xlTruckSheets(recs);
+  if (!sheets.length) { const ws = XL.sheet("Trips"); TK_DL_HEADS.forEach((h, i) => XL.put(ws, XL.col(i) + 5, h, XL.S.oHeadL)); sheets.push(ws); }
   return XL.build(sheets);
 }
+/* Spare buses in the office template: one sheet per spare bus for a financial year. Row 1 "<bus> - Income / Expense Details";
+   rows 2–4 the summary (formulas over the trips); row 5 the headings; one row per trip from row 6 (confirmed, on trip and
+   completed bookings that start in the year), oldest first. Collection is rent + toll (the party pays the toll); Remarks shows
+   how the rent is made (rate × days), Other Remarks the places. */
+const SP_DL_HEADS = ["From Date", "To Date", "Days", "Total Rent", "Driver", "Cleaner", "Driver ", "Cleaner", "Permit Exp.", "Toll Gate", "Litres", "Fuel Price", "Other Exp.", "Total Expense", "Collection", "Balance", "Avg Col", "Start KMs", "End Kms", "Kms Run", "Avg Kms/Day", "Mileage", "Remarks", "Other Remarks"];
+function xlSpareSheets(recs, fy) {
+  const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [];
+  const done = (recs.bookings || []).filter(b => b.from && fyOf(b.from) === fy && ["booked", "ontrip", "completed"].includes(b.status))
+    .sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.no).localeCompare(String(b.no)));
+  const ids = [...new Set(done.map(b => b.vehicleId))].sort((a, b) => C.plate(a).localeCompare(C.plate(b)));
+  ids.forEach(id => {
+    const list = done.filter(b => b.vehicleId === id), plate = C.plate(id).replace(/\s+/g, ""), ws = sheet(plate), F = 6, L = Math.max(F, F + list.length - 1), T = {};
+    const add = (k, v) => { T[k] = (T[k] || 0) + (typeof v === "number" && isFinite(v) ? v : 0); };
+    list.forEach((b, i) => {
+      const r = F + i, g = k => C.n(b[k]);
+      const R = { C: g("days"), D: g("rent"), G: g("padiPaid"), H: g("cleanerPadi"), I: g("permit"), J: g("toll"), K: g("litres"), L: g("fuelCost"), M: g("otherExp"), Rk: g("startKm"), Sk: g("endKm") };
+      R.N = [R.G, R.H, R.I, R.J, R.L, R.M].reduce((a, v) => a + (v || 0), 0); R.O = (R.D || 0) + (R.J || 0); R.P = R.O - R.N;
+      R.T = R.Sk > 0 && R.Rk > 0 && R.Sk > R.Rk ? R.Sk - R.Rk : null;
+      ["C", "D", "G", "H", "K", "L", "N", "O", "P", "T"].forEach(k => add(k, R[k]));
+      put(ws, `A${r}`, { d: b.from }, S.sDate); put(ws, `B${r}`, { d: b.to || b.from }, S.sDate);
+      put(ws, `C${r}`, R.C, Number.isInteger(R.C) ? S.sInt : S.sDec); put(ws, `D${r}`, R.D, S.sInt);
+      put(ws, `E${r}`, C.driver(b.driverId, b.driverName), S.sTxt); put(ws, `F${r}`, b.cleanerName || "", S.sTxt);
+      ["G", "H", "I", "J"].forEach(k => put(ws, k + r, R[k] || null, S.sInt)); put(ws, `K${r}`, R.K || null, S.sDec); put(ws, `L${r}`, R.L || null, S.sInt); put(ws, `M${r}`, R.M || null, S.sInt);
+      put(ws, `N${r}`, R.N, S.sInt, `SUM(G${r}+H${r}+I${r}+J${r}+L${r}+M${r})`); put(ws, `O${r}`, R.O, S.sInt, `D${r}+J${r}`); put(ws, `P${r}`, R.P, S.sInt, `O${r}-N${r}`);
+      put(ws, `Q${r}`, R.C > 0 ? Math.round(R.P / R.C) : "", S.sInt, `IF(C${r}>0,P${r}/C${r},"")`); put(ws, `R${r}`, R.Rk || null, S.sInt); put(ws, `S${r}`, R.Sk || null, S.sInt);
+      put(ws, `T${r}`, R.T ?? "", S.sInt, `IF(AND(R${r}>0,S${r}>R${r}),S${r}-R${r},"")`); put(ws, `U${r}`, R.T && R.C > 0 ? R.T / R.C : "", S.sInt, `IF(AND(C${r}>0,N(T${r})>0),T${r}/C${r},"")`);
+      put(ws, `V${r}`, R.T && R.K > 0 ? R.T / R.K : "", S.sDec, `IF(AND(K${r}>0,N(T${r})>0),T${r}/K${r},"")`);
+      const rateNote = b.rate && b.days ? `${b.rate} * ${b.days} = ${b.rent || Math.round(b.rate * b.days)}` : "";
+      put(ws, `W${r}`, [rateNote, b.remarks, b.tripNote].filter(Boolean).join(" · "), S.sTxt); put(ws, `X${r}`, b.places || "", S.sTxt);
+    });
+    put(ws, "A1", `${plate} - Income / Expense Details`, S.sTitle); for (let c = 1; c < 24; c++) put(ws, XL.col(c) + 1, null, S.sTitle); ws.merges.push("A1:X1");
+    const rg = k => `${k}${F}:${k}${L}`, days = T.C || 0, gross = T.P || 0;
+    ["2", "3", "4"].forEach(r => "ABCDEFGHI".split("").forEach(c => put(ws, c + r, null, S.sLab)));
+    [["A2", "Total Collection", "B2", `SUM(${rg("O")})`, T.O], ["C2", "Total Days Run", "E2", `SUM(${rg("C")})`, days], ["F2", "Total Driver Padi", "G2", `SUM(${rg("G")})`, T.G], ["H2", "Total Diesel Price", "I2", `SUM(${rg("L")})`, T.L],
+      ["A3", "Total Expense", "B3", `SUM(${rg("N")})`, T.N], ["C3", "Average Collection / Day", "E3", "IF(E2>0,ROUND(B4/E2,0),0)", days > 0 ? Math.round(gross / days) : 0], ["F3", "Total Cleaner Padi", "G3", `SUM(${rg("H")})`, T.H], ["H3", "Total Diesel Litres", "I3", `SUM(${rg("K")})`, T.K],
+      ["A4", "Gross", "B4", `SUM(${rg("P")})`, gross], ["F4", "Total Kms", "G4", `SUM(${rg("T")})`, T.T]]
+      .forEach(([lc, lab, vc, f, v]) => { put(ws, lc, lab, S.sLab); put(ws, vc, v || 0, S.sVal, f); });
+    ws.merges.push("C2:D2", "C3:D3", "C4:D4");
+    SP_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5;
+    Object.assign(ws.heights, { 1: 28.5, 2: 15.5, 3: 15.5, 4: 15.5, 5: 18.5 });
+    Object.assign(ws.widths, { A: 15.2, B: 11, C: 11, D: 13, E: 12, F: 17, G: 10, H: 17, I: 12.9, J: 10.6, K: 8, L: 11.3, M: 12.5, N: 15.7, O: 11.7, P: 10.5, Q: 9, R: 11.7, S: 10.5, T: 10.6, U: 14.5, V: 9.5, W: 24, X: 60 });
+    sheets.push(ws);
+  });
+  return sheets;
+}
+// The records the downloads need, read fresh (shared records, or this browser's copy).
+async function dlRead(colls) {
+  const out = {}, A = stAreas();
+  for (const c of colls) { const ls = A.find(x => x[0] === c)?.[2];
+    if (tripDb) { try { const q = await tripDb.collection(c).get(); out[c] = q.docs.map(d => ({ id: d.id, ...d.data() })); } catch { out[c] = []; } }
+    else out[c] = ls ? loadLS(ls) : []; }
+  return out;
+}
+// Financial years to offer: the ones with trips, bookings or truck trips, and this one; newest first.
+function dlFyOpts(sel, pick) {
+  const ys = new Set([fyOf(todayISO()), ...ops.bookings.filter(b => b.from).map(b => fyOf(b.from)), ...ops.truckTrips.filter(l => l.from).map(l => fyOf(l.from))]);
+  const cur = pick ?? (+sel.value || fyOf(todayISO())); sel.innerHTML = [...ys].sort((a, b) => b - a).map(y => `<option value="${y}"${y === cur ? " selected" : ""}>${fyLabel(y)}</option>`).join("");
+}
+async function dlSave(btn, filename, make) {
+  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
+  if (!dl) { toast("Saving files isn't available in this view."); return; }
+  const was = btn?.textContent; if (btn) { btn.disabled = true; btn.textContent = "Preparing…"; }
+  try { const sheets = await make(); if (!sheets.length) { toast("Nothing to download for this year."); return; }
+    await dl.save({ filename, data: XL.build(sheets) }); toast(`Downloaded ${sheets.length} sheet${sheets.length > 1 ? "s" : ""}`); }
+  catch (er) { if (er?.code !== "declined") toast(er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't make the file. Try again."); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = was; } }
+}
+const dlPlateKey = id => plateKey(plateOf(vehicles.find(v => v.id === id)));
+const dlRouteBuses = () => vehicles.filter(v => v.type === "Bus" && v.opType === "Route" && v.status !== "Sold / Scrapped").sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo)));
 async function tkDownload(btn) {
   let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
   if (!dl) { toast("Saving files isn't available in this view."); return; }
@@ -10542,7 +10631,7 @@ function renderOps() {
   if (view === "trsheet") { renderRsList(); return; }
   if (view === "tappr") { renderApprovals(); return; }
   if (view === "trep") { renderBkReports(); return; }
-  if (view === "ttsheet") { renderTsList(); return; }
+  if (view === "ttsheet") { dlFyOpts($("tsDlFy")); renderTsList(); return; }
   if (view === "trexp") { renderRxp(); return; }
   if (view === "tpadi") { renderPadi(); return; }
   if (view === "tkrep") { renderPk(); return; }
@@ -10553,7 +10642,7 @@ function renderOps() {
   if (view === "tmsum") { renderMsum(); return; }
   const ro = !canTrips;
   $("kRoTag").hidden = !ro;  // the Day sheet's tag follows its own sheet (fillDayForm) $("sRoTag").hidden = canBookings;
-  if (view === "thub") renderHub();
+  if (view === "thub") { dlFyOpts($("oDlFy")); renderHub(); }
   else if (view === "tday") renderDayBook();
   else if (view === "tspare") renderSpare();
   else if (view === "ttruck") renderTruck();
@@ -14397,85 +14486,101 @@ document.addEventListener("click", e => {
 });
 
 /* ================= Route bus monthly sheet in Excel, in the office's own format =================
-   Title row, the month's figures (rows 2–5), the driver and conductor table with the kilometres beside it, then one row per day.
-   Totals and the driver / conductor figures are live formulas, so the sheet can still be corrected in Excel. */
-function meXlsx(ym) {
-  const { put, S, sheet, build } = XL, ws = sheet(new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "short", year: "numeric" }));
+   Title row, the month's figures (rows 2–5), the driver and conductor table with the kilometres beside it, then one row per day
+   (the headings at row 15 or lower). Totals and the driver / conductor figures are live formulas, so the sheet can still be
+   corrected in Excel. Run Kms is each day's km from the day before (the first day from the month's starting km).
+   Works on the bus and year now open (trips, tripMonths, tBusId); routeFySheets switches them for other buses. */
+function meSheet(ym, name) {
+  const { put, S, sheet } = XL, ws = sheet(name || new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long" }) + ym.slice(0, 4));
   const M = monthStats(ym), tot = M.tot, ran = M.list.filter(t => !t.notRun), nDays = daysIn(ym);
   const mName = new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long" });
   const drv = [...new Set(ran.map(t => crewName("driver", t)).filter(Boolean))], con = [...new Set(ran.map(t => crewName("conductor", t)).filter(Boolean))];
   const nameRows = Math.max(3, drv.length) + Math.max(3, con.length), head = Math.max(15, 7 + nameRows + 2), r0 = head + 1, rN = head + nDays;
   const rg = c => `${c}${r0}:${c}${rN}`;
   // Day rows
-  let cum = 0; const rows = [];
+  let cum = 0, lastKmRow = 0;
   for (let d = 1; d <= nDays; d++) {
     const date = `${ym}-${pad2(d)}`, t = M.list.find(x => x.date === date), r = head + d;
-    put(ws, "A" + r, d, S.int); put(ws, "B" + r, t ? startShown(t, date) : plannedStart(date) || "", S.text); put(ws, "C" + r, DAYS[new Date(date + "T00:00:00").getDay()], S.text);
-    if (!t) { rows.push(null); continue; }
-    if (t.notRun) { put(ws, "W" + r, `Did not run${t.idleReason ? " · " + t.idleReason : ""}${t.remarks ? " · " + t.remarks : ""}`, S.text); put(ws, "U" + r, cum, S.int, `${d === 1 ? "0" : "U" + (r - 1)}+T${r}`); rows.push(null); continue; }
+    put(ws, "A" + r, d, S.rDay); put(ws, "B" + r, t ? startShown(t, date) : plannedStart(date) || "", S.rTxt); put(ws, "C" + r, DAYS[new Date(date + "T00:00:00").getDay()], S.rTxt);
+    if (!t) continue;
+    if (t.notRun) { put(ws, "X" + r, `Did not run${t.idleReason ? " · " + t.idleReason : ""}${t.remarks ? " · " + t.remarks : ""}`, S.rTxt); put(ws, "U" + r, cum, S.rInt, `${d === 1 ? "0" : "U" + (r - 1)}+T${r}`); continue; }
     const col = tripCollection(t), exp = tripExpense(t), bal = col - exp; cum += bal;
-    put(ws, "D" + r, crewName("driver", t), S.text); put(ws, "E" + r, crewName("conductor", t), S.text); put(ws, "F" + r, crewName("checker", t), S.text);
-    [["G", t.dieselRate, S.dec], ["H", t.litres, S.dec], ["I", t.fuelCost, S.int], ["J", t.driverPay, S.int], ["K", t.conductorPay, S.int], ["L", t.checkerPay, S.int],
-      ["M", t.s1, S.int], ["N", t.s2, S.int], ["O", t.s3, S.int], ["P", t.s4, S.int], ["Q", t.s5, S.int]].forEach(([c, v, st]) => { if (num(v)) put(ws, c + r, num(v), st); });
-    put(ws, "R" + r, col, S.int); put(ws, "S" + r, exp, S.int); put(ws, "T" + r, bal, S.int, `R${r}-S${r}`);
-    put(ws, "U" + r, cum, S.int, `${d === 1 ? "0" : "U" + (r - 1)}+T${r}`);
-    if (num(t.odo)) put(ws, "V" + r, num(t.odo), S.int);
-    if (t.remarks) put(ws, "W" + r, t.remarks, S.text);
-    rows.push(t);
+    put(ws, "D" + r, crewName("driver", t), S.rTxt); put(ws, "E" + r, crewName("conductor", t), S.rTxt); put(ws, "F" + r, crewName("checker", t), S.rTxt);
+    [["G", t.dieselRate, S.rDec], ["H", t.litres, S.rDec], ["I", t.fuelCost, S.rInt], ["J", t.driverPay, S.rInt], ["K", t.conductorPay, S.rInt], ["L", t.checkerPay, S.rInt],
+      ["M", t.s1, S.rInt], ["N", t.s2, S.rInt], ["O", t.s3, S.rInt], ["P", t.s4, S.rInt], ["Q", t.s5, S.rInt]].forEach(([c, v, st]) => { if (num(v)) put(ws, c + r, num(v), st); });
+    put(ws, "R" + r, col, S.rInt); put(ws, "S" + r, exp, S.rInt); put(ws, "T" + r, bal, S.rInt, `R${r}-S${r}`);
+    put(ws, "U" + r, cum, S.rInt, `${d === 1 ? "0" : "U" + (r - 1)}+T${r}`);
+    if (num(t.odo)) { const prev = lastKmRow ? num(ws.rows[lastKmRow][21].v) : num(M.open.km);
+      put(ws, "V" + r, num(t.odo), S.rInt); if (prev && num(t.odo) > prev) put(ws, "W" + r, num(t.odo) - prev, S.rInt, lastKmRow ? `V${r}-V${lastKmRow}` : `V${r}-N6`); lastKmRow = r; }
+    if (t.remarks) put(ws, "X" + r, t.remarks, S.rTxt);
   }
-  for (let rr = r0; rr <= rN; rr++) for (let c = 0; c < 23; c++) if (!ws.rows[rr]?.[c]) put(ws, XL.col(c) + rr, "", S.text);  // every day row fully boxed
-  ["Date", "Starting", "Day", "Driver", "Conductor", "Checker", "Diesel Rate", "No. Litre", "Fuel Price", "Driver", "Conductor", "Checker", "S1", "S2", "S3", "S4", "S5", "Collection", "Expense", "Balance", "Total Balance", "KMS", "Remarks"]
-    .forEach((h, i) => put(ws, XL.col(i) + head, h, S.head));
+  for (let rr = r0; rr <= rN; rr++) for (let c = 0; c < 24; c++) if (!ws.rows[rr]?.[c]) put(ws, XL.col(c) + rr, "", S.rTxt);  // every day row fully boxed
+  ["Date", "Starting", "Day", "Driver", "Conductor", "Checker", "Diesel Rate", "No. Litre", "Fuel Price", "Driver", "Conductor", "Checker", "S1", "S2", "S3", "S4", "S5", "Collection", "Expense", "Balance", "Total Balance", "KMS", "Run Kms", "Remarks"]
+    .forEach((h, i) => put(ws, XL.col(i) + head, h, S.rHead));
   // Title and the month's figures
-  put(ws, "A1", `${mName} - ${ym.slice(0, 4)}`, S.title); ws.merges.push("A1:W1");
+  put(ws, "A1", `${mName} - ${ym.slice(0, 4)}`, S.rTitle); for (let c = 1; c < 24; c++) put(ws, XL.col(c) + 1, null, S.rTitle); ws.merges.push("A1:X1");
   const days = M.days, crewPay = tot.pd + tot.pc + tot.pk, low = M.rates.length ? Math.min(...M.rates) : 0, high = M.rates.length ? Math.max(...M.rates) : 0, bal = M.bal;
-  const lab = (ref, text, merge) => { put(ws, ref, text, S.label); if (merge) ws.merges.push(merge); };
-  lab("A2", "Days Run"); put(ws, "B2", Math.round(days * 100) / 100, S.dec);
-  lab("A3", "Total Balance"); put(ws, "B3", bal, S.sum, `N4`);
-  lab("A4", "Avg Col / Day"); put(ws, "B4", days ? Math.round(tot.col / days) : 0, S.sum, `IF(B2>0,ROUND(N2/B2,0),0)`);
-  lab("A5", "Avg Bal / Day"); put(ws, "B5", days ? Math.round(bal / days) : 0, S.sum, `IF(B2>0,ROUND(N4/B2,0),0)`);
-  lab("C2", "Total Diesel(Price)", "C2:D2"); put(ws, "E2", tot.fuel, S.sum, `SUM(${rg("I")})`);
-  lab("C3", "Avg Diesel / Day", "C3:D3"); put(ws, "E3", days ? Math.round(tot.fuel / days) : 0, S.sum, `IF(B2>0,ROUND(E2/B2,0),0)`);
-  lab("C4", "Avg Salary / Day", "C4:D4"); put(ws, "E4", days ? Math.round(crewPay / days) : 0, S.sum, `IF(B2>0,ROUND(T5/B2,0),0)`);
-  lab("F2", "Total Fuel(Ltrs)", "F2:G2"); put(ws, "H2", Math.round(tot.lit * 100) / 100, S.dec, `SUM(${rg("H")})`);
-  lab("F3", "Low Fuel Price", "F3:G3"); put(ws, "H3", low, S.dec, `IFERROR(SMALL(${rg("G")},1),0)`);
-  lab("F4", "High Fuel Price", "F4:G4"); put(ws, "H4", high, S.dec, `MAX(${rg("G")})`);
-  lab("J2", "Total Collection", "J2:M2"); put(ws, "N2", tot.col, S.sum, `SUM(${rg("R")})`); ws.merges.push("N2:O2");
-  lab("J3", "Total Expense", "J3:M3"); put(ws, "N3", tot.exp, S.sum, `SUM(${rg("S")})`); ws.merges.push("N3:O3");
-  lab("J4", "Total Balance", "J4:M4"); put(ws, "N4", bal, S.sum, `SUM(${rg("T")})`); ws.merges.push("N4:O4");
-  lab("Q2", "Driver Salary", "Q2:S2"); put(ws, "T2", tot.pd, S.sum, `ROUND(SUM(${rg("J")}),0)`);
-  lab("Q3", "Conductor Salary", "Q3:S3"); put(ws, "T3", tot.pc, S.sum, `ROUND(SUM(${rg("K")}),0)`);
-  lab("Q4", "Checker Salary", "Q4:S4"); put(ws, "T4", tot.pk, S.sum, `ROUND(SUM(${rg("L")}),0)`);
-  lab("Q5", "Total", "Q5:S5"); put(ws, "T5", crewPay, S.sum, "SUM(T2:T4)");
-  // Kilometres
-  // The Excel keeps the odometer km (Total and per day on the meter km); across a new meter they are written as worked out, not as formulas.
+  const lab = (ref, text, merge) => { put(ws, ref, text, S.rLab); if (merge) { ws.merges.push(merge); const [a, b] = merge.split(":"); for (let c = XL.idx(a.replace(/\d+/, "")) + 1; c <= XL.idx(b.replace(/\d+/, "")); c++) put(ws, XL.col(c) + a.replace(/\D+/, ""), null, S.rLab); } };
+  const val = (ref, v, f, st = S.rVal, merge) => { put(ws, ref, v, st, f); if (merge) { ws.merges.push(merge); put(ws, merge.split(":")[1], null, st); } };
+  lab("A2", "Days Run"); val("B2", Math.round(days * 100) / 100, undefined, S.rValD);
+  lab("A3", "Total Balance"); val("B3", bal, "N4");
+  lab("A4", "Avg Col / Day"); val("B4", days ? Math.round(tot.col / days) : 0, "IF(B2>0,ROUND(N2/B2,0),0)");
+  lab("A5", "Avg Bal / Day"); val("B5", days ? Math.round(bal / days) : 0, "IF(B2>0,ROUND(N4/B2,0),0)");
+  lab("C2", "Total Diesel(Price)", "C2:D2"); val("E2", tot.fuel, `SUM(${rg("I")})`);
+  lab("C3", "Avg Diesel / Day", "C3:D3"); val("E3", days ? Math.round(tot.fuel / days) : 0, "IF(B2>0,ROUND(E2/B2,0),0)");
+  lab("C4", "Avg Salary / Day", "C4:D4"); val("E4", days ? Math.round(crewPay / days) : 0, "IF(B2>0,ROUND(T5/B2,0),0)");
+  lab("F2", "Total Fuel(Ltrs)", "F2:G2"); val("H2", Math.round(tot.lit * 100) / 100, `ROUND(SUM(${rg("H")}),0)`, S.rValD);
+  lab("F3", "Low Fuel Price", "F3:G3"); val("H3", low, `IFERROR(SMALL(${rg("G")},1),0)`, S.rValD);
+  lab("F4", "High Fuel Price", "F4:G4"); val("H4", high, `MAX(${rg("G")})`, S.rValD);
+  lab("J2", "Total Collection", "J2:M2"); val("N2", tot.col, `SUM(${rg("R")})`, S.rVal, "N2:O2");
+  lab("J3", "Total Expense", "J3:M3"); val("N3", tot.exp, `SUM(${rg("S")})`, S.rVal, "N3:O3");
+  lab("J4", "Total Balance", "J4:M4"); val("N4", bal, `SUM(${rg("T")})`, S.rVal, "N4:O4");
+  lab("Q2", "Driver Salary", "Q2:S2"); val("T2", tot.pd, `ROUND(SUM(${rg("J")}),0)`);
+  lab("Q3", "Conductor Salary", "Q3:S3"); val("T3", tot.pc, `ROUND(SUM(${rg("K")}),0)`);
+  lab("Q4", "Checker Salary", "Q4:S4"); val("T4", tot.pk, `ROUND(SUM(${rg("L")}),0)`);
+  lab("Q5", "Total", "Q5:S5"); val("T5", crewPay, "SUM(T2:T4)");
+  // Kilometres. Across a new meter the km are written as worked out, not as formulas.
   const kmPlain = !!M.odoK?.split;
-  lab("J6", "Kilometer Starting", "J6:M6"); put(ws, "N6", M.open.km ?? "", S.sum); ws.merges.push("N6:O6");
-  lab("J7", "Kilometer Ending", "J7:M7"); put(ws, "N7", M.lastOdo || 0, S.sum, M.odoK?.split ? undefined : `MAX(${rg("V")})`); ws.merges.push("N7:O7");
-  lab("J8", "Total Kilometers", "J8:M8"); put(ws, "N8", M.mkm ?? 0, S.sum, kmPlain ? undefined : "IF(N6>0,N7-N6,0)"); ws.merges.push("N8:O8");
-  lab("J9", "Per Day Average Kms", "J9:M9"); put(ws, "N9", M.mkm && days ? Math.round(M.mkm / days) : 0, S.sum, kmPlain ? undefined : "IF(B2>0,ROUND(N8/B2,0),0)"); ws.merges.push("N9:O9");
+  lab("J6", "Kilometer Starting", "J6:M6"); val("N6", M.open.km ?? "", undefined, S.rVal, "N6:O6");
+  lab("J7", "Kilometer Ending", "J7:M7"); val("N7", M.lastOdo || 0, kmPlain ? undefined : `MAX(${rg("V")})`, S.rVal, "N7:O7");
+  lab("J8", "Total Kilometers", "J8:M8"); val("N8", M.mkm ?? 0, kmPlain ? undefined : "IF(N6>0,N7-N6,0)", S.rVal, "N8:O8");
+  lab("J9", "Per Day Average Kms", "J9:M9"); val("N9", M.mkm && days ? Math.round(M.mkm / days) : 0, kmPlain ? undefined : "IF(B2>0,ROUND(N8/B2,0),0)", S.rVal, "N9:O9");
   // Driver and conductor table (the template's formulas: days are the dates each person is on)
-  ["Name", "No.of Days", "Diesel", "Avg Diesel/Day", "Collection", "Expense", "Balance", "Avg / Day", "Avg Col/Day"].forEach((h, i) => put(ws, XL.col(i) + 6, h, S.head));
+  ["Name", "No.of Days", "Diesel", "Avg Diesel/Day", "Collection", "Expense", "Balance", "Avg / Day", "Avg Col/Day"].forEach((h, i) => put(ws, XL.col(i) + 6, h, S.rCrewH));
   let r = 7;
   const person = (name, c, kind) => {
     const mine = ran.filter(t => crewName(kind, t) === name), n = mine.length, dsl = mine.reduce((a, t) => a + num(t.fuelCost), 0), col = mine.reduce((a, t) => a + tripCollection(t), 0), exp = mine.reduce((a, t) => a + tripExpense(t), 0);
-    put(ws, "A" + r, name, S.text);
-    put(ws, "B" + r, n, S.int, `COUNTIF(${rg(c)},A${r})`);
-    put(ws, "C" + r, dsl, S.int, `SUMIF(${rg(c)},A${r},${rg("I")})`);
-    put(ws, "D" + r, n ? Math.round(dsl / n) : 0, S.int, `IF(B${r}>0,ROUND(C${r}/B${r},0),0)`);
-    put(ws, "E" + r, col, S.int, `SUMIF(${rg(c)},A${r},${rg("R")})`);
-    put(ws, "F" + r, exp, S.int, `SUMIF(${rg(c)},A${r},${rg("S")})`);
-    put(ws, "G" + r, col - exp, S.int, `E${r}-F${r}`);
-    put(ws, "H" + r, n ? Math.ceil((col - exp) / n) : 0, S.int, `IF(B${r}>0,ROUNDUP(G${r}/B${r},0),0)`);
-    put(ws, "I" + r, n ? Math.ceil(col / n) : 0, S.int, `IF(B${r}>0,ROUNDUP(E${r}/B${r},0),0)`);
+    put(ws, "A" + r, name, S.rTxt);
+    put(ws, "B" + r, n, S.rInt, `COUNTIF(${rg(c)},A${r})`);
+    put(ws, "C" + r, dsl, S.rInt, `SUMIF(${rg(c)},A${r},${rg("I")})`);
+    put(ws, "D" + r, n ? Math.round(dsl / n) : 0, S.rInt, `IF(B${r}>0,ROUND(C${r}/B${r},0),0)`);
+    put(ws, "E" + r, col, S.rInt, `SUMIF(${rg(c)},A${r},${rg("R")})`);
+    put(ws, "F" + r, exp, S.rInt, `SUMIF(${rg(c)},A${r},${rg("S")})`);
+    put(ws, "G" + r, col - exp, S.rInt, `E${r}-F${r}`);
+    put(ws, "H" + r, n ? Math.ceil((col - exp) / n) : 0, S.rInt, `IF(B${r}>0,ROUNDUP(G${r}/B${r},0),0)`);
+    put(ws, "I" + r, n ? Math.ceil(col / n) : 0, S.rInt, `IF(B${r}>0,ROUNDUP(E${r}/B${r},0),0)`);
     r++;
   };
   drv.forEach(n => person(n, "D", "driver")); r = 7 + Math.max(3, drv.length);
   con.forEach(n => person(n, "E", "conductor"));
-  // Column widths as in the template
-  Object.assign(ws.widths, { A: 26, B: 14, C: 14, D: 18, E: 18, F: 14, G: 12, H: 12, I: 12, J: 12, K: 12, L: 12, M: 10, N: 12, O: 10, P: 10, Q: 10, R: 13, S: 12, T: 13, U: 14, V: 12, W: 24 });
+  for (let rr = 7; rr < 7 + nameRows; rr++) for (let c = 0; c < 9; c++) if (!ws.rows[rr]?.[c]) put(ws, XL.col(c) + rr, "", S.rTxt);
+  // Column widths and row heights as in the template
+  Object.assign(ws.widths, { A: 37.3, B: 15.5, C: 24.7, D: 21.5, E: 18.5, F: 17.5, G: 16.3, H: 17.7, I: 16.2, J: 13.2, K: 15.2, L: 12, M: 10.7, N: 15.5, O: 10.7, P: 10.7, Q: 10.7, R: 14.5, S: 12.3, T: 14, U: 14.1, V: 12.4, W: 12.8, X: 30.1 });
+  ws.heights[1] = 36; for (let rr = 2; rr < head; rr++) ws.heights[rr] = 26.15; ws.heights[head] = 21; for (let rr = r0; rr <= rN; rr++) ws.heights[rr] = 19;
   ws.freeze = head;
-  return build([ws]);
+  return ws;
+}
+const meXlsx = ym => XL.build([meSheet(ym)]);
+// A route bus's month sheets for a financial year (April to March), from records read fresh (recs) or the bus now open.
+// The month figures read the open bus's trips, so they are switched to this bus while its sheets are made.
+function routeFySheets(busId, fy, recs, prefix = "") {
+  const keep = { trips, tripMonths, tripYears, tBusId, tFyStart }, out = [];
+  try {
+    if (recs) { trips = (recs.trips || []).filter(t => t.vehicleId === busId); tripMonths = (recs.tripMonths || []).filter(m => m.vehicleId === busId); tripYears = (recs.tripYears || []).filter(y => y.vehicleId === busId); }
+    tBusId = busId; tFyStart = fy;
+    for (let i = 0; i < 12; i++) { const ym = monthYM(fy, i); if (monthTrips(ym).length) out.push(meSheet(ym, prefix + new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long" }) + ym.slice(0, 4))); }
+  } finally { ({ trips, tripMonths, tripYears, tBusId, tFyStart } = keep); }
+  return out;
 }
 function meXlsxName(ym) { const v = vehicles.find(x => x.id === tBusId), mon = new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "short" }); return `${plateKey(plateOf(v)).slice(-4) || "0000"}_ROUTE_${mon}-${ym.slice(0, 4)}.xlsx`; }
 $("tPrint").insertAdjacentHTML("afterbegin", ICON_PRINT);
@@ -15378,6 +15483,17 @@ $("kTabs").addEventListener("drop", e => {
 });
 $("kTabs").addEventListener("dragend", () => { kDrag = null; $("kTabs").querySelectorAll(".kdrag, .kdrop-l, .kdrop-r").forEach(x => x.classList.remove("kdrag", "kdrop-l", "kdrop-r")); });
 $("kDl").onclick = e => tkDownload(e.currentTarget);
+// Route bus: this bus's month sheets for the year chosen on the page.
+$("tDl").onclick = e => { if (!tBusId) { toast("Choose a bus first."); return; }
+  dlSave(e.currentTarget, `${dlPlateKey(tBusId)}_Route_FY${fyLabel(tFyStart)}.xlsx`, async () => routeFySheets(tBusId, tFyStart, await dlRead(["trips", "tripMonths", "tripYears"]))); };
+// Spare bus trip sheets: every spare bus for the year chosen.
+$("tsDl").onclick = e => { const fy = +$("tsDlFy").value || fyOf(todayISO());
+  dlSave(e.currentTarget, `Spare_Bus_FY${fyLabel(fy)}.xlsx`, async () => xlSpareSheets({ ...(await dlRead(["bookings"])), vehicles, drivers }, fy)); };
+// Trip sheet home: the route buses month by month, then the spare buses, then the trucks, for the year chosen.
+$("oDl").onclick = e => { const fy = +$("oDlFy").value || fyOf(todayISO());
+  dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => { const recs = { ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds"])), vehicles, drivers };
+    const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
+    return [...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy)]; }); };
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 // + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
 $("kAdd").onclick = () => { const last = roundsOf(kBusId).filter(r => r.status !== "Closed").sort((a, b) => b.to.localeCompare(a.to))[0]; openRound(last ? last.id : null, "leg", null); };
@@ -16612,7 +16728,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05p";
+const APP_VER = "2026-11-05q";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
