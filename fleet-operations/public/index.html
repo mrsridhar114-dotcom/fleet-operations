@@ -6914,6 +6914,7 @@ function mtGap(key, k) { const d = mtGapsDoc(), b = d.bus?.[key]?.[k], g = d.gap
 // meter and actual km lines (a vehicle without them uses the reading as it is).
 function mtAct(key, date, km) { const v = mtVehOf(key); return v && num(km) && odoPairs(v).length ? Math.round(odoActual(v, date, km)) : num(km); }
 // The latest km reading known for a vehicle (maintenance, diesel fills, trip sheets, bookings, truck trips) in actual km, and its km per day.
+// Latest by date (the highest km on that day), so an old reading typed with a wrong or a replaced meter's km does not stay "now".
 function mtNow(key) {
   const v = mtVehOf(key), pts = [], add = (date, km, src) => { if (date && num(km)) pts.push([date, mtAct(key, date, km), src, num(km)]); };
   ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => add(x.date, x.km, "maintenance"));
@@ -6924,18 +6925,18 @@ function mtNow(key) {
     ops.truckTrips.filter(l => l.vehicleId === v.id).forEach(l => { add(l.to || l.from, l.endKm, "truck trip"); (l.fuels || []).forEach(f => add(f.date, f.odo, "diesel fill")); });
   }
   if (!pts.length) return null;
-  const best = pts.reduce((a, p) => p[1] > a[1] ? p : a);
+  const best = pts.reduce((a, p) => p[0] > a[0] || (p[0] === a[0] && p[1] > a[1]) ? p : a);
   // Km per day from the readings of the last year (at least two weeks apart).
   const since = shiftDay(best[0], -365), rec = pts.filter(p => p[0] >= since && p[0] <= best[0]), first = rec.reduce((a, p) => p[0] < a[0] ? p : a, best);
   const days = dayDiff(first[0], best[0]), perDay = days >= 14 && best[1] > first[1] ? (best[1] - first[1]) / days : 0;
   return { km: best[1], meter: best[3], date: best[0], src: best[2], perDay };
 }
-// Each job of a vehicle (by wheel where it is done wheel by wheel) with its last visit and the next one due.
+// Each job of a vehicle (by wheel where it is done wheel by wheel) with its last visit (by date) and the next one due.
 function mtDue(key) {
   const now = mtNow(key), last = new Map();
   ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => (x.items || []).forEach(it => {
     const id = it.k + "|" + (it.pos || ""), cur = last.get(id);
-    const a = mtAct(key, x.date, x.km); if (!cur || a > cur.a || (a === cur.a && x.date > cur.e.date)) last.set(id, { it, e: x, a });
+    const a = mtAct(key, x.date, x.km); if (!cur || x.date > cur.e.date || (x.date === cur.e.date && a > cur.a)) last.set(id, { it, e: x, a });
   }));
   return [...last.values()].map(({ it, e, a }) => {
     const gap = mtGap(key, it.k), next = gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
@@ -16529,7 +16530,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05l";
+const APP_VER = "2026-11-05m";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
