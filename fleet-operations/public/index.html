@@ -209,6 +209,7 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qkfoot { position: sticky; bottom: 0; z-index: 5; display: flex; flex-direction: column; gap: 8px; background: var(--bg); padding: 10px 0 12px; border-top: 1px solid var(--line); } .qkfline { display: flex; justify-content: space-between; font-size: 14px; } .qkfline #qkDirty { color: var(--warn); font-weight: 600; } .qkfline #qkDirty.ok { color: var(--ok); }
 .qktot b.pos { color: var(--ok); } .bhbtns > .bhbtn[data-qk="sheet"] { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; text-align: left; min-height: 84px; gap: 14px; padding: 12px 16px; }
 .qk3 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } .qk3 .qkf input { font-size: 15px; padding: 8px 10px; } .qkhint { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+.qkfadd { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; } .qkfadd select { font: inherit; font-weight: 600; min-height: 46px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; background: var(--surface); color: var(--ink); } .qkfadd .qkadd2 { padding: 0 16px; }
 .qkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qkgrid .qkbig { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 14.5px; min-height: 96px; }
 .qkli { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: var(--ink); text-align: left; width: 100%; font-size: 14px; }
 .qkli:last-child { border-bottom: 0; } .qkli small { display: block; color: var(--muted); font-size: 12.5px; } .qkli > span:first-child { min-width: 0; } button.qkli { cursor: pointer; }
@@ -219,7 +220,6 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qkf input, .qkf select, .qkrow input { font: inherit; font-size: 17px; font-weight: 600; padding: 10px 12px; min-height: 48px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); width: 100%; box-sizing: border-box; min-width: 0; }
 .qkf input.qkbigin { font-size: 22px; font-weight: 700; }
 .qk2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
-.qkchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px; } .qkchips button { height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 17px; background: var(--bg); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .qkseg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .qkseg button { font: inherit; font-weight: 600; font-size: 13.5px; padding: 11px 2px; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; } .qkseg button.on { background: var(--accent); color: #fff; }
 .qkexp { gap: 0; } .qkrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; } .qkrow:last-child { border-bottom: 0; } .qkrow > b { font-family: var(--mono); text-align: right; } .qktot b.neg { color: var(--danger); } .qkrow input { width: 140px; flex: none; }
@@ -2905,7 +2905,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
       </header>
       <nav class="ttabs ktabs" id="kTabs" role="tablist" aria-label="Truck"></nav>
-      <div id="kQuick" hidden></div><input id="qkBillIn" type="file" accept="image/*,application/pdf" hidden>
+      <div id="kQuick" hidden></div><input id="qkBillIn" type="file" accept="image/*,application/pdf" hidden><input id="qkFileIn" type="file" accept="image/*,application/pdf" multiple hidden>
       <div class="empty panel" id="kNone" hidden><strong>No trucks yet</strong>Add a vehicle with class 12 Wheeler Truck under Masters › Vehicle.</div>
       <div id="kBody" style="display:flex;flex-direction:column;gap:16px">
         <section class="summary tsum" id="kSummary" aria-label="Truck summary"></section>
@@ -14776,9 +14776,10 @@ function qkRoundScr() {
   return `<div class="qkform">${qk.ret ? `<button type="button" class="qkback" data-qk="ret">‹ Back to the trip sheet</button>` : `<button type="button" class="qkback" data-qk="home">‹ All round trips</button>`}<h2>Round trip ${rtNo(r)}${shut ? ' <span class="bstage closed">🔒 Closed</span>' : ""}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · ${esc(r.path || "")}</small></h2>` +
     `<div class="qkcard qksum"><div><small>Rent</small><b>${nf(r.rent)}</b></div><div><small>Expense</small><b>${nf(r.rent - r.bal)}</b></div><div><small>Balance</small><b class="${r.bal < 0 ? "neg" : "pos"}">${nf(r.bal)}</b></div>` +
     `<div><small>Received</small><b>${nf(r.received)}</b></div><div><small>To driver</small><b>${G ? nf(G) : "—"}</b></div><div><small>Diesel</small><b>${qkDsl(r)}</b></div></div>` +
-    (shut ? `<p class="sub" style="margin:0">This round trip is closed. It can be reopened from a computer.</p>` :
+    (shut ? `<p class="sub" style="margin:0">This round trip is closed${r.closedOn ? ` on ${fmtDate(r.closedOn)}` : ""}. Reopen it at the bottom to change anything.</p>` :
       big("load", "＋", "Add trip", "The next load in this round trip", " pri") + `<div class="qkgrid qkg3">${big("dsl", "⛽", "Diesel")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>`) +
     `<h3 class="qkadd">Trips (${r.legs.length})</h3>${r.legs.map(card).join("")}` +
+    `<button type="button" class="bhclose" data-qk="lock">${shut ? "Reopen round trip" : "🔒 Mark closed"}</button>` +
     `<div class="qklinks"><button type="button" data-qk="print">🖨 Print</button><button type="button" data-qk="send">📤 Send details</button></div></div>`;
 }
 // The lists on the diesel and payment screens: everything added so far in the round trip, each with a trash icon.
@@ -14793,13 +14794,11 @@ function qkList() {
     return G.length ? G.map((g, i) => row("giv", g, i, rs(num(g.amount)), `${fmtShort(g.date)} · ${g.pay || ""} · ${esc(g.desc || "")}${g.leg ? " · " + esc(trip(g.leg)) : ""}`)).join("") + `<div class="qktot"><span>Given to the driver</span><b>${rs(G.reduce((a, g) => a + num(g.amount), 0))}</b></div>` : `<p class="sub">Nothing given yet.</p>`; }
   return "";
 }
-// New load: loading date, places (with the truck's recent places as buttons), load, tonnes and rent.
+// New load: loading date, places (the places used before are offered as they are typed), load, tonnes and rent.
 function qkLoadFields(from0) {
   const f = (lb, h) => `<label class="qkf">${lb}${h}</label>`, ip = (id, v = "", o = "") => `<input id="${id}" value="${esc(v)}" autocomplete="off" ${o}>`;
-  const places = [...new Set(ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, b) => b.from.localeCompare(a.from)).flatMap(x => [x.dest, x.origin]).filter(Boolean).map(lgPlace))].slice(0, 5);
   return f("Loading date", ip("qkDate", todayISO(), 'type="date"')) +
     `<div class="qk2">${f("From", ip("qkFrom", from0, 'list="qkPl"'))}${f("To", ip("qkTo", "", 'list="qkPl"'))}</div>` +
-    `<div class="qkchips">${places.map(p => `<button type="button" data-qkto="${esc(p)}">${esc(p)}</button>`).join("")}</div>` +
     `<div class="qk2">${f("Load", ip("qkLoad", "", 'list="lgLoads" placeholder="e.g. Paruppu"'))}${f("Tonnes", ip("qkTons", "", 'type="number" inputmode="decimal"'))}</div>` +
     `<div class="qk2">${f("Rent per tonne", ip("qkRateT", "", 'type="number" inputmode="decimal"'))}${f("Trip rent", ip("qkRent", "", 'type="number" inputmode="numeric" class="qkbigin"'))}</div>` +
     `<datalist id="qkPl">${[...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean).map(lgPlace))].sort().map(p => `<option value="${esc(p)}">`).join("")}</datalist>`;
@@ -14817,17 +14816,22 @@ const qkDslRows = () => qk.sheetF.map((x, i) => `<div class="qkdrow" data-i="${i
   `<button type="button" class="qkrb${x.bill ? " has" : ""}" data-qkrbill="${i}" aria-label="Photo of the bill" title="Photo of the bill">${x.bill ? "✓ Bill added" : "📷 Bill photo"}</button><button type="button" class="icon rtbin" data-qkrdel="${i}" aria-label="Remove this fill" title="Remove">${TRASH_SVG}</button></div>`).join("");
 function qkSheetRead() { document.querySelectorAll(".qkdrow").forEach(row => { const x = qk.sheetF[+row.dataset.i]; if (!x) return; const L = row.querySelector("[data-fl]").value, A = row.querySelector("[data-fa]").value;
   x.litres = L === "" ? undefined : num(L); x.amount = A === "" ? undefined : num(A); x.place = row.querySelector("[data-fp]").value.trim(); }); }
+// Files of the round trip (bills, weighing scale slips…), the ones of this trip first. Attached and removed at once, like the
+// Files page of the round trip on the computer.
+function qkFilesHtml(r, l) {
+  const F = (r.doc?.files || []).map((f, i) => ({ f, i })).sort((a, b) => (b.f.leg === l.id) - (a.f.leg === l.id)), edit = r.status !== "Closed";
+  return F.length ? F.map(({ f, i }) => `<div class="qkli"><span><b><a href="${billUrl(f)}" target="_blank" rel="noopener">${esc(f.name)}</a></b><small>${esc(f.kind || "Others")} · ${f.leg === l.id ? "this trip" : f.leg ? esc(rtLegName(r.legs.find(x => x.id === f.leg) || {})) : "round trip"}${f.at ? " · " + fmtShort(f.at.slice(0, 10)) : ""}</small></span>` +
+    (edit ? `<button type="button" class="icon rtbin" data-qkfdel="${i}" aria-label="Remove ${esc(f.name)}" title="Remove">${TRASH_SVG}</button>` : "") + `</div>`).join("") : `<p class="sub" style="margin:0">No files yet. Attach the diesel bills, weighing scale slip and rent slip.</p>`;
+}
 function qkSheet() {
   const r = qkRound(), l = r?.legs.find(x => x.id === qk.leg); if (!l) { qk.scr = "home"; return qkHome(); }
   const i = r.legs.indexOf(l), dname = n => (l[`driver${n}Id`] ? drivers.find(d => d.id === l[`driver${n}Id`])?.name || l[`driver${n}Name`] : l[`driver${n}Name`]) || "";
   const f = (lb, h) => `<label class="qkf">${lb}${h}</label>`, ip = (id, v = "", o = "") => `<input id="${id}" value="${esc(v)}" autocomplete="off" ${o}>`, sec = (t, b) => `<section class="qkcard qksec"><h3>${t}</h3>${b}</section>`;
   const money = (key, lab) => `<label class="qkrow"><span>${lab}</span><span class="qkrs"><i>₹</i><input data-qkexp="${key}" type="number" inputmode="numeric" value="${l[key] ?? ""}" placeholder="0"></span></label>`;
-  const places = [...new Set(ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, b) => b.from.localeCompare(a.from)).flatMap(x => [x.dest, x.origin]).filter(Boolean).map(lgPlace))].slice(0, 5);
   const pct = qkSheetPct(l);
   return `<form class="qkform qksheet" novalidate><header class="bwh qkbwh"><div style="flex:1;min-width:0"><b>Trip sheet · Trip ${i + 1}</b><span>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · Round trip ${rtNo(r)}</span></div><span class="qkpctb ${pct === 100 ? "ok" : pct >= 50 ? "mid" : ""}">${pct}%</span></header>` +
-    sec("Trip", f("Driver 1", ip("qkDrv", dname(1), 'list="lgDrvList" placeholder="Name"')) + f("Driver 2", ip("qkDrv2", dname(2), 'list="lgDrvList" placeholder="If there is one"')) +
+    sec("Trip", `<div class="qk2">${f("Driver 1", ip("qkDrv", dname(1), 'list="lgDrvList" placeholder="Name"'))}${f("Driver 2", ip("qkDrv2", dname(2), 'list="lgDrvList" placeholder="If any"'))}</div>` +
       `<div class="qk2">${f("From", ip("qkFrom", lgPlace(l.origin), 'list="qkPl"'))}${f("To", ip("qkTo", lgPlace(l.dest), 'list="qkPl"'))}</div>` +
-      `<div class="qkchips">${places.map(p => `<button type="button" data-qkto="${esc(p)}">${esc(p)}</button>`).join("")}</div>` +
       `<div class="qk2">${f("From date", ip("qkDate", l.from, 'type="date"'))}${f("To date", ip("qkUnl", qkEnded(l) ? l.to : "", 'type="date"'))}</div>` +
       `<div class="qk3">${f("Load", ip("qkLoad", l.load || "", 'list="lgLoads" placeholder="e.g. Paruppu"'))}${f("Tonnes", ip("qkTons", l.tons ?? "", 'type="number" inputmode="decimal"'))}${f("Rent / tonne", ip("qkRateT", l.rateTon ?? "", 'type="number" inputmode="decimal"'))}</div>` +
       f("Trip rent", ip("qkRent", l.rent || "", 'type="number" inputmode="numeric" class="qkbigin" data-typed="1"')) +
@@ -14839,6 +14843,7 @@ function qkSheet() {
       `<div class="qktot"><span>Total expenses</span><b id="qkTmE">—</b></div>`) +
     sec("Diesel", `<div class="qkdrow qkdhead"><span>Litres</span><span>Amount</span><span>Paid</span></div><div id="qkDsl">${qkDslRows()}</div><button type="button" class="qkadd2" data-qkradd>＋ Add diesel</button>` +
       `<div class="qktot"><span id="qkDslN">Diesel</span><b id="qkTmD2">—</b></div>`) +
+    sec("Attachments", `<div id="qkFiles">${qkFilesHtml(r, l)}</div>` + (r.status === "Closed" ? "" : `<div class="qkfadd"><select id="qkFileKind" aria-label="What the file is">${["Diesel bill", "Weight scale slip", "Rent slip", "Commission bill", "Trip sheet", "Others"].map(k => `<option>${k}</option>`).join("")}</select><button type="button" class="qkadd2" data-qkfile>📎 Attach</button></div><p class="sub" style="margin:0">Photo or PDF. Saved straight away.</p>`)) +
     sec("Trip money", `<div class="qkrow"><span>Total rent</span><b id="qkTmR">—</b></div><div class="qkrow"><span>Total expenses</span><b id="qkTmE2">—</b></div><div class="qktot"><span>Balance</span><b id="qkTmB">—</b></div>`) +
     `<div class="err" id="qkErr" role="alert"></div>` +
     `<div class="qkfoot"><div class="qkfline"><span id="qkDirty" class="${qk.dirty ? "" : "ok"}">${qk.dirty ? "Not saved yet" : "✓ Saved"}</span><span>Balance <b id="qkFootT">—</b></span></div><button type="submit" class="qkgo">Save trip sheet</button><button type="button" class="qkdone" data-qk="back">‹ Back</button></div></form>`;
@@ -14873,9 +14878,9 @@ function qkTrip() {
   const r = qkRound(), l = r?.legs.find(x => x.id === qk.edit), shut = r?.status === "Closed";
   if (!l) { qk.scr = "home"; return qkHome(); }
   const c = legCalc(l), i = r.legs.indexOf(l), v = vehicles.find(x => x.id === kBusId), dn = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "";
-  const F = rtDslAll({ legs: [l], doc: {} }), lit = F.reduce((a, f) => a + num(f.litres), 0), ended = qkEnded(l);
+  const F = rtDslAll({ legs: [l], doc: {} }), ended = qkEnded(l);
   const due = num(l.rent) - c.received, G = (r.doc?.given || []).filter(g => g.leg === l.id), GA = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0), GL = G.reduce((a, g) => a + num(g.amount), 0);
-  const EK = LG_EXP.filter(k => k !== "fuelCost"), nExp = EK.filter(k => num(l[k]) > 0).length, oExp = EK.reduce((a, k) => a + num(l[k]), 0), litT = x => `${nf(x, x % 1 ? 2 : 0)} L`;
+  const EK = LG_EXP.filter(k => k !== "fuelCost"), nExp = EK.filter(k => num(l[k]) > 0).length, oExp = EK.reduce((a, k) => a + num(l[k]), 0);
   const tsPct = qkSheetPct(l);
   const f = (k, val, cls = "") => `<div class="bhf${cls}"><span>${k}</span><b>${val}</b></div>`;
   const tile = (k, icon, title, line, cls = "", badge = "", off = shut) => `<button type="button" class="bhbtn" data-qk="${k}" data-for="${l.id}"${off ? " disabled" : ""}>${badge}<span class="bhi" aria-hidden="true">${icon}</span><span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span></button>`;
@@ -14885,16 +14890,15 @@ function qkTrip() {
     `<header class="bwh qkbwh"><div style="flex:1;min-width:0"><b>Trip ${i + 1} of ${r.legs.length}</b><span>Round trip ${rtNo(r)} · ${shut ? "Closed" : ended ? "Ended" : "On the way"}</span></div></header>` +
     `<div class="bhcard"><div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}${shut ? '<span class="bstage closed">🔒 Closed</span>' : ended ? '<span class="bstage booked">Ended</span>' : '<span class="bstage ontrip">On the way</span>'}</div>` +
       `<b class="bhplace">${esc(rtLegName(l))}</b><div class="bhfacts">` +
-      f("Dates", `${bwFmt(l.from)}${ended && l.to !== l.from ? ` to ${bwFmt(l.to)}` : ended ? "" : " · not unloaded yet"}`, " w") +
-      (l.load || l.tons ? f("Load", esc(legLoadTxt(l)), " w") : "") + f("Driver", esc(dn || "Not chosen yet"), " w") +
-      f("Rent", rs(num(l.rent))) + f("Expenses", rs(c.exp)) + f("Balance", bkNetTxt(c.bal), c.bal < 0 ? " neg" : " pos") + f("Received", rs(c.received)) +
-      f("Total km", c.km ? `${nf(c.km)} km` : "—") + f("Diesel", lit ? litT(lit) : "—") + f("Mileage", c.km && lit ? `${nf(c.km / lit, 2)} km/L` : "—") + f("Days", ended ? `${bwHalfTxt(num(l.days) || 1)} ${bwDayWord(num(l.days) || 1)}` : "—") +
+      f("From date", bwFmt(l.from)) + f("To date", ended ? bwFmt(l.to) : "Not unloaded yet") + f("Days", ended ? `${bwHalfTxt(num(l.days) || 1)} ${bwDayWord(num(l.days) || 1)}` : "—") +
+      f("Driver", esc([dn, (l.driver2Id ? drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name : l.driver2Name)].filter(Boolean).join(", ") || "Not chosen yet")) +
+      f("Rent", rs(num(l.rent))) + f("Expenses", rs(c.exp)) + f("Balance", bkNetTxt(c.bal), c.bal < 0 ? " neg" : " pos") +
     `</div></div><div class="bhbtns">` +
-      tile("sheet", "🧾", "Trip sheet", [l.load ? esc(l.load) : "", F.length ? `${F.length} diesel fill${F.length > 1 ? "s" : ""}` : "", nExp ? `expenses ${rs(oExp)}` : "", ended ? "ended" : "not ended yet"].filter(Boolean).join(" · "), tsPct < 100 ? "due" : "ok", pct(tsPct)) +
+      tile("sheet", "🧾", "Trip sheet", [l.load ? esc(l.load) : "", F.length ? `${F.length} diesel fill${F.length > 1 ? "s" : ""}` : "", nExp ? `expenses ${rs(oExp)}` : "", (n => n ? `${n} file${n > 1 ? "s" : ""}` : "")((r.doc?.files || []).filter(f => f.leg === l.id).length), ended ? "ended" : "not ended yet"].filter(Boolean).join(" · "), tsPct < 100 ? "due" : "ok", pct(tsPct)) +
       tile("rec", "₹", "Payments", !num(l.rent) ? `${rs(c.received)} received` : due > 0 ? `${rs(due)} to collect` : "Fully paid", num(l.rent) && due > 0 ? "due" : "ok", cnt((l.payments || []).length)) +
       tile("giv", "💵", "Money to driver", GL ? `${rs(GL)} for this trip` : GA ? `${rs(GA)} in this round trip` : "Nothing given yet", "", cnt(G.length)) +
       tile("print", "🖨️", "Print trip sheet", "Image or PDF to print or share", "", "", false) + tile("send", "📤", "Send details", "WhatsApp or message", "", "", false) +
-      (shut ? `<div class="bhlock"><b>🔒 Round trip closed</b><span>${r.closedOn ? `On ${fmtDate(r.closedOn)}. ` : ""}Everything here is view only. It can be reopened from a computer.</span></div>` : "") +
+      (shut ? `<div class="bhlock"><b>🔒 Round trip closed</b><span>${r.closedOn ? `On ${fmtDate(r.closedOn)}. ` : ""}Everything here is view only. Reopen it from the round trip.</span></div>` : "") +
     `</div>` +
     (prev || next ? `<div class="qkpn">${prev ? `<button type="button" data-qkleg="${prev.id}">‹ Trip ${i}</button>` : "<span></span>"}${next ? `<button type="button" data-qkleg="${next.id}">Trip ${i + 2} ›</button>` : "<span></span>"}</div>` : "") +
     `<button type="button" class="qkdone" data-qk="toround">‹ Back to round trip ${rtNo(r)}</button></div>`;
@@ -14923,7 +14927,7 @@ $("kQuick").addEventListener("change", e => {
 });
 $("kQuick").addEventListener("input", e => {
   const id = e.target.id;
-  if (qk.scr === "sheet" && !qk.dirty) { qk.dirty = true; if ($("qkDirty")) { $("qkDirty").textContent = "Not saved yet"; $("qkDirty").className = ""; } }
+  if (qk.scr === "sheet" && !qk.dirty && id !== "qkFileKind") { qk.dirty = true; if ($("qkDirty")) { $("qkDirty").textContent = "Not saved yet"; $("qkDirty").className = ""; } }
   if ((qk.scr === "load" || qk.scr === "sheet") && (id === "qkTons" || id === "qkRateT") && !$("qkRent").dataset.typed) { const v = Math.round(num($("qkTons").value) * num($("qkRateT").value)); $("qkRent").value = v || ""; }
   if (id === "qkRent") $("qkRent").dataset.typed = e.target.value ? "1" : "";
   if (qk.scr === "dsl" && (id === "qkLit" || id === "qkRateL") && !$("qkAmt").dataset.typed) { const v = num($("qkLit").value) * num($("qkRateL").value); $("qkAmt").value = v ? Math.round(v * 100) / 100 : ""; }
@@ -14939,6 +14943,8 @@ $("kQuick").addEventListener("click", async e => {
     if (a === "back" && qk.scr === "sheet" && qk.dirty && !await askYesNo("Leave the trip sheet without saving?", { yes: "Leave", no: "Stay", danger: true })) return;
     if (a === "back") { qk.dirty = false; qk.scr = qk.back; qk.bill = null; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "home") { qk.scr = "home"; qk.edit = ""; qk.leg = ""; qk.rid = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+    if (a === "lock" && r) { const closing = r.status !== "Closed"; if (!await askYesNo(closing ? `Mark round trip ${rtNo(r)} as closed? It becomes view only until it is reopened.` : `Reopen round trip ${rtNo(r)}?`, { yes: closing ? "Mark closed" : "Reopen" })) return;
+      if (await rtSetLock(r, closing)) { $("kQuick").innerHTML = ""; qkRender(); } return; }
     if (a === "print" && r) { rtPrintOpen(r); return; } if (a === "send" && r) { rtSendOpen(r); return; }
     const fromTrip = !!b.dataset.for; qk.back = fromTrip ? "trip" : b.dataset.rnd ? "round" : "home"; qk.leg = b.dataset.for || ""; if (!fromTrip) qk.edit = "";
     if (!fromTrip && !b.dataset.rnd) qk.rid = "";
@@ -14949,12 +14955,13 @@ $("kQuick").addEventListener("click", async e => {
     if (e.target.closest("[data-qkradd]")) { qkSheetRead(); qk.sheetF.push({ pay: qk.sheetF.at(-1)?.pay || "Card" }); $("qkDsl").innerHTML = qkDslRows(); $("qkDsl").lastElementChild?.querySelector("[data-fl]").focus(); return; }
     const pb = e.target.closest("[data-qkpay]"); if (pb) { const x = qk.sheetF[+pb.dataset.qkpay]; x.pay = x.pay === "Cash" ? "Card" : "Cash"; pb.textContent = x.pay; dirty(); return; }
     const rd = e.target.closest("[data-qkrdel]"); if (rd) { qkSheetRead(); qk.sheetF.splice(+rd.dataset.qkrdel, 1); if (!qk.sheetF.length) qk.sheetF.push({ pay: "Card" }); $("qkDsl").innerHTML = qkDslRows(); dirty(); qkCalc(); return; }
+    if (e.target.closest("[data-qkfile]")) { if (!assetsCap) { toast("Attaching files isn't available in this view."); return; } $("qkFileIn").click(); return; }
+    const fd = e.target.closest("[data-qkfdel]"); if (fd && r) { const F = [...(r.doc?.files || [])], x = F[+fd.dataset.qkfdel]; if (!x || !await askYesNo(`Remove ${x.name}?`, { yes: "Remove", danger: true })) return;
+      F.splice(+fd.dataset.qkfdel, 1); if (await rtDocSave(r, { files: F.length ? F : "" })) { toast("File removed"); $("qkFiles").innerHTML = qkFilesHtml(qkRound(), qkRound().legs.find(x => x.id === qk.leg)); } return; }
     const rb = e.target.closest("[data-qkrbill]"); if (rb) { if (!assetsCap) { toast("Attaching photos isn't available in this view."); return; } qkSheetRead(); qk.billRow = +rb.dataset.qkrbill; $("qkBillIn").click(); return; }
   }
   const rc = e.target.closest("[data-qkr]"); if (rc) { qk.rid = rc.dataset.qkr; qk.scr = "round"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
   const lg = e.target.closest("[data-qkleg]"); if (lg && r) { qkOpenTrip(r.id, lg.dataset.qkleg); return; }
-  if (e.target.closest("[data-qkto]") && qk.scr === "sheet") { qk.dirty = true; $("qkDirty").textContent = "Not saved yet"; $("qkDirty").className = ""; }
-  const to = e.target.closest("[data-qkto]"); if (to) { $("qkTo").value = to.dataset.qkto; return; }
   const sg = e.target.closest("[data-qkseg]"); if (sg) { qk[sg.dataset.qkseg] = sg.dataset.v; sg.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === sg)); return; }
   if (e.target.closest("#qkCam")) { if (!assetsCap) { toast("Attaching photos isn't available in this view."); return; } $("qkBillIn").click(); return; }
   const d = e.target.closest("[data-qkdel]"); if (d && r) {
@@ -14981,6 +14988,16 @@ $("qkBillIn").addEventListener("change", async e => {
   const c = $("qkCam"); if (c) c.textContent = "Uploading…";
   try { const u = await assetsCap.upload(file, { type: file.type }); qk.bill = { id: u.id, name: file.name, type: file.type, at: new Date().toISOString(), byName: whoAmI() }; if ($("qkCam")) { $("qkCam").classList.add("has"); $("qkCam").textContent = "✓ Photo added · tap to change"; } }
   catch (er) { if ($("qkCam")) $("qkCam").textContent = "📷 Photo (optional)"; toast(er?.code === "too_large" ? "That file is too large." : "Couldn't upload the photo. Try again."); }
+});
+$("qkFileIn").addEventListener("change", async e => {
+  const files = [...e.target.files]; e.target.value = ""; const r = qkRound(); if (!assetsCap || !files.length || !r || qk.scr !== "sheet") return;
+  const kind = $("qkFileKind").value, add = []; $("qkFiles").insertAdjacentHTML("beforeend", `<p class="sub" id="qkUpl" style="margin:0">Uploading…</p>`);
+  for (const file of files) {
+    try { const u = await assetsCap.upload(file, { type: file.type }); add.push({ id: u.id, name: file.name, kind, type: file.type, leg: qk.leg, at: new Date().toISOString(), byName: whoAmI() }); }
+    catch (er) { toast(er?.code === "too_large" ? "That file is too large." : er?.code === "unsupported_type" ? "Attach a PDF or a photo." : "Couldn't upload the file. Try again."); }
+  }
+  if (add.length && await rtDocSave(r, { files: [...(r.doc?.files || []), ...add] })) toast(`${add.length === 1 ? "File" : add.length + " files"} attached`);
+  const R2 = qkRound(); if ($("qkFiles")) $("qkFiles").innerHTML = qkFilesHtml(R2, R2.legs.find(x => x.id === qk.leg));
 });
 $("kQuick").addEventListener("submit", async e => {
   e.preventDefault(); const k = qk.scr, r = qkRound(), v = id => ($(id)?.value || "").trim().replace(/\s+/g, " "), n = id => num($(id)?.value), bad = m => { $("qkErr").textContent = m; };
@@ -16471,7 +16488,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05i";
+const APP_VER = "2026-11-05j";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
