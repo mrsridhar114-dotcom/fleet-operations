@@ -180,6 +180,36 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .pill.d7 { background: var(--hot-soft); color: var(--hot); }
 .pill.d30, .pill.due { background: var(--warn-soft); color: var(--warn); } .pill.mlow { background: var(--danger); color: #fff; }
 .pktable { min-width: 1350px; } .pktable td.neg { color: var(--danger); } .pktable td.pos { color: var(--ok); } .pktable tr.pkidle td { color: var(--muted); } .pktable tbody tr[data-pkt]:hover td { background: var(--bg); }
+/* Trucks on a phone */
+#view-ttruck.qkm .tcontrols, #view-ttruck.qkm #kTabs, #view-ttruck.qkm #kBody, #view-ttruck.qkm .sync, #view-ttruck.qkm #kNone, #view-ttruck.qkm #pkNone { display: none !important; }
+#kQuick { display: flex; flex-direction: column; gap: 10px; } #kQuick[hidden] { display: none; }
+.qkhd { display: flex; flex-direction: column; gap: 4px; background: #0F2A1B; color: #fff; border-radius: 14px; padding: 12px 14px; }
+.qkhd select { font: inherit; font-size: 19px; font-weight: 700; background: transparent; color: #fff; border: 0; padding: 0; } .qkhd select + select { font-size: 13px; font-weight: 500; color: #B9CDBE; } .qkhd select option { color: #17201A; } .qkhd small { color: #B9CDBE; font-size: 13px; }
+.qkcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column; }
+.qksum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); text-align: center; gap: 4px; } .qksum small { color: var(--muted); font-size: 12px; display: block; } .qksum b { font: 700 17px var(--mono); } .qksum b.neg { color: var(--danger); } .qksum b.pos { color: var(--ok); }
+.qkbig { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font: inherit; font-weight: 700; font-size: 16px; color: var(--ink); cursor: pointer; min-height: 62px; }
+.qkbig i { font-style: normal; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 21px; background: var(--accent-soft); flex: none; } .qkbig small { display: block; font-weight: 500; font-size: 12.5px; color: var(--muted); }
+.qkbig.pri { background: var(--accent); color: #fff; border-color: var(--accent); } .qkbig.pri small { color: rgba(255,255,255,.8); } .qkbig.pri i { background: rgba(255,255,255,.18); } .qkbig:disabled { opacity: .45; }
+.qkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qkgrid .qkbig { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 14.5px; min-height: 96px; }
+.qkli { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: var(--ink); text-align: left; width: 100%; font-size: 14px; }
+.qkli:last-child { border-bottom: 0; } .qkli small { display: block; color: var(--muted); font-size: 12.5px; } .qkli > span:first-child { min-width: 0; } button.qkli { cursor: pointer; }
+.qklinks { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; } .qklinks button { background: none; border: 0; color: var(--accent); font: inherit; font-weight: 600; font-size: 14px; padding: 8px 4px; cursor: pointer; }
+.qkform { display: flex; flex-direction: column; gap: 10px; } .qkform h2 { margin: 0; font-size: 20px; } .qkform h2 small { display: block; font-size: 13px; color: var(--muted); font-weight: 500; } .qkform h3.qkadd { margin: 6px 0 -2px; font-size: 15px; }
+.qkback { align-self: flex-start; background: none; border: 0; color: var(--accent); font: inherit; font-weight: 600; padding: 6px 0; cursor: pointer; }
+.qkf { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; min-width: 0; }
+.qkf input, .qkf select, .qkrow input { font: inherit; font-size: 17px; font-weight: 600; padding: 10px 12px; min-height: 48px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); width: 100%; box-sizing: border-box; min-width: 0; }
+.qkf input.qkbigin { font-size: 22px; font-weight: 700; }
+.qk2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.qkchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px; } .qkchips button { height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 17px; background: var(--bg); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.qkseg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.qkseg button { font: inherit; font-weight: 600; font-size: 13.5px; padding: 11px 2px; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; } .qkseg button.on { background: var(--accent); color: #fff; }
+.qkexp { gap: 0; } .qkrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; } .qkrow:last-child { border-bottom: 0; } .qkrow input { width: 140px; flex: none; }
+.qktot { display: flex; justify-content: space-between; align-items: center; background: var(--accent-soft); border-radius: 10px; padding: 9px 12px; font-size: 13.5px; margin-top: 6px; } .qktot b { font: 700 16px var(--mono); }
+.qkchk { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; } .qkchk input { width: 22px; height: 22px; accent-color: var(--accent); } .qkchk small { color: var(--muted); font-weight: 400; }
+.qkcam { min-height: 48px; border: 2px dashed var(--accent); border-radius: 12px; background: var(--surface); color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; } .qkcam.has { border-style: solid; }
+.qkgo { min-height: 54px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; } .qkgo:disabled { opacity: .6; }
+.qkdone { min-height: 48px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: inherit; font-weight: 600; font-size: 16px; cursor: pointer; }
+.qkform .err { color: var(--danger); font-size: 13px; min-height: 1em; } .qklist .sub { margin: 4px 0; }
 /* Truck driver on the phone */
 .dvwrap { max-width: 520px; margin: 0 auto; padding-top: 12px; }
 .dvhd { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #0F2A1B; color: #fff; border-radius: 14px; padding: 12px 14px; }
@@ -2856,6 +2886,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
       </header>
       <nav class="ttabs ktabs" id="kTabs" role="tablist" aria-label="Truck"></nav>
+      <div id="kQuick" hidden></div><input id="qkBillIn" type="file" accept="image/*,application/pdf" hidden>
       <div class="empty panel" id="kNone" hidden><strong>No trucks yet</strong>Add a vehicle with class 12 Wheeler Truck under Masters › Vehicle.</div>
       <div id="kBody" style="display:flex;flex-direction:column;gap:16px">
         <section class="summary tsum" id="kSummary" aria-label="Truck summary"></section>
@@ -3585,6 +3616,11 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="lgchips" id="lgDrvChips"></div>
     </fieldset>
     <fieldset class="docs" data-mstep="2"><legend>Freight and expenses (₹)</legend>
+      <div class="three lgloadrow">
+        <div class="field"><label for="lgLoad">Load</label><input id="lgLoad" list="lgLoads" autocomplete="off" maxlength="60" placeholder="e.g. Paruppu"><datalist id="lgLoads"></datalist></div>
+        <div class="field"><label for="lgTons">Tonnes</label><input id="lgTons" type="number" inputmode="decimal" min="0" step="0.01"></div>
+        <div class="field"><label for="lgRateT">Rent per tonne</label><input id="lgRateT" type="number" inputmode="decimal" min="0" step="0.01"><span class="hint" id="lgRateHint">Fills the trip rent</span></div>
+      </div>
       <div class="three">
         <div class="field"><label for="lgRent">Trip rent</label><input id="lgRent" type="number" inputmode="numeric" min="0"><span class="err" id="e-lgRent"></span></div>
         <div class="field"><label for="lgCommission">Commission</label><input id="lgCommission" type="number" inputmode="numeric" min="0"></div>
@@ -14637,8 +14673,8 @@ function dvCheckOpen(id) {
         if (!l.from || !l.origin || !l.dest) { toast("Enter the date, starting place and destination."); return; } if (!l.rent) { toast("Enter the trip rent."); return; }
         const km = Math.round(num(val("startKm"))); if (km) l.startKm = km;
         if (e.driverId && drivers.some(d => d.id === e.driverId)) { l.driver1Id = e.driverId; l.driver1Name = drivers.find(d => d.id === e.driverId).name; } else if (e.driverName) l.driver1Name = e.driverName;
-        const ld = [val("load"), num(val("tons")) ? `${nf(num(val("tons")))} t` : "", val("rt") === "ton" && num(val("rate")) ? `₹${nf(num(val("rate")))} a ton` : ""].filter(Boolean).join(" · ");
-        l.remarks = [ld ? `Load: ${ld}` : "", e.note ? `Driver: ${e.note}` : ""].filter(Boolean).join(". ") || undefined; if (!l.remarks) delete l.remarks;
+        if (val("load")) l.load = val("load"); if (num(val("tons"))) l.tons = Math.round(num(val("tons")) * 100) / 100; if (val("rt") === "ton" && num(val("rate"))) l.rateTon = Math.round(num(val("rate")) * 100) / 100;
+        if (e.note) l.remarks = `Driver: ${e.note}`;
         const rs0 = $$('[data-k="round"]').value; l.roundId = rs0 !== "new" ? rs0 : l.id;
         const c = legCalc(l); l.expense = c.exp; l.balance = c.bal; l.fy = fyOf(l.from);
         okB.disabled = true; await opsSave("truckTrips", l);
@@ -14677,6 +14713,190 @@ function dvCheckOpen(id) {
   });
 }
 
+/* ---------- Trucks on a phone: one truck, its open round trip, and one short screen for each thing entered ----------
+   New load, diesel fills, FASTag and expenses, payments received, money given to the driver, and trip ended. Diesel and both
+   kinds of payment can be added as many times as needed. Everything is saved into the same trips and round trips as the
+   computer screens; "Full form" opens those screens instead. */
+let qk = { scr: "home", rid: "", full: false, leg: "", pay: "Card", by: "Bank transfer", gby: "Cash", set: true, bill: null };
+const qkOn = () => canTrips && !qk.full && bwIsPhone();
+const qkRounds = vid => roundsOf(vid).filter(r => r.status !== "Closed").sort((a, b) => (b.to || b.from).localeCompare(a.to || a.from));
+function qkRound() { const R = qkRounds(kBusId); if (!R.some(r => r.id === qk.rid)) qk.rid = R[0]?.id || ""; return R.find(r => r.id === qk.rid) || null; }
+const qkLegOpts = (r, cur, whole) => (whole ? `<option value="">Whole round trip</option>` : "") + (r?.legs || []).map((l, i) => `<option value="${l.id}"${l.id === cur ? " selected" : ""}>${i + 1} · ${esc(rtLegName(l))}</option>`).join("");
+const qkLastLeg = r => r?.legs[r.legs.length - 1]?.id || "";
+async function qkSaveLeg(n) { const c = legCalc(n); n.expense = c.exp; n.balance = c.bal; n.fy = fyOf(n.from); await opsSave("truckTrips", n); }
+const qkLegCopy = id => { const l = ops.truckTrips.find(x => x.id === id); return l ? JSON.parse(JSON.stringify(l)) : null; };
+function qkHome() {
+  const tks = kSorted(truckList()), r = qkRound(), R = qkRounds(kBusId), bus = vehicles.find(v => v.id === kBusId);
+  const big = (k, ic, t, sub, cls = "") => `<button type="button" class="qkbig${cls}" data-qk="${k}"${k !== "load" && !r ? " disabled" : ""}><i aria-hidden="true">${ic}</i><span>${t}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
+  const S = r ? { rent: r.rent, bal: r.bal } : null, pend = l => (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0);
+  return `<div class="qkhd"><select id="qkTruck" aria-label="Truck">${tks.map(t => `<option value="${t.id}"${t.id === kBusId ? " selected" : ""}>${esc(plateOf(t))}</option>`).join("")}</select>` +
+    (R.length > 1 ? `<select id="qkRound" aria-label="Round trip">${R.map(x => `<option value="${x.id}"${x.id === qk.rid ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>` : `<small>${r ? `Round trip ${rtNo(r)} · Open · from ${fmtShort(r.from)}` : "No open round trip"}</small>`) + `</div>` +
+    (r ? `<div class="qkcard qksum"><div><small>Rent</small><b>${nf(S.rent)}</b></div><div><small>Expense</small><b>${nf(S.rent - S.bal)}</b></div><div><small>Balance</small><b class="${S.bal < 0 ? "neg" : "pos"}">${nf(S.bal)}</b></div></div>`
+      : `<div class="qkcard"><b>${esc(plateOf(bus))} has no open round trip.</b><p class="sub" style="margin:4px 0 0">New load starts one.</p></div>`) +
+    big("load", "🚚", "New load", "Date, places, load, tonnes, rent", " pri") +
+    `<div class="qkgrid">${big("dsl", "⛽", "Diesel")}${big("exp", "🛣", "FASTag & expenses")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>` +
+    big("end", "🏁", "Trip ended", "Unloading date and end km") +
+    (r ? `<div class="qkcard"><small class="sub">Trips in this round trip · tap to open the full trip</small>${r.legs.map((l, i) => { const got = pend(l);
+      return `<button type="button" class="qkli" data-qkleg="${l.id}"><b>${i + 1} · ${esc(rtLegName(l))}</b><span>${rs(num(l.rent))} · ${got >= num(l.rent) && num(l.rent) ? "paid" : `<span class="pill d30">${got ? "part paid" : "to collect"}</span>`}</span></button>`; }).join("")}</div>
+      <div class="qklinks"><button type="button" data-qk="print">🖨 Print</button><button type="button" data-qk="send">📤 Send details</button><button type="button" data-qk="ov">Overview</button></div>` : "") +
+    `<div class="qklinks"><button type="button" data-qk="full">Full form (computer screen)</button></div>`;
+}
+// The lists on the diesel and payment screens: everything added so far in the round trip, each with a trash icon.
+function qkList() {
+  const r = qkRound(); if (!r) return "";
+  const trip = id => { const i = r.legs.findIndex(l => l.id === id); return i < 0 ? "Whole round trip" : `${i + 1} · ${rtLegName(r.legs[i])}`; };
+  const row = (k, x, i, main, sub) => `<div class="qkli"><span><b>${main}</b><small>${sub}</small></span><button type="button" class="icon rtbin" data-qkdel="${k}:${i}" aria-label="Remove" title="Remove">${TRASH_SVG}</button></div>`;
+  if (qk.scr === "dsl") { const F = rtDslAll(r); return F.length ? F.map((f, i) => row("dsl", f, i, `${nf(num(f.litres), num(f.litres) % 1 ? 2 : 0)} L · ${rs(Math.round(num(f.amount)))}`, `${fmtShort(f.date)} · ${f.pay || "Card"}${f.place ? " · " + esc(f.place) : ""} · ${esc(trip(f.leg))}${f.bill ? " · bill" : ""}`)).join("") + `<div class="qktot"><span>${F.length} fill${F.length > 1 ? "s" : ""}</span><b>${(t => nf(t, t % 1 ? 2 : 0))(F.reduce((a, f) => a + num(f.litres), 0))} L · ${rs(Math.round(F.reduce((a, f) => a + num(f.amount), 0)))}</b></div>` : `<p class="sub">No diesel yet.</p>`; }
+  if (qk.scr === "rec") { const P = [...r.legs.flatMap(l => (l.payments || []).map((p, j) => ({ ...p, leg: l.id, j }))), ...(r.doc?.payments || []).map((p, j) => ({ ...p, leg: "", j }))];
+    return P.length ? P.map((p, i) => row("rec", p, i, `${rs(num(p.amount))}${p.settled === false ? ' <span class="pill d30">not settled</span>' : ""}`, `${fmtShort(p.date)} · ${p.pay || ""} · ${esc(p.desc || trip(p.leg))}`)).join("") + `<div class="qktot"><span>Received</span><b>${rs(P.reduce((a, p) => a + num(p.amount), 0))}</b></div>` : `<p class="sub">No payment yet.</p>`; }
+  if (qk.scr === "giv") { const G = r.doc?.given || [];
+    return G.length ? G.map((g, i) => row("giv", g, i, rs(num(g.amount)), `${fmtShort(g.date)} · ${g.pay || ""} · ${esc(g.desc || "")}${g.leg ? " · " + esc(trip(g.leg)) : ""}`)).join("") + `<div class="qktot"><span>Given to the driver</span><b>${rs(G.reduce((a, g) => a + num(g.amount), 0))}</b></div>` : `<p class="sub">Nothing given yet.</p>`; }
+  return "";
+}
+function qkForm() {
+  const r = qkRound(), k = qk.scr, f = (l, h) => `<label class="qkf">${l}${h}</label>`, ip = (id, v = "", o = "") => `<input id="${id}" value="${esc(v)}" autocomplete="off" ${o}>`;
+  const seg = (key, opts) => `<div class="qkseg">${opts.map(o => `<button type="button" data-qkseg="${key}" data-v="${o}" class="${qk[key] === o ? "on" : ""}">${o}</button>`).join("")}</div>`;
+  const cam = `<button type="button" class="qkcam" id="qkCam">📷 ${k === "dsl" ? "Photo of the bill" : "Photo of the slip"} (optional)</button>`;
+  const last = r?.legs[r.legs.length - 1], places = [...new Set(ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, b) => b.from.localeCompare(a.from)).flatMap(x => [x.dest, x.origin]).filter(Boolean))].slice(0, 5);
+  const head = { load: "New load", dsl: "Diesel fill", exp: "FASTag & expenses", rec: "Payment received", giv: "Money to driver", end: "Trip ended" }[k];
+  let b = "";
+  if (k === "load") {
+    const lastAny = ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, c) => (c.to || c.from).localeCompare(a.to || a.from))[0], dn = lastAny ? (lastAny.driver1Id ? drivers.find(d => d.id === lastAny.driver1Id)?.name || lastAny.driver1Name : lastAny.driver1Name) || "" : "";
+    b = f("Add to", `<select id="qkR"><option value="new">A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}"${x.id === r?.id ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`) +
+      f("Loading date", ip("qkDate", todayISO(), 'type="date"')) +
+      `<div class="qk2">${f("From", ip("qkFrom", lgPlace(lastAny?.dest || ""), 'list="qkPl"'))}${f("To", ip("qkTo", "", 'list="qkPl"'))}</div>` +
+      `<div class="qkchips">${places.map(p => `<button type="button" data-qkto="${esc(lgPlace(p))}">${esc(lgPlace(p))}</button>`).join("")}</div>` +
+      `<div class="qk2">${f("Load", ip("qkLoad", "", 'list="lgLoads" placeholder="e.g. Paruppu"'))}${f("Tonnes", ip("qkTons", "", 'type="number" inputmode="decimal"'))}</div>` +
+      `<div class="qk2">${f("Rent per tonne", ip("qkRateT", "", 'type="number" inputmode="decimal"'))}${f("Trip rent", ip("qkRent", "", 'type="number" inputmode="numeric" class="qkbigin"'))}</div>` +
+      f("Driver", ip("qkDrv", dn, 'list="lgDrvList"')) + f("Start km (meter)", ip("qkKm", lastAny?.endKm || "", 'type="number" inputmode="numeric"')) +
+      `<datalist id="qkPl">${[...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean).map(lgPlace))].sort().map(p => `<option value="${esc(p)}">`).join("")}</datalist>`;
+  }
+  if (k === "exp") { const l = ops.truckTrips.find(x => x.id === (qk.leg || qkLastLeg(r))) || {};
+    b = f("For trip", `<select id="qkLeg">${qkLegOpts(r, l.id)}</select>`) + `<div class="qkcard qkexp">${[["toll", "FASTag"], ["padi", "Driver padi"], ["commission", "Commission"], ["loading", "Loading / unloading"], ["rto", "RTO / check post"], ["bridge", "Weighbridge"], ["otherExp", "Other"], ["billExp", "Bills"]]
+      .map(([key, lab]) => `<label class="qkrow"><span>${lab}</span><input data-qkexp="${key}" type="number" inputmode="numeric" value="${l[key] ?? ""}"></label>`).join("")}</div><div class="qktot"><span>Expenses for this trip</span><b id="qkExpT">—</b></div>`; }
+  if (k === "dsl") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, qk.leg || qkLastLeg(r), true)}</select>`)}</div>` +
+    `<div class="qk2">${f("Litres", ip("qkLit", "", 'type="number" inputmode="decimal"'))}${f("Rate / L", ip("qkRateL", rtDslAll(r || { legs: [], doc: {} }).slice(-1)[0]?.rate || "", 'type="number" inputmode="decimal"'))}</div>` +
+    f("Amount ₹", ip("qkAmt", "", 'type="number" inputmode="decimal"')) + seg("pay", ["Card", "Cash"]) + `<div class="qk2">${f("Place", ip("qkPlace", "", 'list="rtBunks"'))}${f("Odometer", ip("qkKm", "", 'type="number" inputmode="numeric"'))}</div>` + cam;
+  if (k === "rec") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, qk.leg || qkLastLeg(r), true)}</select>`)}</div>` +
+    f("Amount ₹", ip("qkAmt", "", 'type="number" inputmode="numeric" class="qkbigin"')) + seg("by", LG_PAYBY) + f("Description", ip("qkDesc", "", 'placeholder="e.g. From the party, or the driver gave"')) +
+    `<label class="qkchk"><input type="checkbox" id="qkSet"${qk.set ? " checked" : ""}> Settled <small>Untick while it is still to be confirmed</small></label>` + cam;
+  if (k === "giv") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, "", true)}</select>`)}</div>` +
+    f("Amount ₹", ip("qkAmt", "", 'type="number" inputmode="numeric" class="qkbigin"')) + seg("gby", RT_GIVE) + f("Description", ip("qkDesc", (r?.doc?.given || []).length ? "Sent during the trip" : "Advance", 'list="rtGivList"')) + cam;
+  if (k === "end") { const open = r?.legs.find(l => !num(l.endKm)) || last;
+    b = f("Trip", `<select id="qkLeg">${qkLegOpts(r, open?.id)}</select>`) + `<div class="qk2">${f("Unloading date", ip("qkDate", todayISO(), 'type="date"'))}${f("End km (meter)", ip("qkKm", "", 'type="number" inputmode="numeric"'))}</div><p class="sub" id="qkEndInfo"></p>`; }
+  const multi = ["dsl", "rec", "giv"].includes(k);
+  return `<form class="qkform" novalidate><button type="button" class="qkback" data-qk="home">‹ Back</button><h2>${head}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))}${r && k !== "load" ? ` · Round trip ${rtNo(r)}` : ""}</small></h2>` +
+    (multi ? `<div class="qkcard qklist" id="qkList">${qkList()}</div><h3 class="qkadd">Add ${k === "dsl" ? "a fill" : k === "rec" ? "a payment" : "money given"}</h3>` : "") + b +
+    `<div class="err" id="qkErr" role="alert"></div><button type="submit" class="qkgo">${multi ? (k === "dsl" ? "+ Add fill" : k === "rec" ? "+ Add payment" : "+ Add") : k === "load" ? "Save load" : "Save"}</button>${multi ? `<button type="button" class="qkdone" data-qk="home">Done</button>` : ""}</form>`;
+}
+function qkRender() {
+  const el = $("kQuick"); if (!el) return;
+  if (qk.scr === "home") { el.innerHTML = qkHome(); return; }
+  if (!el.querySelector(".qkform")) { el.innerHTML = qkForm(); qkCalc(); return; }
+  const L = el.querySelector("#qkList"); if (L) L.innerHTML = qkList();
+}
+function qkCalc() {
+  const v = id => num($(id)?.value);
+  if (qk.scr === "exp" && $("qkExpT")) { const t = [...document.querySelectorAll("[data-qkexp]")].reduce((a, i) => a + num(i.value), 0); $("qkExpT").textContent = t ? rs(t) : "—"; }
+  if (qk.scr === "end" && $("qkEndInfo")) { const l = ops.truckTrips.find(x => x.id === $("qkLeg").value); $("qkEndInfo").textContent = l ? `Loaded ${fmtShort(l.from)}${num(l.startKm) ? ` · start km ${nf(num(l.startKm))}` : ""}` : ""; }
+}
+$("kQuick").addEventListener("change", e => {
+  if (e.target.id === "qkTruck") { kBusId = e.target.value; qk.rid = ""; renderTruck(); }
+  if (e.target.id === "qkRound") { qk.rid = e.target.value; qkRender(); }
+  if (e.target.id === "qkLeg" && qk.scr === "exp") { qk.leg = e.target.value; $("kQuick").innerHTML = ""; qkRender(); return; }
+  if (e.target.id === "qkLeg") qkCalc();
+});
+$("kQuick").addEventListener("input", e => {
+  const id = e.target.id;
+  if (qk.scr === "load" && (id === "qkTons" || id === "qkRateT") && !$("qkRent").dataset.typed) { const v = Math.round(num($("qkTons").value) * num($("qkRateT").value)); $("qkRent").value = v || ""; }
+  if (id === "qkRent") $("qkRent").dataset.typed = e.target.value ? "1" : "";
+  if (qk.scr === "dsl" && (id === "qkLit" || id === "qkRateL") && !$("qkAmt").dataset.typed) { const v = num($("qkLit").value) * num($("qkRateL").value); $("qkAmt").value = v ? Math.round(v * 100) / 100 : ""; }
+  if (qk.scr === "dsl" && id === "qkAmt") $("qkAmt").dataset.typed = e.target.value ? "1" : "";
+  qkCalc();
+});
+$("kQuick").addEventListener("click", async e => {
+  const b = e.target.closest("[data-qk]"), r = qkRound();
+  if (b) { const a = b.dataset.qk;
+    if (a === "full") { qk.full = true; renderTruck(); return; }
+    if (a === "print" && r) { rtPrintOpen(r); return; } if (a === "send" && r) { rtSendOpen(r); return; } if (a === "ov" && r) { openRound(r.id, "ov"); return; }
+    qk.scr = a; qk.bill = null; qk.set = true; if (a === "exp") qk.leg = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+  const lg = e.target.closest("[data-qkleg]"); if (lg && r) { openRound(r.id, "leg", lg.dataset.qkleg); return; }
+  const to = e.target.closest("[data-qkto]"); if (to) { $("qkTo").value = to.dataset.qkto; return; }
+  const sg = e.target.closest("[data-qkseg]"); if (sg) { qk[sg.dataset.qkseg] = sg.dataset.v; sg.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === sg)); return; }
+  if (e.target.closest("#qkCam")) { if (!assetsCap) { toast("Attaching photos isn't available in this view."); return; } $("qkBillIn").click(); return; }
+  const d = e.target.closest("[data-qkdel]"); if (d && r) {
+    if (!await askYesNo("Remove this line?", { yes: "Remove", danger: true })) return;
+    const [k, i] = d.dataset.qkdel.split(":"), n = +i;
+    try {
+      if (k === "dsl") { const f = rtDslAll(r)[n]; if (f.leg) { const l = qkLegCopy(f.leg), F = (l.fuels?.length ? l.fuels : rtDslAll({ legs: [l], doc: {} }).map(({ leg, ...x }) => x)); const j = F.findIndex(x => JSON.stringify(x) === JSON.stringify((({ leg, ...x }) => x)(f))); F.splice(j < 0 ? 0 : j, 1);
+          if (F.length) { l.fuels = F; l.litres = Math.round(F.reduce((a, x) => a + num(x.litres), 0) * 100) / 100; l.fuelCost = Math.round(F.reduce((a, x) => a + num(x.amount), 0)); } else { delete l.fuels; delete l.litres; delete l.fuelCost; } await qkSaveLeg(l); }
+        else { const RF = [...(r.doc?.fuels || [])], j = RF.findIndex(x => JSON.stringify(x) === JSON.stringify((({ leg, ...x }) => x)(f))); RF.splice(j, 1); await rtDocSave(r, { fuels: RF.length ? RF : "" }); } }
+      if (k === "rec") { const P = [...r.legs.flatMap(l => (l.payments || []).map((p, j) => ({ leg: l.id, j }))), ...(r.doc?.payments || []).map((p, j) => ({ leg: "", j }))][n];
+        if (P.leg) { const l = qkLegCopy(P.leg); l.payments.splice(P.j, 1); if (!l.payments.length) delete l.payments; await qkSaveLeg(l); }
+        else { const RP = [...r.doc.payments]; RP.splice(P.j, 1); await rtDocSave(r, { payments: RP.length ? RP : "" }); } }
+      if (k === "giv") { const G = [...r.doc.given]; G.splice(n, 1); await rtDocSave(r, { given: G.length ? G : "" }); }
+      toast("Removed"); qkRender();
+    } catch { toast("Couldn't remove. Try again."); }
+  }
+});
+$("qkBillIn").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file || !assetsCap) return; const c = $("qkCam"); if (c) c.textContent = "Uploading…";
+  try { const u = await assetsCap.upload(file, { type: file.type }); qk.bill = { id: u.id, name: file.name, type: file.type, at: new Date().toISOString(), byName: whoAmI() }; if ($("qkCam")) { $("qkCam").classList.add("has"); $("qkCam").textContent = "✓ Photo added · tap to change"; } }
+  catch (er) { if ($("qkCam")) $("qkCam").textContent = "📷 Photo (optional)"; toast(er?.code === "too_large" ? "That file is too large." : "Couldn't upload the photo. Try again."); }
+});
+$("kQuick").addEventListener("submit", async e => {
+  e.preventDefault(); const k = qk.scr, r = qkRound(), v = id => ($(id)?.value || "").trim().replace(/\s+/g, " "), n = id => num($(id)?.value), bad = m => { $("qkErr").textContent = m; };
+  const go = e.target.querySelector(".qkgo"); $("qkErr").textContent = "";
+  try {
+    if (k === "load") {
+      const l = { id: genId("tt"), vehicleId: kBusId, from: v("qkDate"), to: v("qkDate"), days: 1, origin: v("qkFrom"), dest: v("qkTo"), rent: Math.round(n("qkRent")) };
+      if (!l.from) return bad("Enter the loading date."); if (!l.origin || !l.dest) return bad("Enter where it was loaded and where it goes."); if (!l.rent) return bad("Enter the trip rent.");
+      if (v("qkLoad")) l.load = v("qkLoad"); if (n("qkTons") > 0) l.tons = Math.round(n("qkTons") * 100) / 100; if (n("qkRateT") > 0) l.rateTon = Math.round(n("qkRateT") * 100) / 100;
+      const km = Math.round(n("qkKm")); if (km) l.startKm = km;
+      const dn = v("qkDrv"); if (dn) { const m = crewMaster("driver", dn); if (m) { l.driver1Id = m.id; l.driver1Name = m.name; } else l.driver1Name = dn; }
+      const rsel = v("qkR"); l.roundId = rsel && rsel !== "new" ? rsel : l.id;
+      go.disabled = true; await qkSaveLeg(l); qk.rid = l.roundId; if (fyOf(l.from) !== kFy) { kFy = fyOf(l.from); if ($("kFy")) $("kFy").value = String(kFy); }
+      toast(`New load added · ${lgPlace(l.origin)} → ${lgPlace(l.dest)}`); qk.scr = "home"; renderTruck(); scrollTo(0, 0); return;
+    }
+    if (!r) return bad("This truck has no open round trip. Add a new load first.");
+    if (k === "exp") { const l = qkLegCopy(v("qkLeg")); if (!l) return bad("Choose the trip.");
+      document.querySelectorAll("[data-qkexp]").forEach(i => { const x = Math.round(num(i.value)); if (x > 0) l[i.dataset.qkexp] = x; else delete l[i.dataset.qkexp]; });
+      go.disabled = true; await qkSaveLeg(l); toast(`Expenses saved for ${rtLegName(l)}`); qk.scr = "home"; renderTruck(); scrollTo(0, 0); return; }
+    if (k === "end") { const l = qkLegCopy(v("qkLeg")); if (!l) return bad("Choose the trip.");
+      const to = v("qkDate"), ek = Math.round(n("qkKm")); if (to && to < l.from) return bad("The unloading date is before the loading date."); if (ek && num(l.startKm) && ek <= num(l.startKm)) return bad("End km must be more than the start km.");
+      if (to) { l.to = to; l.days = inclDays(l.from, to) || l.days; } if (ek) l.endKm = ek;
+      go.disabled = true; await qkSaveLeg(l); toast(`Trip ended · ${rtLegName(l)}`); qk.scr = "home"; renderTruck(); scrollTo(0, 0); return; }
+    const date = v("qkDate"), leg = v("qkLeg"); if (!date) return bad("Enter the date.");
+    if (k === "dsl") {
+      const fl = { date, litres: Math.round(n("qkLit") * 100) / 100, pay: qk.pay }; if (!(fl.litres > 0)) return bad("Enter the litres."); if (fl.litres > 1000) return bad("Check the litres: more than 1,000 L.");
+      if (n("qkRateL")) fl.rate = Math.round(n("qkRateL") * 100) / 100; if (n("qkAmt")) fl.amount = Math.round(n("qkAmt") * 100) / 100; if (v("qkPlace")) fl.place = v("qkPlace"); if (Math.round(n("qkKm"))) fl.odo = Math.round(n("qkKm")); if (qk.bill) fl.bill = qk.bill;
+      go.disabled = true;
+      if (leg) { const l = qkLegCopy(leg), F = [...(l.fuels?.length ? l.fuels : rtDslAll({ legs: [l], doc: {} }).map(({ leg, ...x }) => x)), fl];
+        l.fuels = F; l.litres = Math.round(F.reduce((a, x) => a + num(x.litres), 0) * 100) / 100; l.fuelCost = Math.round(F.reduce((a, x) => a + num(x.amount), 0)); await qkSaveLeg(l); }
+      else if (!await rtDocSave(r, { fuels: [...(r.doc?.fuels || []), fl] })) return;
+      toast(`Fill added · ${nf(fl.litres)} L`);
+    }
+    if (k === "rec") {
+      const p = { date, amount: Math.round(n("qkAmt")), pay: qk.by }; if (!(p.amount > 0)) return bad("Enter the amount.");
+      if (v("qkDesc")) p.desc = v("qkDesc"); if (!$("qkSet").checked) p.settled = false; if (qk.bill) p.bill = qk.bill; qk.set = $("qkSet").checked;
+      go.disabled = true;
+      if (leg) { const l = qkLegCopy(leg); l.payments = [...(l.payments || []), p]; await qkSaveLeg(l); } else if (!await rtDocSave(r, { payments: [...(r.doc?.payments || []), p] })) return;
+      toast(`Payment added · ${rs(p.amount)}`);
+    }
+    if (k === "giv") {
+      const g = { date, amount: Math.round(n("qkAmt")), pay: qk.gby }; if (!(g.amount > 0)) return bad("Enter the amount.");
+      if (v("qkDesc")) g.desc = v("qkDesc"); if (leg) g.leg = leg; if (qk.bill) g.bill = qk.bill;
+      go.disabled = true; if (!await rtDocSave(r, { given: [...(r.doc?.given || []), g] })) return;
+      toast(`Money to driver added · ${rs(g.amount)}`);
+    }
+    // Ready for the next one: the list shows what was added, the boxes are cleared, the date and trip stay.
+    qk.leg = leg; qk.bill = null; ["qkLit", "qkAmt", "qkPlace", "qkKm", "qkDesc"].forEach(id => { if ($(id)) { $(id).value = ""; delete $(id).dataset.typed; } });
+    if ($("qkCam")) { $("qkCam").classList.remove("has"); $("qkCam").textContent = `📷 ${k === "dsl" ? "Photo of the bill" : "Photo of the slip"} (optional)`; }
+    if (k === "giv" && $("qkDesc")) $("qkDesc").value = "Sent during the trip";
+    qkRender();
+  } catch { toast("Couldn't save. Check your connection and try again."); }
+  finally { if (go?.isConnected) go.disabled = false; }
+});
 /* ---------- Truck profit report ----------
    Each truck's rent, expenses and profit for the financial year, by truck and by month. A trip counts in the month it started;
    a diesel fill kept on the round trip counts in the month of its date. Other = RTO, loading, weighbridge, other and bill expenses. */
@@ -14764,6 +14984,8 @@ const mileTxt = f => `${nf(f.kmpl, 2)} km/L is ${f.pct}% below this truck's usua
 function renderTruck() {
   const tks = kSorted(truckList());
   if (!tks.some(b => b.id === kBusId)) kBusId = tks[0]?.id || "";
+  const quick = qkOn() && tks.length > 0; $("view-ttruck").classList.toggle("qkm", quick); $("kQuick").hidden = !quick;
+  if (quick) { qkRender(); return; }
   $("kTabs").innerHTML = tks.map((b, i) => kArrange
     ? `<span class="ktmove" data-kmove="${b.id}"><button type="button" data-kstep="-1" aria-label="Move ${esc(plateOf(b))} left"${i ? "" : " disabled"}>‹</button><b>${esc(plateOf(b))}</b><button type="button" data-kstep="1" aria-label="Move ${esc(plateOf(b))} right"${i < tks.length - 1 ? "" : " disabled"}>›</button></span>`
     : `<button type="button" role="tab" data-ktab="${b.id}" draggable="true" aria-selected="${b.id === kBusId}">${esc(plateOf(b))}</button>`).join("") +
@@ -14796,7 +15018,7 @@ function renderTruck() {
     r.legs.forEach(l => {
       const c = legCalc(l), d1 = l.driver1Id ? (drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name) : l.driver1Name, d2 = l.driver2Id ? (drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name) : l.driver2Name;
       body += `<tr data-lid="${l.id}" tabindex="0" class="${c.bal < 0 ? "loss" : ""}"><td class="sticky"><span class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</span></td><td class="n">${fmtDays(c.days)}</td>
-        <td>${esc(l.origin || "")}</td><td>${esc(l.dest || "")}</td><td>${esc([d1, d2].filter(Boolean).join(", "))}</td><td class="n"><b>${nf(num(l.rent))}</b></td>${ncell(l.commission)}<td class="n">${l.litres ? nf(l.litres) : "—"}</td>${ncell(l.fuelCost)}${ncell(l.toll)}${ncell(l.padi)}${ncell(l.rto)}${ncell(l.loading)}${ncell(l.bridge)}${ncell(l.otherExp)}${ncell(l.billExp)}${ncell(c.exp)}
+        <td>${esc(l.origin || "")}</td><td>${esc(l.dest || "")}${l.load || l.tons ? `<div class="sub">${esc(legLoadTxt(l))}</div>` : ""}</td><td>${esc([d1, d2].filter(Boolean).join(", "))}</td><td class="n"><b>${nf(num(l.rent))}</b></td>${ncell(l.commission)}<td class="n">${l.litres ? nf(l.litres) : "—"}</td>${ncell(l.fuelCost)}${ncell(l.toll)}${ncell(l.padi)}${ncell(l.rto)}${ncell(l.loading)}${ncell(l.bridge)}${ncell(l.otherExp)}${ncell(l.billExp)}${ncell(c.exp)}
         <td class="n ${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</td>${ncell(c.received)}${ncell(l.startKm)}${ncell(l.endKm)}${ncell(c.act)}<td class="n">${c.act && l.litres ? nf(c.act / l.litres, 2) : "—"}</td><td class="rm" title="${esc(l.remarks || "")}">${esc(l.remarks || "")}</td></tr>`;
     });
   });
@@ -14940,6 +15162,10 @@ function lgLoad(id, roundId) {
   $("lgFrom").value = l?.from || (last ? (last.to || last.from) : todayISO()); $("lgTo").value = l?.to || $("lgFrom").value;
   $("lgDays").value = l?.days ?? ""; lgDaysTouched = !!l && num(l.days) !== inclDays(l.from, l.to || l.from);
   $("lgOrigin").value = l?.origin || (last && !l ? last.dest || "" : ""); $("lgDest").value = l?.dest || "";
+  $("lgLoad").value = l?.load || ""; $("lgTons").value = l?.tons ?? ""; $("lgRateT").value = l?.rateTon ?? "";
+  $("lgLoads").innerHTML = [...new Set(ops.truckTrips.map(x => x.load).filter(Boolean))].sort().map(p => `<option value="${esc(p)}">`).join("");
+  // The rent follows tonnes × rent per tonne until it is typed (an older trip keeps its rent).
+  lgRentTyped = !!l && num(l.rent) > 0 && Math.round(num(l.tons) * num(l.rateTon)) !== num(l.rent);
   const dv = (idk, nk, x) => x?.[idk] ? drivers.find(d => d.id === x[idk])?.name || x[nk] || "" : x?.[nk] || "";
   $("lgDriver1").value = dv("driver1Id", "driver1Name", l || last); $("lgDriver2").value = dv("driver2Id", "driver2Name", l);
   Object.entries(LG_NUM).forEach(([el, k]) => $(el).value = src[k] ?? "");
@@ -14963,7 +15189,8 @@ function lgLoad(id, roundId) {
 }
 function closeLgDrawer() { $("lgDrawer").hidden = true; lgEditId = null; rt = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
 function lgRead() {
-  const l = {};
+  const l = {}, ld = $("lgLoad").value.trim().replace(/\s+/g, " "), tn = Math.round(num($("lgTons").value) * 100) / 100, rtn = Math.round(num($("lgRateT").value) * 100) / 100;
+  if (ld) l.load = ld; if (tn > 0) l.tons = tn; if (rtn > 0) l.rateTon = rtn;
   Object.entries(LG_NUM).forEach(([el, k]) => { const v = $(el).value; if (v !== "" && +v >= 0) l[k] = Math.round(+v); });
   const f = lgFuelRead(); if (f.length) { l.fuels = f; l.litres = Math.round(f.reduce((a, x) => a + x.litres, 0) * 100) / 100; l.fuelCost = Math.round(f.reduce((a, x) => a + num(x.amount), 0)); }
   l.days = num($("lgDays").value);
@@ -15013,8 +15240,16 @@ function lgCalcRender() {
   if (LGW.on) lgWizStrip(c, num(l.rent));
   $("lgPayAmt").textContent = P.length ? nf(set + pend) : ""; $("lgPayTot").textContent = P.length ? `${P.length} payment${P.length > 1 ? "s" : ""}${pend ? ` · ${rs(pend)} not settled` : ""}` : "";
 }
-$("lgForm").addEventListener("input", e => { if (e.target.id === "lgDays") lgDaysTouched = true; lgCalcRender(); });
+let lgRentTyped = false;
+$("lgForm").addEventListener("input", e => {
+  if (e.target.id === "lgDays") lgDaysTouched = true;
+  if (e.target.id === "lgRent") lgRentTyped = !!e.target.value && Math.round(num($("lgTons").value) * num($("lgRateT").value)) !== num(e.target.value);
+  if ((e.target.id === "lgTons" || e.target.id === "lgRateT") && !lgRentTyped) { const v = Math.round(num($("lgTons").value) * num($("lgRateT").value)); if (v) $("lgRent").value = v; }
+  lgCalcRender();
+});
 $("lgForm").addEventListener("change", lgCalcRender);
+// The load of a truck trip in words: "Paruppu · 26 t × ₹2,300".
+const legLoadTxt = l => [l.load, num(l.tons) ? `${nf(num(l.tons), num(l.tons) % 1 ? 2 : 0)} t${num(l.rateTon) ? ` × ₹${nf(num(l.rateTon), num(l.rateTon) % 1 ? 2 : 0)}` : ""}` : ""].filter(Boolean).join(" · ");
 const lgPlace = s => String(s || "").replace(/^[A-Z]{2}\s*-\s*/, "").trim();
 $("lgAddPay").onclick = () => { const a = lgPlace($("lgOrigin").value), b = lgPlace($("lgDest").value);
   $("lgPays").insertAdjacentHTML("beforeend", payRow({ date: todayISO(), desc: a || b ? `${a || "?"} → ${b || "?"}` : "" })); $("lgPays").lastElementChild.querySelector("[data-pa]").focus(); lgCalcRender(); };
@@ -15094,7 +15329,7 @@ function lgWizCheckRender() {
   const line = (n, t, b, sub, warn) => `<div class="cl"><div><small>${n} · ${t}</small><b>${b}</b>${sub ? `<span${warn ? ' class="warn"' : ""}>${sub}</span>` : ""}</div><button type="button" class="lnk" data-wgo="${n}">Edit</button></div>`;
   $("lgCheck").innerHTML = `<div class="cres"><span>Rent<b>${nf(num(l.rent))}</b></span><span>Expense<b>${nf(c.exp)}</b></span><span>Balance<b>${nf(c.bal)}</b></span></div><div class="clist">` +
     line(1, "Trip", `${esc(lgPlace($("lgOrigin").value) || "?")} → ${esc(lgPlace($("lgDest").value) || "?")}`, `${from ? fmtShort(from) : "—"} – ${to ? fmtShort(to) : "—"} · ${num($("lgDays").value) || "—"} day${num($("lgDays").value) === 1 ? "" : "s"}${drv.length ? " · " + esc(drv.join(", ")) : ""}`) +
-    line(2, "Rent & expenses", `Rent ${rs(num(l.rent))}`, ex.length ? ex.map(([k, v]) => `${k} ${nf(v)}`).join(" · ") : "No expenses entered") +
+    line(2, "Rent & expenses", `Rent ${rs(num(l.rent))}${l.load || l.tons ? ` · ${esc(legLoadTxt(l))}` : ""}`, ex.length ? ex.map(([k, v]) => `${k} ${nf(v)}`).join(" · ") : "No expenses entered") +
     line(3, "Diesel", F.length ? `${F.length} fill${F.length > 1 ? "s" : ""} · ${nf(num(l.litres), num(l.litres) % 1 ? 2 : 0)} L · ${rs(num(l.fuelCost))}` : "No diesel", F.length ? [...new Set(F.map(f => f.place).filter(Boolean))].join(", ") : "") +
     line(4, "Km & payments", `${K.act ? nf(K.act) + " km" + (K.conv ? " actual" : "") : "Km not entered"} · ${rs(rec)} received`, pend ? `${rs(pend)} not settled yet` : P.length ? "All settled" : "No payment yet", !!pend) + `</div>`;
 }
@@ -15505,7 +15740,7 @@ function rtOvRender() {
       `${card("Diesel", dl.L ? `${nf(dl.L, dl.L % 1 ? 2 : 0)} L` : "—", dl.n ? `${dl.n} fill${dl.n > 1 ? "s" : ""} · ${rs(dl.A)}` : "No fills yet")}` +
       `${card(S.odoK?.conv ? "Actual km" : "Km", S.act ? nf(S.act) : "—", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L${ML?.low ? ` · ${ML.pct}% below usual ${nf(ML.usual, 2)}` : S.odoK?.conv ? ` · meter ${nf(S.km)}` : ""}` : "End km not entered", ML?.low ? " neg" : "")}</div>` +
     `<div class="rtcard"><h3>Trips</h3><div class="ovlist">` + r.legs.map((l, i) => { const c = legCalc(l), dn = [l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name, l.driver2Id ? drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name : l.driver2Name].filter(Boolean);
-      return `<button type="button" class="ovtrip" ${go("leg", l.id)}><b class="n1">${i + 1}</b><span class="w"><b>${esc(rtLegName(l))}</b><small>${fmtShort(l.from)} – ${fmtShort(l.to || l.from)}${dn.length ? " · " + esc(dn.join(", ")) : ""}</small></span>` +
+      return `<button type="button" class="ovtrip" ${go("leg", l.id)}><b class="n1">${i + 1}</b><span class="w"><b>${esc(rtLegName(l))}</b><small>${fmtShort(l.from)} – ${fmtShort(l.to || l.from)}${l.load || l.tons ? " · " + esc(legLoadTxt(l)) : ""}${dn.length ? " · " + esc(dn.join(", ")) : ""}</small></span>` +
         `<span class="f"><small>Rent</small><b>${nf(num(l.rent))}</b></span><span class="f"><small>Balance</small><b class="${c.bal < 0 ? "neg" : "pos"}">${nf(c.bal)}</b></span>${pill(l)}<span class="go" aria-hidden="true">›</span></button>`; }).join("") + `</div></div>` +
     (shut ? "" : `<div class="rtcard"><h3>To do before closing</h3><div class="ovtodo">${todo.map(([c, t, g, a]) => `<div class="${c}"><span aria-hidden="true">${c === "warn" ? "⚠" : "ℹ"}</span><span>${t}</span><button type="button" ${g}>${a} ›</button></div>`).join("") || `<p class="sub" style="margin:0">Nothing pending. Ready to close.</p>`}</div></div>`);
 }
