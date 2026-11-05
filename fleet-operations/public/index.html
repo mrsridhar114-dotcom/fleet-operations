@@ -197,6 +197,7 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qkrc:nth-of-type(even) { background: var(--accent-soft); } .qkrch { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .qkrch b { font-size: 16px; } .qkrch .bstage { white-space: normal; text-align: right; }
 .qkpath { font-size: 13px; color: var(--muted); font-weight: 600; } .qkrc .qkfx { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qkrc .qkfx .bhf.w2 { grid-column: span 2; } .qkfx .bhf b { font-size: 14px; } .qkfx .bhf.neg b { color: var(--danger); } .qkfx .bhf.pos b { color: var(--ok); }
 .qkdue { font-size: 13px; font-weight: 600; color: var(--warn); } .qksum:has(> div:nth-child(4)) { row-gap: 10px; } .qkgrid.qkg3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qkgrid.qkg3 .qkbig { min-height: 88px; font-size: 13.5px; padding: 10px; }
+.qktrip .bwh.qkbwh { border-radius: 14px; } .qktrip .bhbtns { margin-top: 0; } .qkpn { display: flex; justify-content: space-between; gap: 10px; } .qkpn button { flex: 1; min-height: 46px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: inherit; font-weight: 700; color: var(--accent); cursor: pointer; }
 .qkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qkgrid .qkbig { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 14.5px; min-height: 96px; }
 .qkli { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: var(--ink); text-align: left; width: 100%; font-size: 14px; }
 .qkli:last-child { border-bottom: 0; } .qkli small { display: block; color: var(--muted); font-size: 12.5px; } .qkli > span:first-child { min-width: 0; } button.qkli { cursor: pointer; }
@@ -14818,22 +14819,40 @@ function qkForm() {
     (multi ? `<div class="qkcard qklist" id="qkList">${qkList()}</div><h3 class="qkadd">Add ${k === "dsl" ? "a fill" : k === "rec" ? "a payment" : "money given"}</h3>` : "") + b +
     `<div class="err" id="qkErr" role="alert"></div><button type="submit" class="qkgo">${multi ? (k === "dsl" ? "+ Add fill" : k === "rec" ? "+ Add payment" : "+ Add") : k === "load" ? (qk.edit ? "Save changes" : "Save load") : "Save"}</button>${multi ? `<button type="button" class="qkdone" data-qk="back">Done</button>` : ""}</form>`;
 }
-// One saved trip: its details and money, with the same buttons as the home screen, already set to this trip.
+// One saved trip, laid out like a spare bus booking on the phone: a card with the trip's facts, then a tile for each part of
+// the trip sheet showing where it stands. Each tile opens its short screen, already set to this trip.
 function qkTrip() {
   const r = qkRound(), l = r?.legs.find(x => x.id === qk.edit), shut = r?.status === "Closed";
   if (!l) { qk.scr = "home"; return qkHome(); }
-  const c = legCalc(l), i = r.legs.indexOf(l), dn = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "—";
-  const F = rtDslAll({ legs: [l], doc: {} }), lit = F.reduce((a, f) => a + num(f.litres), 0), dsl = Math.round(F.reduce((a, f) => a + num(f.amount), 0));
-  const row = (a, b) => `<div class="qkrow"><span>${a}</span><b>${b}</b></div>`;
-  const big = (k, ic, t, sub) => `<button type="button" class="qkbig" data-qk="${k}" data-for="${l.id}"><i aria-hidden="true">${ic}</i><span>${t}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
-  return `<div class="qkform"><button type="button" class="qkback" data-qk="toround">‹ Round trip ${rtNo(r)}</button><h2>Trip ${i + 1} · ${esc(rtLegName(l))}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · Round trip ${rtNo(r)}</small></h2>` +
-    `<div class="qkcard qkexp">${row("Loaded", fmtShort(l.from))}${row("Unloaded", l.to && (l.to !== l.from || num(l.endKm)) ? fmtShort(l.to) : "—")}${l.load || l.tons ? row("Load", esc(legLoadTxt(l))) : ""}${row("Driver", esc(dn))}` +
-    `${row("Km", num(l.startKm) ? `${nf(num(l.startKm))} → ${num(l.endKm) ? nf(num(l.endKm)) : "…"}${c.km ? ` · ${nf(c.km)} km` : ""}` : "—")}</div>` +
-    `<div class="qkcard qkexp">${row("Rent", rs(num(l.rent)))}${row("Expenses", rs(c.exp))}${row("Diesel", lit ? `${nf(lit, lit % 1 ? 2 : 0)} L · ${rs(dsl)}` : "—")}${row("Received", rs(c.received))}` +
-    `<div class="qktot"><span>Balance (rent − expenses)</span><b class="${c.bal < 0 ? "neg" : ""}">${rs(c.bal)}</b></div></div>` +
-    (shut ? "" : big("load", "✏️", "Edit load details", "Date, places, load, tonnes, rent, driver, km") +
-    `<div class="qkgrid">${big("dsl", "⛽", "Diesel")}${big("exp", "🛣", "FASTag & expenses")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>` +
-    big("end", "🏁", "Trip ended", "Unloading date and end km")) + `</div>`;
+  const c = legCalc(l), i = r.legs.indexOf(l), v = vehicles.find(x => x.id === kBusId), dn = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "";
+  const F = rtDslAll({ legs: [l], doc: {} }), lit = F.reduce((a, f) => a + num(f.litres), 0), dsl = Math.round(F.reduce((a, f) => a + num(f.amount), 0)), ended = qkEnded(l);
+  const due = num(l.rent) - c.received, G = (r.doc?.given || []).filter(g => g.leg === l.id), GA = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0), GL = G.reduce((a, g) => a + num(g.amount), 0);
+  const EK = LG_EXP.filter(k => k !== "fuelCost"), nExp = EK.filter(k => num(l[k]) > 0).length, oExp = EK.reduce((a, k) => a + num(l[k]), 0), litT = x => `${nf(x, x % 1 ? 2 : 0)} L`;
+  const ld = [l.from, l.origin, l.dest, num(l.rent), l.load, num(l.tons), dn, num(l.startKm)], ldPct = Math.round(ld.filter(Boolean).length / ld.length * 100);
+  const f = (k, val, cls = "") => `<div class="bhf${cls}"><span>${k}</span><b>${val}</b></div>`;
+  const tile = (k, icon, title, line, cls = "", badge = "", off = shut) => `<button type="button" class="bhbtn" data-qk="${k}" data-for="${l.id}"${off ? " disabled" : ""}>${badge}<span class="bhi" aria-hidden="true">${icon}</span><span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span></button>`;
+  const pct = n => `<span class="bhpct ${n === 100 ? "ok" : n >= 50 ? "mid" : ""}">${n}%</span>`, cnt = n => n ? `<span class="bhpct cnt">${n}</span>` : "";
+  const prev = r.legs[i - 1], next = r.legs[i + 1];
+  return `<div class="qkform qktrip"><button type="button" class="qkback" data-qk="toround">‹ Round trip ${rtNo(r)}</button>` +
+    `<header class="bwh qkbwh"><div style="flex:1;min-width:0"><b>Trip ${i + 1} of ${r.legs.length}</b><span>Round trip ${rtNo(r)} · ${shut ? "Closed" : ended ? "Ended" : "On the way"}</span></div></header>` +
+    `<div class="bhcard"><div class="bhtop">${v ? `<span class="plate ${v.usage === "Private use" ? "pvt" : "psv"}">${esc(plateOf(v))}</span>` : ""}${shut ? '<span class="bstage closed">🔒 Closed</span>' : ended ? '<span class="bstage booked">Ended</span>' : '<span class="bstage ontrip">On the way</span>'}</div>` +
+      `<b class="bhplace">${esc(rtLegName(l))}</b><div class="bhfacts">` +
+      f("Dates", `${bwFmt(l.from)}${ended && l.to !== l.from ? ` to ${bwFmt(l.to)}` : ended ? "" : " · not unloaded yet"}`, " w") +
+      (l.load || l.tons ? f("Load", esc(legLoadTxt(l)), " w") : "") + f("Driver", esc(dn || "Not chosen yet"), " w") +
+      f("Rent", rs(num(l.rent))) + f("Expenses", rs(c.exp)) + f("Balance", bkNetTxt(c.bal), c.bal < 0 ? " neg" : " pos") + f("Received", rs(c.received)) +
+      f("Total km", c.km ? `${nf(c.km)} km` : "—") + f("Diesel", lit ? litT(lit) : "—") + f("Mileage", c.km && lit ? `${nf(c.km / lit, 2)} km/L` : "—") + f("Days", ended ? `${bwHalfTxt(num(l.days) || 1)} ${bwDayWord(num(l.days) || 1)}` : "—") +
+    `</div></div><div class="bhbtns">` +
+      tile("load", "📋", "Load details", l.load ? `${esc(l.load)}${num(l.tons) ? ` · ${nf(num(l.tons), num(l.tons) % 1 ? 2 : 0)} t` : ""}` : "Places, load, rent", ldPct < 100 ? "due" : "", pct(ldPct)) +
+      tile("dsl", "⛽", "Diesel", F.length ? `${F.length} fill${F.length > 1 ? "s" : ""} · ${litT(lit)} · ${rs(dsl)}` : "No fill yet", F.length ? "" : "due", cnt(F.length)) +
+      tile("exp", "🛣", "FASTag & expenses", nExp ? rs(oExp) : "None entered yet", nExp ? "" : "due", cnt(nExp)) +
+      tile("rec", "₹", "Payments", !num(l.rent) ? `${rs(c.received)} received` : due > 0 ? `${rs(due)} to collect` : "Fully paid", num(l.rent) && due > 0 ? "due" : "ok", cnt((l.payments || []).length)) +
+      tile("giv", "💵", "Money to driver", GL ? `${rs(GL)} for this trip` : GA ? `${rs(GA)} in this round trip` : "Nothing given yet", "", cnt(G.length)) +
+      tile("end", "🏁", "Trip end", ended ? `Unloaded ${fmtShort(l.to)}${num(l.endKm) ? ` · ${nf(num(l.endKm))} km` : ""}` : "Not ended yet", ended ? "ok" : "due") +
+      tile("print", "🖨️", "Print trip sheet", "Image or PDF to print or share", "", "", false) + tile("send", "📤", "Send details", "WhatsApp or message", "", "", false) +
+      (shut ? `<div class="bhlock"><b>🔒 Round trip closed</b><span>${r.closedOn ? `On ${fmtDate(r.closedOn)}. ` : ""}Everything here is view only. It can be reopened from a computer.</span></div>` : "") +
+    `</div>` +
+    (prev || next ? `<div class="qkpn">${prev ? `<button type="button" data-qkleg="${prev.id}">‹ Trip ${i}</button>` : "<span></span>"}${next ? `<button type="button" data-qkleg="${next.id}">Trip ${i + 2} ›</button>` : "<span></span>"}</div>` : "") +
+    `<button type="button" class="qkdone" data-qk="toround">‹ Back to round trip ${rtNo(r)}</button></div>`;
 }
 function qkRender() {
   const el = $("kQuick"); if (!el) return;
@@ -16386,7 +16405,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05e";
+const APP_VER = "2026-11-05f";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
