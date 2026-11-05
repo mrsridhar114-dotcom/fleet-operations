@@ -198,6 +198,16 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qkpath { font-size: 13px; color: var(--muted); font-weight: 600; } .qkrc .qkfx { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qkrc .qkfx .bhf.w2 { grid-column: span 2; } .qkfx .bhf b { font-size: 14px; } .qkfx .bhf.neg b { color: var(--danger); } .qkfx .bhf.pos b { color: var(--ok); }
 .qkdue { font-size: 13px; font-weight: 600; color: var(--warn); } .qksum:has(> div:nth-child(4)) { row-gap: 10px; } .qkgrid.qkg3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qkgrid.qkg3 .qkbig { min-height: 88px; font-size: 13.5px; padding: 10px; }
 .qktrip .bwh.qkbwh { border-radius: 14px; } .qktrip .bhbtns { margin-top: 0; } .qkpn { display: flex; justify-content: space-between; gap: 10px; } .qkpn button { flex: 1; min-height: 46px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: inherit; font-weight: 700; color: var(--accent); cursor: pointer; }
+.qksheet { padding-bottom: 8px; } .qksec { gap: 8px; } .qksec h3 { margin: 2px 0 0; font: 700 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.qkrs { display: flex; align-items: center; gap: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); width: 150px; flex: none; } .qkrs i { font-style: normal; color: var(--muted); padding-left: 12px; }
+.qkrow .qkrs input { border: 0 !important; flex: 1 1 auto !important; width: 0 !important; min-width: 0; min-height: 46px; text-align: right; padding: 8px 12px 8px 6px !important; background: none !important; } .qkpctb { flex: none; height: 26px; padding: 0 10px; border-radius: 13px; background: var(--danger); color: #fff; font: 700 13px/26px var(--body); } .qkpctb.mid { background: var(--warn); } .qkpctb.ok { background: var(--ok); }
+.qkdrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) 64px; grid-template-areas: "l a p" "w b x"; gap: 6px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.qkdrow [data-fl] { grid-area: l; } .qkdrow [data-fa] { grid-area: a; } .qkdrow .qkpay { grid-area: p; } .qkdrow [data-fp] { grid-area: w; } .qkdrow .qkrb { grid-area: b; } .qkdrow .rtbin { grid-area: x; justify-self: center; }
+.qkdhead { padding: 0; border: 0; grid-template-areas: "l a p"; } .qkdhead span:nth-child(n+4) { display: none; } .qkdrow input { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 9px; width: 100%; box-sizing: border-box; min-width: 0; background: var(--surface); color: var(--ink); }
+.qkdhead { font-size: 11.5px; font-weight: 600; color: var(--muted); } .qkpay, .qkrb { min-height: 44px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; padding: 0; } .qkrb.has { background: var(--accent-soft); color: var(--accent); }
+.qkadd2 { min-height: 46px; border: 2px dashed var(--accent); border-radius: 12px; background: none; color: var(--accent); font: inherit; font-weight: 700; cursor: pointer; }
+.qkfoot { position: sticky; bottom: 0; z-index: 5; display: flex; flex-direction: column; gap: 8px; background: var(--bg); padding: 10px 0 12px; border-top: 1px solid var(--line); } .qkfline { display: flex; justify-content: space-between; font-size: 14px; } .qkfline #qkDirty { color: var(--warn); font-weight: 600; } .qkfline #qkDirty.ok { color: var(--ok); }
+.qktot b.pos { color: var(--ok); } .bhbtns > .bhbtn[data-qk="sheet"] { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; text-align: left; min-height: 84px; gap: 14px; padding: 12px 16px; }
 .qkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qkgrid .qkbig { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 14.5px; min-height: 96px; }
 .qkli { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: var(--ink); text-align: left; width: 100%; font-size: 14px; }
 .qkli:last-child { border-bottom: 0; } .qkli small { display: block; color: var(--muted); font-size: 12.5px; } .qkli > span:first-child { min-width: 0; } button.qkli { cursor: pointer; }
@@ -14782,28 +14792,61 @@ function qkList() {
     return G.length ? G.map((g, i) => row("giv", g, i, rs(num(g.amount)), `${fmtShort(g.date)} · ${g.pay || ""} · ${esc(g.desc || "")}${g.leg ? " · " + esc(trip(g.leg)) : ""}`)).join("") + `<div class="qktot"><span>Given to the driver</span><b>${rs(G.reduce((a, g) => a + num(g.amount), 0))}</b></div>` : `<p class="sub">Nothing given yet.</p>`; }
   return "";
 }
+// Loading date, places (with the truck's recent places as buttons), load, tonnes and rent: on New load and on the trip sheet.
+function qkLoadFields(l, from0) {
+  const f = (lb, h) => `<label class="qkf">${lb}${h}</label>`, ip = (id, v = "", o = "") => `<input id="${id}" value="${esc(v)}" autocomplete="off" ${o}>`;
+  const places = [...new Set(ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, b) => b.from.localeCompare(a.from)).flatMap(x => [x.dest, x.origin]).filter(Boolean).map(lgPlace))].slice(0, 5);
+  return f("Loading date", ip("qkDate", l ? l.from : todayISO(), 'type="date"')) +
+    `<div class="qk2">${f("From", ip("qkFrom", l ? lgPlace(l.origin) : from0, 'list="qkPl"'))}${f("To", ip("qkTo", l ? lgPlace(l.dest) : "", 'list="qkPl"'))}</div>` +
+    `<div class="qkchips">${places.map(p => `<button type="button" data-qkto="${esc(p)}">${esc(p)}</button>`).join("")}</div>` +
+    `<div class="qk2">${f("Load", ip("qkLoad", l?.load || "", 'list="lgLoads" placeholder="e.g. Paruppu"'))}${f("Tonnes", ip("qkTons", l?.tons ?? "", 'type="number" inputmode="decimal"'))}</div>` +
+    `<div class="qk2">${f("Rent per tonne", ip("qkRateT", l?.rateTon ?? "", 'type="number" inputmode="decimal"'))}${f("Trip rent", ip("qkRent", l ? l.rent || "" : "", `type="number" inputmode="numeric" class="qkbigin"${l ? ' data-typed="1"' : ""}`))}</div>` +
+    `<datalist id="qkPl">${[...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean).map(lgPlace))].sort().map(p => `<option value="${esc(p)}">`).join("")}</datalist>`;
+}
+/* The trip sheet of one trip on a phone, one page like the spare bus trip sheet: load, driver, on the way, diesel (as many
+   fills as needed), other expenses, km meter, and the trip money worked out as it is typed. */
+const QK_ROAD = [["toll", "FASTag"], ["rto", "RTO / check post"], ["bridge", "Weighbridge"]], QK_OTHER = [["commission", "Commission"], ["loading", "Loading / unloading"], ["otherExp", "Other"], ["billExp", "Bills"]];
+const qkFillsOf = l => (l.fuels?.length ? l.fuels : rtDslAll({ legs: [l], doc: {} }).map(({ leg, ...x }) => x)).map(x => ({ ...x }));
+function qkSheetPct(l) {
+  const dn = l.driver1Id || l.driver1Name, F = qkFillsOf(l);
+  const C = [l.from, l.origin, l.dest, num(l.rent), l.load, num(l.tons), dn, num(l.startKm), num(l.endKm), qkEnded(l), F.length, num(l.toll)];
+  return Math.round(C.filter(Boolean).length / C.length * 100);
+}
+const qkDslRows = () => qk.sheetF.map((x, i) => `<div class="qkdrow" data-i="${i}"><input data-fl type="number" inputmode="decimal" value="${x.litres ?? ""}" aria-label="Litres"><input data-fa type="number" inputmode="decimal" value="${x.amount ?? ""}" placeholder="₹" aria-label="Amount">` +
+  `<button type="button" class="qkpay" data-qkpay="${i}">${x.pay === "Cash" ? "Cash" : "Card"}</button><input data-fp list="rtBunks" value="${esc(x.place || "")}" placeholder="Where" aria-label="Place">` +
+  `<button type="button" class="qkrb${x.bill ? " has" : ""}" data-qkrbill="${i}" aria-label="Photo of the bill" title="Photo of the bill">${x.bill ? "✓ Bill added" : "📷 Bill photo"}</button><button type="button" class="icon rtbin" data-qkrdel="${i}" aria-label="Remove this fill" title="Remove">${TRASH_SVG}</button></div>`).join("");
+function qkSheetRead() { document.querySelectorAll(".qkdrow").forEach(row => { const x = qk.sheetF[+row.dataset.i]; if (!x) return; const L = row.querySelector("[data-fl]").value, A = row.querySelector("[data-fa]").value;
+  x.litres = L === "" ? undefined : num(L); x.amount = A === "" ? undefined : num(A); x.place = row.querySelector("[data-fp]").value.trim(); }); }
+function qkSheet() {
+  const r = qkRound(), l = r?.legs.find(x => x.id === qk.leg); if (!l) { qk.scr = "home"; return qkHome(); }
+  const i = r.legs.indexOf(l), dn = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "";
+  const f = (lb, h) => `<label class="qkf">${lb}${h}</label>`, sec = (t, b) => `<section class="qkcard qksec"><h3>${t}</h3>${b}</section>`;
+  const money = (key, lab) => `<label class="qkrow"><span>${lab}</span><span class="qkrs"><i>₹</i><input data-qkexp="${key}" type="number" inputmode="numeric" value="${l[key] ?? ""}" placeholder="0"></span></label>`;
+  const pct = qkSheetPct(l);
+  return `<form class="qkform qksheet" novalidate><header class="bwh qkbwh"><div style="flex:1;min-width:0"><b>Trip sheet · Trip ${i + 1}</b><span>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · Round trip ${rtNo(r)}</span></div><span class="qkpctb ${pct === 100 ? "ok" : pct >= 50 ? "mid" : ""}">${pct}%</span></header>` +
+    sec("Load", qkLoadFields(l)) +
+    sec("Driver", f("Driver", `<input id="qkDrv" value="${esc(dn)}" autocomplete="off" list="lgDrvList" placeholder="Name">`) + money("padi", "Driver padi")) +
+    sec("On the way", QK_ROAD.map(([k, lab]) => money(k, lab)).join("")) +
+    sec("Diesel", `<div class="qkdrow qkdhead"><span>Litres</span><span>Amount</span><span>Paid</span><span>Place</span><span></span><span></span></div><div id="qkDsl">${qkDslRows()}</div><button type="button" class="qkadd2" data-qkradd>＋ Add diesel</button>`) +
+    sec("Other", QK_OTHER.map(([k, lab]) => money(k, lab)).join("")) +
+    sec("Km meter", `<div class="qk2">${f("Start km", `<input id="qkKm" type="number" inputmode="numeric" value="${l.startKm || ""}">`)}${f("End km", `<input id="qkEndKm" type="number" inputmode="numeric" value="${l.endKm || ""}" placeholder="When unloaded">`)}</div>` +
+      f("Unloading date", `<input id="qkUnl" type="date" value="${qkEnded(l) ? l.to : ""}">`) + `<p class="sub" id="qkKmInfo" style="margin:0"></p>`) +
+    sec("Trip money", `<div class="qkrow"><span>Rent</span><b id="qkTmR">—</b></div><div class="qkrow"><span>Diesel</span><b id="qkTmD">—</b></div><div class="qkrow"><span>Other expenses</span><b id="qkTmO">—</b></div>` +
+      `<div class="qkrow"><span>Total expenses</span><b id="qkTmE">—</b></div><div class="qktot"><span>Balance</span><b id="qkTmB">—</b></div>`) +
+    `<div class="err" id="qkErr" role="alert"></div>` +
+    `<div class="qkfoot"><div class="qkfline"><span id="qkDirty" class="${qk.dirty ? "" : "ok"}">${qk.dirty ? "Not saved yet" : "✓ Saved"}</span><span>Expenses <b id="qkFootT">—</b></span></div><button type="submit" class="qkgo">Save trip sheet</button><button type="button" class="qkdone" data-qk="back">‹ Back</button></div></form>`;
+}
 function qkForm() {
   const r = qkRound(), k = qk.scr, f = (l, h) => `<label class="qkf">${l}${h}</label>`, ip = (id, v = "", o = "") => `<input id="${id}" value="${esc(v)}" autocomplete="off" ${o}>`;
   const seg = (key, opts) => `<div class="qkseg">${opts.map(o => `<button type="button" data-qkseg="${key}" data-v="${o}" class="${qk[key] === o ? "on" : ""}">${o}</button>`).join("")}</div>`;
   const cam = `<button type="button" class="qkcam" id="qkCam">📷 ${k === "dsl" ? "Photo of the bill" : "Photo of the slip"} (optional)</button>`;
-  const last = r?.legs[r.legs.length - 1], places = [...new Set(ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, b) => b.from.localeCompare(a.from)).flatMap(x => [x.dest, x.origin]).filter(Boolean).map(lgPlace))].slice(0, 5);
-  const head = { load: qk.edit ? "Edit load details" : "New load", dsl: "Diesel fill", exp: "FASTag & expenses", rec: "Payment received", giv: "Money to driver", end: "Trip ended" }[k];
+  const head = { load: "New load", dsl: "Diesel fill", rec: "Payment received", giv: "Money to driver" }[k];
   let b = "";
   if (k === "load") {
-    const E = qk.edit ? ops.truckTrips.find(x => x.id === qk.edit) : null, eDrv = E ? (E.driver1Id ? drivers.find(d => d.id === E.driver1Id)?.name || E.driver1Name : E.driver1Name) || "" : "";
     const lastAny = ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, c) => (c.to || c.from).localeCompare(a.to || a.from))[0], dn = lastAny ? (lastAny.driver1Id ? drivers.find(d => d.id === lastAny.driver1Id)?.name || lastAny.driver1Name : lastAny.driver1Name) || "" : "";
-    b = (E ? "" : f("Add to", `<select id="qkR"><option value="new">A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}"${x.id === r?.id ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`)) +
-      f("Loading date", ip("qkDate", E ? E.from : todayISO(), 'type="date"')) +
-      `<div class="qk2">${f("From", ip("qkFrom", lgPlace(E ? E.origin : lastAny?.dest || ""), 'list="qkPl"'))}${f("To", ip("qkTo", E ? lgPlace(E.dest) : "", 'list="qkPl"'))}</div>` +
-      `<div class="qkchips">${places.map(p => `<button type="button" data-qkto="${esc(p)}">${esc(p)}</button>`).join("")}</div>` +
-      `<div class="qk2">${f("Load", ip("qkLoad", E?.load || "", 'list="lgLoads" placeholder="e.g. Paruppu"'))}${f("Tonnes", ip("qkTons", E?.tons ?? "", 'type="number" inputmode="decimal"'))}</div>` +
-      `<div class="qk2">${f("Rent per tonne", ip("qkRateT", E?.rateTon ?? "", 'type="number" inputmode="decimal"'))}${f("Trip rent", ip("qkRent", E ? E.rent || "" : "", `type="number" inputmode="numeric" class="qkbigin"${E ? ' data-typed="1"' : ""}`))}</div>` +
-      f("Driver", ip("qkDrv", E ? eDrv : dn, 'list="lgDrvList"')) + f("Start km (meter)", ip("qkKm", E ? E.startKm || "" : lastAny?.endKm || "", 'type="number" inputmode="numeric"')) +
-      `<datalist id="qkPl">${[...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean).map(lgPlace))].sort().map(p => `<option value="${esc(p)}">`).join("")}</datalist>`;
+    b = f("Add to", `<select id="qkR"><option value="new">A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}"${x.id === r?.id ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`) + qkLoadFields(null, lgPlace(lastAny?.dest || "")) +
+      f("Driver", ip("qkDrv", dn, 'list="lgDrvList"')) + f("Start km (meter)", ip("qkKm", lastAny?.endKm || "", 'type="number" inputmode="numeric"'));
   }
-  if (k === "exp") { const l = ops.truckTrips.find(x => x.id === (qk.leg || qkLastLeg(r))) || {};
-    b = f("For trip", `<select id="qkLeg">${qkLegOpts(r, l.id)}</select>`) + `<div class="qkcard qkexp">${[["toll", "FASTag"], ["padi", "Driver padi"], ["commission", "Commission"], ["loading", "Loading / unloading"], ["rto", "RTO / check post"], ["bridge", "Weighbridge"], ["otherExp", "Other"], ["billExp", "Bills"]]
-      .map(([key, lab]) => `<label class="qkrow"><span>${lab}</span><input data-qkexp="${key}" type="number" inputmode="numeric" value="${l[key] ?? ""}"></label>`).join("")}</div><div class="qktot"><span>Expenses for this trip</span><b id="qkExpT">—</b></div>`; }
   if (k === "dsl") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, qk.leg || qkLastLeg(r), true)}</select>`)}</div>` +
     `<div class="qk2">${f("Litres", ip("qkLit", "", 'type="number" inputmode="decimal"'))}${f("Rate / L", ip("qkRateL", rtDslAll(r || { legs: [], doc: {} }).slice(-1)[0]?.rate || "", 'type="number" inputmode="decimal"'))}</div>` +
     f("Amount ₹", ip("qkAmt", "", 'type="number" inputmode="decimal"')) + seg("pay", ["Card", "Cash"]) + `<div class="qk2">${f("Place", ip("qkPlace", "", 'list="rtBunks"'))}${f("Odometer", ip("qkKm", "", 'type="number" inputmode="numeric"'))}</div>` + cam;
@@ -14812,8 +14855,6 @@ function qkForm() {
     `<label class="qkchk"><input type="checkbox" id="qkSet"${qk.set ? " checked" : ""}> Settled <small>Untick while it is still to be confirmed</small></label>` + cam;
   if (k === "giv") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, qk.leg, true)}</select>`)}</div>` +
     f("Amount ₹", ip("qkAmt", "", 'type="number" inputmode="numeric" class="qkbigin"')) + seg("gby", RT_GIVE) + f("Description", ip("qkDesc", (r?.doc?.given || []).length ? "Sent during the trip" : "Advance", 'list="rtGivList"')) + cam;
-  if (k === "end") { const open = r?.legs.find(l => l.id === qk.leg) || r?.legs.find(l => !num(l.endKm)) || last;
-    b = f("Trip", `<select id="qkLeg">${qkLegOpts(r, open?.id)}</select>`) + `<div class="qk2">${f("Unloading date", ip("qkDate", todayISO(), 'type="date"'))}${f("End km (meter)", ip("qkKm", "", 'type="number" inputmode="numeric"'))}</div><p class="sub" id="qkEndInfo"></p>`; }
   const multi = ["dsl", "rec", "giv"].includes(k);
   return `<form class="qkform" novalidate><button type="button" class="qkback" data-qk="back">‹ Back</button><h2>${head}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))}${r && k !== "load" ? ` · Round trip ${rtNo(r)}` : ""}</small></h2>` +
     (multi ? `<div class="qkcard qklist" id="qkList">${qkList()}</div><h3 class="qkadd">Add ${k === "dsl" ? "a fill" : k === "rec" ? "a payment" : "money given"}</h3>` : "") + b +
@@ -14825,10 +14866,10 @@ function qkTrip() {
   const r = qkRound(), l = r?.legs.find(x => x.id === qk.edit), shut = r?.status === "Closed";
   if (!l) { qk.scr = "home"; return qkHome(); }
   const c = legCalc(l), i = r.legs.indexOf(l), v = vehicles.find(x => x.id === kBusId), dn = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "";
-  const F = rtDslAll({ legs: [l], doc: {} }), lit = F.reduce((a, f) => a + num(f.litres), 0), dsl = Math.round(F.reduce((a, f) => a + num(f.amount), 0)), ended = qkEnded(l);
+  const F = rtDslAll({ legs: [l], doc: {} }), lit = F.reduce((a, f) => a + num(f.litres), 0), ended = qkEnded(l);
   const due = num(l.rent) - c.received, G = (r.doc?.given || []).filter(g => g.leg === l.id), GA = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0), GL = G.reduce((a, g) => a + num(g.amount), 0);
   const EK = LG_EXP.filter(k => k !== "fuelCost"), nExp = EK.filter(k => num(l[k]) > 0).length, oExp = EK.reduce((a, k) => a + num(l[k]), 0), litT = x => `${nf(x, x % 1 ? 2 : 0)} L`;
-  const ld = [l.from, l.origin, l.dest, num(l.rent), l.load, num(l.tons), dn, num(l.startKm)], ldPct = Math.round(ld.filter(Boolean).length / ld.length * 100);
+  const tsPct = qkSheetPct(l);
   const f = (k, val, cls = "") => `<div class="bhf${cls}"><span>${k}</span><b>${val}</b></div>`;
   const tile = (k, icon, title, line, cls = "", badge = "", off = shut) => `<button type="button" class="bhbtn" data-qk="${k}" data-for="${l.id}"${off ? " disabled" : ""}>${badge}<span class="bhi" aria-hidden="true">${icon}</span><span class="bht"><b>${title}</b>${line ? `<span class="${cls}">${line}</span>` : ""}</span></button>`;
   const pct = n => `<span class="bhpct ${n === 100 ? "ok" : n >= 50 ? "mid" : ""}">${n}%</span>`, cnt = n => n ? `<span class="bhpct cnt">${n}</span>` : "";
@@ -14842,12 +14883,9 @@ function qkTrip() {
       f("Rent", rs(num(l.rent))) + f("Expenses", rs(c.exp)) + f("Balance", bkNetTxt(c.bal), c.bal < 0 ? " neg" : " pos") + f("Received", rs(c.received)) +
       f("Total km", c.km ? `${nf(c.km)} km` : "—") + f("Diesel", lit ? litT(lit) : "—") + f("Mileage", c.km && lit ? `${nf(c.km / lit, 2)} km/L` : "—") + f("Days", ended ? `${bwHalfTxt(num(l.days) || 1)} ${bwDayWord(num(l.days) || 1)}` : "—") +
     `</div></div><div class="bhbtns">` +
-      tile("load", "📋", "Load details", l.load ? `${esc(l.load)}${num(l.tons) ? ` · ${nf(num(l.tons), num(l.tons) % 1 ? 2 : 0)} t` : ""}` : "Places, load, rent", ldPct < 100 ? "due" : "", pct(ldPct)) +
-      tile("dsl", "⛽", "Diesel", F.length ? `${F.length} fill${F.length > 1 ? "s" : ""} · ${litT(lit)} · ${rs(dsl)}` : "No fill yet", F.length ? "" : "due", cnt(F.length)) +
-      tile("exp", "🛣", "FASTag & expenses", nExp ? rs(oExp) : "None entered yet", nExp ? "" : "due", cnt(nExp)) +
+      tile("sheet", "🧾", "Trip sheet", [l.load ? esc(l.load) : "", F.length ? `${F.length} diesel fill${F.length > 1 ? "s" : ""}` : "", nExp ? `expenses ${rs(oExp)}` : "", ended ? "ended" : "not ended yet"].filter(Boolean).join(" · "), tsPct < 100 ? "due" : "ok", pct(tsPct)) +
       tile("rec", "₹", "Payments", !num(l.rent) ? `${rs(c.received)} received` : due > 0 ? `${rs(due)} to collect` : "Fully paid", num(l.rent) && due > 0 ? "due" : "ok", cnt((l.payments || []).length)) +
       tile("giv", "💵", "Money to driver", GL ? `${rs(GL)} for this trip` : GA ? `${rs(GA)} in this round trip` : "Nothing given yet", "", cnt(G.length)) +
-      tile("end", "🏁", "Trip end", ended ? `Unloaded ${fmtShort(l.to)}${num(l.endKm) ? ` · ${nf(num(l.endKm))} km` : ""}` : "Not ended yet", ended ? "ok" : "due") +
       tile("print", "🖨️", "Print trip sheet", "Image or PDF to print or share", "", "", false) + tile("send", "📤", "Send details", "WhatsApp or message", "", "", false) +
       (shut ? `<div class="bhlock"><b>🔒 Round trip closed</b><span>${r.closedOn ? `On ${fmtDate(r.closedOn)}. ` : ""}Everything here is view only. It can be reopened from a computer.</span></div>` : "") +
     `</div>` +
@@ -14859,23 +14897,27 @@ function qkRender() {
   if (qk.scr === "home") { el.innerHTML = qkHome(); return; }
   if (qk.scr === "trip") { el.innerHTML = qkTrip(); return; }
   if (qk.scr === "round") { el.innerHTML = qkRoundScr(); return; }
+  if (qk.scr === "sheet") { if (!el.querySelector(".qksheet")) { el.innerHTML = qkSheet(); qkCalc(); } return; }
   if (!el.querySelector(".qkform")) { el.innerHTML = qkForm(); qkCalc(); return; }
   const L = el.querySelector("#qkList"); if (L) L.innerHTML = qkList();
 }
 function qkCalc() {
   const v = id => num($(id)?.value);
-  if (qk.scr === "exp" && $("qkExpT")) { const t = [...document.querySelectorAll("[data-qkexp]")].reduce((a, i) => a + num(i.value), 0); $("qkExpT").textContent = t ? rs(t) : "—"; }
-  if (qk.scr === "end" && $("qkEndInfo")) { const l = ops.truckTrips.find(x => x.id === $("qkLeg").value); $("qkEndInfo").textContent = l ? `Loaded ${fmtShort(l.from)}${num(l.startKm) ? ` · start km ${nf(num(l.startKm))}` : ""}` : ""; }
+  if (qk.scr !== "sheet" || !$("qkTmR")) return;
+  qkSheetRead(); const rent = v("qkRent"), d = qk.sheetF.reduce((a, x) => a + num(x.amount), 0), o = [...document.querySelectorAll("[data-qkexp]")].reduce((a, i) => a + num(i.value), 0), e = Math.round(d + o), km = v("qkEndKm") - v("qkKm");
+  $("qkTmR").textContent = rs(rent); $("qkTmD").textContent = rs(Math.round(d)); $("qkTmO").textContent = rs(o); $("qkTmE").textContent = rs(e); $("qkFootT").textContent = rs(e);
+  $("qkTmB").textContent = bkNetTxt(rent - e); $("qkTmB").className = rent - e < 0 ? "neg" : "pos";
+  const L = qk.sheetF.reduce((a, x) => a + num(x.litres), 0); $("qkKmInfo").textContent = v("qkEndKm") && v("qkKm") && km > 0 ? `${nf(km)} km run${L ? ` · ${nf(km / L, 2)} km/L` : ""}` : "";
 }
 function qkOpenTrip(rid, legId) { qk.rid = rid; qk.edit = legId; qk.leg = legId; qk.scr = "trip"; qk.back = "trip"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); }
 $("kQuick").addEventListener("change", e => {
   if (e.target.id === "qkTruck") { kBusId = e.target.value; qk.rid = ""; qk.more = false; renderTruck(); }
-  if (e.target.id === "qkLeg" && qk.scr === "exp") { qk.leg = e.target.value; $("kQuick").innerHTML = ""; qkRender(); return; }
   if (e.target.id === "qkLeg") qkCalc();
 });
 $("kQuick").addEventListener("input", e => {
   const id = e.target.id;
-  if (qk.scr === "load" && (id === "qkTons" || id === "qkRateT") && !$("qkRent").dataset.typed) { const v = Math.round(num($("qkTons").value) * num($("qkRateT").value)); $("qkRent").value = v || ""; }
+  if (qk.scr === "sheet" && !qk.dirty) { qk.dirty = true; if ($("qkDirty")) { $("qkDirty").textContent = "Not saved yet"; $("qkDirty").className = ""; } }
+  if ((qk.scr === "load" || qk.scr === "sheet") && (id === "qkTons" || id === "qkRateT") && !$("qkRent").dataset.typed) { const v = Math.round(num($("qkTons").value) * num($("qkRateT").value)); $("qkRent").value = v || ""; }
   if (id === "qkRent") $("qkRent").dataset.typed = e.target.value ? "1" : "";
   if (qk.scr === "dsl" && (id === "qkLit" || id === "qkRateL") && !$("qkAmt").dataset.typed) { const v = num($("qkLit").value) * num($("qkRateL").value); $("qkAmt").value = v ? Math.round(v * 100) / 100 : ""; }
   if (qk.scr === "dsl" && id === "qkAmt") $("qkAmt").dataset.typed = e.target.value ? "1" : "";
@@ -14887,14 +14929,24 @@ $("kQuick").addEventListener("click", async e => {
     if (a === "more") { qk.more = true; qkRender(); return; }
     if (a === "toround") { qk.scr = "round"; qk.edit = ""; qk.leg = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "ret") { const h = qk.ret; qk.ret = ""; location.hash = h; return; }
-    if (a === "back") { qk.scr = qk.back; qk.bill = null; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+    if (a === "back" && qk.scr === "sheet" && qk.dirty && !await askYesNo("Leave the trip sheet without saving?", { yes: "Leave", no: "Stay", danger: true })) return;
+    if (a === "back") { qk.dirty = false; qk.scr = qk.back; qk.bill = null; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "home") { qk.scr = "home"; qk.edit = ""; qk.leg = ""; qk.rid = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "print" && r) { rtPrintOpen(r); return; } if (a === "send" && r) { rtSendOpen(r); return; }
     const fromTrip = !!b.dataset.for; qk.back = fromTrip ? "trip" : b.dataset.rnd ? "round" : "home"; qk.leg = b.dataset.for || ""; if (!fromTrip) qk.edit = "";
     if (!fromTrip && !b.dataset.rnd) qk.rid = "";
+    if (a === "sheet") { const l = ops.truckTrips.find(x => x.id === qk.leg); qk.sheetF = l ? qkFillsOf(l) : []; if (!qk.sheetF.length) qk.sheetF = [{ pay: "Card" }]; qk.dirty = false; }
     qk.scr = a; qk.bill = null; qk.set = true; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+  if (qk.scr === "sheet") {
+    const dirty = () => { qk.dirty = true; $("qkDirty").textContent = "Not saved yet"; $("qkDirty").className = ""; };
+    if (e.target.closest("[data-qkradd]")) { qkSheetRead(); qk.sheetF.push({ pay: qk.sheetF.at(-1)?.pay || "Card" }); $("qkDsl").innerHTML = qkDslRows(); $("qkDsl").lastElementChild?.querySelector("[data-fl]").focus(); return; }
+    const pb = e.target.closest("[data-qkpay]"); if (pb) { const x = qk.sheetF[+pb.dataset.qkpay]; x.pay = x.pay === "Cash" ? "Card" : "Cash"; pb.textContent = x.pay; dirty(); return; }
+    const rd = e.target.closest("[data-qkrdel]"); if (rd) { qkSheetRead(); qk.sheetF.splice(+rd.dataset.qkrdel, 1); if (!qk.sheetF.length) qk.sheetF.push({ pay: "Card" }); $("qkDsl").innerHTML = qkDslRows(); dirty(); qkCalc(); return; }
+    const rb = e.target.closest("[data-qkrbill]"); if (rb) { if (!assetsCap) { toast("Attaching photos isn't available in this view."); return; } qkSheetRead(); qk.billRow = +rb.dataset.qkrbill; $("qkBillIn").click(); return; }
+  }
   const rc = e.target.closest("[data-qkr]"); if (rc) { qk.rid = rc.dataset.qkr; qk.scr = "round"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
   const lg = e.target.closest("[data-qkleg]"); if (lg && r) { qkOpenTrip(r.id, lg.dataset.qkleg); return; }
+  if (e.target.closest("[data-qkto]") && qk.scr === "sheet") { qk.dirty = true; $("qkDirty").textContent = "Not saved yet"; $("qkDirty").className = ""; }
   const to = e.target.closest("[data-qkto]"); if (to) { $("qkTo").value = to.dataset.qkto; return; }
   const sg = e.target.closest("[data-qkseg]"); if (sg) { qk[sg.dataset.qkseg] = sg.dataset.v; sg.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === sg)); return; }
   if (e.target.closest("#qkCam")) { if (!assetsCap) { toast("Attaching photos isn't available in this view."); return; } $("qkBillIn").click(); return; }
@@ -14914,7 +14966,12 @@ $("kQuick").addEventListener("click", async e => {
   }
 });
 $("qkBillIn").addEventListener("change", async e => {
-  const file = e.target.files[0]; e.target.value = ""; if (!file || !assetsCap) return; const c = $("qkCam"); if (c) c.textContent = "Uploading…";
+  const file = e.target.files[0]; e.target.value = ""; if (!file || !assetsCap) return;
+  if (qk.scr === "sheet") { const x = qk.sheetF[qk.billRow], btn = document.querySelector(`[data-qkrbill="${qk.billRow}"]`); if (!x) return; if (btn) btn.textContent = "…";
+    try { const u = await assetsCap.upload(file, { type: file.type }); x.bill = { id: u.id, name: file.name, type: file.type, at: new Date().toISOString(), byName: whoAmI() }; qk.dirty = true; $("qkDirty").textContent = "Not saved yet"; $("qkDirty").className = ""; }
+    catch (er) { toast(er?.code === "too_large" ? "That file is too large." : "Couldn't upload the photo. Try again."); }
+    if ($("qkDsl")) $("qkDsl").innerHTML = qkDslRows(); return; }
+  const c = $("qkCam"); if (c) c.textContent = "Uploading…";
   try { const u = await assetsCap.upload(file, { type: file.type }); qk.bill = { id: u.id, name: file.name, type: file.type, at: new Date().toISOString(), byName: whoAmI() }; if ($("qkCam")) { $("qkCam").classList.add("has"); $("qkCam").textContent = "✓ Photo added · tap to change"; } }
   catch (er) { if ($("qkCam")) $("qkCam").textContent = "📷 Photo (optional)"; toast(er?.code === "too_large" ? "That file is too large." : "Couldn't upload the photo. Try again."); }
 });
@@ -14922,15 +14979,24 @@ $("kQuick").addEventListener("submit", async e => {
   e.preventDefault(); const k = qk.scr, r = qkRound(), v = id => ($(id)?.value || "").trim().replace(/\s+/g, " "), n = id => num($(id)?.value), bad = m => { $("qkErr").textContent = m; };
   const go = e.target.querySelector(".qkgo"); $("qkErr").textContent = "";
   try {
-    if (k === "load" && qk.edit) {
-      const l = qkLegCopy(qk.edit); if (!l) return bad("This trip is no longer there.");
-      const from = v("qkDate"), rent = Math.round(n("qkRent")); if (!from) return bad("Enter the loading date."); if (!v("qkFrom") || !v("qkTo")) return bad("Enter where it was loaded and where it goes."); if (!rent) return bad("Enter the trip rent.");
-      l.from = from; if (!l.to || l.to < from) l.to = from; l.days = inclDays(l.from, l.to) || 1; if (lgPlace(l.origin) !== v("qkFrom")) l.origin = v("qkFrom"); if (lgPlace(l.dest) !== v("qkTo")) l.dest = v("qkTo"); l.rent = rent; // a place keeps its state code when it is not changed
+    if (k === "sheet") {
+      const l = qkLegCopy(qk.leg); if (!l) return bad("This trip is no longer there.");
+      const from = v("qkDate"), rent = Math.round(n("qkRent")), sk = Math.round(n("qkKm")), ek = Math.round(n("qkEndKm")), unl = v("qkUnl");
+      if (!from) return bad("Enter the loading date."); if (!v("qkFrom") || !v("qkTo")) return bad("Enter where it was loaded and where it goes."); if (!rent) return bad("Enter the trip rent.");
+      if (unl && unl < from) return bad("The unloading date is before the loading date."); if (sk && ek && ek <= sk) return bad("End km must be more than the start km.");
+      qkSheetRead(); const F = qk.sheetF.filter(x => num(x.litres) > 0 || num(x.amount) > 0);
+      if (F.some(x => !(num(x.litres) > 0))) return bad("Enter the litres on each diesel line."); if (F.some(x => num(x.litres) > 1000)) return bad("Check the litres: a diesel line has more than 1,000 L.");
+      l.from = from; l.to = unl || (qkEnded(l) && l.to >= from ? l.to : from); l.days = inclDays(l.from, l.to) || 1;
+      if (lgPlace(l.origin) !== v("qkFrom")) l.origin = v("qkFrom"); if (lgPlace(l.dest) !== v("qkTo")) l.dest = v("qkTo"); l.rent = rent; // a place keeps its state code when it is not changed
       if (v("qkLoad")) l.load = v("qkLoad"); else delete l.load; if (n("qkTons") > 0) l.tons = Math.round(n("qkTons") * 100) / 100; else delete l.tons; if (n("qkRateT") > 0) l.rateTon = Math.round(n("qkRateT") * 100) / 100; else delete l.rateTon;
-      const km = Math.round(n("qkKm")); if (km) l.startKm = km; else delete l.startKm; if (km && num(l.endKm) && num(l.endKm) <= km) return bad("Start km must be less than the end km.");
+      if (sk) l.startKm = sk; else delete l.startKm; if (ek) l.endKm = ek; else delete l.endKm;
       const dn = v("qkDrv"), cur = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "";
       if (!dn) { delete l.driver1Id; delete l.driver1Name; } else if (dn !== cur) { const m = crewMaster("driver", dn); delete l.driver1Id; if (m) { l.driver1Id = m.id; l.driver1Name = m.name; } else l.driver1Name = dn; }
-      go.disabled = true; await qkSaveLeg(l); toast("Trip updated"); qk.scr = "trip"; renderTruck(); scrollTo(0, 0); return;
+      document.querySelectorAll("[data-qkexp]").forEach(i => { const x = Math.round(num(i.value)); if (x > 0) l[i.dataset.qkexp] = x; else delete l[i.dataset.qkexp]; });
+      const today = todayISO(), fd = today >= l.from && today <= l.to ? today : l.from;
+      const FF = F.map(x => { const o = { ...x, date: x.date || fd, litres: Math.round(num(x.litres) * 100) / 100, pay: x.pay === "Cash" ? "Cash" : "Card" }; if (num(x.amount) > 0) o.amount = Math.round(num(x.amount) * 100) / 100; else delete o.amount; if (!o.place) delete o.place; return o; });
+      if (FF.length) { l.fuels = FF; l.litres = Math.round(FF.reduce((a, x) => a + num(x.litres), 0) * 100) / 100; l.fuelCost = Math.round(FF.reduce((a, x) => a + num(x.amount), 0)); } else { delete l.fuels; delete l.litres; delete l.fuelCost; }
+      go.disabled = true; await qkSaveLeg(l); qk.dirty = false; toast("Trip sheet saved"); qk.scr = "trip"; $("kQuick").innerHTML = ""; renderTruck(); scrollTo(0, 0); return;
     }
     if (k === "load") {
       const l = { id: genId("tt"), vehicleId: kBusId, from: v("qkDate"), to: v("qkDate"), days: 1, origin: v("qkFrom"), dest: v("qkTo"), rent: Math.round(n("qkRent")) };
@@ -14943,13 +15009,6 @@ $("kQuick").addEventListener("submit", async e => {
       toast(`New load added · ${lgPlace(l.origin)} → ${lgPlace(l.dest)}`); qk.scr = "round"; renderTruck(); scrollTo(0, 0); return;
     }
     if (!r) return bad("This truck has no open round trip. Add a new load first.");
-    if (k === "exp") { const l = qkLegCopy(v("qkLeg")); if (!l) return bad("Choose the trip.");
-      document.querySelectorAll("[data-qkexp]").forEach(i => { const x = Math.round(num(i.value)); if (x > 0) l[i.dataset.qkexp] = x; else delete l[i.dataset.qkexp]; });
-      go.disabled = true; await qkSaveLeg(l); toast(`Expenses saved for ${rtLegName(l)}`); qk.scr = qk.back; renderTruck(); scrollTo(0, 0); return; }
-    if (k === "end") { const l = qkLegCopy(v("qkLeg")); if (!l) return bad("Choose the trip.");
-      const to = v("qkDate"), ek = Math.round(n("qkKm")); if (to && to < l.from) return bad("The unloading date is before the loading date."); if (ek && num(l.startKm) && ek <= num(l.startKm)) return bad("End km must be more than the start km.");
-      if (to) { l.to = to; l.days = inclDays(l.from, to) || l.days; } if (ek) l.endKm = ek;
-      go.disabled = true; await qkSaveLeg(l); toast(`Trip ended · ${rtLegName(l)}`); qk.scr = qk.back; renderTruck(); scrollTo(0, 0); return; }
     const date = v("qkDate"), leg = v("qkLeg"); if (!date) return bad("Enter the date.");
     if (k === "dsl") {
       const fl = { date, litres: Math.round(n("qkLit") * 100) / 100, pay: qk.pay }; if (!(fl.litres > 0)) return bad("Enter the litres."); if (fl.litres > 1000) return bad("Check the litres: more than 1,000 L.");
@@ -16405,7 +16464,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05f";
+const APP_VER = "2026-11-05g";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
