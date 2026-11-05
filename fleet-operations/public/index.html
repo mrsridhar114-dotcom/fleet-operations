@@ -193,6 +193,10 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qkbig { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font: inherit; font-weight: 700; font-size: 16px; color: var(--ink); cursor: pointer; min-height: 62px; }
 .qkbig i { font-style: normal; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 21px; background: var(--accent-soft); flex: none; } .qkbig small { display: block; font-weight: 500; font-size: 12.5px; color: var(--muted); }
 .qkbig.pri { background: var(--accent); color: #fff; border-color: var(--accent); } .qkbig.pri small { color: rgba(255,255,255,.8); } .qkbig.pri i { background: rgba(255,255,255,.18); } .qkbig:disabled { opacity: .45; }
+.qkrc { display: flex; flex-direction: column; gap: 4px; width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-left: 6px solid hsl(var(--bh, 210) 65% 50%); border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); padding: 12px 14px; }
+.qkrc:nth-of-type(even) { background: var(--accent-soft); } .qkrch { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .qkrch b { font-size: 16px; } .qkrch .bstage { white-space: normal; text-align: right; }
+.qkpath { font-size: 13px; color: var(--muted); font-weight: 600; } .qkrc .qkfx { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qkrc .qkfx .bhf.w2 { grid-column: span 2; } .qkfx .bhf b { font-size: 14px; } .qkfx .bhf.neg b { color: var(--danger); } .qkfx .bhf.pos b { color: var(--ok); }
+.qkdue { font-size: 13px; font-weight: 600; color: var(--warn); } .qksum:has(> div:nth-child(4)) { row-gap: 10px; } .qkgrid.qkg3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qkgrid.qkg3 .qkbig { min-height: 88px; font-size: 13.5px; padding: 10px; }
 .qkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qkgrid .qkbig { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 14.5px; min-height: 96px; }
 .qkli { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: var(--ink); text-align: left; width: 100%; font-size: 14px; }
 .qkli:last-child { border-bottom: 0; } .qkli small { display: block; color: var(--muted); font-size: 12.5px; } .qkli > span:first-child { min-width: 0; } button.qkli { cursor: pointer; }
@@ -14719,30 +14723,51 @@ function dvCheckOpen(id) {
 /* ---------- Trucks on a phone: one truck, its open round trip, and one short screen for each thing entered ----------
    New load, diesel fills, FASTag and expenses, payments received, money given to the driver, and trip ended. Diesel and both
    kinds of payment can be added as many times as needed. Everything is saved into the same trips and round trips as the
-   computer screens; "Full form" opens those screens instead. */
-let qk = { scr: "home", rid: "", full: false, leg: "", edit: "", back: "home", pay: "Card", by: "Bank transfer", gby: "Cash", set: true, bill: null };
-const qkOn = () => canTrips && !qk.full && bwIsPhone();
+   computer screens, which a phone does not open. */
+let qk = { scr: "home", rid: "", more: false, leg: "", edit: "", back: "home", pay: "Card", by: "Bank transfer", gby: "Cash", set: true, bill: null };
+const qkOn = () => canTrips && bwIsPhone();
 const qkRounds = vid => roundsOf(vid).filter(r => r.status !== "Closed").sort((a, b) => (b.to || b.from).localeCompare(a.to || a.from));
-function qkRound() { const R = qkRounds(kBusId); if (!R.some(r => r.id === qk.rid)) qk.rid = R[0]?.id || ""; return R.find(r => r.id === qk.rid) || null; }
+// The round trip being looked at; for a new load from the home screen, the latest open one.
+function qkRound() { const A = roundsOf(kBusId), r = A.find(x => x.id === qk.rid); if (r) return r; const o = qkRounds(kBusId)[0]; qk.rid = o?.id || ""; return o || null; }
 const qkLegOpts = (r, cur, whole) => (whole ? `<option value="">Whole round trip</option>` : "") + (r?.legs || []).map((l, i) => `<option value="${l.id}"${l.id === cur ? " selected" : ""}>${i + 1} · ${esc(rtLegName(l))}</option>`).join("");
 const qkLastLeg = r => r?.legs[r.legs.length - 1]?.id || "";
 async function qkSaveLeg(n) { const c = legCalc(n); n.expense = c.exp; n.balance = c.bal; n.fy = fyOf(n.from); await opsSave("truckTrips", n); }
 const qkLegCopy = id => { const l = ops.truckTrips.find(x => x.id === id); return l ? JSON.parse(JSON.stringify(l)) : null; };
+// Facts on a card, the same look as the spare bus trip sheet cards.
+const qkFacts = F => `<div class="bhfacts qkfx">${F.filter(Boolean).map(([k, v, c = ""]) => `<div class="bhf${c}"><span>${k}</span><b>${v}</b></div>`).join("")}</div>`;
+const qkDsl = r => { const F = rtDslAll(r), L = F.reduce((a, f) => a + num(f.litres), 0); return L ? `${nf(L, L % 1 ? 2 : 0)} L` : "—"; };
+const qkEnded = l => num(l.endKm) > 0 || (l.to && l.to !== l.from);
+function qkRoundCard(r) {
+  const shut = r.status === "Closed", G = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0), due = r.rent - r.received;
+  const tag = shut ? '<span class="bstage closed">🔒 Closed</span>' : r.legs.every(qkEnded) ? '<span class="bstage ts-pend">Trips ended · Accounts pending</span>' : '<span class="bstage ontrip">On trip</span>';
+  return `<button type="button" class="qkrc" data-qkr="${r.id}" style="--bh:${busHue(r.vehicleId)}"><div class="qkrch"><b>Round trip ${rtNo(r)}</b>${tag}</div><span class="qkpath">${esc(r.path || "")}</span>` +
+    qkFacts([["Dates", `${fmtShort(r.from)}${r.to && r.to !== r.from ? ` to ${fmtShort(r.to)}` : ""}`, " w2"], ["Trips", r.legs.length], ["Rent", rs(r.rent)], ["Expenses", rs(r.rent - r.bal)], ["Balance", rs(r.bal), r.bal < 0 ? " neg" : " pos"],
+      ["Received", rs(r.received)], ["To driver", G ? rs(G) : "—"], ["Diesel", qkDsl(r)]]) + (!shut && due > 0 ? `<span class="qkdue">${rs(due)} to collect</span>` : "") + `</button>`;
+}
+// Home: the truck, a button for a new load, and its round trips as cards, newest first.
 function qkHome() {
-  const tks = kSorted(truckList()), r = qkRound(), R = qkRounds(kBusId), bus = vehicles.find(v => v.id === kBusId);
-  const big = (k, ic, t, sub, cls = "") => `<button type="button" class="qkbig${cls}" data-qk="${k}"${k !== "load" && !r ? " disabled" : ""}><i aria-hidden="true">${ic}</i><span>${t}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
-  const S = r ? { rent: r.rent, bal: r.bal } : null, pend = l => (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0);
+  const tks = kSorted(truckList()), R = roundsOf(kBusId).sort((a, b) => b.from.localeCompare(a.from) || String(b.id).localeCompare(String(a.id))), show = qk.more ? R : R.slice(0, 10);
   return (qk.ret ? `<button type="button" class="qkback" data-qk="ret">‹ Back to the trip sheet</button>` : "") + `<div class="qkhd"><select id="qkTruck" aria-label="Truck">${tks.map(t => `<option value="${t.id}"${t.id === kBusId ? " selected" : ""}>${esc(plateOf(t))}</option>`).join("")}</select>` +
-    (R.length > 1 ? `<select id="qkRound" aria-label="Round trip">${R.map(x => `<option value="${x.id}"${x.id === qk.rid ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>` : `<small>${r ? `Round trip ${rtNo(r)} · Open · from ${fmtShort(r.from)}` : "No open round trip"}</small>`) + `</div>` +
-    (r ? `<div class="qkcard qksum"><div><small>Rent</small><b>${nf(S.rent)}</b></div><div><small>Expense</small><b>${nf(S.rent - S.bal)}</b></div><div><small>Balance</small><b class="${S.bal < 0 ? "neg" : "pos"}">${nf(S.bal)}</b></div></div>`
-      : `<div class="qkcard"><b>${esc(plateOf(bus))} has no open round trip.</b><p class="sub" style="margin:4px 0 0">New load starts one.</p></div>`) +
-    big("load", "🚚", "New load", "Date, places, load, tonnes, rent", " pri") +
-    `<div class="qkgrid">${big("dsl", "⛽", "Diesel")}${big("exp", "🛣", "FASTag & expenses")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>` +
-    big("end", "🏁", "Trip ended", "Unloading date and end km") +
-    (r ? `<div class="qkcard"><small class="sub">Trips in this round trip · tap to open the full trip</small>${r.legs.map((l, i) => { const got = pend(l);
-      return `<button type="button" class="qkli" data-qkleg="${l.id}"><b>${i + 1} · ${esc(rtLegName(l))}</b><span>${rs(num(l.rent))} · ${got >= num(l.rent) && num(l.rent) ? "paid" : `<span class="pill d30">${got ? "part paid" : "to collect"}</span>`}</span></button>`; }).join("")}</div>
-      <div class="qklinks"><button type="button" data-qk="print">🖨 Print</button><button type="button" data-qk="send">📤 Send details</button><button type="button" data-qk="ov">Overview</button></div>` : "") +
-    `<div class="qklinks"><button type="button" data-qk="full">Full form (computer screen)</button></div>`;
+    `<small>${R.length ? `${R.length} round trip${R.length > 1 ? "s" : ""} · ${R.filter(r => r.status !== "Closed").length} open` : "No round trips yet"}</small></div>` +
+    `<button type="button" class="qkbig pri" data-qk="load"><i aria-hidden="true">🚚</i><span>New load<small>Date, places, load, tonnes, rent</small></span></button>` +
+    (R.length ? `<h3 class="qkadd">Round trips</h3>${show.map(qkRoundCard).join("")}${R.length > show.length ? `<div class="qklinks"><button type="button" data-qk="more">Show ${R.length - show.length} older round trip${R.length - show.length > 1 ? "s" : ""}</button></div>` : ""}`
+      : `<div class="qkcard"><p class="sub" style="margin:0">No trips for this truck yet. New load starts its first round trip.</p></div>`) ;
+}
+// One round trip: its figures, Add trip and the money buttons, then its trips as cards.
+function qkRoundScr() {
+  const r = qkRound(); if (!r || r.id !== qk.rid) { qk.scr = "home"; return qkHome(); }
+  const shut = r.status === "Closed", G = (r.doc?.given || []).reduce((a, g) => a + num(g.amount), 0);
+  const big = (k, ic, t, sub, cls = "") => `<button type="button" class="qkbig${cls}" data-qk="${k}" data-rnd="1"><i aria-hidden="true">${ic}</i><span>${t}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
+  const card = (l, i) => { const c = legCalc(l), tag = qkEnded(l) ? '<span class="bstage booked">Ended</span>' : '<span class="bstage ontrip">On the way</span>';
+    return `<button type="button" class="qkrc" data-qkleg="${l.id}" style="--bh:${busHue(r.vehicleId)}"><div class="qkrch"><b>Trip ${i + 1} · ${esc(rtLegName(l))}</b>${tag}</div>${l.load || l.tons ? `<span class="qkpath">${esc(legLoadTxt(l))}</span>` : ""}` +
+      qkFacts([["Loaded", fmtShort(l.from)], ["Unloaded", qkEnded(l) ? fmtShort(l.to) : "—"], ["Km", c.km ? nf(c.km) : "—"], ["Rent", rs(num(l.rent))], ["Expenses", rs(c.exp)], ["Received", rs(c.received)]]) + `</button>`; };
+  return `<div class="qkform">${qk.ret ? `<button type="button" class="qkback" data-qk="ret">‹ Back to the trip sheet</button>` : `<button type="button" class="qkback" data-qk="home">‹ All round trips</button>`}<h2>Round trip ${rtNo(r)}${shut ? ' <span class="bstage closed">🔒 Closed</span>' : ""}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · ${esc(r.path || "")}</small></h2>` +
+    `<div class="qkcard qksum"><div><small>Rent</small><b>${nf(r.rent)}</b></div><div><small>Expense</small><b>${nf(r.rent - r.bal)}</b></div><div><small>Balance</small><b class="${r.bal < 0 ? "neg" : "pos"}">${nf(r.bal)}</b></div>` +
+    `<div><small>Received</small><b>${nf(r.received)}</b></div><div><small>To driver</small><b>${G ? nf(G) : "—"}</b></div><div><small>Diesel</small><b>${qkDsl(r)}</b></div></div>` +
+    (shut ? `<p class="sub" style="margin:0">This round trip is closed. It can be reopened from a computer.</p>` :
+      big("load", "＋", "Add trip", "The next load in this round trip", " pri") + `<div class="qkgrid qkg3">${big("dsl", "⛽", "Diesel")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>`) +
+    `<h3 class="qkadd">Trips (${r.legs.length})</h3>${r.legs.map(card).join("")}` +
+    `<div class="qklinks"><button type="button" data-qk="print">🖨 Print</button><button type="button" data-qk="send">📤 Send details</button></div></div>`;
 }
 // The lists on the diesel and payment screens: everything added so far in the round trip, each with a trash icon.
 function qkList() {
@@ -14795,26 +14820,26 @@ function qkForm() {
 }
 // One saved trip: its details and money, with the same buttons as the home screen, already set to this trip.
 function qkTrip() {
-  const r = qkRound(), l = r?.legs.find(x => x.id === qk.edit);
+  const r = qkRound(), l = r?.legs.find(x => x.id === qk.edit), shut = r?.status === "Closed";
   if (!l) { qk.scr = "home"; return qkHome(); }
   const c = legCalc(l), i = r.legs.indexOf(l), dn = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "—";
   const F = rtDslAll({ legs: [l], doc: {} }), lit = F.reduce((a, f) => a + num(f.litres), 0), dsl = Math.round(F.reduce((a, f) => a + num(f.amount), 0));
   const row = (a, b) => `<div class="qkrow"><span>${a}</span><b>${b}</b></div>`;
   const big = (k, ic, t, sub) => `<button type="button" class="qkbig" data-qk="${k}" data-for="${l.id}"><i aria-hidden="true">${ic}</i><span>${t}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
-  return `<div class="qkform"><button type="button" class="qkback" data-qk="home">‹ Back</button><h2>Trip ${i + 1} · ${esc(rtLegName(l))}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · Round trip ${rtNo(r)}</small></h2>` +
+  return `<div class="qkform"><button type="button" class="qkback" data-qk="toround">‹ Round trip ${rtNo(r)}</button><h2>Trip ${i + 1} · ${esc(rtLegName(l))}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · Round trip ${rtNo(r)}</small></h2>` +
     `<div class="qkcard qkexp">${row("Loaded", fmtShort(l.from))}${row("Unloaded", l.to && (l.to !== l.from || num(l.endKm)) ? fmtShort(l.to) : "—")}${l.load || l.tons ? row("Load", esc(legLoadTxt(l))) : ""}${row("Driver", esc(dn))}` +
     `${row("Km", num(l.startKm) ? `${nf(num(l.startKm))} → ${num(l.endKm) ? nf(num(l.endKm)) : "…"}${c.km ? ` · ${nf(c.km)} km` : ""}` : "—")}</div>` +
     `<div class="qkcard qkexp">${row("Rent", rs(num(l.rent)))}${row("Expenses", rs(c.exp))}${row("Diesel", lit ? `${nf(lit, lit % 1 ? 2 : 0)} L · ${rs(dsl)}` : "—")}${row("Received", rs(c.received))}` +
     `<div class="qktot"><span>Balance (rent − expenses)</span><b class="${c.bal < 0 ? "neg" : ""}">${rs(c.bal)}</b></div></div>` +
-    big("load", "✏️", "Edit load details", "Date, places, load, tonnes, rent, driver, km") +
+    (shut ? "" : big("load", "✏️", "Edit load details", "Date, places, load, tonnes, rent, driver, km") +
     `<div class="qkgrid">${big("dsl", "⛽", "Diesel")}${big("exp", "🛣", "FASTag & expenses")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>` +
-    big("end", "🏁", "Trip ended", "Unloading date and end km") +
-    `<div class="qklinks"><button type="button" data-qk="legfull">Open in the full form</button></div></div>`;
+    big("end", "🏁", "Trip ended", "Unloading date and end km")) + `</div>`;
 }
 function qkRender() {
   const el = $("kQuick"); if (!el) return;
   if (qk.scr === "home") { el.innerHTML = qkHome(); return; }
   if (qk.scr === "trip") { el.innerHTML = qkTrip(); return; }
+  if (qk.scr === "round") { el.innerHTML = qkRoundScr(); return; }
   if (!el.querySelector(".qkform")) { el.innerHTML = qkForm(); qkCalc(); return; }
   const L = el.querySelector("#qkList"); if (L) L.innerHTML = qkList();
 }
@@ -14825,8 +14850,7 @@ function qkCalc() {
 }
 function qkOpenTrip(rid, legId) { qk.rid = rid; qk.edit = legId; qk.leg = legId; qk.scr = "trip"; qk.back = "trip"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); }
 $("kQuick").addEventListener("change", e => {
-  if (e.target.id === "qkTruck") { kBusId = e.target.value; qk.rid = ""; renderTruck(); }
-  if (e.target.id === "qkRound") { qk.rid = e.target.value; qkRender(); }
+  if (e.target.id === "qkTruck") { kBusId = e.target.value; qk.rid = ""; qk.more = false; renderTruck(); }
   if (e.target.id === "qkLeg" && qk.scr === "exp") { qk.leg = e.target.value; $("kQuick").innerHTML = ""; qkRender(); return; }
   if (e.target.id === "qkLeg") qkCalc();
 });
@@ -14841,14 +14865,16 @@ $("kQuick").addEventListener("input", e => {
 $("kQuick").addEventListener("click", async e => {
   const b = e.target.closest("[data-qk]"), r = qkRound();
   if (b) { const a = b.dataset.qk;
-    if (a === "full") { qk.full = true; renderTruck(); return; }
-    if (a === "legfull" && r) { openRound(r.id, "leg", qk.edit); return; }
+    if (a === "more") { qk.more = true; qkRender(); return; }
+    if (a === "toround") { qk.scr = "round"; qk.edit = ""; qk.leg = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "ret") { const h = qk.ret; qk.ret = ""; location.hash = h; return; }
     if (a === "back") { qk.scr = qk.back; qk.bill = null; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
-    if (a === "home") { qk.scr = "home"; qk.edit = ""; qk.leg = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
-    if (a === "print" && r) { rtPrintOpen(r); return; } if (a === "send" && r) { rtSendOpen(r); return; } if (a === "ov" && r) { openRound(r.id, "ov"); return; }
-    const fromTrip = !!b.dataset.for; qk.back = fromTrip ? "trip" : "home"; qk.leg = b.dataset.for || ""; if (!fromTrip) qk.edit = "";
+    if (a === "home") { qk.scr = "home"; qk.edit = ""; qk.leg = ""; qk.rid = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+    if (a === "print" && r) { rtPrintOpen(r); return; } if (a === "send" && r) { rtSendOpen(r); return; }
+    const fromTrip = !!b.dataset.for; qk.back = fromTrip ? "trip" : b.dataset.rnd ? "round" : "home"; qk.leg = b.dataset.for || ""; if (!fromTrip) qk.edit = "";
+    if (!fromTrip && !b.dataset.rnd) qk.rid = "";
     qk.scr = a; qk.bill = null; qk.set = true; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+  const rc = e.target.closest("[data-qkr]"); if (rc) { qk.rid = rc.dataset.qkr; qk.scr = "round"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
   const lg = e.target.closest("[data-qkleg]"); if (lg && r) { qkOpenTrip(r.id, lg.dataset.qkleg); return; }
   const to = e.target.closest("[data-qkto]"); if (to) { $("qkTo").value = to.dataset.qkto; return; }
   const sg = e.target.closest("[data-qkseg]"); if (sg) { qk[sg.dataset.qkseg] = sg.dataset.v; sg.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === sg)); return; }
@@ -14895,7 +14921,7 @@ $("kQuick").addEventListener("submit", async e => {
       const dn = v("qkDrv"); if (dn) { const m = crewMaster("driver", dn); if (m) { l.driver1Id = m.id; l.driver1Name = m.name; } else l.driver1Name = dn; }
       const rsel = v("qkR"); l.roundId = rsel && rsel !== "new" ? rsel : l.id;
       go.disabled = true; await qkSaveLeg(l); qk.rid = l.roundId; if (fyOf(l.from) !== kFy) { kFy = fyOf(l.from); if ($("kFy")) $("kFy").value = String(kFy); }
-      toast(`New load added · ${lgPlace(l.origin)} → ${lgPlace(l.dest)}`); qk.scr = "home"; renderTruck(); scrollTo(0, 0); return;
+      toast(`New load added · ${lgPlace(l.origin)} → ${lgPlace(l.dest)}`); qk.scr = "round"; renderTruck(); scrollTo(0, 0); return;
     }
     if (!r) return bad("This truck has no open round trip. Add a new load first.");
     if (k === "exp") { const l = qkLegCopy(v("qkLeg")); if (!l) return bad("Choose the trip.");
@@ -16333,7 +16359,7 @@ $("oTodo").addEventListener("click", e => {
   if (b.dataset.go === "day") { dbBus = b.dataset.id; rsBus = b.dataset.id; dbFilledKey = ""; dbFrom = { hash: "#trips", y: scrollY }; location.hash = "#trips-day"; }
   if (b.dataset.go === "booking") openBooking(b.dataset.id);
   if (b.dataset.go === "round") { const r = roundsOf(null).find(x => x.id === b.dataset.id);
-    if (r && r.status !== "Closed" && qkOn()) { kBusId = r.vehicleId; qk.full = false; qk.rid = r.id; qk.scr = "home"; qk.edit = ""; qk.ret = location.hash || "#trips"; location.hash = "#trips-truck"; } else openRound(b.dataset.id); }
+    if (r && qkOn()) { kBusId = r.vehicleId; qk.rid = r.id; qk.scr = "round"; qk.edit = ""; qk.ret = location.hash || "#trips"; location.hash = "#trips-truck"; } else openRound(b.dataset.id); }
   if (b.dataset.go === "drv") dvCheckOpen(b.dataset.id);
 });
 $("oTodo").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches(".orow[data-go]")) { e.preventDefault(); e.target.click(); } });
@@ -16360,7 +16386,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05c";
+const APP_VER = "2026-11-05e";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
