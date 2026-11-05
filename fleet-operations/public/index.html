@@ -206,7 +206,7 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qkchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px; } .qkchips button { height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 17px; background: var(--bg); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .qkseg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .qkseg button { font: inherit; font-weight: 600; font-size: 13.5px; padding: 11px 2px; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; } .qkseg button.on { background: var(--accent); color: #fff; }
-.qkexp { gap: 0; } .qkrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; } .qkrow:last-child { border-bottom: 0; } .qkrow input { width: 140px; flex: none; }
+.qkexp { gap: 0; } .qkrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; } .qkrow:last-child { border-bottom: 0; } .qkrow > b { font-family: var(--mono); text-align: right; } .qktot b.neg { color: var(--danger); } .qkrow input { width: 140px; flex: none; }
 .qktot { display: flex; justify-content: space-between; align-items: center; background: var(--accent-soft); border-radius: 10px; padding: 9px 12px; font-size: 13.5px; margin-top: 6px; } .qktot b { font: 700 16px var(--mono); }
 .qkchk { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; } .qkchk input { width: 22px; height: 22px; accent-color: var(--accent); } .qkchk small { color: var(--muted); font-weight: 400; }
 .qkcam { min-height: 48px; border: 2px dashed var(--accent); border-radius: 12px; background: var(--surface); color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; } .qkcam.has { border-style: solid; }
@@ -14720,7 +14720,7 @@ function dvCheckOpen(id) {
    New load, diesel fills, FASTag and expenses, payments received, money given to the driver, and trip ended. Diesel and both
    kinds of payment can be added as many times as needed. Everything is saved into the same trips and round trips as the
    computer screens; "Full form" opens those screens instead. */
-let qk = { scr: "home", rid: "", full: false, leg: "", pay: "Card", by: "Bank transfer", gby: "Cash", set: true, bill: null };
+let qk = { scr: "home", rid: "", full: false, leg: "", edit: "", back: "home", pay: "Card", by: "Bank transfer", gby: "Cash", set: true, bill: null };
 const qkOn = () => canTrips && !qk.full && bwIsPhone();
 const qkRounds = vid => roundsOf(vid).filter(r => r.status !== "Closed").sort((a, b) => (b.to || b.from).localeCompare(a.to || a.from));
 function qkRound() { const R = qkRounds(kBusId); if (!R.some(r => r.id === qk.rid)) qk.rid = R[0]?.id || ""; return R.find(r => r.id === qk.rid) || null; }
@@ -14732,7 +14732,7 @@ function qkHome() {
   const tks = kSorted(truckList()), r = qkRound(), R = qkRounds(kBusId), bus = vehicles.find(v => v.id === kBusId);
   const big = (k, ic, t, sub, cls = "") => `<button type="button" class="qkbig${cls}" data-qk="${k}"${k !== "load" && !r ? " disabled" : ""}><i aria-hidden="true">${ic}</i><span>${t}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
   const S = r ? { rent: r.rent, bal: r.bal } : null, pend = l => (l.payments || []).filter(p => p.settled !== false).reduce((a, p) => a + num(p.amount), 0);
-  return `<div class="qkhd"><select id="qkTruck" aria-label="Truck">${tks.map(t => `<option value="${t.id}"${t.id === kBusId ? " selected" : ""}>${esc(plateOf(t))}</option>`).join("")}</select>` +
+  return (qk.ret ? `<button type="button" class="qkback" data-qk="ret">‹ Back to the trip sheet</button>` : "") + `<div class="qkhd"><select id="qkTruck" aria-label="Truck">${tks.map(t => `<option value="${t.id}"${t.id === kBusId ? " selected" : ""}>${esc(plateOf(t))}</option>`).join("")}</select>` +
     (R.length > 1 ? `<select id="qkRound" aria-label="Round trip">${R.map(x => `<option value="${x.id}"${x.id === qk.rid ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>` : `<small>${r ? `Round trip ${rtNo(r)} · Open · from ${fmtShort(r.from)}` : "No open round trip"}</small>`) + `</div>` +
     (r ? `<div class="qkcard qksum"><div><small>Rent</small><b>${nf(S.rent)}</b></div><div><small>Expense</small><b>${nf(S.rent - S.bal)}</b></div><div><small>Balance</small><b class="${S.bal < 0 ? "neg" : "pos"}">${nf(S.bal)}</b></div></div>`
       : `<div class="qkcard"><b>${esc(plateOf(bus))} has no open round trip.</b><p class="sub" style="margin:4px 0 0">New load starts one.</p></div>`) +
@@ -14760,18 +14760,19 @@ function qkForm() {
   const r = qkRound(), k = qk.scr, f = (l, h) => `<label class="qkf">${l}${h}</label>`, ip = (id, v = "", o = "") => `<input id="${id}" value="${esc(v)}" autocomplete="off" ${o}>`;
   const seg = (key, opts) => `<div class="qkseg">${opts.map(o => `<button type="button" data-qkseg="${key}" data-v="${o}" class="${qk[key] === o ? "on" : ""}">${o}</button>`).join("")}</div>`;
   const cam = `<button type="button" class="qkcam" id="qkCam">📷 ${k === "dsl" ? "Photo of the bill" : "Photo of the slip"} (optional)</button>`;
-  const last = r?.legs[r.legs.length - 1], places = [...new Set(ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, b) => b.from.localeCompare(a.from)).flatMap(x => [x.dest, x.origin]).filter(Boolean))].slice(0, 5);
-  const head = { load: "New load", dsl: "Diesel fill", exp: "FASTag & expenses", rec: "Payment received", giv: "Money to driver", end: "Trip ended" }[k];
+  const last = r?.legs[r.legs.length - 1], places = [...new Set(ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, b) => b.from.localeCompare(a.from)).flatMap(x => [x.dest, x.origin]).filter(Boolean).map(lgPlace))].slice(0, 5);
+  const head = { load: qk.edit ? "Edit load details" : "New load", dsl: "Diesel fill", exp: "FASTag & expenses", rec: "Payment received", giv: "Money to driver", end: "Trip ended" }[k];
   let b = "";
   if (k === "load") {
+    const E = qk.edit ? ops.truckTrips.find(x => x.id === qk.edit) : null, eDrv = E ? (E.driver1Id ? drivers.find(d => d.id === E.driver1Id)?.name || E.driver1Name : E.driver1Name) || "" : "";
     const lastAny = ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, c) => (c.to || c.from).localeCompare(a.to || a.from))[0], dn = lastAny ? (lastAny.driver1Id ? drivers.find(d => d.id === lastAny.driver1Id)?.name || lastAny.driver1Name : lastAny.driver1Name) || "" : "";
-    b = f("Add to", `<select id="qkR"><option value="new">A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}"${x.id === r?.id ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`) +
-      f("Loading date", ip("qkDate", todayISO(), 'type="date"')) +
-      `<div class="qk2">${f("From", ip("qkFrom", lgPlace(lastAny?.dest || ""), 'list="qkPl"'))}${f("To", ip("qkTo", "", 'list="qkPl"'))}</div>` +
-      `<div class="qkchips">${places.map(p => `<button type="button" data-qkto="${esc(lgPlace(p))}">${esc(lgPlace(p))}</button>`).join("")}</div>` +
-      `<div class="qk2">${f("Load", ip("qkLoad", "", 'list="lgLoads" placeholder="e.g. Paruppu"'))}${f("Tonnes", ip("qkTons", "", 'type="number" inputmode="decimal"'))}</div>` +
-      `<div class="qk2">${f("Rent per tonne", ip("qkRateT", "", 'type="number" inputmode="decimal"'))}${f("Trip rent", ip("qkRent", "", 'type="number" inputmode="numeric" class="qkbigin"'))}</div>` +
-      f("Driver", ip("qkDrv", dn, 'list="lgDrvList"')) + f("Start km (meter)", ip("qkKm", lastAny?.endKm || "", 'type="number" inputmode="numeric"')) +
+    b = (E ? "" : f("Add to", `<select id="qkR"><option value="new">A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}"${x.id === r?.id ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`)) +
+      f("Loading date", ip("qkDate", E ? E.from : todayISO(), 'type="date"')) +
+      `<div class="qk2">${f("From", ip("qkFrom", lgPlace(E ? E.origin : lastAny?.dest || ""), 'list="qkPl"'))}${f("To", ip("qkTo", E ? lgPlace(E.dest) : "", 'list="qkPl"'))}</div>` +
+      `<div class="qkchips">${places.map(p => `<button type="button" data-qkto="${esc(p)}">${esc(p)}</button>`).join("")}</div>` +
+      `<div class="qk2">${f("Load", ip("qkLoad", E?.load || "", 'list="lgLoads" placeholder="e.g. Paruppu"'))}${f("Tonnes", ip("qkTons", E?.tons ?? "", 'type="number" inputmode="decimal"'))}</div>` +
+      `<div class="qk2">${f("Rent per tonne", ip("qkRateT", E?.rateTon ?? "", 'type="number" inputmode="decimal"'))}${f("Trip rent", ip("qkRent", E ? E.rent || "" : "", `type="number" inputmode="numeric" class="qkbigin"${E ? ' data-typed="1"' : ""}`))}</div>` +
+      f("Driver", ip("qkDrv", E ? eDrv : dn, 'list="lgDrvList"')) + f("Start km (meter)", ip("qkKm", E ? E.startKm || "" : lastAny?.endKm || "", 'type="number" inputmode="numeric"')) +
       `<datalist id="qkPl">${[...new Set(ops.truckTrips.flatMap(x => [x.origin, x.dest]).filter(Boolean).map(lgPlace))].sort().map(p => `<option value="${esc(p)}">`).join("")}</datalist>`;
   }
   if (k === "exp") { const l = ops.truckTrips.find(x => x.id === (qk.leg || qkLastLeg(r))) || {};
@@ -14783,18 +14784,37 @@ function qkForm() {
   if (k === "rec") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, qk.leg || qkLastLeg(r), true)}</select>`)}</div>` +
     f("Amount ₹", ip("qkAmt", "", 'type="number" inputmode="numeric" class="qkbigin"')) + seg("by", LG_PAYBY) + f("Description", ip("qkDesc", "", 'placeholder="e.g. From the party, or the driver gave"')) +
     `<label class="qkchk"><input type="checkbox" id="qkSet"${qk.set ? " checked" : ""}> Settled <small>Untick while it is still to be confirmed</small></label>` + cam;
-  if (k === "giv") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, "", true)}</select>`)}</div>` +
+  if (k === "giv") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, qk.leg, true)}</select>`)}</div>` +
     f("Amount ₹", ip("qkAmt", "", 'type="number" inputmode="numeric" class="qkbigin"')) + seg("gby", RT_GIVE) + f("Description", ip("qkDesc", (r?.doc?.given || []).length ? "Sent during the trip" : "Advance", 'list="rtGivList"')) + cam;
-  if (k === "end") { const open = r?.legs.find(l => !num(l.endKm)) || last;
+  if (k === "end") { const open = r?.legs.find(l => l.id === qk.leg) || r?.legs.find(l => !num(l.endKm)) || last;
     b = f("Trip", `<select id="qkLeg">${qkLegOpts(r, open?.id)}</select>`) + `<div class="qk2">${f("Unloading date", ip("qkDate", todayISO(), 'type="date"'))}${f("End km (meter)", ip("qkKm", "", 'type="number" inputmode="numeric"'))}</div><p class="sub" id="qkEndInfo"></p>`; }
   const multi = ["dsl", "rec", "giv"].includes(k);
-  return `<form class="qkform" novalidate><button type="button" class="qkback" data-qk="home">‹ Back</button><h2>${head}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))}${r && k !== "load" ? ` · Round trip ${rtNo(r)}` : ""}</small></h2>` +
+  return `<form class="qkform" novalidate><button type="button" class="qkback" data-qk="back">‹ Back</button><h2>${head}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))}${r && k !== "load" ? ` · Round trip ${rtNo(r)}` : ""}</small></h2>` +
     (multi ? `<div class="qkcard qklist" id="qkList">${qkList()}</div><h3 class="qkadd">Add ${k === "dsl" ? "a fill" : k === "rec" ? "a payment" : "money given"}</h3>` : "") + b +
-    `<div class="err" id="qkErr" role="alert"></div><button type="submit" class="qkgo">${multi ? (k === "dsl" ? "+ Add fill" : k === "rec" ? "+ Add payment" : "+ Add") : k === "load" ? "Save load" : "Save"}</button>${multi ? `<button type="button" class="qkdone" data-qk="home">Done</button>` : ""}</form>`;
+    `<div class="err" id="qkErr" role="alert"></div><button type="submit" class="qkgo">${multi ? (k === "dsl" ? "+ Add fill" : k === "rec" ? "+ Add payment" : "+ Add") : k === "load" ? (qk.edit ? "Save changes" : "Save load") : "Save"}</button>${multi ? `<button type="button" class="qkdone" data-qk="back">Done</button>` : ""}</form>`;
+}
+// One saved trip: its details and money, with the same buttons as the home screen, already set to this trip.
+function qkTrip() {
+  const r = qkRound(), l = r?.legs.find(x => x.id === qk.edit);
+  if (!l) { qk.scr = "home"; return qkHome(); }
+  const c = legCalc(l), i = r.legs.indexOf(l), dn = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "—";
+  const F = rtDslAll({ legs: [l], doc: {} }), lit = F.reduce((a, f) => a + num(f.litres), 0), dsl = Math.round(F.reduce((a, f) => a + num(f.amount), 0));
+  const row = (a, b) => `<div class="qkrow"><span>${a}</span><b>${b}</b></div>`;
+  const big = (k, ic, t, sub) => `<button type="button" class="qkbig" data-qk="${k}" data-for="${l.id}"><i aria-hidden="true">${ic}</i><span>${t}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
+  return `<div class="qkform"><button type="button" class="qkback" data-qk="home">‹ Back</button><h2>Trip ${i + 1} · ${esc(rtLegName(l))}<small>${esc(plateOf(vehicles.find(v => v.id === kBusId)))} · Round trip ${rtNo(r)}</small></h2>` +
+    `<div class="qkcard qkexp">${row("Loaded", fmtShort(l.from))}${row("Unloaded", l.to && (l.to !== l.from || num(l.endKm)) ? fmtShort(l.to) : "—")}${l.load || l.tons ? row("Load", esc(legLoadTxt(l))) : ""}${row("Driver", esc(dn))}` +
+    `${row("Km", num(l.startKm) ? `${nf(num(l.startKm))} → ${num(l.endKm) ? nf(num(l.endKm)) : "…"}${c.km ? ` · ${nf(c.km)} km` : ""}` : "—")}</div>` +
+    `<div class="qkcard qkexp">${row("Rent", rs(num(l.rent)))}${row("Expenses", rs(c.exp))}${row("Diesel", lit ? `${nf(lit, lit % 1 ? 2 : 0)} L · ${rs(dsl)}` : "—")}${row("Received", rs(c.received))}` +
+    `<div class="qktot"><span>Balance (rent − expenses)</span><b class="${c.bal < 0 ? "neg" : ""}">${rs(c.bal)}</b></div></div>` +
+    big("load", "✏️", "Edit load details", "Date, places, load, tonnes, rent, driver, km") +
+    `<div class="qkgrid">${big("dsl", "⛽", "Diesel")}${big("exp", "🛣", "FASTag & expenses")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>` +
+    big("end", "🏁", "Trip ended", "Unloading date and end km") +
+    `<div class="qklinks"><button type="button" data-qk="legfull">Open in the full form</button></div></div>`;
 }
 function qkRender() {
   const el = $("kQuick"); if (!el) return;
   if (qk.scr === "home") { el.innerHTML = qkHome(); return; }
+  if (qk.scr === "trip") { el.innerHTML = qkTrip(); return; }
   if (!el.querySelector(".qkform")) { el.innerHTML = qkForm(); qkCalc(); return; }
   const L = el.querySelector("#qkList"); if (L) L.innerHTML = qkList();
 }
@@ -14803,6 +14823,7 @@ function qkCalc() {
   if (qk.scr === "exp" && $("qkExpT")) { const t = [...document.querySelectorAll("[data-qkexp]")].reduce((a, i) => a + num(i.value), 0); $("qkExpT").textContent = t ? rs(t) : "—"; }
   if (qk.scr === "end" && $("qkEndInfo")) { const l = ops.truckTrips.find(x => x.id === $("qkLeg").value); $("qkEndInfo").textContent = l ? `Loaded ${fmtShort(l.from)}${num(l.startKm) ? ` · start km ${nf(num(l.startKm))}` : ""}` : ""; }
 }
+function qkOpenTrip(rid, legId) { qk.rid = rid; qk.edit = legId; qk.leg = legId; qk.scr = "trip"; qk.back = "trip"; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); }
 $("kQuick").addEventListener("change", e => {
   if (e.target.id === "qkTruck") { kBusId = e.target.value; qk.rid = ""; renderTruck(); }
   if (e.target.id === "qkRound") { qk.rid = e.target.value; qkRender(); }
@@ -14821,9 +14842,14 @@ $("kQuick").addEventListener("click", async e => {
   const b = e.target.closest("[data-qk]"), r = qkRound();
   if (b) { const a = b.dataset.qk;
     if (a === "full") { qk.full = true; renderTruck(); return; }
+    if (a === "legfull" && r) { openRound(r.id, "leg", qk.edit); return; }
+    if (a === "ret") { const h = qk.ret; qk.ret = ""; location.hash = h; return; }
+    if (a === "back") { qk.scr = qk.back; qk.bill = null; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+    if (a === "home") { qk.scr = "home"; qk.edit = ""; qk.leg = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
     if (a === "print" && r) { rtPrintOpen(r); return; } if (a === "send" && r) { rtSendOpen(r); return; } if (a === "ov" && r) { openRound(r.id, "ov"); return; }
-    qk.scr = a; qk.bill = null; qk.set = true; if (a === "exp") qk.leg = ""; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
-  const lg = e.target.closest("[data-qkleg]"); if (lg && r) { openRound(r.id, "leg", lg.dataset.qkleg); return; }
+    const fromTrip = !!b.dataset.for; qk.back = fromTrip ? "trip" : "home"; qk.leg = b.dataset.for || ""; if (!fromTrip) qk.edit = "";
+    qk.scr = a; qk.bill = null; qk.set = true; $("kQuick").innerHTML = ""; qkRender(); scrollTo(0, 0); return; }
+  const lg = e.target.closest("[data-qkleg]"); if (lg && r) { qkOpenTrip(r.id, lg.dataset.qkleg); return; }
   const to = e.target.closest("[data-qkto]"); if (to) { $("qkTo").value = to.dataset.qkto; return; }
   const sg = e.target.closest("[data-qkseg]"); if (sg) { qk[sg.dataset.qkseg] = sg.dataset.v; sg.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === sg)); return; }
   if (e.target.closest("#qkCam")) { if (!assetsCap) { toast("Attaching photos isn't available in this view."); return; } $("qkBillIn").click(); return; }
@@ -14851,6 +14877,16 @@ $("kQuick").addEventListener("submit", async e => {
   e.preventDefault(); const k = qk.scr, r = qkRound(), v = id => ($(id)?.value || "").trim().replace(/\s+/g, " "), n = id => num($(id)?.value), bad = m => { $("qkErr").textContent = m; };
   const go = e.target.querySelector(".qkgo"); $("qkErr").textContent = "";
   try {
+    if (k === "load" && qk.edit) {
+      const l = qkLegCopy(qk.edit); if (!l) return bad("This trip is no longer there.");
+      const from = v("qkDate"), rent = Math.round(n("qkRent")); if (!from) return bad("Enter the loading date."); if (!v("qkFrom") || !v("qkTo")) return bad("Enter where it was loaded and where it goes."); if (!rent) return bad("Enter the trip rent.");
+      l.from = from; if (!l.to || l.to < from) l.to = from; l.days = inclDays(l.from, l.to) || 1; if (lgPlace(l.origin) !== v("qkFrom")) l.origin = v("qkFrom"); if (lgPlace(l.dest) !== v("qkTo")) l.dest = v("qkTo"); l.rent = rent; // a place keeps its state code when it is not changed
+      if (v("qkLoad")) l.load = v("qkLoad"); else delete l.load; if (n("qkTons") > 0) l.tons = Math.round(n("qkTons") * 100) / 100; else delete l.tons; if (n("qkRateT") > 0) l.rateTon = Math.round(n("qkRateT") * 100) / 100; else delete l.rateTon;
+      const km = Math.round(n("qkKm")); if (km) l.startKm = km; else delete l.startKm; if (km && num(l.endKm) && num(l.endKm) <= km) return bad("Start km must be less than the end km.");
+      const dn = v("qkDrv"), cur = (l.driver1Id ? drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name : l.driver1Name) || "";
+      if (!dn) { delete l.driver1Id; delete l.driver1Name; } else if (dn !== cur) { const m = crewMaster("driver", dn); delete l.driver1Id; if (m) { l.driver1Id = m.id; l.driver1Name = m.name; } else l.driver1Name = dn; }
+      go.disabled = true; await qkSaveLeg(l); toast("Trip updated"); qk.scr = "trip"; renderTruck(); scrollTo(0, 0); return;
+    }
     if (k === "load") {
       const l = { id: genId("tt"), vehicleId: kBusId, from: v("qkDate"), to: v("qkDate"), days: 1, origin: v("qkFrom"), dest: v("qkTo"), rent: Math.round(n("qkRent")) };
       if (!l.from) return bad("Enter the loading date."); if (!l.origin || !l.dest) return bad("Enter where it was loaded and where it goes."); if (!l.rent) return bad("Enter the trip rent.");
@@ -14864,11 +14900,11 @@ $("kQuick").addEventListener("submit", async e => {
     if (!r) return bad("This truck has no open round trip. Add a new load first.");
     if (k === "exp") { const l = qkLegCopy(v("qkLeg")); if (!l) return bad("Choose the trip.");
       document.querySelectorAll("[data-qkexp]").forEach(i => { const x = Math.round(num(i.value)); if (x > 0) l[i.dataset.qkexp] = x; else delete l[i.dataset.qkexp]; });
-      go.disabled = true; await qkSaveLeg(l); toast(`Expenses saved for ${rtLegName(l)}`); qk.scr = "home"; renderTruck(); scrollTo(0, 0); return; }
+      go.disabled = true; await qkSaveLeg(l); toast(`Expenses saved for ${rtLegName(l)}`); qk.scr = qk.back; renderTruck(); scrollTo(0, 0); return; }
     if (k === "end") { const l = qkLegCopy(v("qkLeg")); if (!l) return bad("Choose the trip.");
       const to = v("qkDate"), ek = Math.round(n("qkKm")); if (to && to < l.from) return bad("The unloading date is before the loading date."); if (ek && num(l.startKm) && ek <= num(l.startKm)) return bad("End km must be more than the start km.");
       if (to) { l.to = to; l.days = inclDays(l.from, to) || l.days; } if (ek) l.endKm = ek;
-      go.disabled = true; await qkSaveLeg(l); toast(`Trip ended · ${rtLegName(l)}`); qk.scr = "home"; renderTruck(); scrollTo(0, 0); return; }
+      go.disabled = true; await qkSaveLeg(l); toast(`Trip ended · ${rtLegName(l)}`); qk.scr = qk.back; renderTruck(); scrollTo(0, 0); return; }
     const date = v("qkDate"), leg = v("qkLeg"); if (!date) return bad("Enter the date.");
     if (k === "dsl") {
       const fl = { date, litres: Math.round(n("qkLit") * 100) / 100, pay: qk.pay }; if (!(fl.litres > 0)) return bad("Enter the litres."); if (fl.litres > 1000) return bad("Check the litres: more than 1,000 L.");
@@ -16296,7 +16332,8 @@ $("oTodo").addEventListener("click", e => {
   const b = e.target.closest("[data-go]"); if (!b) return;
   if (b.dataset.go === "day") { dbBus = b.dataset.id; rsBus = b.dataset.id; dbFilledKey = ""; dbFrom = { hash: "#trips", y: scrollY }; location.hash = "#trips-day"; }
   if (b.dataset.go === "booking") openBooking(b.dataset.id);
-  if (b.dataset.go === "round") openRound(b.dataset.id);
+  if (b.dataset.go === "round") { const r = roundsOf(null).find(x => x.id === b.dataset.id);
+    if (r && r.status !== "Closed" && qkOn()) { kBusId = r.vehicleId; qk.full = false; qk.rid = r.id; qk.scr = "home"; qk.edit = ""; qk.ret = location.hash || "#trips"; location.hash = "#trips-truck"; } else openRound(b.dataset.id); }
   if (b.dataset.go === "drv") dvCheckOpen(b.dataset.id);
 });
 $("oTodo").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches(".orow[data-go]")) { e.preventDefault(); e.target.click(); } });
@@ -16323,7 +16360,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05b";
+const APP_VER = "2026-11-05c";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
