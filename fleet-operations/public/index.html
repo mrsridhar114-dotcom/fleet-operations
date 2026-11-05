@@ -11403,8 +11403,8 @@ function bwClick(e) {
   if (a === "askgo") { bwAskGo(); return; }
   if (a === "apprbk") { bwDeskAct(() => $("bkApprove").click()); return; }
   if (a === "apprts") { bwDeskAct(() => $("tsApprove").click()); return; }
-  if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b, t); return; }
-  if (a === "slipprint") { const b = bwBkNow(); if (b) slipPrint(b, t); return; }
+  if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b); return; }
+  if (a === "slipprint") { const b = bwBkNow(); if (b) slipPrint(b); return; }
   if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
   if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
   if (a === "advtoll") { bw.da.toll = !bw.da.toll; bwRender(); bwAdvSoon(50); return; }
@@ -12078,7 +12078,7 @@ const bkExRowHtml = (x = {}) => `<div class="bkexrow"><select data-exk aria-labe
   `<input type="number" inputmode="numeric" min="0" data-exa value="${x.amt ?? ""}" placeholder="₹" aria-label="Amount"><input data-exn maxlength="80" value="${esc(x.note || "")}" placeholder="e.g. 150 km over" aria-label="Note"><button class="icon" type="button" data-exrm aria-label="Remove this extra" title="Remove">✕</button></div>`;
 $("bkExAdd").onclick = () => { $("bkExtras").insertAdjacentHTML("beforeend", bkExRowHtml({ kind: EXTRA_KINDS[0] })); $("bkExtras").lastElementChild.querySelector("[data-exa]").focus(); syncBk(); };
 $("bkExtras").addEventListener("click", e => { const x = e.target.closest("[data-exrm]"); if (x) { x.closest(".bkexrow").remove(); syncBk(); } });
-$("bkTsPrint").onclick = () => { const b = ops.bookings.find(x => x.id === bkEditId); if (b) tsPrint(b, $("bkTsPrint")); };
+$("bkTsPrint").onclick = () => { const b = ops.bookings.find(x => x.id === bkEditId); if (b) tsPrint(b); };
 // Driver advance tab: the same figures as the phone's Driver advance screen. It saves by itself (not with Save).
 let bkDa = null, bkDaTimer = 0, bkDaBusy = false;
 const bkDaCur = () => ops.bookings.find(x => x.id === bkEditId);
@@ -13331,64 +13331,82 @@ async function tsLayout(L, pdf, b) {
     y -= 40;
   }
 }
-// Booking slip: the image (and the PDF if wanted), with or without the vehicle no.; save or share, like the trip sheet.
-function slipPrint(b, btn) {
-  const items = [{ k: "img", label: "Booking slip (image)", sub: "JPG to share or print" }, { k: "pdf", label: "PDF", sub: "The same slip as a PDF" }];
-  openPickPop(btn, `Booking slip ${b.no || ""} · print`, items, { slip: b.id || "" }, (keys, go, showBus) => slipSave(b, keys, go, showBus),
-    { note: "The image is ticked; tick PDF if you need it too.", extra: "Show the vehicle no. on the slip", on: d => d.k !== "pdf",
-      saveText: n => n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Choose a file", share: (keys, showBus) => slipFiles(b, keys, showBus) });
+// Booking slip and spare bus trip sheet print: a preview like the truck trip sheet's. Tick the pages, see them, then save
+// them as images or as one PDF, or share them.
+const toJpg = cv => new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92));
+function pvOpen({ name0, pages, extra, canvases, pdf }) {
+  pbClose();
+  let fmt = "jpg", urls = [], seq = 0; try { fmt = localStorage.getItem("fleet-pvout") === "pdf" ? "pdf" : "jpg"; } catch {}
+  const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
+  box.innerHTML = `<div class="xodlg rtpdlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Print / download · preview</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
+    `<div class="xobody"><div class="xoleft"><label class="xotl">File name<input type="text" data-title maxlength="80" value="${esc(name0)}"></label>` +
+    `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="jpg">🖼 Image</button><button type="button" data-fmt="pdf">📄 PDF</button></div>` +
+    (pages.length > 1 ? `<div class="xosub">Pages</div>${pages.map((p, i) => `<label class="dall"><input type="checkbox" data-pv="${i}" checked> <span><b>${esc(p.label)}</b>${p.sub ? `<br><small class="sub">${esc(p.sub)}</small>` : ""}</span></label>`).join("")}` : "") +
+    (extra ? `<div class="xosub">Show</div><label class="dall"><input type="checkbox" data-ex${extra.on ? " checked" : ""}> ${esc(extra.label)}</label>` : "") +
+    `<p class="dnote">The preview shows the pages as they will be saved or shared: one image for each page, or one PDF with all the ticked pages.</p></div>` +
+    `<div class="xoright rtpv"></div></div>` +
+    `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
+  const pane = box.querySelector(".rtpv"), fname = () => box.querySelector("[data-title]").value.trim() || name0;
+  const st = () => ({ pg: pages.length > 1 ? [...box.querySelectorAll("[data-pv]")].filter(i => i.checked).map(i => +i.dataset.pv) : [0], ex: !!box.querySelector("[data-ex]")?.checked });
+  // Each page group (front, back) can run to more than one image (a long back side).
+  const picked = async s => (await canvases(s)).filter(x => s.pg.includes(x.g));
+  const makeAll = async () => {
+    const s = st(); if (fmt === "pdf") return [{ filename: pbName("pdf", fname()), data: await pdf(s) }];
+    const cv = await picked(s), cnt = {}; return Promise.all(cv.map(async x => { cnt[x.g] = (cnt[x.g] || 0) + 1; const lab = pages.length > 1 ? ` ${pages[x.g].label.toLowerCase()}${cnt[x.g] > 1 ? " " + cnt[x.g] : ""}` : "";
+      return { filename: pbName("jpg", fname() + lab), data: await toJpg(x.cv) }; }));
+  };
+  const draw = async () => {
+    const k = ++seq; pane.classList.add("busy");
+    let cv = []; try { cv = await picked(st()); } catch { if (k === seq) pane.innerHTML = `<p class="err">Couldn't draw the preview.</p>`; return; }
+    const blobs = []; for (const x of cv) blobs.push(await toJpg(x.cv));
+    if (k !== seq || !box.isConnected) return;
+    urls.forEach(u => URL.revokeObjectURL(u)); urls = blobs.map(b => URL.createObjectURL(b)); pane.classList.remove("busy");
+    pane.innerHTML = urls.map((u, i) => `<figure><figcaption>${pages.length > 1 ? esc(pages[cv[i].g].label) : "Page " + (i + 1)}</figcaption><img src="${u}" alt="Preview of page ${i + 1}"></figure>`).join("") || `<p class="sub">Tick a page to print.</p>`;
+  };
+  const sync = () => {
+    box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
+    const n = st().pg.length, sv = box.querySelector(".duesave"); sv.disabled = !n; box.querySelector(".dshare").disabled = !n;
+    sv.lastChild.textContent = !n ? "Choose a page" : fmt === "pdf" ? "Save as PDF" : n > 1 ? `Save ${n} images` : "Save as image";
+  };
+  const close = () => { urls.forEach(u => URL.revokeObjectURL(u)); pbClose(); };
+  box.addEventListener("change", e => { if (e.target.matches("[data-pv], [data-ex]")) { sync(); draw(); } });
+  box.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-title]")) e.preventDefault(); });
+  box.addEventListener("click", e => {
+    if (e.target === box || e.target.closest("[data-xoclose]")) { close(); return; }
+    const b = e.target.closest("[data-fmt]"); if (b) { fmt = b.dataset.fmt; try { localStorage.setItem("fleet-pvout", fmt); } catch {} sync(); }
+  });
+  const saveAll = async (files, note) => { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return false; } for (const f of files) await dl.save(f); toast(note(files)); return true; };
+  box.querySelector(".duesave").onclick = async ev => {
+    const b = ev.currentTarget; b.disabled = true;
+    try { if (await saveAll(await makeAll(), f => f.length > 1 ? `Saved ${f.length} files. Open them to print.` : `Saved ${f[0].filename}. Open it to print.`)) close(); }
+    catch (er) { toast(er?.code === "declined" ? "Not saved." : er?.message === "load failed" ? "Couldn't prepare the PDF. Check your internet connection and try again." : "Couldn't make the file. Try again."); }
+    finally { if (b.isConnected) b.disabled = false; }
+  };
+  // Share: one file goes the usual way; several images go to the share screen together, or are saved to attach.
+  box.querySelector(".dshare").onclick = async ev => {
+    const b = ev.currentTarget;
+    if (fmt === "pdf" || st().pg.length < 2) { pbShare(b, fmt, async () => (await makeAll())[0], fname()); return; }
+    let ok = false; try { ok = !!navigator.canShare?.({ files: [new File(["x"], "x.jpg", { type: "image/jpeg" })] }); } catch {}
+    if (ok) { popShare(b, () => makeAll(), fname()); return; }
+    b.disabled = true;
+    try { if (await saveAll(await makeAll(), f => `This browser can't share directly. Saved ${f.length} images: attach them in WhatsApp or email.`)) close(); }
+    catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't share. Save the files instead."); }
+    finally { if (b.isConnected) b.disabled = false; }
+  };
+  document.body.append(box); sync(); draw();
 }
-async function slipFiles(b, keys, showBus) {
-  const d = slipData(b, showBus), base = `Booking slip ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " "), out = [];
-  if (keys.includes("img")) { const { doc, L } = tsCanvasKit(); await slipLayout(L, doc, d);
-    out.push({ filename: base + ".jpg", data: await new Promise((ok, fail) => doc.pages[0].toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92)) }); }
-  if (keys.includes("pdf")) out.push({ filename: base + ".pdf", data: await slipPdf(await loadPdfLib(), d) });
-  return out;
+function slipPrint(b) {
+  pvOpen({ name0: `Booking slip ${b.no || ""} ${b.party || ""}`.trim(), pages: [{ label: "Booking slip" }], extra: { label: "The vehicle no. on the slip" },
+    canvases: async s => { const { doc, L } = tsCanvasKit(); await slipLayout(L, doc, slipData(b, s.ex)); return [{ g: 0, cv: doc.pages[0] }]; },
+    pdf: async s => slipPdf(await loadPdfLib(), slipData(b, s.ex)) });
 }
-async function slipSave(b, keys, btn, showBus) {
-  let downloads = null;
-  try { downloads = await auDownloads(); } catch { downloads = null; }
-  if (!downloads) { toast("Saving files isn't available in this view."); return; }
-  if (btn) btn.disabled = true; toast("Preparing the slip…");
-  try {
-    const files = await slipFiles(b, keys, showBus);
-    for (const f of files) await downloads.save(f);
-    toast(`${files.length === 1 ? "Slip" : files.length + " files"} saved. Open ${files.length === 1 ? "it" : "them"} to print.`);
-  } catch (e) {
-    toast(e?.code === "declined" ? "Slip not saved." : e?.code === "rate_limited" ? "A save is already waiting for your answer." : e?.message === "load failed" ? "Couldn't prepare the PDF. Check your internet connection and try again." : "Couldn't save the slip. Try again.");
-  } finally { if (btn) btn.disabled = false; }
-}
-// Print: a tick list (like the vehicle master's) to choose the front and back images and, if wanted, the PDF of both; save or share them.
-function tsPrint(b, btn) {
-  const items = [{ k: 0, label: "Front (image)", sub: "Trip details, expenses and totals" }, { k: 1, label: "Back (image)", sub: "Diesel fill-ups, payments, driver advance and expenses" },
-    { k: "pdf", label: "PDF", sub: "Front and back in one file" }];
-  openPickPop(btn, `Trip sheet ${b.no || ""} · print`, items, { ts: b.id }, (keys, go) => tsSave(b, keys, go),
-    { note: "Tick what you want. The images are ticked; tick PDF if you need it too.", on: d => d.k !== "pdf", saveText: n => n ? `Save ${n} file${n === 1 ? "" : "s"}` : "Choose a file", share: keys => tsFiles(b, keys) });
-}
-async function tsFiles(b, keys) {
-  const base = `Trip sheet ${b.no || ""} ${b.party || ""}`.trim().replace(/[\\/:*?"<>|]+/g, " "), out = [];
-  if (keys.some(k => k !== "pdf")) {
-    const { doc, L } = tsCanvasKit(); await tsLayout(L, doc, b);
-    for (const [i, cv] of doc.pages.entries()) {
-      if (!keys.includes(Math.min(i, 1))) continue;
-      out.push({ filename: `${base} ${i === 0 ? "front" : i === 1 ? "back" : "back " + i}.jpg`, data: await new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92)) });
-    }
-  }
-  if (keys.includes("pdf")) { const L = await loadPdfLib(), pdf = await L.PDFDocument.create(); await tsLayout(L, pdf, b); out.push({ filename: base + ".pdf", data: new Blob([await pdf.save()], { type: "application/pdf" }) }); }
-  return out;
-}
-async function tsSave(b, keys, btn) {
-  let downloads = null;
-  try { downloads = await auDownloads(); } catch { downloads = null; }
-  if (!downloads) { toast("Saving files isn't available in this view."); return; }
-  if (btn) btn.disabled = true; toast("Preparing the trip sheet…");
-  try {
-    const files = await tsFiles(b, keys);
-    for (const f of files) await downloads.save(f);
-    toast(`${files.length === 1 ? "Trip sheet" : files.length + " files"} saved. Open ${files.length === 1 ? "it" : "them"} to print.`);
-  } catch (e) {
-    toast(e?.code === "declined" ? "Trip sheet not saved." : e?.code === "rate_limited" ? "A save is already waiting for your answer." : e?.message === "load failed" ? "Couldn't prepare the PDF. Check your internet connection and try again." : "Couldn't save the trip sheet. Try again.");
-  } finally { if (btn) btn.disabled = false; }
+function tsPrint(b) {
+  pvOpen({ name0: `Trip sheet ${b.no || ""} ${b.party || ""}`.trim(),
+    pages: [{ label: "Front", sub: "Trip details, expenses and totals" }, { label: "Back", sub: "Diesel fill-ups, payments, driver advance and expenses" }],
+    canvases: async () => { const { doc, L } = tsCanvasKit(); await tsLayout(L, doc, b); return doc.pages.map((cv, i) => ({ g: Math.min(i, 1), cv })); },
+    pdf: async s => { const L = await loadPdfLib(), pdf = await L.PDFDocument.create(); await tsLayout(L, pdf, b);
+      for (let i = pdf.getPageCount() - 1; i >= 0; i--) if (!s.pg.includes(Math.min(i, 1))) pdf.removePage(i);
+      return new Blob([await pdf.save()], { type: "application/pdf" }); } });
 }
 // Vehicle renewal dates sheet: every vehicle in service with all its renewal dates, as a PDF to print or share.
 // Only admins get full vehicle numbers; for everyone else the number is masked except its last four characters.
@@ -14243,7 +14261,7 @@ document.addEventListener("click", e => {
 V_WIDE.addEventListener?.("change", () => Object.values(P_CFG).forEach(cfg => { if (!$(cfg.drawer).hidden) pLayout(cfg); }));
 function pLayout(cfg) { colLayout(cfg.drawer, cfg.pre === "dv" ? "dvPhoto" : "cvPhoto", cfg.left, cfg.right); }
 ["bkPrint", "bkTsPrint"].forEach(id => $(id).insertAdjacentHTML("afterbegin", ICON_PRINT));
-$("bkPrint").onclick = () => slipPrint(slipForm(), $("bkPrint"));
+$("bkPrint").onclick = () => slipPrint(slipForm());
 
 /* ---------- truck trips ---------- */
 let kBusId = "", kFy = 0, lgEditId = null, lgDaysTouched = false;
