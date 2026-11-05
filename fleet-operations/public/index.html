@@ -180,6 +180,9 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .pill.d7 { background: var(--hot-soft); color: var(--hot); }
 .pill.d30, .pill.due { background: var(--warn-soft); color: var(--warn); } .pill.mlow { background: var(--danger); color: #fff; }
 .pktable { min-width: 1350px; } .pktable td.neg { color: var(--danger); } .pktable td.pos { color: var(--ok); } .pktable tr.pkidle td { color: var(--muted); } .pktable tbody tr[data-pkt]:hover td { background: var(--bg); }
+/* New version bar */
+#verBar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 9999; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0F2A1B; color: #fff; padding: 10px 12px 10px 16px; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.25); font-weight: 600; max-width: 520px; margin: 0 auto; }
+#verBar button { font: inherit; font-weight: 700; border: 0; border-radius: 8px; padding: 9px 16px; background: var(--accent); color: #fff; cursor: pointer; }
 /* Trucks on a phone */
 #view-ttruck.qkm .tcontrols, #view-ttruck.qkm #kTabs, #view-ttruck.qkm #kBody, #view-ttruck.qkm .sync, #view-ttruck.qkm #kNone, #view-ttruck.qkm #pkNone { display: none !important; }
 #kQuick { display: flex; flex-direction: column; gap: 10px; } #kQuick[hidden] { display: none; }
@@ -16318,6 +16321,17 @@ applyAccess();
 route();
 connect();
 dmyInstall();
+/* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
+   (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
+const APP_VER = "2026-11-05b";
+async function verCheck() {
+  if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
+  try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
+    if (m && m[1] !== APP_VER && !$("verBar")) { const d = document.createElement("div"); d.id = "verBar"; d.setAttribute("role", "status");
+      d.innerHTML = `<span>A new version of the app is ready.</span><button type="button">Reload</button>`; d.querySelector("button").onclick = () => location.reload(); document.body.append(d); } } catch {}
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) verCheck(); });
+setInterval(() => { if (!document.hidden) verCheck(); }, 15 * 60 * 1000);
 </script>
 
 </body>
