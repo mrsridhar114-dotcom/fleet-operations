@@ -2903,7 +2903,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf"><label for="kFy">Financial year</label><select id="kFy"></select></div>
           <button class="btn" type="button" id="kPrint" title="Print or download the trips and expenses of this truck, as Excel or as an image">Print</button>
           <button class="btn" type="button" id="kFast" title="Download the FASTag amounts of this truck">FASTag</button>
-          <button class="btn" type="button" id="kDl" title="Download every truck trip in the office Trip Download format (Excel, one sheet per truck)">⬇ Download</button>
+          <button class="btn" type="button" id="kDl" title="Download every truck trip in the office Trip Download template (Excel, one sheet per truck with its summary)">⬇ Download</button>
           <a class="btn" href="#truck-profit" title="Rent, expenses, profit and mileage of every truck, month by month">Profit report</a>
           <button class="btn primary" type="button" id="kAdd">+ Add trip</button>
         </div>
@@ -9482,21 +9482,27 @@ const XL = (() => {
   const col = n => { let s = ""; n++; while (n) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
   const idx = L => [...L].reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1;
   // Styles: 0 plain, 1 title, 2 label, 3 heading, 4 text, 5 whole number, 6 date, 7 two decimals, 8 bold number,
-  // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number, 15 text format, 16 bold 14pt heading
-  const S = { plain: 0, title: 1, label: 2, head: 3, text: 4, int: 5, date: 6, dec: 7, sum: 8, mtext: 9, tint: 10, ttext: 11, head2: 12, note: 13, mint: 14, tx: 15, h14: 16 };
+  // 9 merged text, 10 total number, 11 total label, 12 added heading, 13 note, 14 merged bold number, 15 text format, 16 bold 14pt heading, 17–29 the office truck sheet
+  const S = { plain: 0, title: 1, label: 2, head: 3, text: 4, int: 5, date: 6, dec: 7, sum: 8, mtext: 9, tint: 10, ttext: 11, head2: 12, note: 13, mint: 14, tx: 15, h14: 16,
+    oTitle: 17, oLab: 18, oVal: 19, oVal2: 20, oHeadR: 21, oHeadC: 22, oHeadL: 23, oDate: 24, oInt: 25, oDec: 26, oText: 27, oMint: 28, oStatus: 29 };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
     xf(0, 0, 0, 1, 'vertical="center"'), xf(165, 0, 0, 1), xf(164, 0, 0, 1, 'horizontal="center"'), xf(166, 0, 0, 1), xf(165, 1, 0, 1), xf(0, 0, 0, 1, 'horizontal="center" vertical="center" wrapText="1"'),
-    xf(165, 1, 3, 1), xf(0, 1, 3, 1), xf(0, 1, 4, 1, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 3, 0, 0), xf(165, 1, 0, 1, 'vertical="center"'), xf(49, 0, 0, 1), xf(0, 2, 0, 1, 'vertical="center"')];
+    xf(165, 1, 3, 1), xf(0, 1, 3, 1), xf(0, 1, 4, 1, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 3, 0, 0), xf(165, 1, 0, 1, 'vertical="center"'), xf(49, 0, 0, 1), xf(0, 2, 0, 1, 'vertical="center"'),
+    // 17–29: the office truck sheet (Trip Download): title, summary labels and values, headings, the trip rows.
+    xf(0, 4, 3, 2, 'horizontal="center" vertical="center"'), xf(0, 5, 3, 2, 'horizontal="left" vertical="center"'), xf(165, 5, 3, 2, 'horizontal="left" vertical="center"'), xf(165, 1, 5, 2, 'vertical="center"'),
+    xf(0, 2, 6, 2, 'horizontal="right" vertical="center"'), xf(0, 2, 6, 2, 'horizontal="center" vertical="center"'), xf(0, 2, 6, 2, 'horizontal="left" vertical="center"'),
+    xf(164, 0, 7, 2, 'horizontal="right"'), xf(165, 0, 7, 2), xf(166, 0, 7, 2), xf(0, 0, 7, 2), xf(165, 1, 7, 2, 'vertical="center"'), xf(0, 0, 0, 2, 'horizontal="center" vertical="center" wrapText="1"')];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
-    `<fonts count="4"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font></fonts>` +
-    `<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill></fills>` +
-    `<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>${B}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+    `<fonts count="6"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font></fonts>` +
+    `<fills count="8"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
+    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
+    `<borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="${XFS.length}">${XFS.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const serial = iso => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(1899, 11, 30)) / 864e5;
-  function sheet(name) { return { name, rows: {}, merges: [], widths: {}, freeze: 0, lists: [] }; }
+  function sheet(name) { return { name, rows: {}, merges: [], widths: {}, heights: {}, freeze: 0, lists: [] }; }
   // put(ws, "B6", value, style, formula): value is a number, text, or {d: "2026-04-04"} for a date.
   function put(ws, ref, v, s = S.text, f) {
     const m = /^([A-Z]+)(\d+)$/.exec(ref), r = +m[2], c = idx(m[1]);
@@ -9511,7 +9517,7 @@ const XL = (() => {
     return `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${x(v)}</t></is></c>`;
   }
   function sheetXml(ws) {
-    const rows = Object.keys(ws.rows).map(Number).sort((a, b) => a - b).map(r => `<row r="${r}">` +
+    const rows = Object.keys(ws.rows).map(Number).sort((a, b) => a - b).map(r => `<row r="${r}"${ws.heights?.[r] ? ` ht="${ws.heights[r]}" customHeight="1"` : ""}>` +
       Object.keys(ws.rows[r]).map(Number).sort((a, b) => a - b).map(c => cellXml(col(c) + r, ws.rows[r][c])).join("") + "</row>").join("");
     const view = ws.freeze ? `<sheetViews><sheetView workbookViewId="0"><pane ySplit="${ws.freeze}" topLeftCell="A${ws.freeze + 1}" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A${ws.freeze + 1}" sqref="A${ws.freeze + 1}"/></sheetView></sheetViews>` : `<sheetViews><sheetView workbookViewId="0"/></sheetViews>`;
     const cols = Object.keys(ws.widths).length ? `<cols>${Object.entries(ws.widths).map(([L, w]) => { const i = idx(L) + 1; return `<col min="${i}" max="${i}" width="${w}" customWidth="1"/>`; }).join("")}</cols>` : "";
@@ -9556,22 +9562,37 @@ function xlHeads(ws, row, heads, from = 0, style = XL.S.head) {
 }
 const xlSum = (rows, k) => rows.reduce((a, r) => a + (typeof r[k] === "number" && isFinite(r[k]) ? r[k] : 0), 0);
 
-/* Truck trips in the office "Trip Download" format: one sheet per truck (named with its number), the headings in row 1 exactly
-   as in that sheet, one row per trip from row 2, oldest first. Trip Balance and Trip Payment Status are written once per round
-   trip, merged over its trips. Diesel Rate is the diesel amount (as in the office sheet, where Total Expenses adds it); diesel
-   entered for a whole round trip goes on its last trip. Bill expenses go in Bill Exp 1. Remarks keep the trip's remarks and
-   each payment as "Bank Input - Rs.… on d/m/yyyy", so the file can be loaded back with Utility › Data upload. */
+/* Truck trips in the office "Trip Download" template: one sheet per truck (named with its number). Row 1 the title
+   "<truck> - Income / Expense Details"; rows 2–4 the summary (totals worked out by formulas over the trip rows); row 5 the
+   headings; one row per trip from row 6, oldest first, shaded as in the template. Trip Balance and Trip Payment Status are
+   written once per round trip, merged over its trips. Diesel Rate is the diesel amount (as in the office sheet, where Total
+   Expenses adds it); diesel entered for a whole round trip goes on its last trip. Bill expenses go in Bill Exp 1. Remarks
+   keep the trip's remarks and each payment as "Bank Input - Rs.… on d/m/yyyy", so the file loads back with Utility › Data upload. */
 const TK_DL_HEADS = ["From Date", "To Date", "Days", "Trip Rent", "Starting Place", "Destination", "Driver 1", "Driver 2", "Commission", "Diesel Litres", "Diesel Rate", "Toll Gate", "Driver Padi", "RTO Exp", "Loading Exp", "Bridge", "Oth.Exp", "Bill Exp 1", "Bill Exp 2", "Bill Exp 3", "Bill Exp 4", "Total Expenses", "Balance", "Trip Balance", "Trip Payment Status", "Start KM", "End KM", "Kms", "Remarks"];
-const TK_DL_WIDTHS = { A: 12.2, B: 11, C: 6.1, D: 10.7, E: 15.6, F: 18.2, G: 12, H: 12, I: 14, J: 13.9, K: 12.9, L: 10.5, M: 12.7, N: 9.8, O: 13.7, P: 7.8, Q: 9.5, R: 10.5, S: 10.5, T: 10.5, U: 10.5, V: 16.8, W: 11, X: 14.2, Y: 22.6, Z: 10.3, AA: 10, AB: 8, AC: 105 };
+const TK_DL_WIDTHS = { A: 12.2, B: 11, C: 6.1, D: 10.7, E: 15.6, F: 18.2, G: 18, H: 12, I: 18, J: 13.9, K: 18, L: 10.5, M: 12.7, N: 9.8, O: 13.7, P: 7.8, Q: 9.5, R: 10.5, S: 10.5, T: 10.5, U: 10.5, V: 16.8, W: 11, X: 14.2, Y: 22.6, Z: 10.3, AA: 10, AB: 8, AC: 105 };
 function xlTruckDownload(recs) {
   const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [], payTxt = p => `Bank Input - Rs.${num(p.amount)}${p.date ? ` on ${fmtDMY(p.date)}` : ""}`;
   const legs = (recs.truckTrips || []).slice().sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.id).localeCompare(String(b.id)));
   const ids = [...new Set(legs.map(l => l.vehicleId))].sort((a, b) => C.plate(a).localeCompare(C.plate(b)));
-  const heads = ws => { TK_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 1, h, S.h14)); ws.freeze = 1; Object.assign(ws.widths, TK_DL_WIDTHS); };
+  const F = 6; // the first trip row
+  const top = (ws, plate, last, T) => {
+    put(ws, "A1", `${plate} - Income / Expense Details`, S.oTitle); for (let c = 1; c <= 28; c++) put(ws, XL.col(c) + 1, null, S.oTitle); ws.merges.push("A1:AC1");
+    const rg = k => `${k}${F}:${k}${Math.max(F, last)}`;
+    // [label cell, label, value cell, column summed or formula, value]
+    const items = [["A2", "Total Collection", "C2", `SUM(${rg("D")})`, T.D], ["E2", "Days Run", "F2", `SUM(${rg("C")})`, T.C], ["G2", "Total Driver Padi", "H2", `SUM(${rg("M")})`, T.M], ["I2", "Total Toll Amount", "J2", `SUM(${rg("L")})`, T.L], ["K2", "Total Commission", "L2", `SUM(${rg("I")})`, T.I],
+      ["A3", "Total Expense", "C3", `SUM(${rg("V")})`, T.V], ["E3", "Avg Coll / Day", "F3", "IF(F2>0,C4/F2,0)", T.C > 0 ? Math.round(T.X / T.C) : 0], ["G3", "Total Diesel Litres", "H3", `SUM(${rg("J")})`, T.J], ["I3", "Route Kms", "J3", `SUM(${rg("AB")})`, T.AB], ["K3", "Total RTO Expense", "L3", `SUM(${rg("N")})`, T.N],
+      ["A4", "Gross", "C4", `SUM(${rg("X")})`, T.X], ["G4", "Total Diesel Price", "H4", `SUM(${rg("K")})`, T.K], ["K4", "Total Loading Exp", "L4", `SUM(${rg("O")})`, T.O]];
+    ["2", "3", "4"].forEach(r => ["A", "B", "C", "D", "E", "F", "G", "I", "K"].forEach(c => put(ws, c + r, null, S.oLab)));
+    ["H", "J", "L"].forEach(c => ["2", "3", "4"].forEach(r => put(ws, c + r, null, S.oVal2)));
+    items.forEach(([lc, lab, vc, f, v]) => { put(ws, lc, lab, S.oLab); put(ws, vc, v, ["C", "F"].includes(vc[0]) ? S.oVal : S.oVal2, f); });
+    ws.merges.push("C2:D2", "C3:D3", "C4:D4"); // Days is a narrow column: the totals use Days and Trip Rent together
+    TK_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 5, h, i < 2 ? S.oHeadR : i === 2 ? S.oHeadC : S.oHeadL));
+    Object.assign(ws.heights, { 1: 28.5, 2: 18.5, 3: 18.5, 4: 15.5, 5: 18.5 }); Object.assign(ws.widths, TK_DL_WIDTHS); ws.freeze = 5;
+  };
   ids.forEach(id => {
-    const ws = sheet(String(C.plate(id)).replace(/\s+/g, "")); heads(ws);
+    const ws = sheet(String(C.plate(id)).replace(/\s+/g, "")), T = { C: 0, D: 0, I: 0, J: 0, K: 0, L: 0, M: 0, N: 0, O: 0, V: 0, X: 0, AB: 0 };
     const groups = new Map(); legs.filter(l => l.vehicleId === id).forEach(l => { const k = l.roundId || l.id; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(l); });
-    let r = 2;
+    let r = F;
     for (const [rid, rl] of groups) {
       const doc = (recs.truckRounds || []).find(z => z.id === rid) || {}, RF = doc.fuels || [], a = r;
       const rfL = RF.reduce((s, f) => s + (C.n(f.litres) || 0), 0), rfA = Math.round(RF.reduce((s, f) => s + (C.n(f.amount) || 0), 0));
@@ -9579,25 +9600,26 @@ function xlTruckDownload(recs) {
       rl.forEach((l, i) => {
         const g = k => C.n(l[k]) || 0, last = i === rl.length - 1, lit = Math.round((g("litres") + (last ? rfL : 0)) * 100) / 100, dsl = g("fuelCost") + (last ? rfA : 0);
         const ex = { I: g("commission"), K: dsl, L: g("toll"), M: g("padi"), N: g("rto"), O: g("loading"), P: g("bridge"), Q: g("otherExp"), R: g("billExp") };
-        const tot = Object.values(ex).reduce((s, v) => s + v, 0), bal = g("rent") - tot; tb += bal;
-        put(ws, `A${r}`, l.from ? { d: l.from } : "", S.date); put(ws, `B${r}`, l.to || l.from ? { d: l.to || l.from } : "", S.date);
-        put(ws, `C${r}`, g("days") || null, Number.isInteger(g("days")) ? S.int : S.dec); put(ws, `D${r}`, g("rent"), S.int);
-        put(ws, `E${r}`, lgPlace(l.origin)); put(ws, `F${r}`, lgPlace(l.dest)); put(ws, `G${r}`, C.driver(l.driver1Id, l.driver1Name)); put(ws, `H${r}`, C.driver(l.driver2Id, l.driver2Name));
-        put(ws, `J${r}`, lit || null, S.dec); Object.entries(ex).forEach(([k, v]) => put(ws, k + r, v || null, S.int)); ["S", "T", "U"].forEach(k => put(ws, k + r, null, S.int));
-        put(ws, `V${r}`, tot, S.int, `SUM(I${r},K${r}:U${r})`); put(ws, `W${r}`, bal, S.int, `D${r}-V${r}`);
-        const sk = g("startKm"), ek = g("endKm"); put(ws, `Z${r}`, sk || null, S.int); put(ws, `AA${r}`, ek || null, S.int); put(ws, `AB${r}`, sk && ek > sk ? ek - sk : null, S.int, `IF(AND(Z${r}>0,AA${r}>Z${r}),AA${r}-Z${r},"")`);
+        const tot = Object.values(ex).reduce((s, v) => s + v, 0), bal = g("rent") - tot, sk = g("startKm"), ek = g("endKm"), km = sk && ek > sk ? ek - sk : 0; tb += bal;
+        T.C += g("days"); T.D += g("rent"); T.J += lit; T.V += tot; T.AB += km; ["I", "K", "L", "M", "N", "O"].forEach(k => T[k] += ex[k]);
+        put(ws, `A${r}`, l.from ? { d: l.from } : "", S.oDate); put(ws, `B${r}`, l.to || l.from ? { d: l.to || l.from } : "", S.oDate);
+        put(ws, `C${r}`, g("days") || null, Number.isInteger(g("days")) ? S.oInt : S.oDec); put(ws, `D${r}`, g("rent"), S.oInt);
+        put(ws, `E${r}`, lgPlace(l.origin), S.oText); put(ws, `F${r}`, lgPlace(l.dest), S.oText); put(ws, `G${r}`, C.driver(l.driver1Id, l.driver1Name), S.oText); put(ws, `H${r}`, C.driver(l.driver2Id, l.driver2Name), S.oText);
+        put(ws, `J${r}`, lit || null, S.oDec); Object.entries(ex).forEach(([k, v]) => put(ws, k + r, v || null, S.oInt)); ["S", "T", "U"].forEach(k => put(ws, k + r, null, S.oInt));
+        put(ws, `V${r}`, tot, S.oInt, `SUM(I${r},K${r}:U${r})`); put(ws, `W${r}`, bal, S.oInt, `D${r}-V${r}`);
+        put(ws, `Z${r}`, sk || null, S.oInt); put(ws, `AA${r}`, ek || null, S.oInt); put(ws, `AB${r}`, km || null, S.oInt, `IF(AND(Z${r}>0,AA${r}>Z${r}),AA${r}-Z${r},"")`);
         // Payments for the whole round trip go with the remarks of its last trip.
-        put(ws, `AC${r}`, [l.remarks, ...(l.payments || []).filter(p => num(p.amount) > 0).map(payTxt), ...(last ? (doc.payments || []).filter(p => num(p.amount) > 0).map(payTxt) : [])].filter(Boolean).join(", "));
+        put(ws, `AC${r}`, [l.remarks, ...(l.payments || []).filter(p => num(p.amount) > 0).map(payTxt), ...(last ? (doc.payments || []).filter(p => num(p.amount) > 0).map(payTxt) : [])].filter(Boolean).join(", "), S.oText);
         r++;
       });
-      const b = r - 1;
-      put(ws, `X${a}`, tb, S.mint, `SUM(W${a}:W${b})`); put(ws, `Y${a}`, doc.status === "Closed" ? "Closed" : "Open", S.mtext);
-      for (let k = a + 1; k <= b; k++) { put(ws, `X${k}`, null, S.mint); put(ws, `Y${k}`, null, S.mtext); }
+      const b = r - 1; T.X += tb;
+      put(ws, `X${a}`, tb, S.oMint, `SUM(W${a}:W${b})`); put(ws, `Y${a}`, doc.status === "Closed" ? "Closed" : "Open", S.oStatus);
+      for (let k = a + 1; k <= b; k++) { put(ws, `X${k}`, null, S.oMint); put(ws, `Y${k}`, null, S.oStatus); }
       if (b > a) ws.merges.push(`X${a}:X${b}`, `Y${a}:Y${b}`);
     }
-    sheets.push(ws);
+    top(ws, C.plate(id), r - 1, T); sheets.push(ws);
   });
-  if (!sheets.length) { const ws = sheet("Trips"); heads(ws); sheets.push(ws); }
+  if (!sheets.length) { const ws = sheet("Trips"); top(ws, "Trucks", F, { C: 0, D: 0, I: 0, J: 0, K: 0, L: 0, M: 0, N: 0, O: 0, V: 0, X: 0, AB: 0 }); sheets.push(ws); }
   return XL.build(sheets);
 }
 async function tkDownload(btn) {
@@ -16587,7 +16609,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05n";
+const APP_VER = "2026-11-05o";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
