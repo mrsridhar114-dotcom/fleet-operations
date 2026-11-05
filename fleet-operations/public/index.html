@@ -8300,7 +8300,8 @@ function mtParseBook(sheets) {
     if (nx && km && nx > km && nx - km <= 300000) (out.gaps[key] ||= {})[p.k] = nx - km;
   };
   const dateOf = v => typeof v === "number" ? upDate(v).a : typeof v === "string" && !/kms?/i.test(v) ? upDate(v).a : "";
-  const kmIn = r => { for (const c of r) if (typeof c === "string") { const m = /kms?\s*[-:]?\s*(\d{4,7})/i.exec(c); if (m) return +m[1]; } return null; };
+  // "Kms - 162929 on 6/Jan/2021" in a cell; with two such lines (the last visit and this one) the last is this visit's.
+  const kmIn = r => { for (const c of r) if (typeof c === "string") { const m = [...c.matchAll(/kms?\s*[-:]?\s*(\d{4,7})/gi)].at(-1); if (m) return +m[1]; } return null; };
   const blocks = (sh, src) => { let plate = "", C = null;
     sh.rows.forEach(r => { if (!r) return;
       const cells = r.map(upText), first = cells.findIndex(Boolean); if (first < 0) return;
@@ -8317,6 +8318,8 @@ function mtParseBook(sheets) {
   const md = byName(/maintenance details/i), ms = byName(/maintenance summary/i);
   if (md) blocks(md, "details");
   if (ms) blocks(ms, "summary");
+  // A workbook whose sheets have other names ("Sheet1"): every sheet with "MAINTENANCE - <vehicle>" blocks is read as details.
+  if (!md && !ms) sheets.filter(sh => sh.rows.some(r => r?.some(c => /^maintenance\s*-/i.test(upText(c))))).forEach(sh => blocks(sh, "details"));
   out.future = out.expenses.filter(x => x.date > todayISO()).map(x => `${fmtDate(x.date)} · ${x.desc}`);
   // A job written without its km on a day that has a km reading for the same vehicle joins that visit.
   for (const [id, e] of [...out.entries]) if (!e.km) { const to = [...out.entries.values()].find(o => o !== e && o.key === e.key && o.date === e.date && o.km);
@@ -8655,7 +8658,7 @@ const UP_KINDS = {
   },
   em: {
     label: "Expenses and maintenance (Excel workbook)",
-    note: "The workbook with the sheets Expense List, Maintenance Details and Maintenance Summary. Nothing is saved until you check the list and press Load.",
+    note: "The workbook with the sheets Expense List, Maintenance Details and Maintenance Summary, or any sheet with one \"MAINTENANCE - vehicle number\" block per vehicle. Nothing is saved until you check the list and press Load.",
     em: true
   },
   spare: {
@@ -16526,7 +16529,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-05k";
+const APP_VER = "2026-11-05l";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
