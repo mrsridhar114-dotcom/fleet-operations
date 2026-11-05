@@ -8,6 +8,14 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PIN_TRIES = 5;
 const sha = s => crypto.createHash("sha256").update(String(s)).digest("base64url");
 const sameHash = (a, b) => a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+// Logins without an email (drivers, conductors): a 10-digit mobile number (kept as "m:" + digits) or a user ID such as
+// CONMANI01 (kept as "u:" + the ID in capitals) in place of the email, with a password of 6 characters or more (6 digits is fine).
+const idKey = v => { const t = String(v || "").trim(); if (/^[\d\s+-]+$/.test(t)) { const d = t.replace(/\D/g, "").slice(-10); return d.length === 10 ? "m:" + d : ""; }
+  return /^[A-Za-z][A-Za-z0-9]{3,19}$/.test(t) ? "u:" + t.toUpperCase() : ""; };
+const isIdLogin = e => /^[mu]:/.test(String(e || ""));
+const idShow = e => String(e || "").slice(2);
+const weakPw = p => p.length < 6 || /^(.)\1+$/.test(p) || ["123456", "1234567", "12345678", "654321", "password", "qwerty", "111111", "000000", "abcdef", "123123"].includes(p.toLowerCase());
+const WEAK_MSG = "Use at least 6 characters, and nothing easy to guess like 123456 or the same character repeated.";
 const weakPin = p => /^(\d)\1{3}$/.test(p) || ["1234", "2345", "3456", "4567", "5678", "6789", "4321", "9876", "0123"].includes(p);
 
 // Emailed 6-digit codes, shared by "Forgot password?" and "Forgot PIN?". One live code per person, 15 minutes, 5 tries.
@@ -58,7 +66,7 @@ const clearLoginFails = email => q(`delete from fleet_login_fails where email = 
 
 // Security emails: tell the person when their password or PIN changes, or when sign-in gets locked. Never blocks the action.
 async function securityMail(email, name, subject, line) {
-  if (!mailReady() || !email) return;
+  if (!mailReady() || !email || isIdLogin(email)) return;
   const when = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
   const first = String(name || "").split(/\s+/)[0].replace(/[<>&]/g, "");
   const tail = "If this was you, there's nothing to do. If it wasn't, reset your password from the sign-in page (Forgot password?) and tell your admin straight away.";
@@ -82,7 +90,7 @@ export default async function handler(req, res) {
       const me = await who(req);
       if (!me) return fail(res, 401, "unauthenticated", "Not signed in");
       renewSession(req, res);
-      return send(res, 200, { user: { id: me.id, name: me.name, email: me.email, isOwner: me.owner, member: me.member, admin: me.admin, mustChange: !!me.must_change } });
+      return send(res, 200, { user: { id: me.id, name: me.name, email: isIdLogin(me.email) ? "" : me.email, login: isIdLogin(me.email) ? idShow(me.email) : "", isOwner: me.owner, member: me.member, admin: me.admin, mustChange: !!me.must_change } });
     }
     if (req.method !== "POST") return fail(res, 405, "bad_request", "Method not allowed");
     const body = await readBody(req), action = body.action;
@@ -117,6 +125,24 @@ export default async function handler(req, res) {
       }
       await clearLoginFails(email);
       setSession(res, rows[0].id, body.remember !== false);
+      return send(res, 200, { ok: true });
+    }
+    // Drivers and conductors: mobile number or user ID, and password. Wrong passwords count as for email logins
+    // (8 in a row pause sign-in for 15 minutes).
+    if (action === "idlogin") {
+      await who(req);
+      const key = idKey(body.login), pw = String(body.password || "");
+      if (!key) return fail(res, 400, "bad_request", "Enter your 10-digit mobile number or your user ID.");
+      const lockedFor = await loginLocked(key);
+      if (lockedFor) return fail(res, 429, "locked", `Too many wrong passwords. Try again in ${lockedFor} minute${lockedFor === 1 ? "" : "s"}, or ask the office to set a new password.`);
+      const rows = await q(`select id, pass from fleet_users where email = $1`, [key]);
+      if (!rows[0] || !(await checkPassword(pw, rows[0].pass))) {
+        const left = await loginFailed(key);
+        if (left < 0) return fail(res, 429, "locked", `Too many wrong passwords. Sign-in is paused for ${LOCK_MINUTES} minutes. Ask the office to set a new password.`);
+        return fail(res, 401, "bad_login", left <= 3 ? `Mobile number / user ID or password is wrong. ${left} ${left === 1 ? "try" : "tries"} left.` : "Mobile number / user ID or password is wrong.");
+      }
+      await clearLoginFails(key);
+      setSession(res, rows[0].id, true);
       return send(res, 200, { ok: true });
     }
     // Quick sign-in with the PIN set on this phone.
@@ -170,6 +196,7 @@ export default async function handler(req, res) {
       await who(req);
       const row = await pinRow(body);
       if (!row) return fail(res, 404, "pin_gone", "PIN sign-in isn't set up on this phone. Sign in with your email and password.");
+      if (isIdLogin(row.email)) return fail(res, 400, "mail_off", "Ask the office to set a new password.");
       if (!mailReady()) return fail(res, 503, "mail_off", "PIN reset by email isn't set up yet. Sign in with your email and password.");
       if (!(await sendCode(res, row.email, row.name, "PIN"))) return;
       return send(res, 200, { ok: true, email: maskEmail(row.email) });
@@ -219,6 +246,7 @@ export default async function handler(req, res) {
       return send(res, 200, { ok: true });
     }
     if (action === "password") {
+      if (isIdLogin(me.email)) return fail(res, 400, "bad_request", "This login uses a mobile number or user ID. Change its password instead.");
       const rows = await q(`select pass from fleet_users where id = $1`, [me.id]);
       // After a temporary password the person is already signed in with it, so it isn't asked again.
       if (!me.must_change && !(await checkPassword(String(body.current || ""), rows[0]?.pass))) return fail(res, 400, "bad_login", "The current password is wrong.");
@@ -228,6 +256,37 @@ export default async function handler(req, res) {
       await clearLoginFails(me.email);
       await securityMail(me.email, me.name, "your password was changed", "Your password was changed from inside the app. PINs on your other phones were removed.");
       return send(res, 200, { ok: true });
+    }
+    // A mobile / user ID login changes its own password (the current one is not needed right after the office set one).
+    if (action === "idpassword") {
+      if (!isIdLogin(me.email)) return fail(res, 400, "bad_request", "This login uses an email and password.");
+      const next = String(body.next || "");
+      if (weakPw(next)) return fail(res, 400, "bad_request", WEAK_MSG);
+      if (!me.must_change) {
+        const cur = await q(`select pass from fleet_users where id = $1`, [me.id]);
+        if (!(await checkPassword(String(body.current || ""), cur[0]?.pass || ""))) return fail(res, 401, "bad_login", "Your current password is wrong.");
+      }
+      await q(`update fleet_users set pass = $2, must_change = false where id = $1`, [me.id, await hashPassword(next)]);
+      return send(res, 200, { ok: true });
+    }
+    // An admin (or User master editor) creates a mobile / user ID login, or sets a new starting password for one. With
+    // body.account (the login already linked to the user) the login's mobile or user ID can also be changed. The person
+    // chooses their own password at the next sign-in. Returns the login's id, which the User master links to the user.
+    if (action === "idset") {
+      if (!me.admin && me.access?.users !== "edit") return fail(res, 403, "permission_denied", "Only an admin can set up logins.");
+      const key = idKey(body.login), name = String(body.name || "").trim().slice(0, 80), pw = String(body.password || "");
+      if (!key) return fail(res, 400, "bad_request", "Enter a 10-digit mobile number, or a user ID of 4 to 20 letters and digits starting with a letter.");
+      if (weakPw(pw)) return fail(res, 400, "bad_request", "Starting password: " + WEAK_MSG.charAt(0).toLowerCase() + WEAK_MSG.slice(1));
+      const had = await q(`select id from fleet_users where email = $1`, [key]);
+      const acct = String(body.account || ""), mine = acct ? (await q(`select id, email from fleet_users where id = $1`, [acct]))[0] : null;
+      if (had[0] && mine && had[0].id !== mine.id) return fail(res, 409, "exists", `${idShow(key)} is already used by another login.`);
+      let id = had[0]?.id || (mine && isIdLogin(mine.email) ? mine.id : "");
+      const hp = await hashPassword(pw);
+      if (id) await q(`update fleet_users set email = $2, pass = $3, must_change = true${name ? ", name = $4" : ""} where id = $1`, name ? [id, key, hp, name] : [id, key, hp]);
+      else { if (!name) return fail(res, 400, "bad_request", "Enter the person's name."); id = newId(); await q(`insert into fleet_users (id, email, name, pass, must_change) values ($1, $2, $3, $4, true)`, [id, key, name, hp]); }
+      await q(`delete from fleet_pins where user_id = $1`, [id]);
+      await clearLoginFails(key);
+      return send(res, 200, { ok: true, id, login: idShow(key), existed: !!had[0] || !!mine });
     }
     // An admin sets a temporary password for someone who forgot theirs.
     if (action === "reset") {
@@ -245,7 +304,7 @@ export default async function handler(req, res) {
       const ids = (Array.isArray(body.ids) ? body.ids : []).map(String).slice(0, 500);
       if (!ids.length) return send(res, 200, { profiles: {} });
       const rows = await q(`select id, name, email from fleet_users where id = any($1::text[])`, [ids]);
-      return send(res, 200, { profiles: Object.fromEntries(rows.map(r => [r.id, { name: me.member ? `${r.name} (${r.email})` : r.name }])) });
+      return send(res, 200, { profiles: Object.fromEntries(rows.map(r => [r.id, { name: me.member ? `${r.name} (${isIdLogin(r.email) ? idShow(r.email) : r.email})` : r.name }])) });
     }
     return fail(res, 400, "bad_request", "Unknown action");
   } catch (e) {

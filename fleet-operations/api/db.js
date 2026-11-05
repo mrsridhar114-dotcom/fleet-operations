@@ -2,7 +2,7 @@
 // in one table. Clients pull changes with "sync" (by version number) and write one document at a time.
 import { q } from "../lib/db.js";
 import { send, fail, who, readBody } from "../lib/http.js";
-import { canRead, canWrite, readScope, ownOnly } from "../lib/access.js";
+import { canRead, canWrite, readScope, ownOnly, readOnlyColls } from "../lib/access.js";
 
 const COLL = /^[A-Za-z0-9_]{1,64}$/, ID = /^[A-Za-z0-9_\-:.@]{1,200}$/;
 const OPEN = ["appUsers", "accessRequests"]; // what someone not yet approved may read
@@ -28,8 +28,10 @@ export default async function handler(req, res) {
 
     if (op === "sync") {
       const since = Math.max(0, Number(b.since) || 0), limit = Math.min(5000, Math.max(100, Number(b.limit) || 3000));
-      const hidden = ALL_COLLS.filter(c => !canRead(me.access, c));
-      const rows = me.member
+      const hidden = ALL_COLLS.filter(c => !canRead(me.access, c)), only = me.member ? readOnlyColls(me.access) : null;
+      const rows = only
+        ? await q(`select coll, id, data, deleted, ver from fleet_docs where ver > $1 and coll = any($3::text[]) order by ver limit $2`, [since, limit, only])
+        : me.member
         ? await q(`select coll, id, data, deleted, ver from fleet_docs where ver > $1 and coll <> all($3::text[]) order by ver limit $2`, [since, limit, hidden])
         : await q(`select coll, id, data, deleted, ver from fleet_docs where ver > $1 and coll = any($3::text[]) order by ver limit $2`, [since, limit, OPEN]);
       const out = rows.map(r => ({ c: r.coll, id: r.id, d: r.deleted || !ownOnly(me.access, r.coll, r.data, me) ? null : r.data, v: Number(r.ver) }));
