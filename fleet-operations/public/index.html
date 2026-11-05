@@ -613,6 +613,7 @@ input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-web
 #lgForm.mwiz[data-cur="1"] [data-mstep]:not([data-mstep="1"]), #lgForm.mwiz[data-cur="2"] [data-mstep]:not([data-mstep="2"]),
 #lgForm.mwiz[data-cur="3"] [data-mstep]:not([data-mstep="3"]), #lgForm.mwiz[data-cur="4"] [data-mstep]:not([data-mstep="4"]),
 #lgForm.mwiz[data-cur="5"] [data-mstep], #lgForm.mwiz[data-cur="6"] [data-mstep] { display: none; }
+#lgForm[data-cur="6"] [data-mstep], #lgForm[data-cur="6"] .tfside, #lgForm[data-cur="6"] .rtlegh { display: none; }
 #lgForm.mwiz .three, #lgForm.mwiz .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 #lgForm.mwiz input, #lgForm.mwiz select { min-height: 46px; font-size: 16px; }
 #lgForm.mwiz #lgRent { min-height: 56px; font-size: 22px; font-weight: 700; } #lgForm.mwiz [data-mstep="2"] .three:first-child .field:first-child { grid-column: 1 / -1; }
@@ -14659,7 +14660,9 @@ var LGW = { on: false, cur: 1, saved: null, names: ["Trip details", "Rent & expe
 const lgWizPhone = () => matchMedia("(max-width: 700px)").matches;
 function lgWizStart(l, edit) {
   LGW.on = !!edit && lgWizPhone(); $("lgForm").classList.toggle("mwiz", LGW.on);
-  if (!LGW.on) { ["lgWizHd", "lgCheck", "lgDone"].forEach(id => $(id).hidden = true); $("lgBack").hidden = $("lgNext").hidden = true; delete $("lgForm").dataset.cur; LGW.saved = null; return; }
+  if (!LGW.on) { ["lgWizHd", "lgCheck", "lgDone"].forEach(id => $(id).hidden = true); $("lgBack").hidden = $("lgNext").hidden = true; delete $("lgForm").dataset.cur;
+    // On the computer too, a new trip just saved shows "Trip saved" with Add next trip, so the next trip isn't typed over this one.
+    if (l && LGW.saved === l.id) { LGW.saved = null; lgWizDone(l); } else LGW.saved = null; return; }
   lgWizChips();
   if (l && LGW.saved === l.id) { LGW.saved = null; lgWizDone(l); return; }
   LGW.saved = null; lgWizGo(l ? 5 : 1);
@@ -14742,7 +14745,7 @@ function lgWizDone(l) {
 $("lgDone").addEventListener("click", e => {
   const b = e.target.closest("[data-wdone]"), r = rtGet(); if (!b || !rt) return; const a = b.dataset.wdone;
   if (a === "print" && r) rtPrintOpen(r); else if (a === "send" && r) rtSendOpen(r);
-  else if (a === "review") { $("lgDrawer").querySelector("footer").hidden = false; lgWizGo(5); }
+  else if (a === "review") { $("lgDrawer").querySelector("footer").hidden = false; if (LGW.on) lgWizGo(5); else { $("lgDone").hidden = true; delete $("lgForm").dataset.cur; $("lgSave").hidden = false; } }
   else if (a === "next") { rt.pane = "leg"; rt.leg = null; rtShow(); }
   else { rt.pane = a; rt.leg = null; rtShow(); }
 });
@@ -14773,9 +14776,9 @@ $("lgForm").addEventListener("submit", async e => {
   $("lgSave").disabled = true;
   try {
     await opsSave("truckTrips", l);
-    toast(`Trip saved · balance ${rs(c.bal)}`);
+    toast(`${old ? "Trip updated" : "New trip added"} · balance ${rs(c.bal)}`);
     if (fyOf(l.from) !== kFy) { kFy = fyOf(l.from); $("kFy").value = String(kFy); renderTruck(); }
-    if (LGW.on) LGW.saved = l.id;
+    if (LGW.on || !old) LGW.saved = l.id;
     if (rt) { rt.rid = l.roundId; rt.vid = l.vehicleId; rt.pane = "leg"; rt.leg = l.id; rtShow(); }
   } catch { toast("Couldn't save. Check your connection and try again."); }
   finally { $("lgSave").disabled = false; }
