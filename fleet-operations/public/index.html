@@ -9880,15 +9880,15 @@ function xlEmployeeSheet(recs) {
   return xlMasterSheet("Employee Master Data", sections, { Name: 26, "Licence No.": 20, Address: 45, "Son / Daughter / Wife of": 28, Remarks: 40 });
 }
 const VALID_HEADS = { fcDate: "FC Valid", insuranceExp: "Insurance Valid", taxExp: "Tax Valid", permitExp: "Permit Valid", permitAuthExp: "Permit Auth. Valid", pollutionExp: "Pollution Valid", rcValidity: "RC Valid", speedGovExp: "Speed Governor Valid", gpsExp: "GPS (AIS-140) Valid" };
-// Vehicles: every vehicle in plate order; a document that does not apply to the vehicle's class shows "Not needed".
+// Vehicles: buses, trucks, cars, autos, then two wheelers, each in plate order; a document that does not apply to the vehicle's class is left blank.
 function xlVehicleSheet(recs) {
-  const fin = v => v.financed === "yes" ? "Yes" : v.financed === "no" ? "No" : "", dd = (v, k) => docApplies(k, v.type, v.usage) ? v[k] || "" : "Not needed";
-  const heads = [["Plate No.", "t"], ["Class", "t"], ["Operation", "t"], ["Status", "t"], ...DOCS.map(([k]) => [VALID_HEADS[k] || k, "valid"]), ["Loan End Date", "valid"],
+  const fin = v => v.financed === "yes" ? "Yes" : v.financed === "no" ? "No" : "", dd = (v, k) => docApplies(k, v.type, v.usage) ? v[k] || "" : "", order = v => { const i = ["Bus", "12 Wheeler Truck", "Car", "Auto", "Two Wheeler"].indexOf(v.type); return i < 0 ? 9 : i; };
+  const heads = [["Plate No.", "t"], ["Class", "t"], ["Operation", "t"], ...DOCS.map(([k]) => [VALID_HEADS[k] || k, "valid"]), ["Loan End Date", "valid"],
     ["Owner Name", "t"], ["Owner Address", "t"], ["Make", "t"], ["Model", "t"], ["Usage", "t"], ["Fuel", "t"], ["Emission", "t"], ["Registration Date", "date"], ["Manufactured", "t"],
     ["Chassis No.", "t"], ["Engine No.", "t"], ["RTO", "t"], ["Seats", "t"], ["Staff Seats", "t"], ["GVW (kg)", "t"], ["ULW (kg)", "t"], ["Body Type", "t"], ["Body Colour", "t"],
     ["FASTag", "t"], ["Fuel Tank (L)", "t"], ["Tyres", "t"], ["Tyre Size", "t"], ["Battery Make", "t"], ["Battery Date", "date"], ["Odometer at Start", "t"], ["Financed", "t"], ["Financier", "t"],
     ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => [d.full, d.date ? "date" : "t"])), ["Remarks", "t"]];
-  const rows = [...(recs.vehicles || [])].sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo))).map(v => [v.plateNo || vName(v), v.type, v.type === "Bus" ? v.opType : "", v.status || "Active",
+  const rows = [...(recs.vehicles || [])].sort((a, b) => order(a) - order(b) || String(a.plateNo).localeCompare(String(b.plateNo))).map(v => [v.plateNo || vName(v), v.type, v.type === "Bus" ? v.opType : "",
     ...DOCS.map(([k]) => dd(v, k)), v.financed === "yes" ? v.loanEndDate || "" : "",
     v.ownerName, v.ownerAddress, v.make, v.model, v.usage, v.fuel, v.emission, v.regDate, fmtMfg(v), v.chassisNo, v.engineNo, v.rto, v.seats, v.staffSeats, v.gvw, v.ulw, v.bodyType, v.bodyColour,
     v.fastag, v.fuelTank, v.tyreCount, v.tyreSize, v.batteryMake, v.batteryDate, v.odoStart, fin(v), v.financier,
@@ -16942,7 +16942,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07h";
+const APP_VER = "2026-11-07i";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
