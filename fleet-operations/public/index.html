@@ -9498,7 +9498,9 @@ const XL = (() => {
     oTitle: 17, oLab: 18, oVal: 19, oVal2: 20, oHeadR: 21, oHeadC: 22, oHeadL: 23,
     oRow: [0, 1, 2, 3].map(i => { const b = 24 + i * 6; return { date: b, int: b + 1, dec: b + 2, text: b + 3, mint: b + 4, status: b + 5 }; }),
     rTitle: 48, rLab: 49, rVal: 50, rValD: 51, rCrewH: 52, rTxt: 53, rInt: 54, rHead: 55, rDay: 56, rDec: 57,
-    sTitle: 58, sLab: 59, sVal: 60, sHead: 61, sDate: 62, sInt: 63, sDec: 64, sTxt: 65 };
+    sTitle: 58, sLab: 59, sVal: 60, sHead: 61, sDate: 62, sInt: 63, sDec: 64, sTxt: 65,
+    smTitle: 66, smHead: 67, smVeh: 68, smNum: 69, smDay: 70, smTotL: 71, smTotN: 72, smTotD: 73, smSign: 74, smGrandL: 75, smGrand: 76,
+    mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84 };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -9514,13 +9516,20 @@ const XL = (() => {
     xf(0, 9, 0, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 8, 0, 2, 'vertical="center"'), xf(165, 8, 0, 2, 'vertical="center"'), xf(0, 9, 6, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 9, 0, 2, 'horizontal="center" vertical="center"'), xf(166, 8, 0, 2, 'vertical="center"'),
     // 58–65: the office spare bus sheet: title, summary label and number, headings, date, number, two decimals, text
     xf(0, 4, 10, 2, 'horizontal="center" vertical="center"'), xf(0, 5, 10, 2, 'horizontal="left" vertical="center"'), xf(165, 5, 10, 2, 'horizontal="left" vertical="center"'), xf(0, 2, 6, 2, 'horizontal="center" vertical="center" wrapText="1"'),
-    xf(164, 0, 0, 2, 'horizontal="left"'), xf(165, 0, 0, 2), xf(166, 0, 0, 2), xf(0, 0, 0, 2)];
+    xf(164, 0, 0, 2, 'horizontal="left"'), xf(165, 0, 0, 2), xf(166, 0, 0, 2), xf(0, 0, 0, 2),
+    // 66–76: the Summary sheet's top tables: title, headings (orange), vehicle, number, days (grey), totals (yellow), the "+" and "=" signs, overall gross (green)
+    xf(0, 10, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 10, 11, 2, 'horizontal="center" vertical="center"'), xf(0, 11, 12, 2, 'vertical="center"'), xf(165, 11, 12, 2, 'horizontal="right" vertical="center"'), xf(0, 11, 12, 2, 'horizontal="right" vertical="center"'),
+    xf(0, 11, 13, 2, 'vertical="center"'), xf(165, 11, 13, 2, 'horizontal="right" vertical="center"'), xf(0, 11, 13, 2, 'horizontal="right" vertical="center"'), xf(0, 12, 0, 2, 'horizontal="center" vertical="center"'),
+    xf(0, 10, 14, 2, 'horizontal="center" vertical="center"'), xf(165, 12, 14, 2, 'horizontal="center" vertical="center" shrinkToFit="1"'),
+    // 77–84: the Summary sheet's month-wise tables: title, headings, month, number, days, totals
+    xf(0, 11, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 13, 15, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 8, 0, 2, 'vertical="center"'), xf(165, 8, 0, 2, 'vertical="center"'), xf(0, 8, 0, 2, 'horizontal="right" vertical="center"'),
+    xf(0, 14, 13, 2, 'vertical="center"'), xf(165, 14, 13, 2, 'vertical="center"'), xf(0, 14, 13, 2, 'horizontal="right" vertical="center"')];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
-    `<fonts count="10"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
-    [[1, 28], [1, 24], [0, 16], [1, 16]].map(([b, z]) => `<font>${b ? "<b/>" : ""}<sz val="${z}"/><name val="Calibri"/><family val="2"/></font>`).join("") + `</fonts>` +
-    `<fills count="11"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
-    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
+    `<fonts count="15"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
+    [[1, 28], [1, 24], [0, 16], [1, 16], [1, 36], [1, 24], [1, 72], [1, 18], [1, 20]].map(([b, z]) => `<font>${b ? "<b/>" : ""}<sz val="${z}"/><name val="Calibri"/><family val="2"/></font>`).join("") + `</fonts>` +
+    `<fills count="16"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
+    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF", "FFC55A11", "FFDBDBDB", "FFFFC000", "FF00B050", "FFF4B183"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
     `<borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="${XFS.length}">${XFS.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const serial = iso => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(1899, 11, 30)) / 864e5;
@@ -9550,10 +9559,15 @@ const XL = (() => {
       (ws.lists.length ? `<dataValidations count="${ws.lists.length}">${ws.lists.map(l => `<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="${l.ref}"><formula1>"${x(l.items.join(","))}"</formula1></dataValidation>`).join("")}</dataValidations>` : "") +
       `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
   }
-  function build(sheets) {
+  // Sheet names as Excel allows them (no [ ] : * ? / \, 31 letters, each different); a sheet named here keeps its name in build.
+  function names(sheets) {
     const used = new Set();
     sheets.forEach(ws => { let n = String(ws.name || "Sheet").replace(/[\[\]:*?\/\\]/g, " ").trim().slice(0, 31) || "Sheet", k = 2, base = n;
       while (used.has(n.toLowerCase())) n = `${base.slice(0, 27)} (${k++})`; used.add(n.toLowerCase()); ws.name = n; });
+    return sheets;
+  }
+  function build(sheets) {
+    names(sheets);
     const files = [
       { name: "[Content_Types].xml", text: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>` },
       { name: "_rels/.rels", text: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
@@ -9564,7 +9578,7 @@ const XL = (() => {
     ];
     return zip(files);
   }
-  return { S, sheet, put, build, col, idx };
+  return { S, sheet, put, build, names, col, idx };
 })();
 
 // Shared helpers for the exports, reading from a fresh copy of every record.
@@ -9615,7 +9629,7 @@ function xlTruckSheets(recs, fy) {
     Object.assign(ws.heights, { 1: 28.5, 2: 18.5, 3: 18.5, 4: 15.5, 5: 18.5 }); Object.assign(ws.widths, TK_DL_WIDTHS); ws.freeze = 5; ws.zoom = 40;
   };
   ids.forEach(id => {
-    const ws = sheet(String(C.plate(id)).replace(/\s+/g, "")), T = { C: 0, D: 0, I: 0, J: 0, K: 0, L: 0, M: 0, N: 0, O: 0, V: 0, X: 0, AB: 0 };
+    const ws = Object.assign(sheet(String(C.plate(id)).replace(/\s+/g, "")), { kind: "truck", vid: id }), T = { C: 0, D: 0, I: 0, J: 0, K: 0, L: 0, M: 0, N: 0, O: 0, V: 0, X: 0, AB: 0 };
     const groups = new Map(); legs.filter(l => l.vehicleId === id).forEach(l => { const k = l.roundId || l.id; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(l); });
     let r = F;
     let gi = 0;
@@ -9663,7 +9677,7 @@ function xlSpareSheets(recs, fy) {
     .sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.no).localeCompare(String(b.no)));
   const ids = [...new Set(done.map(b => b.vehicleId))].sort((a, b) => C.plate(a).localeCompare(C.plate(b)));
   ids.forEach(id => {
-    const list = done.filter(b => b.vehicleId === id), plate = C.plate(id).replace(/\s+/g, ""), ws = sheet(plate), F = 6, L = Math.max(F, F + list.length - 1), T = {};
+    const list = done.filter(b => b.vehicleId === id), plate = C.plate(id).replace(/\s+/g, ""), F = 6, L = Math.max(F, F + list.length - 1), ws = Object.assign(sheet(plate), { kind: "spare", vid: id, last: L }), T = {};
     const add = (k, v) => { T[k] = (T[k] || 0) + (typeof v === "number" && isFinite(v) ? v : 0); };
     list.forEach((b, i) => {
       const r = F + i, g = k => C.n(b[k]);
@@ -9705,7 +9719,7 @@ function xlExpenseSheet(recs, fy, kind) {
   const isTruck = x => x.vehicleId ? trucks.has(x.vehicleId) : /truck/i.test(x.vtype || "");
   const list = (recs.expenses || []).filter(x => x.date && fyOf(x.date) === fy && num(x.amount) && (kind === "truck") === isTruck(x))
     .sort((a, b) => String(a.date).localeCompare(String(b.date)) || C.plate(a.vehicleId || "").localeCompare(C.plate(b.vehicleId || "")));
-  const title = kind === "truck" ? "Truck Expenses" : "Bus Expenses", ws = sheet(title), F = 6, L = Math.max(F, F + list.length - 1), rg = k => `${k}${F}:${k}${L}`;
+  const title = kind === "truck" ? "Truck Expenses" : "Bus Expenses", F = 6, L = Math.max(F, F + list.length - 1), ws = Object.assign(sheet(title), { kind: "xp-" + kind, last: L }), rg = k => `${k}${F}:${k}${L}`;
   list.forEach((x, i) => { const r = F + i;
     put(ws, `A${r}`, { d: x.date }, S.sDate); put(ws, `B${r}`, x.desc || "", S.sTxt); put(ws, `C${r}`, x.vehicleId ? C.plate(x.vehicleId) : x.plate || "", S.sTxt);
     put(ws, `D${r}`, xpCatTxt(x), S.sTxt); put(ws, `E${r}`, x.pay || "", S.sTxt); put(ws, `F${r}`, Math.round(num(x.amount)), S.sInt); put(ws, `G${r}`, (x.bills || []).length || null, S.sInt); });
@@ -9721,6 +9735,100 @@ function xlExpenseSheet(recs, fy, kind) {
   ["Date", "Description", "Vehicle Number", "Category", "Payment Type", "Amount", "Bills"].forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5;
   Object.assign(ws.heights, { 1: 28.5, 2: 15.5, 3: 15.5, 5: 18.5 });
   Object.assign(ws.widths, { A: 15, B: 46, C: 16, D: 24, E: 16, F: 13, G: 8, H: 4, I: 26, J: 13 });
+  return ws;
+}
+/* The Summary sheet that opens the Download all workbook, in the office "Summary" layout. Top left the buses (route buses, then
+   spare buses), top right the trucks: Days, Collection, Expense and Balance from each vehicle's own sheet, Office Expense from the
+   app's expense entries (the Bus and Truck Expenses sheets; entries with no vehicle get their own row), Gross = Balance − Office
+   Expense. "+" and "=" lead to the overall gross. Below, each route bus month by month (April to March, the template's columns,
+   from its month sheets) and each spare bus month by month (from its sheet). Figures are formulas over those sheets. */
+function xlSummarySheet(recs, fy, sheets, routeIds) {
+  const { put, S, sheet, col } = XL, C = xlCtx(recs), ws = sheet("Summary");
+  const q = w => `'${w.name.replace(/'/g, "''")}'`, gv = (w, ref) => { const m = /^([A-Z]+)(\d+)$/.exec(ref), c = w.rows[+m[2]]?.[XL.idx(m[1])]; return typeof c?.v === "number" && isFinite(c.v) ? c.v : 0; };
+  const of = k => sheets.filter(w => w.kind === k), route = of("route"), spare = of("spare"), trucks = of("truck");
+  const xp = k => { const w = of("xp-" + k)[0], m = new Map(); if (w) for (let r = 6; r <= w.last; r++) { const a = gv(w, "F" + r); if (!a) continue; const lab = String(w.rows[r]?.[2]?.v ?? ""); m.set(lab, (m.get(lab) || 0) + a); } return { w, m }; };
+  const XB = xp("bus"), XT = xp("truck");
+  const offF = (X, cell) => X.w ? `SUMIF(${q(X.w)}!$C$6:$C$${X.w.last},${cell},${q(X.w)}!$F$6:$F$${X.w.last})` : "0";
+  // Rows: [label, {days, col, exp, bal, kms}, [formulas]] — each vehicle once; expense-only vehicles and common expenses after.
+  const sumF = (ws2, ref) => ws2.length ? ws2.map(w => `${q(w)}!${ref}`).join("+") : "0", sumV = (ws2, ref) => ws2.reduce((a, w) => a + gv(w, ref), 0);
+  const ids = arr => [...new Set(arr)];
+  const busRows = [...ids([...routeIds.filter(id => route.some(w => w.vid === id)), ...route.map(w => w.vid)]).map(id => { const L = route.filter(w => w.vid === id);
+      return { lab: C.plate(id), v: [sumV(L, "B2"), sumV(L, "N2"), sumV(L, "N3"), sumV(L, "N4")], f: ["B2", "N2", "N3", "N4"].map(r => sumF(L, r)) }; }),
+    ...spare.map(w => ({ lab: C.plate(w.vid), v: [gv(w, "E2"), gv(w, "B2"), gv(w, "B3"), gv(w, "B4")], f: ["E2", "B2", "B3", "B4"].map(r => `${q(w)}!${r}`) }))];
+  const trRows = trucks.map(w => ({ lab: C.plate(w.vid), v: [gv(w, "F2"), gv(w, "J3"), gv(w, "C2"), gv(w, "C3"), gv(w, "C4")], f: ["F2", "J3", "C2", "C3", "C4"].map(r => `${q(w)}!${r}`) }));
+  const extra = (rows, X, n) => { const seen = new Set(); rows.forEach(r => { if (seen.has(r.lab)) r.noOff = true; seen.add(r.lab); });
+    [...X.m.keys()].filter(l => !seen.has(l)).sort((a, b) => (a === "") - (b === "") || a.localeCompare(b)).forEach(l => rows.push({ lab: l, shown: l || "Common", v: Array(n).fill(0), f: Array(n).fill(null) })); };
+  extra(busRows, XB, 4); extra(trRows, XT, 5);
+  const n = Math.max(5, busRows.length, trRows.length), R0 = 4, RT = R0 + n, last = RT - 1;
+  // Title: the year and the vehicles
+  const plates = [...busRows, ...trRows].filter(r => r.f[0]).map(r => r.lab.replace(/\s+/g, ""));
+  put(ws, "A1", `Summary - FY ${fyLabel(fy)}${plates.length ? " : " + plates.join(", ") : ""}`, S.smTitle); ws.merges.push("A1:U1");
+  ["Vehicle No", "Days", "Coll.", "Exp", "Bal", "Off.Exp", "Gross"].forEach((h, i) => put(ws, col(i) + 3, h, S.smHead));
+  ["Vehicle No", "Days", "Kms", "Coll.", "Exp", "Bal", "Off.Exp", "Gross"].forEach((h, i) => put(ws, col(8 + i) + 3, h, S.smHead));
+  const side = (rows, c0, X, nv) => { // c0: first column; nv: figures before Off.Exp
+    let tOff = 0, tGross = 0; const tv = Array(nv).fill(0);
+    for (let i = 0; i < n; i++) {
+      const r = R0 + i, row = rows[i], L = k => col(c0 + k) + r;
+      if (!row) { for (let k = 0; k <= nv + 2; k++) put(ws, L(k), null, k ? S.smNum : S.smVeh); continue; }
+      put(ws, L(0), row.shown || row.lab, S.smVeh);
+      row.v.forEach((v, k) => { tv[k] += v; put(ws, L(k + 1), v, k === 0 ? S.smDay : S.smNum, row.f[k] || undefined); });
+      const off = row.noOff ? 0 : Math.round(X.m.get(row.lab) || 0), bal = row.v[nv - 1]; tOff += off; tGross += bal - off;
+      put(ws, L(nv + 1), off, S.smNum, row.noOff ? undefined : row.lab ? offF(X, col(c0) + r) : X.w ? `SUMIF(${q(X.w)}!$C$6:$C$${X.w.last},"",${q(X.w)}!$F$6:$F$${X.w.last})` : undefined);
+      put(ws, L(nv + 2), bal - off, S.smNum, `${col(c0 + nv)}${r}-${col(c0 + nv + 1)}${r}`);
+    }
+    put(ws, col(c0) + RT, "Total", S.smTotL);
+    [...tv, tOff, tGross].forEach((v, k) => { const c = col(c0 + k + 1); put(ws, c + RT, Math.round(v * 100) / 100, k === 0 ? S.smTotD : S.smTotN, `SUM(${c}${R0}:${c}${last})`); });
+    return tGross;
+  };
+  const gB = side(busRows, 0, XB, 4), gT = side(trRows, 8, XT, 5);
+  put(ws, `H${R0}`, "+", S.smSign); put(ws, `Q${R0}`, "=", S.smSign);
+  for (let r = R0 + 1; r <= last; r++) { put(ws, `H${r}`, null, S.smSign); put(ws, `Q${r}`, null, S.smSign); }
+  ws.merges.push(`H${R0}:H${last}`, `Q${R0}:Q${last}`);
+  put(ws, "R3", "Overall Gross", S.smGrandL); ["S3", "T3"].forEach(c => put(ws, c, null, S.smGrandL)); ws.merges.push("R3:T3");
+  put(ws, `R${R0}`, gB + gT, S.smGrand, `G${RT}+P${RT}`);
+  for (let r = R0; r <= RT; r++) ["R", "S", "T"].forEach(c => { if (r > R0 || c !== "R") put(ws, c + r, null, S.smGrand); });
+  ws.merges.push(`R${R0}:T${RT}`);
+  // Month-wise tables
+  let r = RT + 3;
+  const MONTH = i => new Date(monthYM(fy, i) + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long" });
+  const table = (title, heads, rowFor, totals) => {
+    put(ws, "A" + r, title, S.mTitle); ws.heights[r] = 33; r++;
+    heads.forEach((h, i) => put(ws, col(i) + r, h, S.mHead)); ws.heights[r] = 48; r++;
+    const a = r;
+    for (let i = 0; i < 12; i++, r++) { put(ws, "A" + r, MONTH(i), S.mTxt); rowFor(i).forEach(([v, f, st], k) => put(ws, col(k + 1) + r, Math.round((v || 0) * 100) / 100, st || S.mInt, f)); ws.heights[r] = 23; }
+    put(ws, "A" + r, "Total", S.mTotL); totals(a, r - 1).forEach(([v, f, st], k) => put(ws, col(k + 1) + r, Math.round((v || 0) * 100) / 100, st || S.mTotN, f)); ws.heights[r] = 28;
+    r += 3;
+  };
+  const ratio = (num_, den) => den ? Math.round(num_ / den) : 0;
+  const ROUTE_CELLS = ["B2", "N2", "N3", "N4", "B4", "B5", "T2", "T3", "T4", "T5", "E4", "H2", "E3", "E2", "H3", "H4", "N6", "N7", "N8", "N9"];
+  ids(route.map(w => w.vid)).forEach(id => {
+    const L = route.filter(w => w.vid === id), byM = i => L.find(w => w.ym === monthYM(fy, i)), V = Array.from({ length: 12 }, (_, i) => ROUTE_CELLS.map(c => byM(i) ? gv(byM(i), c) : 0));
+    table(`${C.plate(id)} - Route Bus Month-wise`,
+      ["Month", "Days Run", "Collection", "Expense", "Balance", "Avg Col / Day", "Avg Bal / Day", "Driver Sal.", "Cond. Sal.", "Checker Sal.", "Total Sal.", "Avg Sal / Day", "Diesel (Litres)", "Avg Diesel / Day", "Diesel (Price)", "Low Fuel Price", "High Fuel Price", "Start KMs", "End KMs", "Total KMs", "Per Day KMs"],
+      i => ROUTE_CELLS.map((c, k) => [V[i][k], byM(i) ? `${q(byM(i))}!${c}` : undefined, k === 0 || k === 14 || k === 15 ? S.mDay : k === 11 ? S.mDay : S.mInt]),
+      (a, b) => { const tot = k => V.reduce((s, x) => s + x[k], 0), rg = c => `${c}${a}:${c}${b}`, d = tot(0), sm = (k, c) => [tot(k), `SUM(${rg(c)})`];
+        const nz = k => V.map(x => x[k]).filter(Boolean), minNz = (k, c) => [nz(k).length ? Math.min(...nz(k)) : 0, `IFERROR(SMALL(${rg(c)},COUNTIF(${rg(c)},0)+1),0)`];
+        const per = (k, c) => [ratio(tot(k), d), `IF(B${b + 1}>0,ROUND(${c}${b + 1}/B${b + 1},0),0)`];
+        return [[d, `SUM(${rg("B")})`, S.mTotD], sm(1, "C"), sm(2, "D"), sm(3, "E"), per(1, "C"), per(3, "E"), sm(6, "H"), sm(7, "I"), sm(8, "J"), sm(9, "K"), per(9, "K"),
+          [tot(11), `SUM(${rg("M")})`, S.mTotD], per(13, "O"), sm(13, "O"), [...minNz(14, "P"), S.mTotD], [Math.max(0, ...V.map(x => x[15])), `MAX(${rg("Q")})`, S.mTotD], minNz(16, "R"), [Math.max(0, ...V.map(x => x[17])), `MAX(${rg("S")})`], sm(18, "T"), per(18, "T")]; });
+  });
+  spare.forEach(w => {
+    const ym = i => monthYM(fy, i), rows = [];
+    for (let rr = 6; rr <= w.last; rr++) { const d = w.rows[rr]?.[0]?.v?.d; if (d) rows.push({ ym: d.slice(0, 7), g: c => gv(w, c + rr) }); }
+    const K = ["C", "O", "N", "P", "G", "H", "K", "L", "J", "T"], V = Array.from({ length: 12 }, (_, i) => { const m = rows.filter(x => x.ym === ym(i)); return [m.length, ...K.map(c => m.reduce((s, x) => s + x.g(c), 0))]; });
+    const src = c => `${q(w)}!$${c}$6:$${c}$${w.last}`, crit = i => { const [y, mo] = ym(i).split("-").map(Number); return `${src("A")},">="&DATE(${y},${mo},1),${src("A")},"<"&DATE(${y},${mo + 1},1)`; };
+    table(`${C.plate(w.vid)} - Spare Bus Month-wise`,
+      ["Month", "Trips", "Days Run", "Collection", "Expense", "Balance", "Avg Col / Day", "Driver Padi", "Cleaner Padi", "Diesel (Litres)", "Diesel (Price)", "Toll Gate", "Total KMs", "Avg KMs / Day"],
+      i => { const v = V[i], R = r;
+        return [[v[0], `COUNTIFS(${crit(i)})`], [v[1], `SUMIFS(${src("C")},${crit(i)})`, S.mDay], ...K.slice(1).map((c, k) => [v[k + 2], `SUMIFS(${src(c)},${crit(i)})`, c === "K" ? S.mDay : S.mInt]).slice(0, 3),
+          [ratio(v[2], v[1]), `IF(C${R}>0,ROUND(D${R}/C${R},0),0)`], ...K.slice(4).map((c, k) => [v[k + 5], `SUMIFS(${src(c)},${crit(i)})`, c === "K" ? S.mDay : S.mInt]), [ratio(v[10], v[1]), `IF(C${R}>0,ROUND(M${R}/C${R},0),0)`]]; },
+      (a, b) => { const tot = k => V.reduce((s, x) => s + x[k], 0), rg = c => `SUM(${c}${a}:${c}${b})`, T = b + 1;
+        return [[tot(0), rg("B")], [tot(1), rg("C"), S.mTotD], [tot(2), rg("D")], [tot(3), rg("E")], [tot(4), rg("F")], [ratio(tot(2), tot(1)), `IF(C${T}>0,ROUND(D${T}/C${T},0),0)`],
+          [tot(5), rg("H")], [tot(6), rg("I")], [tot(7), rg("J"), S.mTotD], [tot(8), rg("K")], [tot(9), rg("L")], [tot(10), rg("M")], [ratio(tot(10), tot(1)), `IF(C${T}>0,ROUND(M${T}/C${T},0),0)`]]; });
+  });
+  Object.assign(ws.widths, { A: 36, B: 17.6, C: 21.3, D: 18, E: 18, F: 25.5, G: 24.4, H: 20.6, I: 30.9, J: 17, K: 18, L: 20.7, M: 25.5, N: 28.5, O: 31.3, P: 28.9, Q: 20.5, R: 28.3, S: 21, T: 19.8, U: 25.5 });
+  Object.assign(ws.heights, { 1: 46, 2: 20, 3: 46 }); for (let k = R0; k <= RT; k++) ws.heights[k] = 31;
+  ws.zoom = 40;
   return ws;
 }
 // The records the downloads need, read fresh (shared records, or this browser's copy).
@@ -14611,7 +14719,7 @@ function routeFySheets(busId, fy, recs, prefix = "") {
   try {
     if (recs) { trips = (recs.trips || []).filter(t => t.vehicleId === busId); tripMonths = (recs.tripMonths || []).filter(m => m.vehicleId === busId); tripYears = (recs.tripYears || []).filter(y => y.vehicleId === busId); }
     tBusId = busId; tFyStart = fy;
-    for (let i = 0; i < 12; i++) { const ym = monthYM(fy, i); if (monthTrips(ym).length) out.push(meSheet(ym, prefix + new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long" }) + ym.slice(0, 4))); }
+    for (let i = 0; i < 12; i++) { const ym = monthYM(fy, i); if (monthTrips(ym).length) out.push(Object.assign(meSheet(ym, prefix + new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long" }) + ym.slice(0, 4)), { kind: "route", vid: busId, ym })); }
   } finally { ({ trips, tripMonths, tripYears, tBusId, tFyStart } = keep); }
   return out;
 }
@@ -15526,7 +15634,8 @@ $("tsDl").onclick = e => { const fy = +$("tsDlFy").value || fyOf(todayISO());
 $("oDl").onclick = e => { const fy = +$("oDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => { const recs = { ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers };
     const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
-    return [...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]; }); };
+    const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
+    return [xlSummarySheet(recs, fy, sheets, busIds), ...sheets]; }); };
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 // + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
 $("kAdd").onclick = () => { const last = roundsOf(kBusId).filter(r => r.status !== "Closed").sort((a, b) => b.to.localeCompare(a.to))[0]; openRound(last ? last.id : null, "leg", null); };
@@ -16761,7 +16870,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07b";
+const APP_VER = "2026-11-07c";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
