@@ -1451,8 +1451,8 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .xolines { flex: 1; min-height: 0; overflow: auto; } .xolt { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .xolt th { position: sticky; top: 0; background: var(--chip-bg, #eef1f4); text-align: left; padding: 7px 8px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); z-index: 1; }
 .xolt td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .xolt tr[data-row] { cursor: pointer; } .xolt tr[data-row]:hover td { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+.xolt tr.xogrp td { background: var(--surface-2, #e8eef5); font-weight: 700; padding: 8px; position: static; } .xoextra .xomsv { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; } .xoextra .xomsv label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; } .xoextra .xomsv input { width: 18px; height: 18px; }
 .xolt tr.ms-over td { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); } .xolt tr.ms-soon td { background: color-mix(in srgb, #f28c28 20%, var(--surface)); }
-.xoextra .xomsv { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } .xoextra .xomsv button { padding: 6px 10px; font-size: 13px; } .xoextra .xomsv button[aria-pressed="false"] { opacity: .5; text-decoration: line-through; }
 .xolt tr.off td { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); } .xolt tr.off td:first-child { text-decoration: none; }
 .xolt .n { text-align: right; } .xolt .nw { white-space: nowrap; } .xolt th:first-child, .xolt td:first-child { width: 28px; padding-left: 14px; }
 .xolsub { display: none; } #view-ttsheet > header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; } #tsPrint { flex: none; margin-top: 30px; }
@@ -7394,17 +7394,22 @@ async function xpUndoRun() { const u = xpUndo; if (!u) return; xpUndo = null; cl
    spec: { id, title0, sub (image subtitle), note (html), cols: [{ k, h, xl, px, kind: "date"|"num"|"text"|"wrap", total }],
            rows, val(row, k) → text, raw(row, k) → number or ISO date for Excel, picked (Set of row indexes, or null),
            lineCols (keys shown in the line list), lineSub(row) → small text under the first text column, sumKey, extra: { html, onClick(button) },
-           rowSt(row) → "over" (red) or "soon" (orange) to colour a line in the list, the Excel and the image } */
+           rowSt(row) → "over" (red) or "soon" (orange) to colour a line in the list, the Excel and the image,
+           groupBy(row) → a heading row before each group (lines in group order), split: { label, title(group) } offers one file per group,
+           noCols: hide the column choice (every column not marked off is kept), extra.onChange(input, box) / extra.sync(box) for inputs in extra } */
 const PB_IMG_MAX = 900;
 const pbName = (ext, title) => { const d = new Date(), p2 = n => String(n).padStart(2, "0"), base = String(title || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "report"; return `${base}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.${ext}`; };
 function pbExcel(spec, list, keys, title) {
   const S = XL.S, ws = XL.sheet((spec.sheet || "Report").slice(0, 30)), H = spec.cols.filter(c => keys.includes(c.k));
   XL.put(ws, "A1", title, S.title);
   H.forEach((c, i) => { XL.put(ws, `${XL.col(i)}3`, c.h, S.head); ws.widths[XL.col(i)] = c.xl || 14; });
-  list.forEach((x, n) => { const r = n + 4, M = S.mx[spec.rowSt?.(x)]; H.forEach((c, i) => { const a = `${XL.col(i)}${r}`, raw = spec.raw ? spec.raw(x, c.k) : null;
+  let gr = 0; // heading rows added for groups
+  list.forEach((x, n) => { if (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x))) { const r = n + 4 + gr++; XL.put(ws, `A${r}`, spec.groupBy(x), S.sLab);
+      for (let i = 1; i < H.length; i++) XL.put(ws, `${XL.col(i)}${r}`, null, S.sLab); if (H.length > 1) ws.merges.push(`A${r}:${XL.col(H.length - 1)}${r}`); ws.heights[r] = 20; }
+    const r = n + 4 + gr, M = S.mx[spec.rowSt?.(x)]; H.forEach((c, i) => { const a = `${XL.col(i)}${r}`, raw = spec.raw ? spec.raw(x, c.k) : null;
     if (c.kind === "date" && raw) XL.put(ws, a, { d: raw }, M ? M.date : S.date); else if (c.kind === "num" && raw != null && raw !== "") XL.put(ws, a, raw, M ? M.int : Number.isInteger(raw) ? S.int : S.dec); else XL.put(ws, a, spec.val(x, c.k), M ? M.text : S.text); }); });
   const tot = H.map((c, i) => c.total ? i : -1).filter(i => i >= 0);
-  if (tot.length) { const t = list.length + 4; XL.put(ws, `${XL.col(Math.max(0, tot[0] - 1))}${t}`, "Total", S.ttext);
+  if (tot.length) { const t = list.length + 4 + gr; XL.put(ws, `${XL.col(Math.max(0, tot[0] - 1))}${t}`, "Total", S.ttext);
     tot.forEach(i => { const A = XL.col(i), s = list.reduce((a, x) => a + num(spec.raw(x, H[i].k)), 0); XL.put(ws, `${A}${t}`, s, Number.isInteger(s) ? S.tint : S.tint, `SUM(${A}4:${A}${t - 1})`); }); }
   ws.freeze = 3;
   return { filename: pbName("xlsx", title), data: XL.build([ws]) };
@@ -7417,7 +7422,8 @@ async function pbImage(spec, list, keys, title, png) {
   const cv = document.createElement("canvas"), g = cv.getContext("2d"), wc = H.find(c => c.kind === "wrap");
   const wrap = t => { g.font = `400 15px ${F}`; const out = []; let cur = ""; String(t).split(/\s+/).forEach(w => { const n = cur ? cur + " " + w : w; if (cur && g.measureText(n).width > wc.w - 20) { out.push(cur); cur = w; } else cur = n; }); out.push(cur); return out; };
   const lines = list.map(r => wc ? wrap(spec.val(r, wc.k)) : [""]), rh = l => RH + (l.length - 1) * 20, hasTot = H.some(c => c.total);
-  const Ht = M + 92 + RH + lines.reduce((a, l) => a + rh(l), 0) + (hasTot ? RH + 8 : 0) + 44;
+  const gHead = n => spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(list[n])), nG = list.filter((_, n) => gHead(n)).length;
+  const Ht = M + 92 + RH + lines.reduce((a, l) => a + rh(l), 0) + nG * RH + (hasTot ? RH + 8 : 0) + 44;
   cv.width = W; cv.height = Ht;
   const fit = (t, w) => { let s = String(t); if (g.measureText(s).width <= w) return s; while (s && g.measureText(s + "…").width > w) s = s.slice(0, -1); return s + "…"; };
   const cell = (c, v, x, y) => { if (c.kind === "num") { g.textAlign = "right"; g.fillText(v, x + c.w - 10, y); g.textAlign = "left"; } else g.fillText(fit(v, c.w - 20), x + 10, y); };
@@ -7427,6 +7433,7 @@ async function pbImage(spec, list, keys, title, png) {
   let y = M + 72, x = M; g.fillStyle = "#eef1f4"; g.fillRect(M, y, W - 2 * M, RH); g.font = `700 14px ${F}`; g.fillStyle = "#18212b";
   H.forEach(c => { cell(c, c.h, x, y + 22); x += c.w; }); y += RH;
   list.forEach((r, n) => {
+    if (gHead(n)) { g.fillStyle = "#dde7f3"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 16px ${F}`; g.fillText(fit(spec.groupBy(r), W - 2 * M - 20), M + 10, y + 23); y += RH; }
     const h = rh(lines[n]), st = spec.rowSt?.(r); if (st || n % 2) { g.fillStyle = st === "over" ? "#ffc7ce" : st === "soon" ? "#ffd8a8" : "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
     x = M; H.forEach(c => { g.fillStyle = "#18212b"; g.font = c.kind === "num" || c.kind === "date" ? `400 14px ${MONO}` : `400 15px ${F}`;
       if (c === wc) lines[n].forEach((t, j) => g.fillText(t, x + 10, y + 22 + j * 20)); else cell(c, spec.val(r, c.k), x, y + 22); x += c.w; });
@@ -7466,18 +7473,24 @@ function pbOpen(spec) {
     `<div class="xobody"><div class="xoleft"><label class="xotl">Title<input type="text" data-title maxlength="80" value="${esc(spec.title0)}"></label>` +
     `<p class="dnote">${spec.note || ""}</p>` +
     `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
-    `<div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${spec.cols.map(c => `<li><label><input type="checkbox" data-c="${c.k}"${c.off ? "" : " checked"}> ${esc(c.h)}</label></li>`).join("")}</ul>` +
+    `<div${spec.noCols ? " hidden" : ""}><div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${spec.cols.map(c => `<li><label><input type="checkbox" data-c="${c.k}"${c.off ? "" : " checked"}> ${esc(c.h)}</label></li>`).join("")}</ul></div>` +
+    (spec.split ? `<div class="xosub">Download as</div><div class="xofmt xosplit" role="radiogroup"><button type="button" data-split="0" aria-pressed="true">One combined file</button><button type="button" data-split="1" aria-pressed="false">${esc(spec.split.label)}</button></div>` : "") +
     (spec.extra ? `<div class="xoextra">${spec.extra.html}</div>` : "") + `</div>` +
     `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
     `<div class="xolines"><table class="xolt"><thead><tr><th></th>${LC.map((c, i) => `<th class="${c.kind === "num" ? "n" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(c.h)}</th>`).join("")}</tr></thead><tbody>` +
-    list.map((x, n) => `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
+    list.map((x, n) => (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x)) ? `<tr class="xogrp"><td colspan="${LC.length + 1}">${esc(spec.groupBy(x))}</td></tr>` : "") + `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
       LC.map((c, i) => `<td class="${c.kind === "num" ? "n num" : c.kind === "date" ? "num" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(spec.val(x, c.k))}${i === first && spec.lineSub ? `<small class="xolsub">${esc(spec.lineSub(x))}</small>` : ""}</td>`).join("") + `</tr>`).join("") +
     `</tbody></table></div></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
   const cols = () => [...box.querySelectorAll("input[data-c]:checked")].map(i => i.dataset.c);
   const rows = () => [...box.querySelectorAll("input[data-l]:checked")].map(i => list[+i.dataset.l]);
   const title = () => box.querySelector("[data-title]").value.trim() || spec.title0;
+  let split = false;
   const make = async png => fmt === "jpg" ? await pbImage(spec, rows(), cols(), title(), png) : pbExcel(spec, rows(), cols(), title());
+  // One file per group (spec.split): the lines ticked, a file for each group, titled spec.split.title(group).
+  const makeAll = async () => { if (!split) return [await make()];
+    const out = [], R = rows(); for (const gk of [...new Set(R.map(spec.groupBy))]) { const part = R.filter(r => spec.groupBy(r) === gk), t = spec.split.title(gk);
+      out.push(fmt === "jpg" ? await pbImage({ ...spec, groupBy: null }, part, cols(), t) : pbExcel({ ...spec, groupBy: null }, part, cols(), t)); } return out; };
   const tick = (sel, all) => { const n = box.querySelectorAll(sel + ":checked").length, m = box.querySelectorAll(sel).length, a = box.querySelector(`input[data-all="${all}"]`); a.checked = n === m; a.indeterminate = n > 0 && n < m; return [n, m]; };
   const sync = () => {
     const [nc, mc] = tick("input[data-c]", "c"), [nl, ml] = tick("input[data-l]", "l"), big = fmt === "jpg" && nl > PB_IMG_MAX;
@@ -7485,14 +7498,19 @@ function pbOpen(spec) {
     box.querySelector("[data-lcount]").innerHTML = `<b>${nl}</b> of ${ml} lines${spec.sumKey ? ` · <b>${rs(rows().reduce((a, x) => a + num(spec.raw(x, spec.sumKey)), 0))}</b>` : ""}`;
     box.querySelectorAll("tr[data-row]").forEach(tr => tr.classList.toggle("off", !tr.querySelector("input").checked));
     box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
+    box.querySelectorAll("[data-split]").forEach(b => b.setAttribute("aria-pressed", b.dataset.split === (split ? "1" : "0")));
+    spec.extra?.sync?.(box);
     const sv = box.querySelector(".duesave"), sh = box.querySelector(".dshare"), off = !nc || !nl || big; sv.disabled = off; sh.disabled = off;
-    sv.lastChild.textContent = !nc ? "Choose a column" : !nl ? "Choose a line" : fmt === "jpg" ? "Save as image" : "Save as Excel";
+    const nf_ = split ? new Set(rows().map(spec.groupBy)).size : 1; if (split) sh.disabled = true;
+    sv.lastChild.textContent = !nc ? "Choose a column" : !nl ? "Choose a line" : `Save as ${fmt === "jpg" ? "image" : "Excel"}${split ? ` · ${nf_} file${nf_ === 1 ? "" : "s"}` : ""}`;
     box.querySelector("[data-xoerr]").textContent = big ? `Too many lines for one image (${nl}). Untick some or filter to ${PB_IMG_MAX} or fewer, or use Excel.` : "";
   };
-  box.addEventListener("change", e => { const a = e.target.dataset.all; if (a) box.querySelectorAll(a === "c" ? "input[data-c]" : "input[data-l]").forEach(i => i.checked = e.target.checked); sync(); });
+  box.addEventListener("change", e => { const a = e.target.dataset.all; if (a) box.querySelectorAll(a === "c" ? "input[data-c]" : "input[data-l]").forEach(i => i.checked = e.target.checked);
+    if (spec.extra?.onChange && e.target.closest(".xoextra")) spec.extra.onChange(e.target, box); sync(); });
   box.addEventListener("click", e => {
     if (e.target === box || e.target.closest("[data-xoclose]")) { pbClose(); return; }
     const b = e.target.closest("[data-fmt]"); if (b) { fmt = b.dataset.fmt; try { localStorage.setItem("fleet-xpout", fmt); } catch {} sync(); return; }
+    const sp = e.target.closest("[data-split]"); if (sp) { split = sp.dataset.split === "1"; sync(); return; }
     if (spec.extra && e.target.closest(".xoextra button")) { spec.extra.onClick(e.target.closest(".xoextra button")); return; }
     // A click anywhere on a line ticks or unticks it.
     const tr = e.target.closest("tr[data-row]"); if (tr && !e.target.matches("input")) { const i = tr.querySelector("input"); i.checked = !i.checked; sync(); }
@@ -7500,7 +7518,8 @@ function pbOpen(spec) {
   box.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-title]")) e.preventDefault(); });
   box.querySelector(".duesave").onclick = async ev => {
     const b = ev.currentTarget; b.disabled = true;
-    try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } const f = await make(); await dl.save(f); toast(`Saved ${f.filename} · ${rows().length} lines`); pbClose(); }
+    try { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return; } const fs = await makeAll(); for (const f of fs) await dl.save(f);
+      toast(fs.length > 1 ? `Saved ${fs.length} files · ${rows().length} lines` : `Saved ${fs[0].filename} · ${rows().length} lines`); pbClose(); }
     catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."); }
     finally { if (b.isConnected) b.disabled = false; }
   };
@@ -8273,17 +8292,24 @@ $("msDl").onclick = () => {
   const V = (r, c) => c === "plate" ? r.plate : c === "type" ? mtItemName(r.it) : c === "date" ? (r.e.date ? xpDateTxt(r.e.date) : "") : c === "km" ? (r.ekm ? nf(r.ekm) : "") : c === "next" ? (r.next ? nf(r.next) : "")
     : c === "left" ? (r.left == null ? "" : mtLeftTxt(r)) : c === "when" ? (r.st === "over" ? "Now" : r.when ? xpDateTxt(r.when) : "") : MT_ST[r.st][0];
   const R = (r, c) => c === "date" ? r.e.date || null : c === "km" ? r.ekm || null : c === "next" ? r.next || null : c === "when" ? (r.st !== "over" && r.when ? r.when : null) : null;
-  const one = keys.length === 1, chips = one ? null : `<div class="xosub">Vehicles</div><p class="dnote" style="margin:0">Tap a vehicle to take its jobs out or put them back.</p><div class="xomsv">${keys.map(k => `<button type="button" class="btn" data-msv="${esc(k)}" aria-pressed="true">${esc(plateK(k))}</button>`).join("")}</div>`;
-  pbOpen({ sheet: "Maintenance summary", title0: `Maintenance summary · ${one ? plateK(keys[0]) : "All vehicles"}`, rows: list, rowSt: st,
+  const one = keys.length === 1;
+  const boxes = one ? "" : `<div class="xosub">Vehicles</div><label class="dall"><input type="checkbox" data-msvall checked> All vehicles</label><div class="xomsv">${keys.map(k => `<label><input type="checkbox" data-msv="${esc(k)}" checked> ${esc(plateK(k))}</label>`).join("")}</div>`;
+  pbOpen({ sheet: "Maintenance summary", title0: `Maintenance summary · ${one ? plateK(keys[0]) : "All vehicles"}`, rows: list, rowSt: st, noCols: true,
+    groupBy: one ? null : r => r.plate, split: one ? null : { label: "One file per vehicle", title: g => `Maintenance summary · ${g}` },
     sub: `As on ${xpDateTxt(todayISO())} · Red: overdue · Orange: due within 5,000 km`,
     note: "Each vehicle's jobs: overdue (red), due soon (orange), then the rest. Untick any line you don't want.",
-    cols: [{ k: "plate", h: "Vehicle", xl: 16, px: 150, kind: "text", off: one }, { k: "type", h: "Maintenance", xl: 30, px: 0, kind: "text" }, { k: "date", h: "Last Done", xl: 13, px: 120, kind: "date" },
+    cols: [{ k: "plate", h: "Vehicle", xl: 16, px: 150, kind: "text", off: true }, { k: "type", h: "Maintenance", xl: 30, px: 0, kind: "text" }, { k: "date", h: "Last Done", xl: 13, px: 120, kind: "date" },
       { k: "km", h: "Kms", xl: 12, px: 110, kind: "num" }, { k: "next", h: "Next Service At", xl: 15, px: 140, kind: "num" }, { k: "left", h: "Km Left", xl: 15, px: 140, kind: "text" },
       { k: "when", h: "Expected Around", xl: 15, px: 140, kind: "date" }, { k: "status", h: "Status", xl: 12, px: 120, kind: "text" }],
-    lineCols: one ? ["type", "next", "left", "status"] : ["plate", "type", "next", "left", "status"], lineSub: r => `Last ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " km" : ""}`, val: V, raw: R,
-    extra: chips ? { html: chips, onClick: b => { const k = b.dataset.msv, on = b.getAttribute("aria-pressed") !== "true", box = b.closest("#xpOutBox"); b.setAttribute("aria-pressed", on);
-      list.forEach((r, n) => { if (r.key === k) { const i = box.querySelector(`input[data-l="${n}"]`); if (i) i.checked = on; } });
-      box.querySelector("input[data-l]")?.dispatchEvent(new Event("change", { bubbles: true })); } } : null });
+    lineCols: ["type", "next", "left", "status"], lineSub: r => `Last ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " km" : ""}`, val: V, raw: R,
+    extra: one ? null : { html: boxes,
+      // A vehicle's box ticks or unticks all its jobs; it shows ticked, unticked or part-ticked from its jobs.
+      onChange: (inp, box) => { const ks = inp.dataset.msvall != null ? keys : inp.dataset.msv != null ? [inp.dataset.msv] : [];
+        list.forEach((r, n) => { if (ks.includes(r.key)) { const i = box.querySelector(`input[data-l="${n}"]`); if (i) i.checked = inp.checked; } }); },
+      sync: box => { const all = box.querySelector("[data-msvall]"); let on = 0, part = 0;
+        keys.forEach(k => { const ls = list.map((r, n) => r.key === k ? box.querySelector(`input[data-l="${n}"]`) : null).filter(Boolean), c = ls.filter(i => i.checked).length, v = box.querySelector(`input[data-msv="${CSS.escape(k)}"]`);
+          v.checked = c === ls.length; v.indeterminate = c > 0 && c < ls.length; if (v.checked) on++; else if (c) part++; });
+        all.checked = on === keys.length; all.indeterminate = !all.checked && (on + part) > 0; } } });
 };
 
 // Service gaps: the default km for each job, and a vehicle's own figure where it differs.
@@ -17101,7 +17127,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07p";
+const APP_VER = "2026-11-07q";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
