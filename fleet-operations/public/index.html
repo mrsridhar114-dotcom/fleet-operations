@@ -7435,7 +7435,8 @@ async function xpUndoRun() { const u = xpUndo; if (!u) return; xpUndo = null; cl
            noFooter: no "Printed by" line on the image, rowSt "ok" is green, extra.onChange(input, box) / extra.sync(box) for inputs in extra } */
 const PB_IMG_MAX = 900;
 const pbName = (ext, title) => { const d = new Date(), p2 = n => String(n).padStart(2, "0"), base = String(title || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "report"; return `${base}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.${ext}`; };
-function pbExcel(spec, list, keys, title) {
+// The sheet of a Print / download Excel (also used for the maintenance sheets of Download all).
+function pbSheet(spec, list, keys, title) {
   const S = XL.S, ws = XL.sheet((spec.sheet || "Report").slice(0, 30)), H = spec.cols.filter(c => keys.includes(c.k));
   XL.put(ws, "A1", title, S.title);
   // spec.top: a line under the title (row 2) for the lines in the file.
@@ -7450,8 +7451,9 @@ function pbExcel(spec, list, keys, title) {
   if (tot.length) { const t = list.length + 4 + gr; XL.put(ws, `${XL.col(Math.max(0, tot[0] - 1))}${t}`, "Total", S.ttext);
     tot.forEach(i => { const A = XL.col(i), s = list.reduce((a, x) => a + num(spec.raw(x, H[i].k)), 0); XL.put(ws, `${A}${t}`, s, Number.isInteger(s) ? S.tint : S.tint, `SUM(${A}4:${A}${t - 1})`); }); }
   ws.freeze = 3; if (spec.headH) ws.heights[3] = spec.headH;
-  return { filename: spec.fileName ? spec.fileName(list, "xlsx") : pbName("xlsx", title), data: XL.build([ws]) };
+  return ws;
 }
+function pbExcel(spec, list, keys, title) { return { filename: spec.fileName ? spec.fileName(list, "xlsx") : pbName("xlsx", title), data: XL.build([pbSheet(spec, list, keys, title)]) }; }
 async function pbImage(spec, list, keys, title, png) {
   try { await document.fonts?.ready; } catch {}
   // Tamil (spec.lang "ta"): the Noto Sans Tamil font is loaded first and used for the Tamil letters.
@@ -8359,33 +8361,41 @@ const MS_T = {
     sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: சர்வீஸ் செய்ய நேரம் உள்ளது`, last: "கடைசி", km: "கி.மீ",
     cur: "வாகனத்தின் தற்போதைய கிலோமீட்டர் ரீடிங்", act: "ஓடிய மொத்த கிலோமீட்டர்", on: d => `${d} அன்று`, noCur: "பயண / டீசல் ரீடிங் இல்லை", lines: n => `${n} வரிகள்` }
 };
-$("msDl").onclick = () => {
-  const keys = msBus ? [msBus] : [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
+// The vehicles with maintenance entered (in the vehicle master, and with old: also those not in it).
+const msKeys = old => [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => old || mtVehOf(k));
+// The summary lines of these vehicles and how each column is written, in the language T() gives (the summary download and Download all).
+function msLines(keys, T) {
   const plateK = k => mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k });
   const list = keys.flatMap(k => mtDue(k).map(d => ({ ...d, key: k, plate: plateK(k) })));
-  if (!list.length) { toast("No maintenance entered yet."); return; }
-  let lang = "en"; try { lang = localStorage.getItem("fleet-mslang") === "ta" ? "ta" : "en"; } catch {}
-  const T = () => MS_T[lang];
   const st = r => r.st === "over" || r.st === "soon" || r.st === "ok" ? r.st : "";
   const V = (r, c) => c === "plate" ? r.plate : c === "type" ? T().item(r) : c === "date" ? (r.e.date ? xpDateTxt(r.e.date) : "") : c === "km" ? (r.ekm ? nf(r.ekm) : "") : c === "next" ? (r.next ? nf(r.next) : "")
     : c === "left" ? (r.left == null ? "" : T().left(r)) : c === "when" ? (r.st === "over" ? T().now : r.when ? xpDateTxt(r.when) : "") : T().st[r.st];
   const R = (r, c) => c === "date" ? r.e.date || null : c === "km" ? r.ekm || null : c === "next" ? r.next || null : c === "when" ? (r.st !== "over" && r.when ? r.when : null) : null;
-  const one = keys.length === 1;
   // The vehicle's latest meter reading from its trip sheets, round trips and diesel fills, shown on top of the file (or on each vehicle's heading).
   const cur = new Map(keys.map(k => [k, mtNow(k, true)]));
   // A vehicle with meter adjustments in the vehicle master (meter and actual km) also shows the actual km.
   const curTxt = k => { const c = cur.get(k), adj = c && odoPairs(mtVehOf(k)).length;
     return `${T().cur}: ${c ? `${nf(c.meter)} ${T().km} (${T().on(xpDateTxt(c.date))})${adj ? ` · ${T().act}: ${nf(c.km)} ${T().km}` : ""}` : T().noCur}`; };
   const keyOfPlate = g => keys.find(k => plateK(k) === g);
+  const cols = () => [{ k: "plate", xl: 16, px: 150, kind: "text", off: true }, { k: "type", xl: 30, px: 0, kind: "text" }, { k: "date", xl: 15, px: 150, kind: "date" },
+    { k: "km", xl: 13, px: 130, kind: "num" }, { k: "next", xl: 16, px: 150, kind: "num" }, { k: "left", xl: 17, px: 170, kind: "text" },
+    { k: "when", xl: 17, px: 170, kind: "date" }, { k: "status", xl: 12, px: 110, kind: "text" }].map(c => ({ ...c, h: T().cols[c.k] }));
+  return { plateK, list, st, V, R, curTxt, keyOfPlate, cols };
+}
+$("msDl").onclick = () => {
+  const keys = msBus ? [msBus] : msKeys(msOld);
+  let lang = "en"; try { lang = localStorage.getItem("fleet-mslang") === "ta" ? "ta" : "en"; } catch {}
+  const T = () => MS_T[lang];
+  const { plateK, list, st, V, R, curTxt, keyOfPlate, cols } = msLines(keys, T);
+  if (!list.length) { toast("No maintenance entered yet."); return; }
+  const one = keys.length === 1;
   const boxes = one ? "" : `<div class="xosub">Vehicles</div><label class="dall"><input type="checkbox" data-msvall checked> All vehicles</label><div class="xomsv">${keys.map(k => `<label><input type="checkbox" data-msv="${esc(k)}" checked> ${esc(plateK(k))}</label>`).join("")}</div>`;
   const tAuto = ks => ks.length === 1 ? `${T().title} - ${plateK(ks[0])}` : T().title;
   let lastT = tAuto(keys);
   const spec = { lang, title0: lastT, rows: list, rowSt: st, noFooter: true,
     groupBy: one ? null : r => r.plate, split: one ? null : { label: "One file per vehicle", title: g => `${T().title} - ${g}` },
     note: "Each vehicle's jobs: overdue (red), due soon (orange), then OK (green). Untick any column or line you don't want. Choose Tamil for the drivers.",
-    cols: [{ k: "plate", xl: 16, px: 150, kind: "text", off: true }, { k: "type", xl: 30, px: 0, kind: "text" }, { k: "date", xl: 15, px: 150, kind: "date" },
-      { k: "km", xl: 13, px: 130, kind: "num" }, { k: "next", xl: 16, px: 150, kind: "num" }, { k: "left", xl: 17, px: 170, kind: "text" },
-      { k: "when", xl: 17, px: 170, kind: "date" }, { k: "status", xl: 12, px: 110, kind: "text" }],
+    cols: cols(),
     lineCols: ["type", "next", "left", "status"], lineSub: r => `${T().last} ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " " + T().km : ""}`, val: V, raw: R,
     countTxt: n => T().lines(n),
     top: (rows, sp) => sp.groupBy || !rows.length ? "" : curTxt(rows[0].key),
@@ -8561,15 +8571,16 @@ $("mhBus").onchange = () => { mhBus = $("mhBus").value; renderMhist(); };
 $("mhType").onchange = () => { mhType = $("mhType").value; renderMhist(); };
 $("mhShow").onchange = () => { mhShow = $("mhShow").value; renderMhist(); };
 $("mhPanel").addEventListener("click", e => { if (e.target.closest(".ttb, .ttmenu")) return; const r = e.target.closest("[data-mhentry]"); if (r) mtOpen(ops.maintLog.find(x => x.id === r.dataset.mhentry)); });
+// How the history columns are written (the history download and Download all).
+const MH_COLS = () => [{ k: "plate", h: "Vehicle Number", xl: 16, px: 150, kind: "text" }, { k: "type", h: "Maintenance Type", xl: 30, px: 0, kind: "text" }, { k: "date", h: "Last Maintenance Date", xl: 14, px: 130, kind: "date" },
+  { k: "km", h: "Last Maintenance Kms", xl: 14, px: 130, kind: "num" }, { k: "next", h: "Next KMS to be Serviced", xl: 16, px: 150, kind: "num" }, { k: "remarks", h: "Remarks", xl: 40, px: 0, kind: "wrap" }];
+const mhV = (r, c) => c === "plate" ? r.plate : c === "type" ? r.type : c === "date" ? xpDateTxt(r.date) : c === "km" ? (r.km ? nf(r.km) : "") : c === "next" ? (r.next ? nf(r.next) : "") : r.remarks;
+const mhR = (r, c) => c === "date" ? r.date : c === "km" ? r.km || null : c === "next" ? r.next || null : null;
 $("mhPrint").onclick = () => {
   const list = mhList();
-  const V = (r, c) => c === "plate" ? r.plate : c === "type" ? r.type : c === "date" ? xpDateTxt(r.date) : c === "km" ? (r.km ? nf(r.km) : "") : c === "next" ? (r.next ? nf(r.next) : "") : r.remarks;
-  const R = (r, c) => c === "date" ? r.date : c === "km" ? r.km || null : c === "next" ? r.next || null : null;
   pbOpen({ sheet: "Maintenance history", title0: `Maintenance history${mhBus ? " · " + mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === mhBus)) : ""}`, rows: list, sub: mhShow === "last" ? "Latest of each job" : "Every visit",
     note: "The jobs on the page, with the vehicle and type chosen.",
-    cols: [{ k: "plate", h: "Vehicle Number", xl: 16, px: 150, kind: "text" }, { k: "type", h: "Maintenance Type", xl: 30, px: 0, kind: "text" }, { k: "date", h: "Last Maintenance Date", xl: 14, px: 130, kind: "date" },
-      { k: "km", h: "Last Maintenance Kms", xl: 14, px: 130, kind: "num" }, { k: "next", h: "Next KMS to be Serviced", xl: 16, px: 150, kind: "num" }, { k: "remarks", h: "Remarks", xl: 40, px: 0, kind: "wrap" }],
-    lineCols: ["type", "date", "km"], lineSub: r => r.plate, val: V, raw: R });
+    cols: MH_COLS(), lineCols: ["type", "date", "km"], lineSub: r => r.plate, val: mhV, raw: mhR });
 };
 
 /* ---------- Loading the Excel workbook (Utility › Data upload) ----------
@@ -10240,6 +10251,18 @@ function xlVehicleSheet(recs) {
     ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => docApplies(k, v.type, v.usage) ? v[d.k] ?? "" : "")), v.remarks]);
   return xlMasterSheet("Vehicle Master Data", [{ heads, rows }], { "Plate No.": 16, Class: 17, Age: 19, "Owner Name": 26, "Owner Address": 40, Remarks: 40 });
 }
+/* Download all: Maintenance Summary (every vehicle in the vehicle master with maintenance: each job's last service and the next one
+   due, as on today, with the vehicle's current km on its heading) and Maintenance History (every job done in the year). */
+function xlMaintSheets(fy) {
+  const out = [], today = todayISO().split("-").reverse().join("/"), wide = ws => { const n = Object.keys(ws.widths).length; if (n > 1) ws.merges.push(`A1:${XL.col(n - 1)}1`); ws.zoom = 90; return ws; };
+  const T = () => MS_T.en, L = msLines(msKeys(false), T);
+  if (L.list.length) { const cols = L.cols(), keys = cols.filter(c => !c.off).map(c => c.k);
+    out.push(wide(pbSheet({ sheet: "Maintenance Summary", cols, val: L.V, raw: L.R, rowSt: L.st, groupBy: r => r.plate, grpLabel: g => `${g} · ${L.curTxt(L.keyOfPlate(g))}`, headH: 32 },
+      L.list, keys, `Maintenance Summary - as on ${today} · Red: overdue · Orange: due within 5,000 km · Green: OK`))); }
+  const hist = mhRows().filter(r => r.date && fyOf(r.date) === fy);
+  if (hist.length) out.push(wide(pbSheet({ sheet: "Maintenance History", cols: MH_COLS(), val: mhV, raw: mhR }, hist, MH_COLS().map(c => c.k), `Maintenance History - FY ${fyLabel(fy)} (every job done in the year)`)));
+  return out;
+}
 /* The first sheet of Download all, on one screen: a row per group, its name in column A and its buttons beside it (each a link
    to that sheet). Route buses: a row per bus with a button per month (grey where the month has no sheet). The other groups: buttons
    three columns wide, four to a row. Each other sheet has a ⌂ Home button back here (made in XL.build). */
@@ -10268,6 +10291,7 @@ function xlHomeSheet(fy, sheets) {
   group("Spare Buses", of("spare").map(w => [w, C.plate(w.vid)]), B.spare);
   group("Trucks", of("truck").map(w => [w, C.plate(w.vid)]), B.truck);
   group("Expenses", [...of("xp-bus"), ...of("xp-truck")].map(w => [w, w.name]), B.exp);
+  group("Maintenance", sheets.filter(w => /^Maintenance (Summary|History)$/.test(w.name)).map(w => [w, w.name.replace("Maintenance ", "")]), B.master);
   group("Master Data", sheets.filter(w => /Master Data$/.test(w.name)).map(w => [w, w.name.replace(" Master Data", "s")]), B.master);
   ws.widths.A = 20; for (let c = 1; c < 13; c++) ws.widths[col(c)] = 10.5;
   return ws;
@@ -16120,7 +16144,7 @@ $("oDl").onclick = e => { const fy = +$("oDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => { const recs = { ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers };
     const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.vehicleId && t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
     const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
-    const all = XL.names([xlSummarySheet(recs, fy, sheets, busIds), ...sheets, xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]);
+    const all = XL.names([xlSummarySheet(recs, fy, sheets, busIds), ...sheets, ...xlMaintSheets(fy), xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]);
     return [xlHomeSheet(fy, all), ...all]; }); };
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 // + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
@@ -17356,7 +17380,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08i";
+const APP_VER = "2026-11-08j";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
