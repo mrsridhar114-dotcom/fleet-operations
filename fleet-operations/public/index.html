@@ -1890,8 +1890,9 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mtcard .mti { display: flex; flex-wrap: wrap; gap: 4px; } .mtcard .mti span { font-size: 13px; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; } .mtcard small { color: var(--muted); }
 .bwh .mtsteps { display: flex; flex-direction: row; flex: none; align-self: center; gap: 4px; } .mtchk.mtfix { cursor: default; } .mtchk .mtnx { display: block; margin-bottom: 4px; } .mtnext span { white-space: nowrap; }
 .mscards { display: none; } .mscard { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
-.mscard .mscn { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .mscard .mscn b { font-size: 15px; } .mscard.ms-over { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); } .mscard.ms-soon { background: color-mix(in srgb, #f2c200 14%, var(--surface)); }
+.mscard .mscn { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .mscard .mscn b { font-size: 15px; } .mscard.ms-over { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); } .mscard.ms-soon { background: color-mix(in srgb, #f28c28 16%, var(--surface)); border-color: color-mix(in srgb, #f28c28 40%, var(--line)); }
 @media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } }
+.msdlrow { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; } .msdlrow input { width: 20px; height: 20px; flex: none; } .msdlc { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-left: auto; } .msdlall { border-bottom: 2px solid var(--line); }
 .mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
 @media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
 .mtsteps span.on { background: #fff; color: var(--ink); } .mtsteps span.done { background: var(--accent); color: #fff; }
@@ -1914,7 +1915,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mtdone { text-align: center; padding: 20px 4px; } .mtok { width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 34px; font-weight: 800; }
 .mtnext { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; text-align: left; } .mtnext div { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); } .mtnext span { color: var(--muted); }
 .msh { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-bottom: 8px; } .msh .sec { margin: 0; }
-.mstable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mstable tr.ms-soon td { background: color-mix(in srgb, #f2c200 16%, var(--surface)); }
+.mstable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mstable tr.ms-soon td { background: color-mix(in srgb, #f28c28 18%, var(--surface)); }
 .msgtable input { width: 120px; height: 36px; text-align: right; border: 1px solid var(--line); border-radius: 8px; padding: 0 8px; background: var(--surface); color: var(--ink); font: inherit; }
 /* Booking window: the booking at a glance (header) and the Booking slip in four groups. */
 .bkinfo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; min-width: 0; }
@@ -2902,6 +2903,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tcontrols">
           <div class="hf"><label for="msBusF">Vehicle</label><select id="msBusF"></select></div>
           <button class="btn" type="button" id="msGaps">Service gaps</button>
+          <button class="btn" type="button" id="msDl">⬇ Download</button>
           <a class="btn primary" href="#maintenance">+ Maintenance entry</a>
         </div>
       </header>
@@ -6982,7 +6984,7 @@ function mtDue(key) {
     return { it, e, ekm: a, gap, next, left, when, st };
   }).sort((a, b) => ["over", "soon", "ok", "nogap"].indexOf(a.st) - ["over", "soon", "ok", "nogap"].indexOf(b.st) || (a.left ?? 9e12) - (b.left ?? 9e12) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
 }
-const MT_ST = { over: ["Overdue", "d7"], soon: ["Due soon", "d30"], ok: ["OK", "ok"], nogap: ["No gap set", "off"] };
+const MT_ST = { over: ["Overdue", "mlow"], soon: ["Due soon", "d30"], ok: ["OK", "ok"], nogap: ["No gap set", "off"] };
 const mtLeftTxt = d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} km over` : `${nf(d.left)} km`;
 const canXp = () => platformWrite && acc.expenses === "edit";
 const canMt = () => platformWrite && acc.maintenance === "edit";
@@ -8257,6 +8259,62 @@ function renderMsum() {
 }
 $("msBusF").onchange = () => { msBus = $("msBusF").value; renderMsum(); };
 $("msList").addEventListener("click", e => { if (e.target.id === "msOldBtn") { msOld = !msOld; renderMsum(); return; } const r = e.target.closest("[data-msentry]"); if (r) mtOpen(ops.maintLog.find(x => x.id === r.dataset.msentry)); });
+/* Download: the vehicle chosen on the page, or (with All vehicles) the ones ticked in a list showing each vehicle's overdue and
+   due-soon count. One sheet per vehicle, its jobs in the page's order: overdue (red), due soon (orange), then the rest. */
+function xlMaintSheets(keys) {
+  const { put, S, sheet, col } = XL, today = todayISO(), dmy = d => d ? d.split("-").reverse().join("/") : "";
+  const heads = ["Maintenance", "Last Done", "Kms", "Next Service At", "Km Left", "Expected Around", "Status"];
+  return keys.map(k => {
+    const plate = mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }), ws = sheet(plate.replace(/\s+/g, "")), due = mtDue(k), now = mtNow(k);
+    put(ws, "A1", `${plate} - Maintenance Summary - as on ${dmy(today)}`, S.sTitle); for (let c = 1; c < 7; c++) put(ws, col(c) + 1, null, S.sTitle); ws.merges.push("A1:G1");
+    put(ws, "A2", now ? `Now about ${nf(now.km)} km (${now.src}, ${dmy(now.date)})${now.perDay ? ` · about ${nf(Math.round(now.perDay))} km a day` : ""} · Red: overdue · Orange: due within 5,000 km` : "No km reading yet", S.sNote);
+    heads.forEach((h, i) => put(ws, col(i) + 4, h, S.sHead));
+    due.forEach((d, i) => { const r = 5 + i, M = S.mx[d.st === "over" || d.st === "soon" ? d.st : "ok"];
+      put(ws, "A" + r, mtItemName(d.it), M.text); put(ws, "B" + r, d.e.date ? { d: d.e.date } : "", M.date); put(ws, "C" + r, d.ekm || "", M.int);
+      put(ws, "D" + r, d.next || "", M.int); put(ws, "E" + r, d.left == null ? "" : d.left <= 0 ? `${nf(-d.left)} km over` : d.left, d.left == null || d.left <= 0 ? M.text : M.int);
+      put(ws, "F" + r, d.st === "over" ? "Now" : d.when ? { d: d.when } : "", d.st !== "over" && d.when ? M.date : M.text); put(ws, "G" + r, MT_ST[d.st][0], M.text); });
+    if (!due.length) put(ws, "A5", "No maintenance entered", S.sTxt);
+    Object.assign(ws.widths, { A: 34, B: 13, C: 12, D: 16, E: 15, F: 16, G: 13 }); Object.assign(ws.heights, { 1: 28.5, 4: 20 }); ws.freeze = 4;
+    return ws;
+  });
+}
+async function msSave(keys, btn) {
+  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
+  if (!dl) { toast("Saving files isn't available in this view."); return false; }
+  if (btn) btn.disabled = true;
+  const one = keys.length === 1 ? mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === keys[0]) || { vehicleId: keys[0] }).replace(/\s+/g, "") : `${keys.length}_Vehicles`;
+  try { await dl.save({ filename: `Maintenance_Summary_${one}_${todayISO().split("-").reverse().join("-")}.xlsx`, data: XL.build(xlMaintSheets(keys)) }); toast("Maintenance summary saved. Look in your Downloads folder."); return true; }
+  catch (er) { if (er?.code !== "declined") toast("Couldn't make the file. Try again."); return false; }
+  finally { if (btn) btn.disabled = false; }
+}
+let msdlSel = null;
+$("msDl").onclick = () => {
+  if (msBus) { msSave([msBus], $("msDl")); return; }
+  const keys = [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
+  if (!keys.length) { toast("No maintenance entered yet."); return; }
+  msdlSel = new Set(keys); msdlRender(keys);
+};
+function msdlRender(keys) {
+  if (!$("msdlw")) { document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="msdlw" role="dialog" aria-modal="true" aria-labelledby="msdlTitle" hidden></div>');
+    $("msdlw").addEventListener("change", e => { const i = e.target.dataset.msk; if (i == null && e.target.id !== "msdlAll") return;
+      const all = [...$("msdlw").querySelectorAll("input[data-msk]")];
+      if (e.target.id === "msdlAll") all.forEach(x => x.checked = e.target.checked);
+      msdlSel = new Set(all.filter(x => x.checked).map(x => x.dataset.msk)); msdlSync(); });
+    $("msdlw").addEventListener("click", async e => { const b = e.target.closest("button[data-msdl]"); if (!b) return;
+      if (b.dataset.msdl === "go") { if (await msSave([...msdlSel], b)) msdlClose(); } else msdlClose(); }); }
+  const rows = keys.map(k => { const due = mtDue(k), o = due.filter(d => d.st === "over").length, so = due.filter(d => d.st === "soon").length;
+    return `<label class="msdlrow"><input type="checkbox" data-msk="${esc(k)}" checked><span class="plate psv">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</span>` +
+      `<span class="msdlc">${o ? `<span class="pill mlow">${o} overdue</span>` : ""}${so ? `<span class="pill d30">${so} due soon</span>` : ""}${!o && !so ? `<span class="pill ok">All OK</span>` : ""}<small>${due.length} job${due.length === 1 ? "" : "s"}</small></span></label>`; }).join("");
+  $("msdlw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="msdlTitle">Download maintenance summary</b><span>Tick the vehicles to include · one sheet each</span></div></header>` +
+    `<div class="bwb tws"><label class="msdlrow msdlall"><input type="checkbox" id="msdlAll" checked><b>All vehicles</b></label><div class="msdllist">${rows}</div>` +
+    `<p class="bwnote">In the file each vehicle's jobs are in this order: overdue (red), due soon (orange), then the rest.</p></div>` +
+    `<footer class="bwf two"><button type="button" class="bwalt" data-msdl="close">Cancel</button><button type="button" class="bwgo" data-msdl="go">⬇ Download <span id="msdlN"></span></button></footer>`;
+  $("msdlw").hidden = false; document.documentElement.classList.add("bw-on"); msdlSync();
+}
+function msdlSync() { const n = msdlSel.size, all = $("msdlw").querySelectorAll("input[data-msk]").length, a = $("msdlAll");
+  a.checked = n === all; a.indeterminate = n > 0 && n < all; $("msdlN").textContent = `(${n})`; $("msdlw").querySelector('[data-msdl="go"]').disabled = !n; }
+function msdlClose() { $("msdlw").hidden = true; document.documentElement.classList.remove("bw-on"); msdlSel = null; }
+
 // Service gaps: the default km for each job, and a vehicle's own figure where it differs.
 let msgEd = null;
 $("msGaps").onclick = () => { const d = mtGapsDoc(); msgEd = { bus: msBus, gaps: { ...(d.gaps || {}) }, per: JSON.parse(JSON.stringify(d.bus || {})) }; msgRender(); };
@@ -9578,7 +9636,8 @@ const XL = (() => {
     rTitle: 48, rLab: 49, rVal: 50, rValD: 51, rCrewH: 52, rTxt: 53, rInt: 54, rHead: 55, rDay: 56, rDec: 57,
     sTitle: 58, sLab: 59, sVal: 60, sHead: 61, sDate: 62, sInt: 63, sDec: 64, sTxt: 65,
     smTitle: 66, smHead: 67, smVeh: 68, smNum: 69, smDay: 70, smTotL: 71, smTotN: 72, smTotD: 73, smSign: 74, smGrandL: 75, smGrand: 76,
-    mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84, sDateX: 85, sDateD: 86, sNote: 87, homeBtn: 88, hTitle: 89, hNote: 90, hLab: 91, btn: { sum: 92, route: 93, spare: 94, truck: 95, exp: 96, master: 97, off: 98 } };
+    mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84, sDateX: 85, sDateD: 86, sNote: 87, homeBtn: 88, hTitle: 89, hNote: 90, hLab: 91, btn: { sum: 92, route: 93, spare: 94, truck: 95, exp: 96, master: 97, off: 98 },
+    mx: ["", "over", "soon"].reduce((a, k, i) => (a[k || "ok"] = { text: 99 + i * 3, int: 100 + i * 3, date: 101 + i * 3 }, a), {}) };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -9607,14 +9666,16 @@ const XL = (() => {
     // 88: the ⌂ Home button on each sheet (white on green). 89–98: the Home sheet: title, note, row label, then the buttons
     // (white on a colour, white edges so they stand apart): Summary, route months, spare buses, trucks, expenses, master data, a month with no sheet
     xf(0, 15, 14, 2, 'horizontal="center" vertical="center"'), xf(0, 4, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 3, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 5, 0, 0, 'horizontal="left" vertical="center" wrapText="1"'),
-    ...[16, 17, 11, 18, 19, 20].map(fl => xf(0, 15, fl, 3, 'horizontal="center" vertical="center" wrapText="1"')), xf(0, 3, 3, 3, 'horizontal="center" vertical="center"')];
+    ...[16, 17, 11, 18, 19, 20].map(fl => xf(0, 15, fl, 3, 'horizontal="center" vertical="center" wrapText="1"')), xf(0, 3, 3, 3, 'horizontal="center" vertical="center"'),
+    // 99–107: the maintenance summary download: text, number, date with no colour, red (overdue) and orange (due soon)
+    ...[0, 21, 22].flatMap(fl => [xf(0, 0, fl, 2, 'vertical="center" wrapText="1"'), xf(165, 0, fl, 2, 'vertical="center"'), xf(164, 0, fl, 2, 'horizontal="left" vertical="center"')])];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="16"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
     [[1, 28], [1, 24], [0, 16], [1, 16], [1, 36], [1, 24], [1, 72], [1, 18], [1, 20]].map(([b, z]) => `<font>${b ? "<b/>" : ""}<sz val="${z}"/><name val="Calibri"/><family val="2"/></font>`).join("") +
     `<font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font></fonts>` +
-    `<fills count="21"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
-    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF", "FFC55A11", "FFDBDBDB", "FFFFC000", "FF00B050", "FFF4B183", "FF1F4E78", "FF2F75B5", "FF548235", "FF7030A0", "FF44546A"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
+    `<fills count="23"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
+    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF", "FFC55A11", "FFDBDBDB", "FFFFC000", "FF00B050", "FFF4B183", "FF1F4E78", "FF2F75B5", "FF548235", "FF7030A0", "FF44546A", "FFFFC7CE", "FFFFD8A8"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
     `<borders count="4"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}${B.replace(/thin/g, "thick").replace(/FFBFBFBF/g, "FFFFFFFF")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="${XFS.length}">${XFS.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const serial = iso => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(1899, 11, 30)) / 864e5;
@@ -17069,7 +17130,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07n";
+const APP_VER = "2026-11-07o";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
