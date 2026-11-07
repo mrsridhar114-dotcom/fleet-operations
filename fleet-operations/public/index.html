@@ -6989,9 +6989,10 @@ function mtAct(key, date, km) { const v = mtVehOf(key); return v && num(km) && o
 const mtXAct = x => x.src === "excel" || x.kmAct ? num(x.km) : mtAct(mtKeyOf(x), x.date, x.km);
 // The latest km reading known for a vehicle (maintenance, diesel fills, trip sheets, bookings, truck trips) in actual km, and its km per day.
 // Latest by date (the highest km on that day), so an old reading typed with a wrong or a replaced meter's km does not stay "now".
-function mtNow(key) {
+// tripsOnly: only the trip sheets, round trips and diesel fills (not the maintenance entries).
+function mtNow(key, tripsOnly) {
   const v = mtVehOf(key), pts = [], add = (date, km, src) => { if (date && num(km)) pts.push([date, mtAct(key, date, km), src, num(km)]); };
-  ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => { if (x.date && num(x.km)) pts.push([x.date, mtXAct(x), "maintenance", num(x.km)]); });
+  if (!tripsOnly) ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => { if (x.date && num(x.km)) pts.push([x.date, mtXAct(x), "maintenance", num(x.km)]); });
   if (v) {
     ops.fuelLog.filter(f => f.vehicleId === v.id).forEach(f => add(f.date, f.odo, "diesel fill"));
     [...trips, ...dayTrips, ...tripsLocal].filter(t => t.vehicleId === v.id).forEach(t => add(t.date, t.odo, "trip sheet"));
@@ -7437,9 +7438,11 @@ const pbName = (ext, title) => { const d = new Date(), p2 = n => String(n).padSt
 function pbExcel(spec, list, keys, title) {
   const S = XL.S, ws = XL.sheet((spec.sheet || "Report").slice(0, 30)), H = spec.cols.filter(c => keys.includes(c.k));
   XL.put(ws, "A1", title, S.title);
+  // spec.top: a line under the title (row 2) for the lines in the file.
+  const top = spec.top?.(list, spec); if (top) { XL.put(ws, "A2", top, S.sLab); for (let i = 1; i < H.length; i++) XL.put(ws, `${XL.col(i)}2`, null, S.sLab); if (H.length > 1) ws.merges.push(`A2:${XL.col(H.length - 1)}2`); ws.heights[2] = 22; }
   H.forEach((c, i) => { XL.put(ws, `${XL.col(i)}3`, c.h, S.head); ws.widths[XL.col(i)] = c.xl || 14; });
   let gr = 0; // heading rows added for groups
-  list.forEach((x, n) => { if (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x))) { const r = n + 4 + gr++; XL.put(ws, `A${r}`, spec.groupBy(x), S.sLab);
+  list.forEach((x, n) => { if (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x))) { const r = n + 4 + gr++; XL.put(ws, `A${r}`, spec.grpLabel ? spec.grpLabel(spec.groupBy(x)) : spec.groupBy(x), S.sLab);
       for (let i = 1; i < H.length; i++) XL.put(ws, `${XL.col(i)}${r}`, null, S.sLab); if (H.length > 1) ws.merges.push(`A${r}:${XL.col(H.length - 1)}${r}`); ws.heights[r] = 20; }
     const r = n + 4 + gr, M = S.mx[spec.rowSt?.(x)]; H.forEach((c, i) => { const a = `${XL.col(i)}${r}`, raw = spec.raw ? spec.raw(x, c.k) : null;
     if (c.kind === "date" && raw) XL.put(ws, a, { d: raw }, M ? M.date : S.date); else if (c.kind === "num" && raw != null && raw !== "") XL.put(ws, a, raw, M ? M.int : Number.isInteger(raw) ? S.int : S.dec); else XL.put(ws, a, spec.val(x, c.k), M ? M.text : S.text); }); });
@@ -7460,17 +7463,19 @@ async function pbImage(spec, list, keys, title, png) {
   const wrap = t => { g.font = `400 15px ${F}`; const out = []; let cur = ""; String(t).split(/\s+/).forEach(w => { const n = cur ? cur + " " + w : w; if (cur && g.measureText(n).width > wc.w - 20) { out.push(cur); cur = w; } else cur = n; }); out.push(cur); return out; };
   const lines = list.map(r => wc ? wrap(spec.val(r, wc.k)) : [""]), rh = l => RH + (l.length - 1) * 20, hasTot = H.some(c => c.total);
   const gHead = n => spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(list[n])), nG = list.filter((_, n) => gHead(n)).length;
-  const Ht = M + 92 + RH + lines.reduce((a, l) => a + rh(l), 0) + nG * RH + (hasTot ? RH + 8 : 0) + 44;
+  const top = spec.top?.(list, spec) || "", TH = top ? 30 : 0;
+  const Ht = M + 92 + TH + RH + lines.reduce((a, l) => a + rh(l), 0) + nG * RH + (hasTot ? RH + 8 : 0) + 44;
   cv.width = W; cv.height = Ht;
   const fit = (t, w) => { let s = String(t); if (g.measureText(s).width <= w) return s; while (s && g.measureText(s + "…").width > w) s = s.slice(0, -1); return s + "…"; };
   const cell = (c, v, x, y) => { if (c.kind === "num") { g.textAlign = "right"; g.fillText(v, x + c.w - 10, y); g.textAlign = "left"; } else g.fillText(fit(v, c.w - 20), x + 10, y); };
   g.fillStyle = "#fff"; g.fillRect(0, 0, W, Ht);
   g.fillStyle = "#18212b"; g.font = `700 26px ${F}`; g.fillText(fit(title, W - 2 * M), M, M + 22);
   g.font = `400 15px ${F}`; g.fillStyle = "#5b6672"; g.fillText(fit([spec.sub, spec.countTxt ? spec.countTxt(list.length) : `${list.length} line${list.length === 1 ? "" : "s"}`].filter(Boolean).join(" · "), W - 2 * M), M, M + 50);
-  let y = M + 72, x = M; g.fillStyle = "#eef1f4"; g.fillRect(M, y, W - 2 * M, RH); g.font = `700 14px ${F}`; g.fillStyle = "#18212b";
+  if (top) { g.font = `700 17px ${F}`; g.fillStyle = "#18212b"; g.fillText(fit(top, W - 2 * M), M, M + 80); }
+  let y = M + 72 + TH, x = M; g.fillStyle = "#eef1f4"; g.fillRect(M, y, W - 2 * M, RH); g.font = `700 14px ${F}`; g.fillStyle = "#18212b";
   H.forEach(c => { cell(c, c.h, x, y + 22); x += c.w; }); y += RH;
   list.forEach((r, n) => {
-    if (gHead(n)) { g.fillStyle = "#dde7f3"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 16px ${F}`; g.fillText(fit(spec.groupBy(r), W - 2 * M - 20), M + 10, y + 23); y += RH; }
+    if (gHead(n)) { g.fillStyle = "#dde7f3"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 16px ${F}`; g.fillText(fit(spec.grpLabel ? spec.grpLabel(spec.groupBy(r)) : spec.groupBy(r), W - 2 * M - 20), M + 10, y + 23); y += RH; }
     const h = rh(lines[n]), st = spec.rowSt?.(r); if (st || n % 2) { g.fillStyle = st === "over" ? "#ffc7ce" : st === "soon" ? "#ffd8a8" : st === "ok" ? "#e2efda" : "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
     x = M; H.forEach(c => { g.fillStyle = "#18212b"; g.font = c.kind === "num" || c.kind === "date" ? `400 14px ${MONO}` : `400 15px ${F}`;
       if (c === wc) lines[n].forEach((t, j) => g.fillText(t, x + 10, y + 22 + j * 20)); else cell(c, spec.val(r, c.k), x, y + 22); x += c.w; });
@@ -7506,7 +7511,7 @@ function pbOpen(spec) {
   let fmt = "xlsx"; try { fmt = localStorage.getItem("fleet-xpout") === "jpg" ? "jpg" : "xlsx"; } catch {}
   const LC = spec.lineCols.map(k => spec.cols.find(c => c.k === k)), first = LC.findIndex(c => c.kind === "text" || c.kind === "wrap");
   const thead = () => `<tr><th></th>${LC.map((c, i) => `<th class="${c.kind === "num" ? "n" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(c.h)}</th>`).join("")}</tr>`;
-  const tbody = () => list.map((x, n) => (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x)) ? `<tr class="xogrp" data-grp="${esc(spec.groupBy(x))}"><td colspan="${LC.length + 1}">${esc(spec.groupBy(x))}</td></tr>` : "") + `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
+  const tbody = () => list.map((x, n) => (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x)) ? `<tr class="xogrp" data-grp="${esc(spec.groupBy(x))}"><td colspan="${LC.length + 1}">${esc(spec.grpLabel ? spec.grpLabel(spec.groupBy(x)) : spec.groupBy(x))}</td></tr>` : "") + `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
       LC.map((c, i) => `<td class="${c.kind === "num" ? "n num" : c.kind === "date" ? "num" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(spec.val(x, c.k))}${i === first && spec.lineSub ? `<small class="xolsub">${esc(spec.lineSub(x))}</small>` : ""}</td>`).join("") + `</tr>`).join("");
   const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
   box.innerHTML = `<div class="xodlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Print / download</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
@@ -8341,12 +8346,14 @@ const MS_TA_TRUCK = { bl: "பின் ஹவுசிங் இடது", br:
 const MS_T = {
   en: { title: "Maintenance summary", cols: { plate: "Vehicle", type: "Maintenance", date: "Last Done", km: "Kms", next: "Next Service At", left: "Km Left", when: "Expected Around", status: "Status" },
     st: { over: "Overdue", soon: "Due soon", ok: "OK", nogap: "No gap set" }, now: "Now", left: mtLeftTxt, item: r => mtItemName(r.it),
-    sub: d => `As on ${d} · Red: overdue · Orange: due within 5,000 km · Green: OK`, last: "Last", km: "km", lines: n => `${n} line${n === 1 ? "" : "s"}` },
+    sub: d => `As on ${d} · Red: overdue · Orange: due within 5,000 km · Green: OK`, last: "Last", km: "km",
+    cur: "VEHICLE'S CURRENT RUNNING KILOMETER READING", on: d => `on ${d}`, noCur: "no trip or diesel reading yet", lines: n => `${n} line${n === 1 ? "" : "s"}` },
   ta: { title: "பராமரிப்பு விவரம்", cols: { plate: "வண்டி எண்", type: "வேலை", date: "கடைசி தேதி", km: "அப்போது கி.மீ", next: "அடுத்த சர்வீஸ்", left: "மீதி கி.மீ", when: "அடுத்த தேதி", status: "நிலை" },
     st: { over: "தாமதம்", soon: "விரைவில்", ok: "சர்வீஸ் செய்ய நேரம் உள்ளது", nogap: "கி.மீ இல்லை" }, now: "இப்போதே",
     left: d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} கி.மீ அதிகம்` : `${nf(d.left)} கி.மீ`,
     item: r => (MS_TA_TYPE[r.it.k] || mtType(r.it.k).name) + (r.it.pos ? " · " + ((/truck/i.test(mtClsOf(r.key)) && MS_TA_TRUCK[r.it.pos]) || MS_TA_POS[r.it.pos] || mtPosName(r.it.pos)) : ""),
-    sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: சர்வீஸ் செய்ய நேரம் உள்ளது`, last: "கடைசி", km: "கி.மீ", lines: n => `${n} வரிகள்` }
+    sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: சர்வீஸ் செய்ய நேரம் உள்ளது`, last: "கடைசி", km: "கி.மீ",
+    cur: "வாகனத்தின் தற்போதைய கிலோமீட்டர் ரீடிங்", on: d => `${d} அன்று`, noCur: "பயண / டீசல் ரீடிங் இல்லை", lines: n => `${n} வரிகள்` }
 };
 $("msDl").onclick = () => {
   const keys = msBus ? [msBus] : [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
@@ -8360,6 +8367,10 @@ $("msDl").onclick = () => {
     : c === "left" ? (r.left == null ? "" : T().left(r)) : c === "when" ? (r.st === "over" ? T().now : r.when ? xpDateTxt(r.when) : "") : T().st[r.st];
   const R = (r, c) => c === "date" ? r.e.date || null : c === "km" ? r.ekm || null : c === "next" ? r.next || null : c === "when" ? (r.st !== "over" && r.when ? r.when : null) : null;
   const one = keys.length === 1;
+  // The vehicle's latest meter reading from its trip sheets, round trips and diesel fills, shown on top of the file (or on each vehicle's heading).
+  const cur = new Map(keys.map(k => [k, mtNow(k, true)]));
+  const curTxt = k => { const c = cur.get(k); return `${T().cur}: ${c ? `${nf(c.meter)} ${T().km} (${T().on(xpDateTxt(c.date))})` : T().noCur}`; };
+  const keyOfPlate = g => keys.find(k => plateK(k) === g);
   const boxes = one ? "" : `<div class="xosub">Vehicles</div><label class="dall"><input type="checkbox" data-msvall checked> All vehicles</label><div class="xomsv">${keys.map(k => `<label><input type="checkbox" data-msv="${esc(k)}" checked> ${esc(plateK(k))}</label>`).join("")}</div>`;
   const tAuto = ks => ks.length === 1 ? `${T().title} - ${plateK(ks[0])}` : T().title;
   let lastT = tAuto(keys);
@@ -8370,7 +8381,9 @@ $("msDl").onclick = () => {
       { k: "km", xl: 13, px: 130, kind: "num" }, { k: "next", xl: 16, px: 150, kind: "num" }, { k: "left", xl: 17, px: 170, kind: "text" },
       { k: "when", xl: 17, px: 170, kind: "date" }, { k: "status", xl: 12, px: 110, kind: "text" }],
     lineCols: ["type", "next", "left", "status"], lineSub: r => `${T().last} ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " " + T().km : ""}`, val: V, raw: R,
-    countTxt: n => T().lines(n), fileTitle: t => t.replace(MS_T.ta.title, "Maintenance summary Tamil"),
+    countTxt: n => T().lines(n),
+    top: (rows, sp) => sp.groupBy || !rows.length ? "" : curTxt(rows[0].key),
+    grpLabel: g => `${g} · ${curTxt(keyOfPlate(g))}`, fileTitle: t => t.replace(MS_T.ta.title, "Maintenance summary Tamil"),
     // English or Tamil: headings, job names, km left and status follow; the vehicle numbers, dates and km stay as they are.
     setLang: l => { lang = spec.lang = l; try { localStorage.setItem("fleet-mslang", l); } catch {}
       spec.sheet = T().title; spec.sub = T().sub(xpDateTxt(todayISO())); spec.title0 = tAuto(keys); spec.cols.forEach(c => { c.h = T().cols[c.k]; if (c.k === "status") c.px = l === "ta" ? 270 : 110; }); },
@@ -17298,7 +17311,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07z";
+const APP_VER = "2026-11-08a";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
