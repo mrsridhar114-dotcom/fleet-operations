@@ -8343,10 +8343,10 @@ const MS_T = {
     st: { over: "Overdue", soon: "Due soon", ok: "OK", nogap: "No gap set" }, now: "Now", left: mtLeftTxt, item: r => mtItemName(r.it),
     sub: d => `As on ${d} · Red: overdue · Orange: due within 5,000 km · Green: OK`, last: "Last", km: "km", lines: n => `${n} line${n === 1 ? "" : "s"}` },
   ta: { title: "பராமரிப்பு விவரம்", cols: { plate: "வண்டி எண்", type: "வேலை", date: "கடைசி தேதி", km: "அப்போது கி.மீ", next: "அடுத்த சர்வீஸ்", left: "மீதி கி.மீ", when: "அடுத்த தேதி", status: "நிலை" },
-    st: { over: "தாமதம்", soon: "விரைவில்", ok: "நல்ல நிலை", nogap: "கி.மீ இல்லை" }, now: "இப்போதே",
+    st: { over: "தாமதம்", soon: "விரைவில்", ok: "சர்வீஸ் செய்ய நேரம் உள்ளது", nogap: "கி.மீ இல்லை" }, now: "இப்போதே",
     left: d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} கி.மீ அதிகம்` : `${nf(d.left)} கி.மீ`,
     item: r => (MS_TA_TYPE[r.it.k] || mtType(r.it.k).name) + (r.it.pos ? " · " + ((/truck/i.test(mtClsOf(r.key)) && MS_TA_TRUCK[r.it.pos]) || MS_TA_POS[r.it.pos] || mtPosName(r.it.pos)) : ""),
-    sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: நல்ல நிலை`, last: "கடைசி", km: "கி.மீ", lines: n => `${n} வரிகள்` }
+    sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: சர்வீஸ் செய்ய நேரம் உள்ளது`, last: "கடைசி", km: "கி.மீ", lines: n => `${n} வரிகள்` }
 };
 $("msDl").onclick = () => {
   const keys = msBus ? [msBus] : [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
@@ -8373,7 +8373,7 @@ $("msDl").onclick = () => {
     countTxt: n => T().lines(n), fileTitle: t => t.replace(MS_T.ta.title, "Maintenance summary Tamil"),
     // English or Tamil: headings, job names, km left and status follow; the vehicle numbers, dates and km stay as they are.
     setLang: l => { lang = spec.lang = l; try { localStorage.setItem("fleet-mslang", l); } catch {}
-      spec.sheet = T().title; spec.sub = T().sub(xpDateTxt(todayISO())); spec.title0 = tAuto(keys); spec.cols.forEach(c => { c.h = T().cols[c.k]; if (c.k === "status") c.px = l === "ta" ? 140 : 110; }); },
+      spec.sheet = T().title; spec.sub = T().sub(xpDateTxt(todayISO())); spec.title0 = tAuto(keys); spec.cols.forEach(c => { c.h = T().cols[c.k]; if (c.k === "status") c.px = l === "ta" ? 270 : 110; }); },
     extra: { html: boxes,
       // A vehicle's box ticks or unticks all its jobs; it shows ticked, unticked or part-ticked from its jobs.
       onChange: (inp, box) => { const ks = inp.dataset.msvall != null ? keys : inp.dataset.msv != null ? [inp.dataset.msv] : [];
@@ -17298,7 +17298,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07y";
+const APP_VER = "2026-11-07z";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
