@@ -1880,8 +1880,8 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 @media (max-width: 700px) { .xptable td:nth-child(7) { display: none !important; } .xpsfoot b { padding-right: 0; } .xpgridt tbody tr:nth-child(even) td { background: none; } .xpgridt tbody tr.on { background: var(--accent-soft); } }
 .xpsegs { flex-wrap: nowrap; gap: 0; } .xpsegs button { padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 14px var(--body); cursor: pointer; }
 .xpsegs button:first-child { border-radius: 8px 0 0 8px; } .xpsegs button:last-child { border-radius: 0 8px 8px 0; } .xpsegs button + button { border-left: 0; } .xpsegs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-#mtw .bwb, #msgw .bwb, #mtw .bwf, #msgw .bwf { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
-#mtw .bwf, #msgw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+#mtw .bwb, #mtw .bwf { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+#mtw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 .bwf1 :is(input[type=date], .dmyt), .bwf1 select { box-sizing: border-box; width: 100%; height: 60px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); }
 .bwin input[type=number] { flex: 1; min-width: 0; height: 58px; border: 0; background: none; color: inherit; font: inherit; padding: 0 12px; outline: none; } .bwin > b { padding-left: 14px; color: var(--muted); }
 .bwchips.mtplates { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } .bwchips.mtplates button { font-family: var(--mono); letter-spacing: .02em; }
@@ -1895,6 +1895,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mscards { display: none; } .mscard { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
 .mscard .mscn { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .mscard .mscn b { font-size: 15px; } .mscard.ms-over { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); } .mscard.ms-soon { background: color-mix(in srgb, #f28c28 16%, var(--surface)); border-color: color-mix(in srgb, #f28c28 40%, var(--line)); }
 @media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } }
+.mptable .mpin { width: 130px; padding: 6px 8px; font: inherit; text-align: right; } .mptable input::placeholder { color: var(--muted); font-style: italic; } .mptable tr.mpown td { background: color-mix(in srgb, #2f75b5 7%, var(--surface)); } .mptable .mpclr, #mpLog .mpclr { padding: 4px 8px; font-size: 12px; white-space: nowrap; } .mptable .mpact { display: flex; gap: 6px; flex-wrap: wrap; }
 .mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
 @media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
 .mtsteps span.on { background: #fff; color: var(--ink); } .mtsteps span.done { background: var(--accent); color: #fff; }
@@ -2240,6 +2241,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li data-mod="maintenance"><a class="nav" href="#maintenance-history" data-view="tmhist">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
             Maintenance history</a></li>
+          <li data-mod="maintenance"><a class="nav" href="#maintenance-master" data-view="tmplan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/></svg>
+            Maintenance km master</a></li>
         </ul>
       </div>
       <div class="group">
@@ -2904,13 +2908,32 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
         <div class="tcontrols">
           <div class="hf"><label for="msBusF">Vehicle</label><select id="msBusF"></select></div>
-          <button class="btn" type="button" id="msGaps">Service gaps</button>
+          <button class="btn" type="button" id="msGaps">Km master</button>
           <button class="btn" type="button" id="msDl">⬇ Download</button>
           <a class="btn primary" href="#maintenance">+ Maintenance entry</a>
         </div>
       </header>
       <div class="summary" id="msSum"></div>
       <div id="msList" style="display:flex;flex-direction:column;gap:12px;margin-top:12px"></div>
+    </section>
+
+    <!-- ================= Maintenance km master ================= -->
+    <section class="wrap twrap" id="view-tmplan" hidden>
+      <header class="top">
+        <div>
+          <h1>Maintenance km master<span class="ro-tag" id="mpRoTag" hidden>View only</span></h1>
+          <p class="sync">The preferred km between services for each maintenance type. The app proposes it from the maintenance history; type the figure you want, or press Use. The next service of every job is its last km plus this figure.</p>
+        </div>
+        <div class="tcontrols">
+          <div class="hf"><label for="mpBus">For</label><select id="mpBus"></select></div>
+          <button class="btn" type="button" id="mpUse">Use all proposals</button>
+          <button class="btn" type="button" id="mpHist">Change history</button>
+          <button class="btn primary" type="button" id="mpSave" disabled>Save changes</button>
+        </div>
+      </header>
+      <div class="summary" id="mpSum"></div>
+      <section class="panel" style="margin-top:12px"><div class="tscroll"><table class="ctable mptable" id="mpTable"></table></div><p class="sub" id="mpNote" style="margin:8px 0 0"></p></section>
+      <section class="panel msbus" id="mpLog" style="margin-top:12px" hidden></section>
     </section>
 
     <!-- ================= Maintenance history ================= -->
@@ -4184,9 +4207,9 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", tmhist: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", tmhist: "maintenance", tmplan: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "maintenance-master": "tmplan", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
@@ -4206,14 +4229,14 @@ function showView() {
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = ["texp", "tmaint", "tmsum", "tmhist"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "tmplan", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = ["texp", "tmaint", "tmsum", "tmhist", "tmplan"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
   if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); }
-  if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum(); if (view === "tmhist") renderMhist();
+  if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum(); if (view === "tmhist") renderMhist(); if (view === "tmplan") renderMplan();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
 }
@@ -6949,7 +6972,11 @@ const mtType = k => MT_TYPES.find(t => t.k === k) || { k, name: k };
 const mtPosName = p => MT_POS.find(x => x[0] === p)?.[1] || "";
 const mtItemName = it => `${mtType(it.k).name}${it.pos ? ` · ${mtPosName(it.pos)}` : ""}`;
 const mtGapsDoc = () => ops.maintTypes.find(x => x.id === "gaps") || {};
-function mtGap(key, k) { const d = mtGapsDoc(), b = d.bus?.[key]?.[k], g = d.gaps?.[k]; return num(b) || num(g) || (g === 0 ? 0 : mtType(k).gap || 0); }
+// A km set in the master (for this vehicle, or for every vehicle).
+// Order: the vehicle's own figure, then its class (all buses / all trucks), then every vehicle, then the built-in gap.
+const mtClsOf = key => mtVehOf(key)?.type || "";
+const mtGapSet = (key, k) => { const d = mtGapsDoc(); return num(d.bus?.[key]?.[k]) > 0 || num(d.cls?.[mtClsOf(key)]?.[k]) > 0 || num(d.gaps?.[k]) > 0; };
+function mtGap(key, k) { const d = mtGapsDoc(), b = d.bus?.[key]?.[k], c = d.cls?.[mtClsOf(key)]?.[k], g = d.gaps?.[k]; return num(b) || num(c) || num(g) || (g === 0 ? 0 : mtType(k).gap || 0); }
 
 // Maintenance runs on actual km: every odometer reading is turned into actual km with the vehicle master's
 // meter and actual km lines (a vehicle without them uses the reading as it is).
@@ -6982,7 +7009,8 @@ function mtDue(key) {
     const a = mtXAct(x); if (!cur || x.date > cur.e.date || (x.date === cur.e.date && a > cur.a)) last.set(id, { it, e: x, a });
   }));
   return [...last.values()].map(({ it, e, a }) => {
-    const gap = mtGap(key, it.k), next = num(it.next) > a ? num(it.next) : gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
+    // Next service: last km + the km master; without a figure in the master, the sheet's Next KMS for that visit, else the built-in gap.
+    const gap = mtGap(key, it.k), next = !mtGapSet(key, it.k) && num(it.next) > a ? num(it.next) : gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
     const when = left != null && now?.perDay ? shiftDay(now.date, Math.round(left / now.perDay)) : "";
     const st = next == null ? "nogap" : left == null ? "ok" : left <= 0 ? "over" : left <= 5000 ? "soon" : "ok";
     return { it, e, ekm: a, gap, next, left, when, st };
@@ -8265,7 +8293,7 @@ function renderMsum() {
   const keys = [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])];
   $("msBusF").innerHTML = `<option value="">All vehicles</option>` + keys.map(k => `<option value="${esc(k)}">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</option>`).join("");
   $("msBusF").value = keys.includes(msBus) ? msBus : ""; msBus = $("msBusF").value;
-  $("msGaps").hidden = !canMt();
+  $("msGaps").hidden = false;
   // Vehicles not in the vehicle master (sold, old records from Excel) are shown only when asked for.
   const old = keys.filter(k => !mtVehOf(k)), show = msBus ? [msBus] : keys.filter(k => msOld || mtVehOf(k)), all = show.map(k => ({ k, due: mtDue(k), now: mtNow(k) }));
   const cnt = st => all.reduce((a, x) => a + x.due.filter(d => d.st === st).length, 0);
@@ -8324,30 +8352,96 @@ $("msDl").onclick = () => {
         if (t.value === lastT && nt !== lastT) t.value = nt; lastT = nt; } } });
 };
 
-// Service gaps: the default km for each job, and a vehicle's own figure where it differs.
-let msgEd = null;
-$("msGaps").onclick = () => { const d = mtGapsDoc(); msgEd = { bus: msBus, gaps: { ...(d.gaps || {}) }, per: JSON.parse(JSON.stringify(d.bus || {})) }; msgRender(); };
-function msgRender() {
-  if (!$("msgw")) { document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="msgw" role="dialog" aria-modal="true" aria-labelledby="msgTitle" hidden></div>');
-    $("msgw").addEventListener("click", msgClick); $("msgw").addEventListener("input", e => { const k = e.target.dataset.gk; if (!k || !msgEd) return; const v = e.target.value === "" ? null : Math.round(num(e.target.value));
-      if (msgEd.bus) { (msgEd.per[msgEd.bus] ||= {})[k] = v; if (v == null) delete msgEd.per[msgEd.bus][k]; } else { msgEd.gaps[k] = v; if (v == null) delete msgEd.gaps[k]; } });
-    $("msgw").addEventListener("change", e => { if (e.target.id === "msgBus") { msgEd.bus = e.target.value; msgRender(); } }); }
-  const keys = [...new Set([...mtFleet().map(v => v.id), ...ops.maintLog.map(mtKeyOf)])], b = msgEd.bus;
-  $("msgw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="msgTitle">Service gaps</b><span>Km from one service to the next</span></div></header><div class="bwb tws">` +
-    `<label class="bwf1"><span>Gaps for</span><select id="msgBus"><option value="">Every vehicle (default)</option>${keys.map(k => `<option value="${esc(k)}"${k === b ? " selected" : ""}>${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))} only</option>`).join("")}</select></label>` +
-    `<p class="bwnote">${b ? "Leave a box empty to use the default for every vehicle." : "Leave a box empty when the job has no fixed gap."}</p>` +
-    `<table class="ctable msgtable"><thead><tr><th>Maintenance</th><th class="n">${b ? "This vehicle (km)" : "Every vehicle (km)"}</th>${b ? '<th class="n">Default</th>' : ""}</tr></thead><tbody>` +
-    MT_TYPES.filter(t => t.k !== "other").map(t => { const def = msgEd.gaps[t.k] !== undefined ? msgEd.gaps[t.k] : t.gap, v = b ? msgEd.per[b]?.[t.k] : def;
-      return `<tr><td>${esc(t.name)}</td><td class="n"><input type="number" inputmode="numeric" min="0" step="1000" data-gk="${t.k}" value="${v ?? ""}" aria-label="${esc(t.name)} gap in km"></td>${b ? `<td class="n sub">${def ? nf(def) : "—"}</td>` : ""}</tr>`; }).join("") +
-    `</tbody></table></div><footer class="bwf two"><button type="button" class="bwalt" data-msg="close">Cancel</button><button type="button" class="bwgo" data-msg="save">${BW_ICON.ok} Save</button></footer>`;
-  $("msgw").hidden = false; document.documentElement.classList.add("bw-on");
+// Km master: the summary's button opens it for the vehicle chosen.
+$("msGaps").onclick = () => { mpBus = msBus; location.hash = "#maintenance-master"; };
+
+/* ---------- Maintenance km master ----------
+   The preferred km between services for each maintenance type, for: every vehicle, all vehicles of a class (all buses, all
+   trucks) or one vehicle. The proposal comes from the history (the km between two visits of the same job and wheel, the middle
+   value, to the nearest 5,000 km). Saving for a class also writes the figure to each vehicle of that class, which can then be
+   changed one by one. Kept in maintTypes "gaps" (gaps: every vehicle, cls: by class, bus: one vehicle); every change is logged
+   in maintTypes "gapsLog" so an earlier figure can be looked up and used again. */
+let mpBus = "", mpEd = {}, mpLogOpen = false;
+const MP_CLS = [["Bus", "All buses"], ["12 Wheeler Truck", "All trucks"]];
+function mtIntervals(keys) {
+  const g = {}, by = new Map();
+  ops.maintLog.filter(x => keys.includes(mtKeyOf(x)) && x.date).forEach(x => (x.items || []).forEach(it => { const id = mtKeyOf(x) + "|" + it.k + "|" + (it.pos || ""), L = by.get(id) || []; L.push({ date: x.date, km: mtXAct(x), k: it.k }); by.set(id, L); }));
+  by.forEach(L => { L.sort((a, b) => a.date.localeCompare(b.date) || a.km - b.km); for (let i = 1; i < L.length; i++) { const d = L[i].km - L[i - 1].km; if (d > 5000 && d < 300000) (g[L[i].k] ||= []).push(d); } });
+  return Object.fromEntries(Object.entries(g).filter(([, a]) => a.length >= 2).map(([k, a]) => { a.sort((x, y) => x - y); const mid = a[Math.floor((a.length - 1) / 2)];
+    return [k, { km: Math.max(5000, Math.round(mid / 5000) * 5000), n: a.length, lo: a[0], hi: a[a.length - 1] }]; }));
 }
-async function msgClick(e) {
-  const b = e.target.closest("button[data-msg]"); if (!b) return;
-  if (b.dataset.msg === "save") { b.disabled = true;
-    try { await opsSave("maintTypes", { id: "gaps", gaps: msgEd.gaps, bus: msgEd.per, ...rxStamp() }); toast("Service gaps saved"); } catch { b.disabled = false; toast("Couldn't save. Try again."); return; } }
-  $("msgw").hidden = true; document.documentElement.classList.remove("bw-on"); msgEd = null; renderMsum();
+const mpLogDoc = () => ops.maintTypes.find(x => x.id === "gapsLog") || { list: [] };
+const mpPlate = k => mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k });
+const mpScopeName = sc => !sc ? "Every vehicle" : sc.startsWith("c:") ? (MP_CLS.find(c => c[0] === sc.slice(2))?.[1] || sc.slice(2)) : mpPlate(sc);
+function renderMplan() {
+  const keys = [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf).filter(k => mtVehOf(k))])].sort((a, b) => mpPlate(a).localeCompare(mpPlate(b)));
+  const scopes = ["", ...MP_CLS.filter(([c]) => mtFleet().some(v => v.type === c)).map(([c]) => "c:" + c), ...keys];
+  if (!scopes.includes(mpBus)) mpBus = "";
+  $("mpBus").innerHTML = `<option value="">Every vehicle</option><optgroup label="Vehicle class">${scopes.filter(x => x.startsWith("c:")).map(x => `<option value="${esc(x)}">${esc(mpScopeName(x))}</option>`).join("")}</optgroup>` +
+    `<optgroup label="One vehicle">${keys.map(k => `<option value="${esc(k)}">${esc(mpPlate(k))} only</option>`).join("")}</optgroup>`; $("mpBus").value = mpBus;
+  const ed = canMt(), d = mtGapsDoc(), sc = mpBus, cls = sc.startsWith("c:") ? sc.slice(2) : "", veh = sc && !cls ? sc : "";
+  const pool = veh ? [veh] : cls ? keys.filter(k => mtClsOf(k) === cls) : keys, P = mtIntervals(pool);
+  const used = new Set(ops.maintLog.filter(x => pool.includes(mtKeyOf(x))).flatMap(x => (x.items || []).map(it => it.k)));
+  $("mpRoTag").hidden = ed; $("mpSave").hidden = !ed; $("mpUse").hidden = !ed;
+  const types = MT_TYPES.filter(t => t.k !== "other" && (used.has(t.k) || P[t.k] || num(d.gaps?.[t.k]) || t.gap));
+  const cur = k => veh ? d.bus?.[veh]?.[k] : cls ? d.cls?.[cls]?.[k] : d.gaps?.[k];
+  // What applies without a figure here: for a vehicle its class, then every vehicle, then built-in; for a class every vehicle, then built-in.
+  const inh = k => { const vc = veh ? mtClsOf(veh) : cls, c = veh ? num(d.cls?.[vc]?.[k]) : 0, g = num(d.gaps?.[k]);
+    return c ? [c, MP_CLS.find(x => x[0] === vc)?.[1] || vc] : sc && g ? [g, "Every vehicle"] : mtType(k).gap ? [mtType(k).gap, "Built-in"] : [0, ""]; };
+  const val = k => { const e = mpEd[sc + "|" + k]; return e !== undefined ? e : cur(k) ?? ""; };
+  const nSet = types.filter(t => num(val(t.k)) > 0).length, nVeh = cls ? mtFleet().filter(v => v.type === cls).length : 0;
+  $("mpSum").innerHTML = ostat("Maintenance types", nf(types.length), mpScopeName(sc)) + ostat("Set here", nf(nSet), "km typed for " + (sc ? mpScopeName(sc) : "every vehicle")) +
+    (cls ? ostat("Vehicles in this class", nf(nVeh), "get the figures when saved") : ostat("With a proposal", nf(types.filter(t => P[t.k]).length), "from the history"));
+  $("mpTable").innerHTML = `<thead><tr><th>Maintenance type</th><th class="n">Proposed from history</th><th>Based on</th><th class="n">Service every (km)</th><th class="n">Without a figure here</th><th></th></tr></thead><tbody>` +
+    types.map(t => { const p = P[t.k], v = val(t.k), own = num(v) > 0, [iv, iw] = inh(t.k), logN = mpLogDoc().list.filter(e => e.sc === sc && e.k === t.k).length;
+      return `<tr class="${own ? "mpown" : ""}" data-mpk="${t.k}"><td><b>${esc(t.name)}</b>${t.pos ? '<small class="sub" style="display:block">each wheel</small>' : ""}</td>` +
+        `<td class="n">${p ? `${nf(p.km)} km` : "—"}</td><td class="sub">${p ? `${p.n} gaps between visits · ${nf(p.lo)} to ${nf(p.hi)} km` : "Fewer than 2 gaps in the history"}</td>` +
+        `<td class="n"><input type="number" inputmode="numeric" min="0" step="1000" class="mpin" value="${esc(String(v))}" placeholder="${p ? p.km : iv || ""}"${ed ? "" : " disabled"} aria-label="${esc(t.name)}: service every km"></td>` +
+        `<td class="n sub">${iv ? `${nf(iv)}<small style="display:block">${esc(iw)}</small>` : "—"}</td>` +
+        `<td><div class="mpact">${ed && p && num(v) !== p.km ? `<button type="button" class="btn mpclr" data-mpuse="${p.km}">Use ${nf(p.km)}</button>` : ""}${logN ? `<button type="button" class="btn mpclr" data-mplog="${t.k}">History (${logN})</button>` : ""}</div></td></tr>`; }).join("") + `</tbody>`;
+  $("mpNote").innerHTML = veh ? `Figures for <b>${esc(mpPlate(veh))}</b> only. An empty box uses its class figure, then the one for every vehicle.`
+    : cls ? `Figures for <b>${esc(mpScopeName(sc))}</b> (${nVeh} vehicle${nVeh === 1 ? "" : "s"}). Saving also sets them on each of these vehicles; change a vehicle afterwards by choosing it above.`
+    : "Figures for every vehicle. Choose a vehicle class or one vehicle above to give it its own figures.";
+  mpLogRender(); mpSync();
 }
+// The change history: newest first, for the figures shown (or one type when its History button is pressed).
+function mpLogRender(k) {
+  const el = $("mpLog"); if (!el) return; if (k !== undefined) { el.dataset.k = k; mpLogOpen = true; }
+  const fk = el.dataset.k || "", list = mpLogDoc().list.filter(e => e.sc === mpBus && (!fk || e.k === fk)).slice().reverse();
+  el.hidden = !mpLogOpen;
+  el.innerHTML = `<div class="msh"><h2 class="sec">Change history · ${esc(mpScopeName(mpBus))}${fk ? " · " + esc(mtType(fk).name) : ""}</h2><span>${fk ? `<button type="button" class="btn mpclr" data-mplogall>All types</button> ` : ""}<button type="button" class="btn mpclr" data-mplogclose>Close</button></span></div>` +
+    (list.length ? `<div class="tscroll"><table class="ctable"><thead><tr><th>Changed on</th><th>By</th><th>Maintenance type</th><th class="n">Was</th><th class="n">Changed to</th><th></th></tr></thead><tbody>` +
+      list.map(e => { const t = new Date(e.on), p2 = n => String(n).padStart(2, "0"); return `<tr><td class="num">${p2(t.getDate())}/${p2(t.getMonth() + 1)}/${t.getFullYear()} ${p2(t.getHours())}:${p2(t.getMinutes())}</td><td>${esc(e.by || "")}${e.via ? `<small class="sub" style="display:block">${esc(e.via)}</small>` : ""}</td><td>${esc(mtType(e.k).name)}</td><td class="n">${e.from ? nf(e.from) : "—"}</td><td class="n">${e.to ? nf(e.to) : "—"}</td>` +
+        `<td>${canMt() && e.from ? `<button type="button" class="btn mpclr" data-mpold="${e.k}|${e.from}">Use ${nf(e.from)} again</button>` : ""}</td></tr>`; }).join("") + `</tbody></table></div>`
+      : `<p class="sub" style="margin:0">No changes yet.</p>`);
+}
+function mpSync() { const n = Object.keys(mpEd).length; $("mpSave").disabled = !n; $("mpSave").textContent = n ? `Save changes (${n})` : "Save changes"; }
+$("mpBus").onchange = () => { mpEd = {}; mpBus = $("mpBus").value; if ($("mpLog")) $("mpLog").dataset.k = ""; renderMplan(); };
+$("mpTable").addEventListener("input", e => { const i = e.target.closest(".mpin"); if (!i) return; const tr = i.closest("tr"); mpEd[mpBus + "|" + tr.dataset.mpk] = i.value === "" ? "" : Math.round(num(i.value)); tr.classList.toggle("mpown", num(i.value) > 0); mpSync(); });
+$("view-tmplan").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.mpuse) { mpEd[mpBus + "|" + b.closest("tr").dataset.mpk] = +b.dataset.mpuse; renderMplan(); }
+  else if (b.dataset.mplog) mpLogRender(b.dataset.mplog);
+  else if (b.dataset.mplogall != null) { $("mpLog").dataset.k = ""; mpLogRender(); }
+  else if (b.dataset.mplogclose != null) { mpLogOpen = false; mpLogRender(); }
+  else if (b.dataset.mpold) { const [k, v] = b.dataset.mpold.split("|"); mpEd[mpBus + "|" + k] = +v; renderMplan(); toast(`${mtType(k).name}: ${nf(+v)} km put back. Press Save changes to keep it.`); } });
+$("mpHist").onclick = () => { $("mpLog").dataset.k = ""; mpLogOpen = !mpLogOpen; mpLogRender(); if (mpLogOpen) $("mpLog").scrollIntoView({ behavior: "smooth", block: "start" }); };
+$("mpUse").onclick = () => { const keys = [...new Set(ops.maintLog.map(mtKeyOf).filter(k => mtVehOf(k)))], cls = mpBus.startsWith("c:") ? mpBus.slice(2) : "";
+  const P = mtIntervals(mpBus && !cls ? [mpBus] : cls ? keys.filter(k => mtClsOf(k) === cls) : keys); Object.entries(P).forEach(([k, p]) => { mpEd[mpBus + "|" + k] = p.km; }); renderMplan(); };
+$("mpSave").onclick = async () => {
+  const d = mtGapsDoc(), gaps = { ...(d.gaps || {}) }, bus = JSON.parse(JSON.stringify(d.bus || {})), clsD = JSON.parse(JSON.stringify(d.cls || {})), on = new Date().toISOString(), by = whoAmI(), log = [...mpLogDoc().list];
+  const set = (tgt, k, v) => { const was = num(tgt[k]) || 0; if (num(v) > 0) tgt[k] = num(v); else delete tgt[k]; return was; };
+  Object.entries(mpEd).forEach(([id, v]) => { const i = id.lastIndexOf("|"), sc = id.slice(0, i), k = id.slice(i + 1), cls = sc.startsWith("c:") ? sc.slice(2) : "";
+    if (!sc) { const was = set(gaps, k, v); if (was !== (num(v) || 0)) log.push({ sc, k, from: was, to: num(v) || 0, on, by }); return; }
+    if (cls) { const was = set(clsD[cls] ||= {}, k, v); if (was !== (num(v) || 0)) log.push({ sc, k, from: was, to: num(v) || 0, on, by });
+      // The class figure is written to each vehicle of the class (logged for each vehicle that changes).
+      mtFleet().filter(x => x.type === cls).forEach(x => { const vw = set(bus[x.id] ||= {}, k, v); if (vw !== (num(v) || 0)) log.push({ sc: x.id, k, from: vw, to: num(v) || 0, on, by, via: mpScopeName(sc) }); if (!Object.keys(bus[x.id]).length) delete bus[x.id]; });
+      if (!Object.keys(clsD[cls]).length) delete clsD[cls]; return; }
+    const was = set(bus[sc] ||= {}, k, v); if (was !== (num(v) || 0)) log.push({ sc, k, from: was, to: num(v) || 0, on, by }); if (!Object.keys(bus[sc]).length) delete bus[sc]; });
+  $("mpSave").disabled = true;
+  try { await opsSave("maintTypes", { id: "gaps", gaps, cls: clsD, bus, ...rxStamp() }); await opsSave("maintTypes", { id: "gapsLog", list: log.slice(-2000) });
+    mpEd = {}; toast("Maintenance km master saved"); renderMplan(); }
+  catch { mpSync(); toast("Couldn't save. Check your connection and try again."); }
+};
 
 /* ---------- Maintenance history ----------
    One line per job of each visit: vehicle, job (with the wheel), the date and km of that visit, the km of the next service
@@ -8358,7 +8452,7 @@ function mhRows() {
   const out = [];
   ops.maintLog.forEach(x => { const key = mtKeyOf(x), km = mtXAct(x);
     (x.items || []).forEach(it => { const g = mtGap(key, it.k);
-      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: num(it.next) > km ? num(it.next) : g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
+      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: !mtGapSet(key, it.k) && num(it.next) > km ? num(it.next) : g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
   return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(b.date).localeCompare(String(a.date)) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
 }
 function mhList() {
@@ -11061,6 +11155,7 @@ function renderOps() {
   if (view === "tmaint") { renderMaint(); return; }
   if (view === "tmsum") { renderMsum(); return; }
   if (view === "tmhist") { renderMhist(); return; }
+  if (view === "tmplan") { renderMplan(); return; }
   const ro = !canTrips;
   $("kRoTag").hidden = !ro;  // the Day sheet's tag follows its own sheet (fillDayForm) $("sRoTag").hidden = canBookings;
   if (view === "thub") renderHub();
@@ -17151,7 +17246,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07t";
+const APP_VER = "2026-11-07v";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
