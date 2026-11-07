@@ -1895,7 +1895,8 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mscards { display: none; } .mscard { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
 .mscard .mscn { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .mscard .mscn b { font-size: 15px; } .mscard.ms-over { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); } .mscard.ms-soon { background: color-mix(in srgb, #f28c28 16%, var(--surface)); border-color: color-mix(in srgb, #f28c28 40%, var(--line)); }
 @media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } }
-.mptable .mpin { width: 130px; padding: 6px 8px; font: inherit; text-align: right; } .mptable input::placeholder { color: var(--muted); font-style: italic; } .mptable tr.mpown td { background: color-mix(in srgb, #2f75b5 7%, var(--surface)); } .mptable .mpclr, #mpLog .mpclr { padding: 4px 8px; font-size: 12px; white-space: nowrap; } .mptable .mpact { display: flex; gap: 6px; flex-wrap: wrap; }
+.mptable .mpin { width: 130px; padding: 6px 8px; font: inherit; text-align: right; } .mptable input::placeholder { color: var(--muted); font-style: italic; } .mptable tr.mpown td { background: color-mix(in srgb, #2f75b5 7%, var(--surface)); } .mptable tr.mpgrp td { border-top: 2px solid var(--line); } .mptable .mpw { padding-left: 14px; color: var(--ink); }
+.mptable .mpclr, #mpLog .mpclr { padding: 4px 8px; font-size: 12px; white-space: nowrap; } .mptable .mpact { display: flex; gap: 6px; flex-wrap: wrap; }
 .mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
 @media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
 .mtsteps span.on { background: #fff; color: var(--ink); } .mtsteps span.done { background: var(--accent); color: #fff; }
@@ -6975,8 +6976,10 @@ const mtGapsDoc = () => ops.maintTypes.find(x => x.id === "gaps") || {};
 // A km set in the master (for this vehicle, or for every vehicle).
 // Order: the vehicle's own figure, then its class (all buses / all trucks), then every vehicle, then the built-in gap.
 const mtClsOf = key => mtVehOf(key)?.type || "";
-const mtGapSet = (key, k) => { const d = mtGapsDoc(); return num(d.bus?.[key]?.[k]) > 0 || num(d.cls?.[mtClsOf(key)]?.[k]) > 0 || num(d.gaps?.[k]) > 0; };
-function mtGap(key, k) { const d = mtGapsDoc(), b = d.bus?.[key]?.[k], c = d.cls?.[mtClsOf(key)]?.[k], g = d.gaps?.[k]; return num(b) || num(c) || num(g) || (g === 0 ? 0 : mtType(k).gap || 0); }
+// A figure can be for one wheel ("hub|fl") or for the whole job ("hub"); at each level the wheel's own figure comes first.
+const mtGapAt = (L, k, pos) => (pos && num(L?.[k + "|" + pos])) || num(L?.[k]) || 0;
+const mtGapSet = (key, k, pos) => { const d = mtGapsDoc(); return !!(mtGapAt(d.bus?.[key], k, pos) || mtGapAt(d.cls?.[mtClsOf(key)], k, pos) || mtGapAt(d.gaps, k, pos)); };
+function mtGap(key, k, pos) { const d = mtGapsDoc(); return mtGapAt(d.bus?.[key], k, pos) || mtGapAt(d.cls?.[mtClsOf(key)], k, pos) || mtGapAt(d.gaps, k, pos) || (d.gaps?.[k] === 0 ? 0 : mtType(k).gap || 0); }
 
 // Maintenance runs on actual km: every odometer reading is turned into actual km with the vehicle master's
 // meter and actual km lines (a vehicle without them uses the reading as it is).
@@ -7010,7 +7013,7 @@ function mtDue(key) {
   }));
   return [...last.values()].map(({ it, e, a }) => {
     // Next service: last km + the km master; without a figure in the master, the sheet's Next KMS for that visit, else the built-in gap.
-    const gap = mtGap(key, it.k), next = !mtGapSet(key, it.k) && num(it.next) > a ? num(it.next) : gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
+    const gap = mtGap(key, it.k, it.pos), next = !mtGapSet(key, it.k, it.pos) && num(it.next) > a ? num(it.next) : gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
     const when = left != null && now?.perDay ? shiftDay(now.date, Math.round(left / now.perDay)) : "";
     const st = next == null ? "nogap" : left == null ? "ok" : left <= 0 ? "over" : left <= 5000 ? "soon" : "ok";
     return { it, e, ekm: a, gap, next, left, when, st };
@@ -8238,7 +8241,7 @@ function mtRender() {
   } else if (s === 2) {
     body = rsSec("3", "Notes", `<p class="rsq">Anything to remember? (not needed)</p><label class="bwf1"><textarea data-k="notes" rows="4" maxlength="400" placeholder="e.g. battery numbers, mechanic, place, parts changed"${ro}>${esc(mtw.notes)}</textarea></label>`);
   } else {
-    const gaps = mtw.items.map(it => { const g = mtGap(mtw.key, it.k); return { it, next: g && num(mtw.km) ? mtwAct() + g : null }; });
+    const gaps = mtw.items.map(it => { const g = mtGap(mtw.key, it.k, it.pos); return { it, next: g && num(mtw.km) ? mtwAct() + g : null }; });
     const row = (n, t, v) => `<button type="button" class="mtchk" data-mtgo="${n}"${ro}><span>${t}</span><b>${v}</b>${mtw.edit ? '<i>Change</i>' : ""}</button>`;
     body = `<div class="mtsum"><div class="mtchk mtfix"><span>Vehicle</span><b>${esc(plate)}</b></div>` + row(0, "Km and date", `${num(mtw.km) ? nf(num(mtw.km)) + " km" + (mtwAct() !== num(mtw.km) ? ` (actual ${nf(mtwAct())})` : "") : "—"} · ${fmtDate(mtw.date)}`) +
       `<button type="button" class="mtchk" data-mtgo="1"${ro}><span>Work done</span><b>${gaps.length ? gaps.map(g => `${esc(mtItemName(g.it))}${g.next ? `<small class="mtnx">next at ${nf(g.next)} km</small>` : ""}`).join("<br>") : "Nothing chosen"}</b>${mtw.edit ? "<i>Change</i>" : ""}</button>` +
@@ -8281,7 +8284,7 @@ async function mtClick(e) {
       date: mtw.date, km, items: mtw.items, notes: upText(mtw.notes), by: mtw.by || myUserId || "", byName: mtw.byName || whoAmI(), createdOn: mtw.createdOn || new Date().toISOString(), ...rxStamp(), ...(mtw.src ? { src: mtw.src } : {}) };
     mtw.saving = true; mtRender();
     try { await opsSave("maintLog", doc); mtw.id = doc.id; mtw.saving = false;
-      mtw.done = doc.items.map(it => { const g = mtGap(mtw.key, it.k); return { it, next: g ? mtwAct() + g : null }; }); mtRender(); toast("Maintenance saved"); }
+      mtw.done = doc.items.map(it => { const g = mtGap(mtw.key, it.k, it.pos); return { it, next: g ? mtwAct() + g : null }; }); mtRender(); toast("Maintenance saved"); }
     catch { mtw.saving = false; mtRender(); toast("Couldn't save. Check your connection and try again."); }
   }
 }
@@ -8363,82 +8366,94 @@ $("msGaps").onclick = () => { mpBus = msBus; location.hash = "#maintenance-maste
    in maintTypes "gapsLog" so an earlier figure can be looked up and used again. */
 let mpBus = "", mpEd = {}, mpLogOpen = false;
 const MP_CLS = [["Bus", "All buses"], ["12 Wheeler Truck", "All trucks"]];
+// Lining and hub grease are set wheel by wheel for a class or a vehicle: a bus has 4 wheels, a truck 8 (front, second axle, back housing, back dummy).
+const mpWheels = cls => cls === "Bus" ? ["fl", "fr", "bl", "br"] : /truck/i.test(cls || "") ? ["fl", "fr", "sl", "sr", "bl", "br", "dl", "dr"] : [];
+const MP_TRUCK_POS = { fl: "Front left", fr: "Front right", sl: "Second axle left", sr: "Second axle right", bl: "Back housing left", br: "Back housing right", dl: "Back dummy left", dr: "Back dummy right" };
+const mpWheelName = (pos, cls) => /truck/i.test(cls || "") ? MP_TRUCK_POS[pos] || mtPosName(pos) : mtPosName(pos);
+const mpRowName = (rk, cls) => { const [k, pos] = rk.split("|"); return mtType(k).name + (pos ? " · " + mpWheelName(pos, cls) : ""); };
+// Usual km between visits, for each job ("hub") and each job and wheel ("hub|fl").
 function mtIntervals(keys) {
-  const g = {}, by = new Map();
-  ops.maintLog.filter(x => keys.includes(mtKeyOf(x)) && x.date).forEach(x => (x.items || []).forEach(it => { const id = mtKeyOf(x) + "|" + it.k + "|" + (it.pos || ""), L = by.get(id) || []; L.push({ date: x.date, km: mtXAct(x), k: it.k }); by.set(id, L); }));
-  by.forEach(L => { L.sort((a, b) => a.date.localeCompare(b.date) || a.km - b.km); for (let i = 1; i < L.length; i++) { const d = L[i].km - L[i - 1].km; if (d > 5000 && d < 300000) (g[L[i].k] ||= []).push(d); } });
+  const g = {}, by = new Map(), push = (id, v) => (g[id] ||= []).push(v);
+  ops.maintLog.filter(x => keys.includes(mtKeyOf(x)) && x.date).forEach(x => (x.items || []).forEach(it => { const id = mtKeyOf(x) + "|" + it.k + "|" + (it.pos || ""), L = by.get(id) || []; L.push({ date: x.date, km: mtXAct(x), k: it.k, pos: it.pos || "" }); by.set(id, L); }));
+  by.forEach(L => { L.sort((a, b) => a.date.localeCompare(b.date) || a.km - b.km); for (let i = 1; i < L.length; i++) { const d = L[i].km - L[i - 1].km; if (d > 5000 && d < 300000) { push(L[i].k, d); if (L[i].pos) push(L[i].k + "|" + L[i].pos, d); } } });
   return Object.fromEntries(Object.entries(g).filter(([, a]) => a.length >= 2).map(([k, a]) => { a.sort((x, y) => x - y); const mid = a[Math.floor((a.length - 1) / 2)];
     return [k, { km: Math.max(5000, Math.round(mid / 5000) * 5000), n: a.length, lo: a[0], hi: a[a.length - 1] }]; }));
 }
 const mpLogDoc = () => ops.maintTypes.find(x => x.id === "gapsLog") || { list: [] };
 const mpPlate = k => mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k });
 const mpScopeName = sc => !sc ? "Every vehicle" : sc.startsWith("c:") ? (MP_CLS.find(c => c[0] === sc.slice(2))?.[1] || sc.slice(2)) : mpPlate(sc);
+const mpScopeCls = sc => sc.startsWith("c:") ? sc.slice(2) : sc ? mtClsOf(sc) : "";
 function renderMplan() {
   const keys = [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf).filter(k => mtVehOf(k))])].sort((a, b) => mpPlate(a).localeCompare(mpPlate(b)));
   const scopes = ["", ...MP_CLS.filter(([c]) => mtFleet().some(v => v.type === c)).map(([c]) => "c:" + c), ...keys];
   if (!scopes.includes(mpBus)) mpBus = "";
   $("mpBus").innerHTML = `<option value="">Every vehicle</option><optgroup label="Vehicle class">${scopes.filter(x => x.startsWith("c:")).map(x => `<option value="${esc(x)}">${esc(mpScopeName(x))}</option>`).join("")}</optgroup>` +
     `<optgroup label="One vehicle">${keys.map(k => `<option value="${esc(k)}">${esc(mpPlate(k))} only</option>`).join("")}</optgroup>`; $("mpBus").value = mpBus;
-  const ed = canMt(), d = mtGapsDoc(), sc = mpBus, cls = sc.startsWith("c:") ? sc.slice(2) : "", veh = sc && !cls ? sc : "";
+  const ed = canMt(), d = mtGapsDoc(), sc = mpBus, cls = sc.startsWith("c:") ? sc.slice(2) : "", veh = sc && !cls ? sc : "", sCls = mpScopeCls(sc), W = mpWheels(sCls);
   const pool = veh ? [veh] : cls ? keys.filter(k => mtClsOf(k) === cls) : keys, P = mtIntervals(pool);
   const used = new Set(ops.maintLog.filter(x => pool.includes(mtKeyOf(x))).flatMap(x => (x.items || []).map(it => it.k)));
   $("mpRoTag").hidden = ed; $("mpSave").hidden = !ed; $("mpUse").hidden = !ed;
-  const types = MT_TYPES.filter(t => t.k !== "other" && (used.has(t.k) || P[t.k] || num(d.gaps?.[t.k]) || t.gap));
-  const cur = k => veh ? d.bus?.[veh]?.[k] : cls ? d.cls?.[cls]?.[k] : d.gaps?.[k];
-  // What applies without a figure here: for a vehicle its class, then every vehicle, then built-in; for a class every vehicle, then built-in.
-  const inh = k => { const vc = veh ? mtClsOf(veh) : cls, c = veh ? num(d.cls?.[vc]?.[k]) : 0, g = num(d.gaps?.[k]);
-    return c ? [c, MP_CLS.find(x => x[0] === vc)?.[1] || vc] : sc && g ? [g, "Every vehicle"] : mtType(k).gap ? [mtType(k).gap, "Built-in"] : [0, ""]; };
-  const val = k => { const e = mpEd[sc + "|" + k]; return e !== undefined ? e : cur(k) ?? ""; };
-  const nSet = types.filter(t => num(val(t.k)) > 0).length, nVeh = cls ? mtFleet().filter(v => v.type === cls).length : 0;
-  $("mpSum").innerHTML = ostat("Maintenance types", nf(types.length), mpScopeName(sc)) + ostat("Set here", nf(nSet), "km typed for " + (sc ? mpScopeName(sc) : "every vehicle")) +
-    (cls ? ostat("Vehicles in this class", nf(nVeh), "get the figures when saved") : ostat("With a proposal", nf(types.filter(t => P[t.k]).length), "from the history"));
+  const types = MT_TYPES.filter(t => t.k !== "other" && (used.has(t.k) || P[t.k] || num(d.gaps?.[t.k]) || t.gap || (t.pos && W.length && ["hub", "lining"].includes(t.k))));
+  // One row per job; lining and hub grease one row per wheel of the class (for every vehicle, one row for all wheels).
+  const rows = types.flatMap(t => t.pos && W.length ? W.map(w => t.k + "|" + w) : [t.k]);
+  const lvl = veh ? d.bus?.[veh] : cls ? d.cls?.[cls] : d.gaps, cur = rk => lvl?.[rk];
+  // Without a figure here: the job's own figure at this level (for a wheel), then the class, then every vehicle, then built-in.
+  const inh = rk => { const [k, pos] = rk.split("|"), vc = sCls, at = (L, n) => { const v = pos ? (num(L?.[rk]) || num(L?.[k])) : num(L?.[k]); return v ? [v, n] : null; };
+    return (pos && num(lvl?.[k]) ? [num(lvl[k]), "All wheels here"] : null) || (veh && at(d.cls?.[vc], MP_CLS.find(x => x[0] === vc)?.[1] || vc)) || (sc && at(d.gaps, "Every vehicle")) || (mtType(k).gap ? [mtType(k).gap, "Built-in"] : [0, ""]); };
+  const val = rk => { const e = mpEd[sc + "§" + rk]; return e !== undefined ? e : cur(rk) ?? ""; };
+  const nSet = rows.filter(rk => num(val(rk)) > 0).length, nVeh = cls ? mtFleet().filter(v => v.type === cls).length : 0;
+  $("mpSum").innerHTML = ostat("Lines", nf(rows.length), mpScopeName(sc)) + ostat("Set here", nf(nSet), "km typed for " + (sc ? mpScopeName(sc) : "every vehicle")) +
+    (cls ? ostat("Vehicles in this class", nf(nVeh), "get the figures when saved") : ostat("With a proposal", nf(rows.filter(rk => P[rk]).length), "from the history"));
+  let prevK = "";
   $("mpTable").innerHTML = `<thead><tr><th>Maintenance type</th><th class="n">Proposed from history</th><th>Based on</th><th class="n">Service every (km)</th><th class="n">Without a figure here</th><th></th></tr></thead><tbody>` +
-    types.map(t => { const p = P[t.k], v = val(t.k), own = num(v) > 0, [iv, iw] = inh(t.k), logN = mpLogDoc().list.filter(e => e.sc === sc && e.k === t.k).length;
-      return `<tr class="${own ? "mpown" : ""}" data-mpk="${t.k}"><td><b>${esc(t.name)}</b>${t.pos ? '<small class="sub" style="display:block">each wheel</small>' : ""}</td>` +
+    rows.map(rk => { const [k, pos] = rk.split("|"), t = mtType(k), p = P[rk], v = val(rk), own = num(v) > 0, [iv, iw] = inh(rk), logN = mpLogDoc().list.filter(e => e.sc === sc && e.k === rk).length, first = k !== prevK; prevK = k;
+      return `<tr class="${own ? "mpown" : ""}${pos && first ? " mpgrp" : ""}" data-mpk="${rk}"><td>${pos ? `${first ? `<b>${esc(t.name)}</b><br>` : ""}<span class="mpw">${esc(mpWheelName(pos, sCls))}</span>` : `<b>${esc(t.name)}</b>${t.pos ? '<small class="sub" style="display:block">all wheels</small>' : ""}`}</td>` +
         `<td class="n">${p ? `${nf(p.km)} km` : "—"}</td><td class="sub">${p ? `${p.n} gaps between visits · ${nf(p.lo)} to ${nf(p.hi)} km` : "Fewer than 2 gaps in the history"}</td>` +
-        `<td class="n"><input type="number" inputmode="numeric" min="0" step="1000" class="mpin" value="${esc(String(v))}" placeholder="${p ? p.km : iv || ""}"${ed ? "" : " disabled"} aria-label="${esc(t.name)}: service every km"></td>` +
+        `<td class="n"><input type="number" inputmode="numeric" min="0" step="1000" class="mpin" value="${esc(String(v))}" placeholder="${p ? p.km : iv || ""}"${ed ? "" : " disabled"} aria-label="${esc(mpRowName(rk, sCls))}: service every km"></td>` +
         `<td class="n sub">${iv ? `${nf(iv)}<small style="display:block">${esc(iw)}</small>` : "—"}</td>` +
-        `<td><div class="mpact">${ed && p && num(v) !== p.km ? `<button type="button" class="btn mpclr" data-mpuse="${p.km}">Use ${nf(p.km)}</button>` : ""}${logN ? `<button type="button" class="btn mpclr" data-mplog="${t.k}">History (${logN})</button>` : ""}</div></td></tr>`; }).join("") + `</tbody>`;
+        `<td><div class="mpact">${ed && p && num(v) !== p.km ? `<button type="button" class="btn mpclr" data-mpuse="${p.km}">Use ${nf(p.km)}</button>` : ""}${logN ? `<button type="button" class="btn mpclr" data-mplog="${rk}">History (${logN})</button>` : ""}</div></td></tr>`; }).join("") + `</tbody>`;
   $("mpNote").innerHTML = veh ? `Figures for <b>${esc(mpPlate(veh))}</b> only. An empty box uses its class figure, then the one for every vehicle.`
     : cls ? `Figures for <b>${esc(mpScopeName(sc))}</b> (${nVeh} vehicle${nVeh === 1 ? "" : "s"}). Saving also sets them on each of these vehicles; change a vehicle afterwards by choosing it above.`
-    : "Figures for every vehicle. Choose a vehicle class or one vehicle above to give it its own figures.";
+    : "Figures for every vehicle. Choose a vehicle class or one vehicle above to give it its own figures, wheel by wheel for lining and hub grease.";
   mpLogRender(); mpSync();
 }
-// The change history: newest first, for the figures shown (or one type when its History button is pressed).
+// The change history: newest first, for the figures shown (or one line when its History button is pressed).
 function mpLogRender(k) {
   const el = $("mpLog"); if (!el) return; if (k !== undefined) { el.dataset.k = k; mpLogOpen = true; }
-  const fk = el.dataset.k || "", list = mpLogDoc().list.filter(e => e.sc === mpBus && (!fk || e.k === fk)).slice().reverse();
+  const fk = el.dataset.k || "", sCls = mpScopeCls(mpBus), list = mpLogDoc().list.filter(e => e.sc === mpBus && (!fk || e.k === fk)).slice().reverse();
   el.hidden = !mpLogOpen;
-  el.innerHTML = `<div class="msh"><h2 class="sec">Change history · ${esc(mpScopeName(mpBus))}${fk ? " · " + esc(mtType(fk).name) : ""}</h2><span>${fk ? `<button type="button" class="btn mpclr" data-mplogall>All types</button> ` : ""}<button type="button" class="btn mpclr" data-mplogclose>Close</button></span></div>` +
+  el.innerHTML = `<div class="msh"><h2 class="sec">Change history · ${esc(mpScopeName(mpBus))}${fk ? " · " + esc(mpRowName(fk, sCls)) : ""}</h2><span>${fk ? `<button type="button" class="btn mpclr" data-mplogall>All lines</button> ` : ""}<button type="button" class="btn mpclr" data-mplogclose>Close</button></span></div>` +
     (list.length ? `<div class="tscroll"><table class="ctable"><thead><tr><th>Changed on</th><th>By</th><th>Maintenance type</th><th class="n">Was</th><th class="n">Changed to</th><th></th></tr></thead><tbody>` +
-      list.map(e => { const t = new Date(e.on), p2 = n => String(n).padStart(2, "0"); return `<tr><td class="num">${p2(t.getDate())}/${p2(t.getMonth() + 1)}/${t.getFullYear()} ${p2(t.getHours())}:${p2(t.getMinutes())}</td><td>${esc(e.by || "")}${e.via ? `<small class="sub" style="display:block">${esc(e.via)}</small>` : ""}</td><td>${esc(mtType(e.k).name)}</td><td class="n">${e.from ? nf(e.from) : "—"}</td><td class="n">${e.to ? nf(e.to) : "—"}</td>` +
-        `<td>${canMt() && e.from ? `<button type="button" class="btn mpclr" data-mpold="${e.k}|${e.from}">Use ${nf(e.from)} again</button>` : ""}</td></tr>`; }).join("") + `</tbody></table></div>`
+      list.map(e => { const t = new Date(e.on), p2 = n => String(n).padStart(2, "0"); return `<tr><td class="num">${p2(t.getDate())}/${p2(t.getMonth() + 1)}/${t.getFullYear()} ${p2(t.getHours())}:${p2(t.getMinutes())}</td>` +
+        `<td>${esc(e.by || "")}${e.via ? `<small class="sub" style="display:block">${esc(e.via)}</small>` : ""}</td><td>${esc(mpRowName(e.k, sCls))}</td><td class="n">${e.from ? nf(e.from) : "—"}</td><td class="n">${e.to ? nf(e.to) : "—"}</td>` +
+        `<td>${canMt() && e.from ? `<button type="button" class="btn mpclr" data-mpold="${e.k}§${e.from}">Use ${nf(e.from)} again</button>` : ""}</td></tr>`; }).join("") + `</tbody></table></div>`
       : `<p class="sub" style="margin:0">No changes yet.</p>`);
 }
 function mpSync() { const n = Object.keys(mpEd).length; $("mpSave").disabled = !n; $("mpSave").textContent = n ? `Save changes (${n})` : "Save changes"; }
 $("mpBus").onchange = () => { mpEd = {}; mpBus = $("mpBus").value; if ($("mpLog")) $("mpLog").dataset.k = ""; renderMplan(); };
-$("mpTable").addEventListener("input", e => { const i = e.target.closest(".mpin"); if (!i) return; const tr = i.closest("tr"); mpEd[mpBus + "|" + tr.dataset.mpk] = i.value === "" ? "" : Math.round(num(i.value)); tr.classList.toggle("mpown", num(i.value) > 0); mpSync(); });
+$("mpTable").addEventListener("input", e => { const i = e.target.closest(".mpin"); if (!i) return; const tr = i.closest("tr"); mpEd[mpBus + "§" + tr.dataset.mpk] = i.value === "" ? "" : Math.round(num(i.value)); tr.classList.toggle("mpown", num(i.value) > 0); mpSync(); });
 $("view-tmplan").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.mpuse) { mpEd[mpBus + "|" + b.closest("tr").dataset.mpk] = +b.dataset.mpuse; renderMplan(); }
+  if (b.dataset.mpuse) { mpEd[mpBus + "§" + b.closest("tr").dataset.mpk] = +b.dataset.mpuse; renderMplan(); }
   else if (b.dataset.mplog) mpLogRender(b.dataset.mplog);
   else if (b.dataset.mplogall != null) { $("mpLog").dataset.k = ""; mpLogRender(); }
   else if (b.dataset.mplogclose != null) { mpLogOpen = false; mpLogRender(); }
-  else if (b.dataset.mpold) { const [k, v] = b.dataset.mpold.split("|"); mpEd[mpBus + "|" + k] = +v; renderMplan(); toast(`${mtType(k).name}: ${nf(+v)} km put back. Press Save changes to keep it.`); } });
+  else if (b.dataset.mpold) { const [rk, v] = b.dataset.mpold.split("§"); mpEd[mpBus + "§" + rk] = +v; renderMplan(); toast(`${mpRowName(rk, mpScopeCls(mpBus))}: ${nf(+v)} km put back. Press Save changes to keep it.`); } });
 $("mpHist").onclick = () => { $("mpLog").dataset.k = ""; mpLogOpen = !mpLogOpen; mpLogRender(); if (mpLogOpen) $("mpLog").scrollIntoView({ behavior: "smooth", block: "start" }); };
 $("mpUse").onclick = () => { const keys = [...new Set(ops.maintLog.map(mtKeyOf).filter(k => mtVehOf(k)))], cls = mpBus.startsWith("c:") ? mpBus.slice(2) : "";
-  const P = mtIntervals(mpBus && !cls ? [mpBus] : cls ? keys.filter(k => mtClsOf(k) === cls) : keys); Object.entries(P).forEach(([k, p]) => { mpEd[mpBus + "|" + k] = p.km; }); renderMplan(); };
+  const P = mtIntervals(mpBus && !cls ? [mpBus] : cls ? keys.filter(k => mtClsOf(k) === cls) : keys), rows = [...$("mpTable").querySelectorAll("tr[data-mpk]")].map(r => r.dataset.mpk);
+  rows.forEach(rk => { if (P[rk]) mpEd[mpBus + "§" + rk] = P[rk].km; }); renderMplan(); };
 $("mpSave").onclick = async () => {
   const d = mtGapsDoc(), gaps = { ...(d.gaps || {}) }, bus = JSON.parse(JSON.stringify(d.bus || {})), clsD = JSON.parse(JSON.stringify(d.cls || {})), on = new Date().toISOString(), by = whoAmI(), log = [...mpLogDoc().list];
   const set = (tgt, k, v) => { const was = num(tgt[k]) || 0; if (num(v) > 0) tgt[k] = num(v); else delete tgt[k]; return was; };
-  Object.entries(mpEd).forEach(([id, v]) => { const i = id.lastIndexOf("|"), sc = id.slice(0, i), k = id.slice(i + 1), cls = sc.startsWith("c:") ? sc.slice(2) : "";
-    if (!sc) { const was = set(gaps, k, v); if (was !== (num(v) || 0)) log.push({ sc, k, from: was, to: num(v) || 0, on, by }); return; }
-    if (cls) { const was = set(clsD[cls] ||= {}, k, v); if (was !== (num(v) || 0)) log.push({ sc, k, from: was, to: num(v) || 0, on, by });
+  Object.entries(mpEd).forEach(([id, v]) => { const [sc, k] = id.split("§"), cls = sc.startsWith("c:") ? sc.slice(2) : "", to = num(v) || 0;
+    if (!sc) { const was = set(gaps, k, v); if (was !== to) log.push({ sc, k, from: was, to, on, by }); return; }
+    if (cls) { const was = set(clsD[cls] ||= {}, k, v); if (was !== to) log.push({ sc, k, from: was, to, on, by });
       // The class figure is written to each vehicle of the class (logged for each vehicle that changes).
-      mtFleet().filter(x => x.type === cls).forEach(x => { const vw = set(bus[x.id] ||= {}, k, v); if (vw !== (num(v) || 0)) log.push({ sc: x.id, k, from: vw, to: num(v) || 0, on, by, via: mpScopeName(sc) }); if (!Object.keys(bus[x.id]).length) delete bus[x.id]; });
+      mtFleet().filter(x => x.type === cls).forEach(x => { const vw = set(bus[x.id] ||= {}, k, v); if (vw !== to) log.push({ sc: x.id, k, from: vw, to, on, by, via: mpScopeName(sc) }); if (!Object.keys(bus[x.id]).length) delete bus[x.id]; });
       if (!Object.keys(clsD[cls]).length) delete clsD[cls]; return; }
-    const was = set(bus[sc] ||= {}, k, v); if (was !== (num(v) || 0)) log.push({ sc, k, from: was, to: num(v) || 0, on, by }); if (!Object.keys(bus[sc]).length) delete bus[sc]; });
+    const was = set(bus[sc] ||= {}, k, v); if (was !== to) log.push({ sc, k, from: was, to, on, by }); if (!Object.keys(bus[sc]).length) delete bus[sc]; });
   $("mpSave").disabled = true;
-  try { await opsSave("maintTypes", { id: "gaps", gaps, cls: clsD, bus, ...rxStamp() }); await opsSave("maintTypes", { id: "gapsLog", list: log.slice(-2000) });
+  try { await opsSave("maintTypes", { id: "gaps", gaps, cls: clsD, bus, ...rxStamp() }); await opsSave("maintTypes", { id: "gapsLog", list: log.slice(-3000) });
     mpEd = {}; toast("Maintenance km master saved"); renderMplan(); }
   catch { mpSync(); toast("Couldn't save. Check your connection and try again."); }
 };
@@ -8451,8 +8466,8 @@ let mhBus = "", mhType = "", mhShow = "all";
 function mhRows() {
   const out = [];
   ops.maintLog.forEach(x => { const key = mtKeyOf(x), km = mtXAct(x);
-    (x.items || []).forEach(it => { const g = mtGap(key, it.k);
-      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: !mtGapSet(key, it.k) && num(it.next) > km ? num(it.next) : g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
+    (x.items || []).forEach(it => { const g = mtGap(key, it.k, it.pos);
+      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: !mtGapSet(key, it.k, it.pos) && num(it.next) > km ? num(it.next) : g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
   return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(b.date).localeCompare(String(a.date)) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
 }
 function mhList() {
@@ -17246,7 +17261,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07v";
+const APP_VER = "2026-11-07w";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
