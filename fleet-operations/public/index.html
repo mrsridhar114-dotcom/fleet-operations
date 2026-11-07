@@ -14271,13 +14271,15 @@ async function tsLayout(L, pdf, b) {
 // Booking slip and spare bus trip sheet print: a preview like the truck trip sheet's. Tick the pages, see them, then save
 // them as images or as one PDF, or share them.
 const toJpg = cv => new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92));
-function pvOpen({ name0, pages, extra, picks, canvases, pdf }) {
+function pvOpen({ name0, pages, extra, picks, langKey, canvases, pdf }) {
   pbClose();
-  let fmt = "jpg", urls = [], seq = 0; try { fmt = localStorage.getItem("fleet-pvout") === "pdf" ? "pdf" : "jpg"; } catch {}
+  let fmt = "jpg", urls = [], seq = 0, lang = "en"; try { if (langKey && localStorage.getItem(langKey) === "ta") lang = "ta"; } catch {} try { fmt = localStorage.getItem("fleet-pvout") === "pdf" ? "pdf" : "jpg"; } catch {}
   const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
   box.innerHTML = `<div class="xodlg rtpdlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Print / download · preview</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
     `<div class="xobody"><div class="xoleft"><label class="xotl">File name<input type="text" data-title maxlength="80" value="${esc(name0)}"></label>` +
     `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="jpg">🖼 Image</button><button type="button" data-fmt="pdf">📄 PDF</button></div>` +
+    // langKey: an English / Tamil choice, remembered under that key.
+    (langKey ? `<div class="xosub">Language</div><div class="xofmt" role="radiogroup"><button type="button" data-lang="en">English</button><button type="button" data-lang="ta" lang="ta">தமிழ்</button></div>` : "") +
     (pages.length > 1 ? `<div class="xosub">Pages</div>${pages.map((p, i) => `<label class="dall"><input type="checkbox" data-pv="${i}" checked> <span><b>${esc(p.label)}</b>${p.sub ? `<br><small class="sub">${esc(p.sub)}</small>` : ""}</span></label>`).join("")}` : "") +
     (extra ? `<div class="xosub">Show</div><label class="dall"><input type="checkbox" data-ex${extra.on ? " checked" : ""}> ${esc(extra.label)}</label>` : "") +
     // picks: lines to tick or untick on the page (each with a small note under it, as HTML).
@@ -14287,7 +14289,7 @@ function pvOpen({ name0, pages, extra, picks, canvases, pdf }) {
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
   const pane = box.querySelector(".rtpv"), fname = () => box.querySelector("[data-title]").value.trim() || name0;
   const st = () => ({ pg: pages.length > 1 ? [...box.querySelectorAll("[data-pv]")].filter(i => i.checked).map(i => +i.dataset.pv) : [0], ex: !!box.querySelector("[data-ex]")?.checked,
-    pk: [...box.querySelectorAll("[data-pk]")].filter(i => i.checked).map(i => +i.dataset.pk) });
+    pk: [...box.querySelectorAll("[data-pk]")].filter(i => i.checked).map(i => +i.dataset.pk), lang });
   // Each page group (front, back) can run to more than one image (a long back side).
   const picked = async s => (await canvases(s)).filter(x => s.pg.includes(x.g));
   const makeAll = async () => {
@@ -14305,6 +14307,7 @@ function pvOpen({ name0, pages, extra, picks, canvases, pdf }) {
   };
   const sync = () => {
     box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
+    box.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
     const n = picks && !st().pk.length ? 0 : st().pg.length, sv = box.querySelector(".duesave"); sv.disabled = !n; box.querySelector(".dshare").disabled = !n;
     sv.lastChild.textContent = !n ? (picks ? "Choose a line" : "Choose a page") : fmt === "pdf" ? "Save as PDF" : n > 1 ? `Save ${n} images` : "Save as image";
   };
@@ -14314,6 +14317,7 @@ function pvOpen({ name0, pages, extra, picks, canvases, pdf }) {
   box.addEventListener("click", e => {
     if (e.target === box || e.target.closest("[data-xoclose]")) { close(); return; }
     const b = e.target.closest("[data-fmt]"); if (b) { fmt = b.dataset.fmt; try { localStorage.setItem("fleet-pvout", fmt); } catch {} sync(); }
+    const lg = e.target.closest("[data-lang]"); if (lg && lg.dataset.lang !== lang) { lang = lg.dataset.lang; try { localStorage.setItem(langKey, lang); } catch {} sync(); draw(); }
   });
   const saveAll = async (files, note) => { const dl = await auDownloads(); if (!dl) { toast("Saving files isn't available in this view."); return false; } for (const f of files) await dl.save(f); toast(note(files)); return true; };
   box.querySelector(".duesave").onclick = async ev => {
@@ -14728,9 +14732,9 @@ function pOpenDocsPop(b, cfg, p) {
 // The due badge: the renewals due within a month in the preview window, to save as an image or a PDF, or share.
 function pOpenDuePop(cfg, p) {
   const due = pDueOf(cfg, p), masked = acc.users !== "edit", keys = s => s.pk.map(i => due[i].k);
-  pvOpen({ name0: `${pFileBase(p)} DUE`, pages: [{ label: "Renewals due" }], picks: { title: "Renewals due within a month", list: due.map(d => ({ label: d.label, sub: pickSub(d) })) },
-    canvases: async s => [{ g: 0, cv: await pCardCanvas(cfg, p, masked, true, keys(s)) }],
-    pdf: async s => { const L = await loadPdfLib(), pdf = await L.PDFDocument.create(), cv = await pCardCanvas(cfg, p, masked, true, keys(s));
+  pvOpen({ name0: `${pFileBase(p)} DUE`, pages: [{ label: "Renewals due" }], langKey: "fleet-duelang", picks: { title: "Renewals due within a month", list: due.map(d => ({ label: d.label, sub: pickSub(d) })) },
+    canvases: async s => [{ g: 0, cv: await pCardCanvas(cfg, p, masked, true, keys(s), s.lang) }],
+    pdf: async s => { const L = await loadPdfLib(), pdf = await L.PDFDocument.create(), cv = await pCardCanvas(cfg, p, masked, true, keys(s), s.lang);
       const img = await pdf.embedJpg(await (await toJpg(cv)).arrayBuffer()), w = cv.width / 2, h = cv.height / 2;
       pdf.addPage([w, h]).drawImage(img, { x: 0, y: 0, width: w, height: h }); return new Blob([await pdf.save()], { type: "application/pdf" }); } });
 }
@@ -14739,49 +14743,65 @@ function pOpenPrintPop(b, cfg, p) {
   openPickPop(b, `${p.name} · validity dates`, items.map(d => ({ ...d, sub: pickSub(d) })), { pp: p.id }, (keys, btn) => pSaveJpg(btn, cfg, p, false, keys), { share: keys => pJpgFile(cfg, p, false, keys) });
 }
 // One person's validity dates (or only those due within a month) as a JPG. Staff copies mask the licence number and carry a watermark.
+// The driver / conductor validity images in English or Tamil (for the drivers).
+const PC_TA = { "Driving licence validity": "ஓட்டுநர் உரிமம் செல்லுபடி", "Conductor licence & first-aid validity": "நடத்துநர் உரிமம் & முதலுதவி செல்லுபடி",
+  Driver: "ஓட்டுநர்", Conductor: "நடத்துநர்", "Licence no.": "உரிமம் எண்", "On leave": "விடுப்பில்", Inactive: "பணியில் இல்லை",
+  "Transport licence (TR)": "போக்குவரத்து உரிமம் (TR)", "Non-transport licence (NT)": "போக்குவரத்து அல்லாத உரிமம் (NT)", "Conductor licence": "நடத்துநர் உரிமம்", "First-aid certificate": "முதலுதவி சான்றிதழ்",
+  "Date not entered": "தேதி பதியவில்லை", "Please renew before the dates shown.": "காட்டப்பட்டுள்ள தேதிக்கு முன் புதுப்பிக்கவும்.", "Licence number masked": "உரிம எண் மறைக்கப்பட்டுள்ளது",
+  "Within 1 month / expired": "1 மாதத்திற்குள் / காலாவதி", "1 to 3 months": "1 முதல் 3 மாதம்", "More than 3 months": "3 மாதத்திற்கு மேல்" };
+const PC_T = {
+  en: { tr: t => t, dueTitle: "Renewals due within a month", asOn: d => `As on ${d}`, due: n => `${n} due`, yrs: n => `${n} years`, when: whenText },
+  ta: { tr: t => PC_TA[t] || t, dueTitle: "ஒரு மாதத்திற்குள் புதுப்பிக்க வேண்டியவை", asOn: d => `${d} நிலவரப்படி`, due: n => `${n} நிலுவை`, yrs: n => `${n} வயது`,
+    when: n => n < 0 ? `${-n} நாட்களுக்கு முன் காலாவதியானது` : n === 0 ? "இன்று காலாவதியாகிறது" : `இன்னும் ${n} நாட்கள்` } };
 async function pCardJpg(cfg, p, masked, dueOnly, keys) { return toJpg(await pCardCanvas(cfg, p, masked, dueOnly, keys)); }
-async function pCardCanvas(cfg, p, masked, dueOnly, keys) {
+async function pCardCanvas(cfg, p, masked, dueOnly, keys, lang = "en") {
+  const T = PC_T[lang] || PC_T.en; if (lang === "ta") await rtTamilFont();
   const rank = d => d.n == null ? 3 : d.n <= 30 ? 0 : d.n <= 90 ? 1 : 2;
   const items = (dueOnly ? pDueOf(cfg, p) : cfg.dates.map(([k, label]) => ({ k, label, date: p[k], n: p[k] ? daysUntil(p[k]) : null }))
     .sort((a, b) => (rank(a) - rank(b)) || String(a.date || "").localeCompare(String(b.date || "")))).filter(d => !keys || keys.includes(d.k));
-  const W = 1080, PADX = 64, ROW = dueOnly ? 112 : 96, H = 440 + items.length * ROW + (dueOnly ? 150 : 170);
+  const W = 1080, PADX = 64, ROW = dueOnly ? 112 : 96, H = 440 + items.length * ROW + (dueOnly ? (masked ? 150 : 100) : 170);
   const c = document.createElement("canvas"); c.width = W; c.height = H;
-  const g = c.getContext("2d"), F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  const g = c.getContext("2d"), TA = lang === "ta" ? "'Noto Sans Tamil', 'Nirmala UI', Latha, " : "", F = TA + "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', " + TA + "monospace";
   const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
   g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H); g.textBaseline = "middle";
   g.fillStyle = dueOnly ? "#b71c1c" : "#18212b"; g.fillRect(0, 0, W, 150);
   g.fillStyle = "#ffffff"; g.font = `700 46px ${F}`; g.fillText("VBS", PADX, 60);
-  g.fillStyle = dueOnly ? "#ffffff" : "#c9d3dc"; g.font = `${dueOnly ? 600 : 500} 30px ${F}`; g.fillText(dueOnly ? "Renewals due within a month" : cfg.title, PADX, 108);
-  g.textAlign = "right"; g.font = `500 28px ${F}`; g.fillText(`As on ${fmtDate(todayISO())}`, W - PADX, 60); g.textAlign = "left";
+  g.fillStyle = dueOnly ? "#ffffff" : "#c9d3dc"; g.font = `${dueOnly ? 600 : 500} 30px ${F}`; g.fillText(dueOnly ? T.dueTitle : T.tr(cfg.title), PADX, 108);
+  g.textAlign = "right"; g.font = `500 28px ${F}`; g.fillText(T.asOn(fmtDate(todayISO())), W - PADX, 60); g.textAlign = "left";
   let cw = 0;
-  if (dueOnly) { g.font = `700 30px ${F}`; const cnt = `${items.length} due`; cw = g.measureText(cnt).width + 40;
+  if (dueOnly) { g.font = `700 30px ${F}`; const cnt = T.due(items.length); cw = g.measureText(cnt).width + 40;
     rr(W - PADX - cw, 192, cw, 56, 28); g.fillStyle = "#b71c1c"; g.fill(); g.fillStyle = "#ffffff"; g.textAlign = "center"; g.fillText(cnt, W - PADX - cw / 2, 221); g.textAlign = "left"; }
   let fs = 58; g.font = `700 ${fs}px ${F}`; const maxw = W - 2 * PADX - (cw ? cw + 24 : 0);
   while (fs > 34 && g.measureText(p.name || "").width > maxw) { fs -= 2; g.font = `700 ${fs}px ${F}`; }
-  g.fillStyle = "#18212b"; g.fillText(p.name || cfg.Noun, PADX, 220);
-  g.font = `700 36px ${MONO}`; g.fillStyle = "#18212b"; g.fillText(`${cfg.idLabel} ${masked ? pMask(cfg.idNo(p)) : (cfg.idNo(p) || "-")}`, PADX, 290);
+  g.fillStyle = "#18212b"; g.fillText(p.name || T.tr(cfg.Noun), PADX, 220);
+  g.font = `700 36px ${MONO}`; g.fillStyle = "#18212b"; g.fillText(`${T.tr(cfg.idLabel)} ${masked ? pMask(cfg.idNo(p)) : (cfg.idNo(p) || "-")}`, PADX, 290);
   g.fillStyle = "#5c6977"; g.font = `500 30px ${F}`;
-  g.fillText([cfg.Noun, p.dob ? `${yearsBetween(p.dob, todayISO())} years` : "", p.status && p.status !== "Active" ? p.status : ""].filter(Boolean).join("  ·  "), PADX, 345);
+  g.fillText([T.tr(cfg.Noun), p.dob ? T.yrs(yearsBetween(p.dob, todayISO())) : "", p.status && p.status !== "Active" ? T.tr(p.status) : ""].filter(Boolean).join("  ·  "), PADX, 345);
   let y = 390; g.strokeStyle = "#d9dfe5"; g.lineWidth = 2; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke();
   items.forEach(d => {
     const mid = y + ROW / 2;
-    g.fillStyle = "#18212b"; g.font = `600 ${dueOnly ? 36 : 34}px ${F}`; g.fillText(d.label, PADX, mid - 12);
-    g.fillStyle = d.n != null && d.n < 0 ? "#b71c1c" : "#5c6977"; g.font = `${d.n != null && d.n < 0 ? 700 : 400} 26px ${F}`; g.fillText(d.date ? whenText(d.n) : "Date not entered", PADX, mid + 26);
+    // The name of the date gets smaller when it would run into the date on the right (long Tamil names).
+    g.font = `700 36px ${MONO}`; const lw = W - 2 * PADX - g.measureText(d.date ? fmtDate(d.date) : "—").width - 64;
+    let ls = dueOnly ? 36 : 34; g.font = `600 ${ls}px ${F}`; while (ls > 22 && g.measureText(T.tr(d.label)).width > lw) { ls -= 2; g.font = `600 ${ls}px ${F}`; }
+    g.fillStyle = "#18212b"; g.fillText(T.tr(d.label), PADX, mid - 12);
+    g.fillStyle = d.n != null && d.n < 0 ? "#b71c1c" : "#5c6977"; g.font = `${d.n != null && d.n < 0 ? 700 : 400} 26px ${F}`; g.fillText(d.date ? T.when(d.n) : T.tr("Date not entered"), PADX, mid + 26);
     const [bg, fg] = d.n == null ? ["#eef1f4", "#5c6977"] : d.n <= 30 ? JPG_BANDS[0] : d.n <= 90 ? JPG_BANDS[1] : JPG_BANDS[2];
     g.font = `700 36px ${MONO}`; g.textAlign = "right"; const dt = d.date ? fmtDate(d.date) : "—", dw = g.measureText(dt).width;
     rr(W - PADX - dw - 32, mid - 25, dw + 32, 50, 10); g.fillStyle = bg; g.fill(); g.fillStyle = fg; g.fillText(dt, W - PADX - 16, mid + 1); g.textAlign = "left";
     y += ROW; g.strokeStyle = "#e6e9ee"; g.beginPath(); g.moveTo(PADX, y); g.lineTo(W - PADX, y); g.stroke();
   });
-  if (dueOnly) { g.fillStyle = "#b71c1c"; g.font = `600 26px ${F}`; g.fillText("Please renew before the dates shown.", PADX, y + 56); }
+  if (dueOnly) { g.fillStyle = "#b71c1c"; g.font = `600 26px ${F}`; g.fillText(T.tr("Please renew before the dates shown."), PADX, y + 56); }
   else {
     let lx = PADX; const ly = y + 56; g.font = `500 24px ${F}`;
-    [[JPG_BANDS[0], "Within 1 month / expired"], [JPG_BANDS[1], "1 to 3 months"], [JPG_BANDS[2], "More than 3 months"]].forEach(([[bg, fg], t]) => {
+    [[JPG_BANDS[0], "Within 1 month / expired"], [JPG_BANDS[1], "1 to 3 months"], [JPG_BANDS[2], "More than 3 months"]].map(([b, t]) => [b, T.tr(t)]).forEach(([[bg, fg], t]) => {
       rr(lx, ly - 14, 28, 28, 6); g.fillStyle = bg; g.fill(); g.lineWidth = 3; g.strokeStyle = fg; g.stroke();
       g.fillStyle = "#3b4652"; g.fillText(t, lx + 40, ly + 1); lx += 40 + g.measureText(t).width + 44;
     });
   }
   if (masked) jpgWatermark(g, W, H, F);
-  g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`; g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Licence number masked" : ""}`, PADX, H - 50);
+  // The due image has no "Printed by" line (only the note that the number is masked, on staff copies).
+  const foot = dueOnly ? (masked ? T.tr("Licence number masked") : "") : `Printed by ${whoAmI()}${masked ? "  ·  Licence number masked" : ""}`;
+  if (foot) { g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`; g.fillText(foot, PADX, H - 50); }
   return c;
 }
 async function pJpgFile(cfg, p, dueOnly, keys) {
@@ -17332,7 +17352,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08g";
+const APP_VER = "2026-11-08h";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
