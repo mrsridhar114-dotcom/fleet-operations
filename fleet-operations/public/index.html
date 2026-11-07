@@ -10100,8 +10100,8 @@ function xlSpareSheets(recs, fy) {
   });
   return sheets;
 }
-/* Expenses for a financial year in the same look: row 1 the title, rows 2–3 the summary (total, entries, vehicles), the total
-   by category beside it, row 5 the headings (as the office Expense List: Date, Description, Vehicle Number, Category, Payment Type,
+/* Expenses for a financial year in the same look: row 1 the title, rows 2–3 the summary (total, vehicles, average a month), the
+   total by category and the total by vehicle beside it (each with a Total row that matches Total Expenses), row 5 the headings (as the office Expense List: Date, Description, Vehicle Number, Category, Payment Type,
    Amount, plus Bills), one row per expense from row 6, oldest first. kind "bus" is every vehicle that is not a truck. */
 function xlExpenseSheet(recs, fy, kind) {
   const { put, S, sheet } = XL, C = xlCtx(recs), trucks = new Set((recs.vehicles || []).filter(v => /truck/i.test(v.type || "")).map(v => v.id));
@@ -10113,17 +10113,26 @@ function xlExpenseSheet(recs, fy, kind) {
     put(ws, `A${r}`, { d: x.date }, S.sDate); put(ws, `B${r}`, x.desc || "", S.sTxt); put(ws, `C${r}`, x.vehicleId ? C.plate(x.vehicleId) : x.plate || "", S.sTxt);
     put(ws, `D${r}`, xpCatTxt(x), S.sTxt); put(ws, `E${r}`, x.pay || "", S.sTxt); put(ws, `F${r}`, Math.round(num(x.amount)), S.sInt); put(ws, `G${r}`, (x.bills || []).length || null, S.sInt); });
   const total = list.reduce((a, x) => a + Math.round(num(x.amount)), 0), nVeh = new Set(list.map(x => x.vehicleId || x.plate)).size;
-  put(ws, "A1", `${title} - FY ${fyLabel(fy)}`, S.sTitle); for (let c = 1; c < 10; c++) put(ws, XL.col(c) + 1, null, S.sTitle); ws.merges.push("A1:J1");
+  put(ws, "A1", `${title} - FY ${fyLabel(fy)}`, S.sTitle); for (let c = 1; c < 13; c++) put(ws, XL.col(c) + 1, null, S.sTitle); ws.merges.push("A1:M1");
   ["2", "3"].forEach(r => "ABCDEF".split("").forEach(c => put(ws, c + r, null, S.sLab)));
-  [["A2", "Total Expenses", "B2", `SUM(${rg("F")})`, total], ["C2", "Entries", "D2", `COUNT(${rg("F")})`, list.length], ["A3", "Vehicles", "B3", undefined, nVeh], ["C3", "Avg per Month", "D3", "ROUND(B2/12,0)", Math.round(total / 12)]]
+  [["A2", "Total Expenses", "B2", `SUM(${rg("F")})`, total], ["A3", "Vehicles", "B3", undefined, nVeh], ["C3", "Avg per Month", "D3", "ROUND(B2/12,0)", Math.round(total / 12)]]
     .forEach(([lc, lab, vc, f, v]) => { put(ws, lc, lab, S.sLab); put(ws, vc, v, S.sVal, f); });
   // Total by category, beside the list
   const cats = [...new Set(list.map(xpCatTxt))].sort();
   put(ws, "I2", "Category", S.sHead); put(ws, "J2", "Amount", S.sHead);
   cats.forEach((c, i) => { put(ws, `I${3 + i}`, c, S.sTxt); put(ws, `J${3 + i}`, list.filter(x => xpCatTxt(x) === c).reduce((a, x) => a + Math.round(num(x.amount)), 0), S.sInt, `SUMIF(${rg("D")},I${3 + i},${rg("F")})`); });
+  // A Total row under a table (columns a, b, its first row 3, n rows): the same figure as Total Expenses.
+  const totRow = (a, b, n) => { const r = 3 + n; put(ws, a + r, "Total", S.ttext); put(ws, b + r, total, S.tint, n ? `SUM(${b}3:${b}${r - 1})` : "0"); };
+  totRow("I", "J", cats.length);
+  // Total by vehicle (the Vehicle Number column; entries with no vehicle as Common)
+  const vOf = x => x.vehicleId ? C.plate(x.vehicleId) : x.plate || "", vehs = [...new Set(list.map(vOf))].sort((a, b) => (a === "") - (b === "") || a.localeCompare(b));
+  put(ws, "L2", "Vehicle", S.sHead); put(ws, "M2", "Amount", S.sHead);
+  vehs.forEach((v, i) => { const r = 3 + i; put(ws, `L${r}`, v || "Common", S.sTxt);
+    put(ws, `M${r}`, list.filter(x => vOf(x) === v).reduce((a, x) => a + Math.round(num(x.amount)), 0), S.sInt, `SUMIF(${rg("C")},${v ? "L" + r : '""'},${rg("F")})`); });
+  totRow("L", "M", vehs.length);
   ["Date", "Description", "Vehicle Number", "Category", "Payment Type", "Amount", "Bills"].forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5; ws.zoom = 90;
   Object.assign(ws.heights, { 1: 28.5, 2: 15.5, 3: 15.5, 5: 18.5 });
-  Object.assign(ws.widths, { A: 15, B: 46, C: 16, D: 24, E: 16, F: 13, G: 8, H: 4, I: 26, J: 13 });
+  Object.assign(ws.widths, { A: 15, B: 46, C: 16, D: 24, E: 16, F: 13, G: 8, H: 4, I: 26, J: 13, K: 4, L: 18, M: 13 });
   return ws;
 }
 /* The Summary sheet that opens the Download all workbook, in the office "Summary" layout. Top left the buses (route buses, then
@@ -17412,7 +17421,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08o";
+const APP_VER = "2026-11-08p";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
