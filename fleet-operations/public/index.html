@@ -1246,6 +1246,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .dsl { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
 /* Utility: data upload */
 .updl h2, h2.uph { grid-column: 1 / -1; margin: 0; font-size: 17px; } .updl .sub { grid-column: 1 / -1; margin: -6px 0 0; } h2.uph { margin: 18px 0 8px; } .updl #oDl { justify-self: start; }
+.updl .nobus { grid-column: 1 / -1; border: 1px solid var(--warn); border-radius: 10px; padding: 10px 12px; } .updl .nobus p { margin: 0 0 8px; } .updl .nobus .orow { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line, #ddd); } .updl .nobus .orow span { flex: 1; min-width: 0; }
 .upform { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; align-items: end; } .upchk { grid-column: 1 / -1; font-size: 14px; }
 .uptpl { grid-column: 1 / -1; display: flex; gap: 12px; align-items: center; } .uptpl .btn { flex: none; white-space: nowrap; }
 .upsum { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; } .upsum b { font-size: 17px; }
@@ -2841,6 +2842,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <p class="sub">One Excel file: each route bus month by month, each spare bus, each truck, then Bus Expenses and Truck Expenses.</p>
         <div class="hf"><label for="oDlFy">Financial year</label><select id="oDlFy"></select></div>
         <button class="btn primary" type="button" id="oDl">⬇ Download all</button>
+        <div id="oDlNoBus" class="nobus" hidden></div>
       </section>
       <h2 class="uph">Upload from Excel</h2>
       <section class="panel upform">
@@ -4183,7 +4185,7 @@ function showView() {
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
-  if (view === "tutil") { dlFyOpts($("oDlFy")); renderUpload(); }
+  if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); }
   if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
@@ -9610,7 +9612,7 @@ const TK_DL_WIDTHS = { A: 12.2, B: 11, C: 6.1, D: 10.7, E: 15.6, F: 18.2, G: 18,
 // fy: only the round trips that start in that financial year (all of them when it is left out).
 function xlTruckSheets(recs, fy) {
   const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [], payTxt = p => `Bank Input - Rs.${num(p.amount)}${p.date ? ` on ${fmtDMY(p.date)}` : ""}`;
-  const all = recs.truckTrips || [], rStart = new Map(); all.forEach(l => { const k = l.roundId || l.id; if (!rStart.has(k) || l.from < rStart.get(k)) rStart.set(k, l.from); });
+  const all = (recs.truckTrips || []).filter(l => l.vehicleId), rStart = new Map(); all.forEach(l => { const k = l.roundId || l.id; if (!rStart.has(k) || l.from < rStart.get(k)) rStart.set(k, l.from); });
   const legs = all.filter(l => fy == null || fyOf(rStart.get(l.roundId || l.id) || l.from) === fy).sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.id).localeCompare(String(b.id)));
   const ids = [...new Set(legs.map(l => l.vehicleId))].sort((a, b) => C.plate(a).localeCompare(C.plate(b)));
   const F = 6; // the first trip row
@@ -9673,7 +9675,7 @@ function xlTruckDownload(recs) {
 const SP_DL_HEADS = ["From Date", "To Date", "Days", "Total Rent", "Driver", "Cleaner", "Driver ", "Cleaner", "Permit Exp.", "Toll Gate", "Litres", "Fuel Price", "Other Exp.", "Total Expense", "Collection", "Balance", "Avg Col", "Start KMs", "End Kms", "Kms Run", "Avg Kms/Day", "Mileage", "Remarks", "Other Remarks"];
 function xlSpareSheets(recs, fy) {
   const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [];
-  const done = (recs.bookings || []).filter(b => b.from && fyOf(b.from) === fy && ["booked", "ontrip", "completed"].includes(b.status))
+  const done = (recs.bookings || []).filter(b => b.vehicleId && b.from && fyOf(b.from) === fy && ["booked", "ontrip", "completed"].includes(b.status))
     .sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.no).localeCompare(String(b.no)));
   const ids = [...new Set(done.map(b => b.vehicleId))].sort((a, b) => C.plate(a).localeCompare(C.plate(b)));
   ids.forEach(id => {
@@ -9844,6 +9846,14 @@ function dlFyOpts(sel, pick) {
   const ys = new Set([fyOf(todayISO()), ...ops.bookings.filter(b => b.from).map(b => fyOf(b.from)), ...ops.truckTrips.filter(l => l.from).map(l => fyOf(l.from))]);
   const cur = pick ?? (+sel.value || fyOf(todayISO())); sel.innerHTML = [...ys].sort((a, b) => b - a).map(y => `<option value="${y}"${y === cur ? " selected" : ""}>${fyLabel(y)}</option>`).join("");
 }
+// Confirmed spare bus bookings with no bus chosen: left out of the downloads, listed under Download all to open and fix.
+const dlNoBus = () => ops.bookings.filter(b => !b.vehicleId && ["booked", "ontrip", "completed"].includes(b.status)).sort((a, b) => String(a.from).localeCompare(String(b.from)));
+function dlNoBusRender() {
+  const el = $("oDlNoBus"), list = dlNoBus(), dmy = iso => iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : ""; el.hidden = !list.length; if (!list.length) { el.innerHTML = ""; return; }
+  el.innerHTML = `<p><b>${list.length} spare bus booking${list.length === 1 ? " has" : "s have"} no bus chosen</b> and ${list.length === 1 ? "is" : "are"} left out of the download (earlier files showed ${list.length === 1 ? "it" : "them"} as "No bus yet"). Open each one and choose the bus, or use Cancel booking / Delete booking at the bottom (⋯ on a phone).</p>` +
+    list.map(b => `<div class="orow"><span><b>${esc(b.no || "No number")}</b> · ${esc(b.party || "No party")} · ${dmy(b.from)}${bkEnd(b) && bkEnd(b) !== b.from ? " – " + dmy(bkEnd(b)) : ""} · ${stageTag(b)}</span><button class="btn" type="button" data-bk="${b.id}">Open</button></div>`).join("");
+}
+$("oDlNoBus").addEventListener("click", e => { const b = e.target.closest("[data-bk]"); if (b) openBooking(b.dataset.bk); });
 async function dlSave(btn, filename, make) {
   let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
   if (!dl) { toast("Saving files isn't available in this view."); return; }
@@ -10777,7 +10787,7 @@ function renderOps() {
   if (view === "tpadi") { renderPadi(); return; }
   if (view === "tkrep") { renderPk(); return; }
   if (view === "tdrv") { renderDrv(); return; }
-  if (view === "tutil") { dlFyOpts($("oDlFy")); renderUpload(); return; }
+  if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); return; }
   if (view === "texp") { renderExp(); return; }
   if (view === "tmaint") { renderMaint(); return; }
   if (view === "tmsum") { renderMsum(); return; }
@@ -15633,7 +15643,7 @@ $("tsDl").onclick = e => { const fy = +$("tsDlFy").value || fyOf(todayISO());
 // Utility › Data upload & download (admin): the route buses month by month, the spare buses, the trucks, then Bus and Truck Expenses, for the year chosen.
 $("oDl").onclick = e => { const fy = +$("oDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => { const recs = { ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers };
-    const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
+    const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.vehicleId && t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
     const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
     return [xlSummarySheet(recs, fy, sheets, busIds), ...sheets]; }); };
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
@@ -16870,7 +16880,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07c";
+const APP_VER = "2026-11-07d";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
