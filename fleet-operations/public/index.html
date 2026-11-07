@@ -7016,7 +7016,8 @@ function mtDue(key) {
   return [...last.values()].map(({ it, e, a }) => {
     // Next service: last km + the km master; without a figure in the master, the sheet's Next KMS for that visit, else the built-in gap.
     const gap = mtGap(key, it.k, it.pos), next = !mtGapSet(key, it.k, it.pos) && num(it.next) > a ? num(it.next) : gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
-    const when = left != null && now?.perDay ? shiftDay(now.date, Math.round(left / now.perDay)) : "";
+    // Expected date from the km a day; none when it would be more than 20 years away (very few km a day) or the reading's date is not a date.
+    const days = left != null && now?.perDay ? Math.round(left / now.perDay) : null, when = days != null && Math.abs(days) <= 7300 && /^\d{4}-\d{2}-\d{2}$/.test(now.date || "") ? shiftDay(now.date, days) : "";
     const st = next == null ? "nogap" : left == null ? "ok" : left <= 0 ? "over" : left <= 5000 ? "soon" : "ok";
     return { it, e, ekm: a, gap, next, left, when, st };
   }).sort((a, b) => ["over", "soon", "ok", "nogap"].indexOf(a.st) - ["over", "soon", "ok", "nogap"].indexOf(b.st) || (a.left ?? 9e12) - (b.left ?? 9e12) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
@@ -9889,7 +9890,8 @@ const XL = (() => {
   }
   function cellXml(ref, { v, s, f }) {
     const st = s ? ` s="${s}"` : "";
-    if (v && typeof v === "object" && v.d) return `<c r="${ref}"${st}><v>${serial(v.d)}</v></c>`;
+    if (v && typeof v === "object" && v.d) { const n = /^\d{4}-\d{2}-\d{2}$/.test(v.d) ? serial(v.d) : NaN;
+      return isFinite(n) ? `<c r="${ref}"${st}><v>${n}</v></c>` : `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${x(v.d)}</t></is></c>`; }
     if (f) return typeof v === "number" && isFinite(v) ? `<c r="${ref}"${st}><f>${x(f)}</f><v>${Math.round(v * 1e6) / 1e6}</v></c>` : `<c r="${ref}"${st} t="str"><f>${x(f)}</f><v>${x(v ?? "")}</v></c>`;
     if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${st}><v>${v}</v></c>`;
     if (v == null || v === "") return `<c r="${ref}"${st}/>`;
@@ -10254,6 +10256,9 @@ function xlVehicleSheet(recs) {
 /* Download all: Maintenance Summary (every vehicle in the vehicle master with maintenance: each job's last service and the next one
    due, as on today, with the vehicle's current km on its heading) and Maintenance History (every job done in the year). */
 function xlMaintSheets(fy) {
+  try { return xlMaintSheetsOf(fy); } catch (er) { console.error("Maintenance sheets", er); toast("The maintenance sheets could not be made and are left out of this file."); return []; }
+}
+function xlMaintSheetsOf(fy) {
   const out = [], today = todayISO().split("-").reverse().join("/"), wide = ws => { const n = Object.keys(ws.widths).length; if (n > 1) ws.merges.push(`A1:${XL.col(n - 1)}1`); ws.zoom = 90; return ws; };
   const T = () => MS_T.en, L = msLines(msKeys(false), T);
   if (L.list.length) { const cols = L.cols(), keys = cols.filter(c => !c.off).map(c => c.k);
@@ -17380,7 +17385,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08j";
+const APP_VER = "2026-11-08k";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
