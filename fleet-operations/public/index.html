@@ -1452,6 +1452,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .xolt th { position: sticky; top: 0; background: var(--chip-bg, #eef1f4); text-align: left; padding: 7px 8px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); z-index: 1; }
 .xolt td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .xolt tr[data-row] { cursor: pointer; } .xolt tr[data-row]:hover td { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
 .xolt tr.xogrp td { background: var(--surface-2, #e8eef5); font-weight: 700; padding: 8px; position: static; } .xoextra .xomsv { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; } .xoextra .xomsv label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; } .xoextra .xomsv input { width: 18px; height: 18px; }
+.xolt[lang="ta"] td, .xolt[lang="ta"] th { font-family: 'Noto Sans Tamil', 'Nirmala UI', Latha, Barlow, sans-serif; text-transform: none; letter-spacing: 0; }
 .xolt tr.ms-ok td { background: color-mix(in srgb, #2e8b3d 10%, var(--surface)); }
 .xolt tr.ms-over td { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); } .xolt tr.ms-soon td { background: color-mix(in srgb, #f28c28 20%, var(--surface)); }
 .xolt tr.off td { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); } .xolt tr.off td:first-child { text-decoration: none; }
@@ -7446,11 +7447,13 @@ function pbExcel(spec, list, keys, title) {
   if (tot.length) { const t = list.length + 4 + gr; XL.put(ws, `${XL.col(Math.max(0, tot[0] - 1))}${t}`, "Total", S.ttext);
     tot.forEach(i => { const A = XL.col(i), s = list.reduce((a, x) => a + num(spec.raw(x, H[i].k)), 0); XL.put(ws, `${A}${t}`, s, Number.isInteger(s) ? S.tint : S.tint, `SUM(${A}4:${A}${t - 1})`); }); }
   ws.freeze = 3;
-  return { filename: pbName("xlsx", title), data: XL.build([ws]) };
+  return { filename: pbName("xlsx", spec.fileTitle?.(title) || title), data: XL.build([ws]) };
 }
 async function pbImage(spec, list, keys, title, png) {
   try { await document.fonts?.ready; } catch {}
-  const H = spec.cols.filter(c => keys.includes(c.k)).map(c => ({ ...c })), F = "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', monospace";
+  // Tamil (spec.lang "ta"): the Noto Sans Tamil font is loaded first and used for the Tamil letters.
+  const TA = spec.lang === "ta" ? "'Noto Sans Tamil', 'Nirmala UI', Latha, " : ""; if (TA) await rtTamilFont();
+  const H = spec.cols.filter(c => keys.includes(c.k)).map(c => ({ ...c })), F = TA + "Barlow, 'Segoe UI', Roboto, Arial, sans-serif", MONO = "'JetBrains Mono', Consolas, 'Courier New', " + TA + "monospace";
   const M = 36, RH = 34, fixed = H.reduce((a, c) => a + (c.px || 0), 0), flex = H.filter(c => !c.px).length, W = Math.max(900, 2 * M + fixed + flex * 300);
   H.forEach(c => c.w = c.px || Math.max(220, (W - 2 * M - fixed) / flex));
   const cv = document.createElement("canvas"), g = cv.getContext("2d"), wc = H.find(c => c.kind === "wrap");
@@ -7463,7 +7466,7 @@ async function pbImage(spec, list, keys, title, png) {
   const cell = (c, v, x, y) => { if (c.kind === "num") { g.textAlign = "right"; g.fillText(v, x + c.w - 10, y); g.textAlign = "left"; } else g.fillText(fit(v, c.w - 20), x + 10, y); };
   g.fillStyle = "#fff"; g.fillRect(0, 0, W, Ht);
   g.fillStyle = "#18212b"; g.font = `700 26px ${F}`; g.fillText(fit(title, W - 2 * M), M, M + 22);
-  g.font = `400 15px ${F}`; g.fillStyle = "#5b6672"; g.fillText(fit([spec.sub, `${list.length} line${list.length === 1 ? "" : "s"}`].filter(Boolean).join(" · "), W - 2 * M), M, M + 50);
+  g.font = `400 15px ${F}`; g.fillStyle = "#5b6672"; g.fillText(fit([spec.sub, spec.countTxt ? spec.countTxt(list.length) : `${list.length} line${list.length === 1 ? "" : "s"}`].filter(Boolean).join(" · "), W - 2 * M), M, M + 50);
   let y = M + 72, x = M; g.fillStyle = "#eef1f4"; g.fillRect(M, y, W - 2 * M, RH); g.font = `700 14px ${F}`; g.fillStyle = "#18212b";
   H.forEach(c => { cell(c, c.h, x, y + 22); x += c.w; }); y += RH;
   list.forEach((r, n) => {
@@ -7476,7 +7479,7 @@ async function pbImage(spec, list, keys, title, png) {
   if (hasTot) { y += 8; g.fillStyle = "#e3efe0"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 15px ${F}`; g.fillText("Total", M + 10, y + 22); x = M;
     H.forEach(c => { if (c.total) { g.font = `700 14px ${MONO}`; const s = list.reduce((a, r) => a + num(spec.raw(r, c.k)), 0); cell(c, Number.isInteger(s) ? nf(s) : nf(s, 2), x, y + 22); } x += c.w; }); y += RH; }
   if (!spec.noFooter) { g.font = `400 13px ${F}`; g.fillStyle = "#8a949e"; g.fillText(`Printed by ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, M, y + 28); }
-  return { filename: pbName(png ? "png" : "jpg", title), data: await new Promise((ok, fail) => cv.toBlob(b => b ? ok(b) : fail(new Error("image failed")), png ? "image/png" : "image/jpeg", 0.92)) };
+  return { filename: pbName(png ? "png" : "jpg", spec.fileTitle?.(title) || title), data: await new Promise((ok, fail) => cv.toBlob(b => b ? ok(b) : fail(new Error("image failed")), png ? "image/png" : "image/jpeg", 0.92)) };
 }
 // Share: the device's share screen where the browser has one; otherwise the image is copied (paste it into WhatsApp or email)
 // and an Excel file is saved to attach.
@@ -7502,19 +7505,20 @@ function pbOpen(spec) {
   const list = spec.rows; if (!list.length) { toast("Nothing to download: no lines are shown."); return; }
   let fmt = "xlsx"; try { fmt = localStorage.getItem("fleet-xpout") === "jpg" ? "jpg" : "xlsx"; } catch {}
   const LC = spec.lineCols.map(k => spec.cols.find(c => c.k === k)), first = LC.findIndex(c => c.kind === "text" || c.kind === "wrap");
+  const thead = () => `<tr><th></th>${LC.map((c, i) => `<th class="${c.kind === "num" ? "n" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(c.h)}</th>`).join("")}</tr>`;
+  const tbody = () => list.map((x, n) => (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x)) ? `<tr class="xogrp" data-grp="${esc(spec.groupBy(x))}"><td colspan="${LC.length + 1}">${esc(spec.groupBy(x))}</td></tr>` : "") + `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
+      LC.map((c, i) => `<td class="${c.kind === "num" ? "n num" : c.kind === "date" ? "num" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(spec.val(x, c.k))}${i === first && spec.lineSub ? `<small class="xolsub">${esc(spec.lineSub(x))}</small>` : ""}</td>`).join("") + `</tr>`).join("");
   const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
   box.innerHTML = `<div class="xodlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Print / download</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
     `<div class="xobody"><div class="xoleft"><label class="xotl">Title<input type="text" data-title maxlength="80" value="${esc(spec.title0)}"></label>` +
     `<p class="dnote">${spec.note || ""}</p>` +
     `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
+    (spec.setLang ? `<div class="xosub">Language</div><div class="xofmt" role="radiogroup"><button type="button" data-lang="en">English</button><button type="button" data-lang="ta" lang="ta">தமிழ்</button></div>` : "") +
     `<div${spec.noCols ? " hidden" : ""}><div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${spec.cols.map(c => `<li><label><input type="checkbox" data-c="${c.k}"${c.off ? "" : " checked"}> ${esc(c.h)}</label></li>`).join("")}</ul></div>` +
     (spec.split ? `<div class="xosub">Download as</div><div class="xofmt xosplit" role="radiogroup"><button type="button" data-split="0" aria-pressed="true">One combined file</button><button type="button" data-split="1" aria-pressed="false">${esc(spec.split.label)}</button></div>` : "") +
     (spec.extra ? `<div class="xoextra">${spec.extra.html}</div>` : "") + `</div>` +
     `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
-    `<div class="xolines"><table class="xolt"><thead><tr><th></th>${LC.map((c, i) => `<th class="${c.kind === "num" ? "n" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(c.h)}</th>`).join("")}</tr></thead><tbody>` +
-    list.map((x, n) => (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x)) ? `<tr class="xogrp" data-grp="${esc(spec.groupBy(x))}"><td colspan="${LC.length + 1}">${esc(spec.groupBy(x))}</td></tr>` : "") + `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
-      LC.map((c, i) => `<td class="${c.kind === "num" ? "n num" : c.kind === "date" ? "num" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(spec.val(x, c.k))}${i === first && spec.lineSub ? `<small class="xolsub">${esc(spec.lineSub(x))}</small>` : ""}</td>`).join("") + `</tr>`).join("") +
-    `</tbody></table></div></div></div>` +
+    `<div class="xolines"><table class="xolt"${spec.lang ? ` lang="${spec.lang}"` : ""}><thead>${thead()}</thead><tbody>${tbody()}</tbody></table></div></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
   const cols = () => [...box.querySelectorAll("input[data-c]:checked")].map(i => i.dataset.c);
   const rows = () => [...box.querySelectorAll("input[data-l]:checked")].map(i => list[+i.dataset.l]);
@@ -7535,6 +7539,7 @@ function pbOpen(spec) {
     box.querySelectorAll("tr[data-row]").forEach(tr => tr.classList.toggle("off", !tr.querySelector("input").checked));
     box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
     box.querySelectorAll("[data-split]").forEach(b => b.setAttribute("aria-pressed", b.dataset.split === (split ? "1" : "0")));
+    box.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === spec.lang));
     spec.extra?.sync?.(box);
     const sv = box.querySelector(".duesave"), sh = box.querySelector(".dshare"), off = !nc || !nl || big; sv.disabled = off; sh.disabled = off;
     const nf_ = split ? new Set(rows().map(spec.groupBy)).size : 1; if (split) sh.disabled = true;
@@ -7547,6 +7552,7 @@ function pbOpen(spec) {
     if (e.target === box || e.target.closest("[data-xoclose]")) { pbClose(); return; }
     const b = e.target.closest("[data-fmt]"); if (b) { fmt = b.dataset.fmt; try { localStorage.setItem("fleet-xpout", fmt); } catch {} sync(); return; }
     const sp = e.target.closest("[data-split]"); if (sp) { split = sp.dataset.split === "1"; sync(); return; }
+    const lg = e.target.closest("[data-lang]"); if (lg) { if (lg.dataset.lang !== spec.lang) relang(lg.dataset.lang); return; }
     if (spec.extra && e.target.closest(".xoextra button")) { spec.extra.onClick(e.target.closest(".xoextra button")); return; }
     // A click anywhere on a line ticks or unticks it.
     const tr = e.target.closest("tr[data-row]"); if (tr && !e.target.matches("input")) { const i = tr.querySelector("input"); i.checked = !i.checked; sync(); }
@@ -7559,6 +7565,13 @@ function pbOpen(spec) {
     catch (er) { toast(er?.code === "declined" ? "Not saved." : "Couldn't make the file. Try again."); }
     finally { if (b.isConnected) b.disabled = false; }
   };
+  // Another language (spec.setLang): the lines are written again in it, each keeping its tick and whether it is hidden.
+  const relang = l => { spec.setLang(l); if (l === "ta") rtTamilFont();
+    const st = [...box.querySelectorAll("tr[data-row]")].map(tr => [tr.querySelector("input").checked, tr.hidden]), gh = [...box.querySelectorAll("tr.xogrp")].map(g => g.hidden), t = box.querySelector(".xolt");
+    t.lang = l; t.innerHTML = `<thead>${thead()}</thead><tbody>${tbody()}</tbody>`;
+    box.querySelectorAll("tr[data-row]").forEach((tr, n) => { tr.querySelector("input").checked = st[n][0]; tr.hidden = st[n][1]; });
+    box.querySelectorAll("tr.xogrp").forEach((g, n) => g.hidden = gh[n]); sync(); };
+  if (spec.lang === "ta") rtTamilFont();
   box.querySelector(".dshare").onclick = ev => pbShare(ev.currentTarget, fmt, make, title());
   document.body.append(box); sync(); box.querySelector("[data-title]").focus();
 }
@@ -8317,42 +8330,66 @@ function renderMsum() {
 $("msBusF").onchange = () => { msBus = $("msBusF").value; renderMsum(); };
 $("msList").addEventListener("click", e => { if (e.target.id === "msOldBtn") { msOld = !msOld; renderMsum(); return; } const r = e.target.closest("[data-msentry]"); if (r) mtOpen(ops.maintLog.find(x => x.id === r.dataset.msentry)); });
 /* Download: the shared Print / download window. Its line list shows every job of the vehicle chosen on the page (with All
-   vehicles: of every vehicle, with a button per vehicle to take its jobs in or out), each vehicle's jobs in the page's order:
-   overdue (red), due soon (orange), then the rest. Saves as Excel or an image, in the same colours. */
+   vehicles: of every vehicle, with a box per vehicle to take its jobs in or out), each vehicle's jobs in the page's order:
+   overdue (red), due soon (orange), then the rest. Saves as Excel or an image, in the same colours, in English or Tamil
+   (for the drivers). */
+const MS_TA_TYPE = { oil: "ஆயில் சர்வீஸ்", gear: "கியர் பாக்ஸ் ஆயில்", housing: "ஹவுசிங் ஆயில்", hub: "ஹப் கிரீஸ்", lining: "பிரேக் லைனிங்", clutch: "கிளட்ச் பிளேட்",
+  air: "ஏர் ஃபில்டர்", tappet: "டேப்பட் அட்ஜஸ்ட்மென்ட்", battery: "பேட்டரி", drum: "பிரேக் டிரம்", clutchkit: "கிளட்ச் கிட் சர்வீஸ்", kingpin: "கிங் பின்",
+  steer: "ஸ்டீயரிங் எண்ட்ஸ்", align: "வீல் அலைன்மென்ட்", nozzle: "பம்ப் & நாசில் சர்வீஸ்", ratchet: "ராட்செட்", dynamo: "டைனமோ சர்வீஸ்", engine: "என்ஜின் வேலை", other: "மற்ற வேலை" };
+const MS_TA_POS = { fl: "முன் இடது", fr: "முன் வலது", bl: "பின் இடது", br: "பின் வலது", sl: "2வது ஆக்சில் இடது", sr: "2வது ஆக்சில் வலது", dl: "டம்மி இடது", dr: "டம்மி வலது" };
+const MS_TA_TRUCK = { bl: "பின் ஹவுசிங் இடது", br: "பின் ஹவுசிங் வலது", dl: "பின் டம்மி இடது", dr: "பின் டம்மி வலது" };
+const MS_T = {
+  en: { title: "Maintenance summary", cols: { plate: "Vehicle", type: "Maintenance", date: "Last Done", km: "Kms", next: "Next Service At", left: "Km Left", when: "Expected Around", status: "Status" },
+    st: { over: "Overdue", soon: "Due soon", ok: "OK", nogap: "No gap set" }, now: "Now", left: mtLeftTxt, item: r => mtItemName(r.it),
+    sub: d => `As on ${d} · Red: overdue · Orange: due within 5,000 km · Green: OK`, last: "Last", km: "km", lines: n => `${n} line${n === 1 ? "" : "s"}` },
+  ta: { title: "பராமரிப்பு விவரம்", cols: { plate: "வண்டி எண்", type: "வேலை", date: "கடைசி தேதி", km: "அப்போது கி.மீ", next: "அடுத்த சர்வீஸ்", left: "மீதி கி.மீ", when: "அடுத்த தேதி", status: "நிலை" },
+    st: { over: "தாமதம்", soon: "விரைவில்", ok: "சரி", nogap: "கி.மீ இல்லை" }, now: "இப்போதே",
+    left: d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} கி.மீ அதிகம்` : `${nf(d.left)} கி.மீ`,
+    item: r => (MS_TA_TYPE[r.it.k] || mtType(r.it.k).name) + (r.it.pos ? " · " + ((/truck/i.test(mtClsOf(r.key)) && MS_TA_TRUCK[r.it.pos]) || MS_TA_POS[r.it.pos] || mtPosName(r.it.pos)) : ""),
+    sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: சரி`, last: "கடைசி", km: "கி.மீ", lines: n => `${n} வரிகள்` }
+};
 $("msDl").onclick = () => {
   const keys = msBus ? [msBus] : [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
   const plateK = k => mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k });
   const list = keys.flatMap(k => mtDue(k).map(d => ({ ...d, key: k, plate: plateK(k) })));
   if (!list.length) { toast("No maintenance entered yet."); return; }
+  let lang = "en"; try { lang = localStorage.getItem("fleet-mslang") === "ta" ? "ta" : "en"; } catch {}
+  const T = () => MS_T[lang];
   const st = r => r.st === "over" || r.st === "soon" || r.st === "ok" ? r.st : "";
-  const V = (r, c) => c === "plate" ? r.plate : c === "type" ? mtItemName(r.it) : c === "date" ? (r.e.date ? xpDateTxt(r.e.date) : "") : c === "km" ? (r.ekm ? nf(r.ekm) : "") : c === "next" ? (r.next ? nf(r.next) : "")
-    : c === "left" ? (r.left == null ? "" : mtLeftTxt(r)) : c === "when" ? (r.st === "over" ? "Now" : r.when ? xpDateTxt(r.when) : "") : MT_ST[r.st][0];
+  const V = (r, c) => c === "plate" ? r.plate : c === "type" ? T().item(r) : c === "date" ? (r.e.date ? xpDateTxt(r.e.date) : "") : c === "km" ? (r.ekm ? nf(r.ekm) : "") : c === "next" ? (r.next ? nf(r.next) : "")
+    : c === "left" ? (r.left == null ? "" : T().left(r)) : c === "when" ? (r.st === "over" ? T().now : r.when ? xpDateTxt(r.when) : "") : T().st[r.st];
   const R = (r, c) => c === "date" ? r.e.date || null : c === "km" ? r.ekm || null : c === "next" ? r.next || null : c === "when" ? (r.st !== "over" && r.when ? r.when : null) : null;
   const one = keys.length === 1;
   const boxes = one ? "" : `<div class="xosub">Vehicles</div><label class="dall"><input type="checkbox" data-msvall checked> All vehicles</label><div class="xomsv">${keys.map(k => `<label><input type="checkbox" data-msv="${esc(k)}" checked> ${esc(plateK(k))}</label>`).join("")}</div>`;
-  const tAuto = ks => ks.length === 1 ? `Maintenance summary - ${plateK(ks[0])}` : "Maintenance summary";
+  const tAuto = ks => ks.length === 1 ? `${T().title} - ${plateK(ks[0])}` : T().title;
   let lastT = tAuto(keys);
-  pbOpen({ sheet: "Maintenance summary", title0: lastT, rows: list, rowSt: st, noCols: true, noFooter: true,
-    groupBy: one ? null : r => r.plate, split: one ? null : { label: "One file per vehicle", title: g => `Maintenance summary - ${g}` },
-    sub: `As on ${xpDateTxt(todayISO())} · Red: overdue · Orange: due within 5,000 km · Green: OK`,
-    note: "Each vehicle's jobs: overdue (red), due soon (orange), then OK (green). Untick any line you don't want.",
-    cols: [{ k: "plate", h: "Vehicle", xl: 16, px: 150, kind: "text", off: true }, { k: "type", h: "Maintenance", xl: 30, px: 0, kind: "text" }, { k: "date", h: "Last Done", xl: 13, px: 120, kind: "date" },
-      { k: "km", h: "Kms", xl: 12, px: 110, kind: "num" }, { k: "next", h: "Next Service At", xl: 15, px: 140, kind: "num" }, { k: "left", h: "Km Left", xl: 15, px: 140, kind: "text" },
-      { k: "when", h: "Expected Around", xl: 15, px: 140, kind: "date" }, { k: "status", h: "Status", xl: 12, px: 120, kind: "text" }],
-    lineCols: ["type", "next", "left", "status"], lineSub: r => `Last ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " km" : ""}`, val: V, raw: R,
-    extra: one ? null : { html: boxes,
+  const spec = { lang, title0: lastT, rows: list, rowSt: st, noCols: true, noFooter: true,
+    groupBy: one ? null : r => r.plate, split: one ? null : { label: "One file per vehicle", title: g => `${T().title} - ${g}` },
+    note: "Each vehicle's jobs: overdue (red), due soon (orange), then OK (green). Untick any line you don't want. Choose Tamil for the drivers.",
+    cols: [{ k: "plate", xl: 16, px: 150, kind: "text", off: true }, { k: "type", xl: 30, px: 0, kind: "text" }, { k: "date", xl: 15, px: 150, kind: "date" },
+      { k: "km", xl: 13, px: 130, kind: "num" }, { k: "next", xl: 16, px: 150, kind: "num" }, { k: "left", xl: 17, px: 170, kind: "text" },
+      { k: "when", xl: 17, px: 170, kind: "date" }, { k: "status", xl: 12, px: 110, kind: "text" }],
+    lineCols: ["type", "next", "left", "status"], lineSub: r => `${T().last} ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " " + T().km : ""}`, val: V, raw: R,
+    countTxt: n => T().lines(n), fileTitle: t => t.replace(MS_T.ta.title, "Maintenance summary Tamil"),
+    // English or Tamil: headings, job names, km left and status follow; the vehicle numbers, dates and km stay as they are.
+    setLang: l => { lang = spec.lang = l; try { localStorage.setItem("fleet-mslang", l); } catch {}
+      spec.sheet = T().title; spec.sub = T().sub(xpDateTxt(todayISO())); spec.title0 = tAuto(keys); spec.cols.forEach(c => { c.h = T().cols[c.k]; if (c.k === "status") c.px = l === "ta" ? 140 : 110; }); },
+    extra: { html: boxes,
       // A vehicle's box ticks or unticks all its jobs; it shows ticked, unticked or part-ticked from its jobs.
       onChange: (inp, box) => { const ks = inp.dataset.msvall != null ? keys : inp.dataset.msv != null ? [inp.dataset.msv] : [];
         // A vehicle taken out is hidden on the right (its heading and its jobs); put back, its jobs show ticked.
         list.forEach((r, n) => { if (ks.includes(r.key)) { const i = box.querySelector(`input[data-l="${n}"]`); if (i) { i.checked = inp.checked; i.closest("tr").hidden = !inp.checked; } } });
         ks.forEach(k => { const g = box.querySelector(`tr[data-grp="${CSS.escape(plateK(k))}"]`); if (g) g.hidden = !inp.checked; }); },
-      sync: box => { const all = box.querySelector("[data-msvall]"); let on = 0, part = 0;
-        keys.forEach(k => { const ls = list.map((r, n) => r.key === k ? box.querySelector(`input[data-l="${n}"]`) : null).filter(Boolean), c = ls.filter(i => i.checked).length, v = box.querySelector(`input[data-msv="${CSS.escape(k)}"]`);
-          const out = ls.every(i => i.closest("tr").hidden); v.checked = !out && c === ls.length; v.indeterminate = !out && c > 0 && c < ls.length; if (v.checked) on++; else if (c) part++; });
-        all.checked = on === keys.length; all.indeterminate = !all.checked && (on + part) > 0;
-        // The title follows the vehicles: one vehicle shown gives "Maintenance summary - <number>" (unless the title was typed over).
+      sync: box => {
+        if (!one) { const all = box.querySelector("[data-msvall]"); let on = 0, part = 0;
+          keys.forEach(k => { const ls = list.map((r, n) => r.key === k ? box.querySelector(`input[data-l="${n}"]`) : null).filter(Boolean), c = ls.filter(i => i.checked).length, v = box.querySelector(`input[data-msv="${CSS.escape(k)}"]`);
+            const out = ls.every(i => i.closest("tr").hidden); v.checked = !out && c === ls.length; v.indeterminate = !out && c > 0 && c < ls.length; if (v.checked) on++; else if (c) part++; });
+          all.checked = on === keys.length; all.indeterminate = !all.checked && (on + part) > 0; }
+        // The title follows the vehicles and the language: one vehicle shown gives "Maintenance summary - <number>" (unless the title was typed over).
         const t = box.querySelector("[data-title]"), shownK = keys.filter(k => list.some((r, n) => r.key === k && !box.querySelector(`tr[data-row="${n}"]`)?.hidden)), nt = tAuto(shownK);
-        if (t.value === lastT && nt !== lastT) t.value = nt; lastT = nt; } } });
+        if (t.value === lastT && nt !== lastT) t.value = nt; lastT = nt; } } };
+  spec.setLang(lang);
+  pbOpen(spec);
 };
 
 // Km master: the summary's button opens it for the vehicle chosen.
@@ -17261,7 +17298,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07w";
+const APP_VER = "2026-11-07x";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
