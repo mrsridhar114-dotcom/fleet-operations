@@ -9541,7 +9541,8 @@ const XL = (() => {
   function sheetXml(ws) {
     const rows = Object.keys(ws.rows).map(Number).sort((a, b) => a - b).map(r => `<row r="${r}"${ws.heights?.[r] ? ` ht="${ws.heights[r]}" customHeight="1"` : ""}>` +
       Object.keys(ws.rows[r]).map(Number).sort((a, b) => a - b).map(c => cellXml(col(c) + r, ws.rows[r][c])).join("") + "</row>").join("");
-    const view = ws.freeze ? `<sheetViews><sheetView workbookViewId="0"><pane ySplit="${ws.freeze}" topLeftCell="A${ws.freeze + 1}" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A${ws.freeze + 1}" sqref="A${ws.freeze + 1}"/></sheetView></sheetViews>` : `<sheetViews><sheetView workbookViewId="0"/></sheetViews>`;
+    const zoom = ws.zoom ? ` zoomScale="${ws.zoom}" zoomScaleNormal="${ws.zoom}"` : ""; // ws.zoom: the sheet opens at this % (e.g. 40)
+    const view = ws.freeze ? `<sheetViews><sheetView workbookViewId="0"${zoom}><pane ySplit="${ws.freeze}" topLeftCell="A${ws.freeze + 1}" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A${ws.freeze + 1}" sqref="A${ws.freeze + 1}"/></sheetView></sheetViews>` : `<sheetViews><sheetView workbookViewId="0"${zoom}/></sheetViews>`;
     const cols = Object.keys(ws.widths).length ? `<cols>${Object.entries(ws.widths).map(([L, w]) => { const i = idx(L) + 1; return `<col min="${i}" max="${i}" width="${w}" customWidth="1"/>`; }).join("")}</cols>` : "";
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>${view}<sheetFormatPr defaultRowHeight="15"/>${cols}<sheetData>${rows}</sheetData>` +
       (ws.merges.length ? `<mergeCells count="${ws.merges.length}">${ws.merges.map(m => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>` : "") +
@@ -9611,7 +9612,7 @@ function xlTruckSheets(recs, fy) {
     items.forEach(([lc, lab, vc, f, v]) => { put(ws, lc, lab, S.oLab); put(ws, vc, v, ["C", "F"].includes(vc[0]) ? S.oVal : S.oVal2, f); });
     ws.merges.push("C2:D2", "C3:D3", "C4:D4"); // Days is a narrow column: the totals use Days and Trip Rent together
     TK_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 5, h, i < 2 ? S.oHeadR : i === 2 ? S.oHeadC : S.oHeadL));
-    Object.assign(ws.heights, { 1: 28.5, 2: 18.5, 3: 18.5, 4: 15.5, 5: 18.5 }); Object.assign(ws.widths, TK_DL_WIDTHS); ws.freeze = 5;
+    Object.assign(ws.heights, { 1: 28.5, 2: 18.5, 3: 18.5, 4: 15.5, 5: 18.5 }); Object.assign(ws.widths, TK_DL_WIDTHS); ws.freeze = 5; ws.zoom = 40;
   };
   ids.forEach(id => {
     const ws = sheet(String(C.plate(id)).replace(/\s+/g, "")), T = { C: 0, D: 0, I: 0, J: 0, K: 0, L: 0, M: 0, N: 0, O: 0, V: 0, X: 0, AB: 0 };
@@ -9689,7 +9690,7 @@ function xlSpareSheets(recs, fy) {
       ["A4", "Gross", "B4", `SUM(${rg("P")})`, gross], ["F4", "Total Kms", "G4", `SUM(${rg("T")})`, T.T]]
       .forEach(([lc, lab, vc, f, v]) => { put(ws, lc, lab, S.sLab); put(ws, vc, v || 0, S.sVal, f); });
     ws.merges.push("C2:D2", "C3:D3", "C4:D4");
-    SP_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5;
+    SP_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5; ws.zoom = 40;
     Object.assign(ws.heights, { 1: 28.5, 2: 15.5, 3: 15.5, 4: 15.5, 5: 18.5 });
     Object.assign(ws.widths, { A: 15.2, B: 11, C: 11, D: 13, E: 12, F: 17, G: 10, H: 17, I: 12.9, J: 10.6, K: 8, L: 11.3, M: 12.5, N: 15.7, O: 11.7, P: 10.5, Q: 9, R: 11.7, S: 10.5, T: 10.6, U: 14.5, V: 9.5, W: 24, X: 60 });
     sheets.push(ws);
@@ -14599,7 +14600,7 @@ function meSheet(ym, name) {
   // Column widths and row heights as in the template
   Object.assign(ws.widths, { A: 37.3, B: 15.5, C: 24.7, D: 21.5, E: 18.5, F: 17.5, G: 16.3, H: 17.7, I: 16.2, J: 13.2, K: 15.2, L: 12, M: 10.7, N: 15.5, O: 10.7, P: 10.7, Q: 10.7, R: 14.5, S: 12.3, T: 14, U: 14.1, V: 12.4, W: 12.8, X: 30.1 });
   ws.heights[1] = 36; for (let rr = 2; rr < head; rr++) ws.heights[rr] = 26.15; ws.heights[head] = 21; for (let rr = r0; rr <= rN; rr++) ws.heights[rr] = 19;
-  ws.freeze = head;
+  ws.freeze = head; ws.zoom = 40;
   return ws;
 }
 const meXlsx = ym => XL.build([meSheet(ym)]);
@@ -16760,7 +16761,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07a";
+const APP_VER = "2026-11-07b";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
