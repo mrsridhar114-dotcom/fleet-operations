@@ -9612,8 +9612,10 @@ const TK_DL_WIDTHS = { A: 12.2, B: 11, C: 6.1, D: 10.7, E: 15.6, F: 18.2, G: 18,
 // fy: only the round trips that start in that financial year (all of them when it is left out).
 function xlTruckSheets(recs, fy) {
   const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [], payTxt = p => `Bank Input - Rs.${num(p.amount)}${p.date ? ` on ${fmtDMY(p.date)}` : ""}`;
-  const all = (recs.truckTrips || []).filter(l => l.vehicleId), rStart = new Map(); all.forEach(l => { const k = l.roundId || l.id; if (!rStart.has(k) || l.from < rStart.get(k)) rStart.set(k, l.from); });
-  const legs = all.filter(l => fy == null || fyOf(rStart.get(l.roundId || l.id) || l.from) === fy).sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.id).localeCompare(String(b.id)));
+  // Each trip goes in the year of its own date, as on the Trucks page (a round trip still open across 31 March is split between the two years).
+  const byDate = (a, b) => String(a.from).localeCompare(String(b.from)) || String(a.id).localeCompare(String(b.id));
+  const all = (recs.truckTrips || []).filter(l => l.vehicleId && l.from), rLast = new Map(); [...all].sort(byDate).forEach(l => rLast.set(l.roundId || l.id, l.id));
+  const legs = all.filter(l => fy == null || fyOf(l.from) === fy).sort(byDate);
   const ids = [...new Set(legs.map(l => l.vehicleId))].sort((a, b) => C.plate(a).localeCompare(C.plate(b)));
   const F = 6; // the first trip row
   const top = (ws, plate, last, T) => {
@@ -9640,7 +9642,7 @@ function xlTruckSheets(recs, fy) {
       const rfL = RF.reduce((s, f) => s + (C.n(f.litres) || 0), 0), rfA = Math.round(RF.reduce((s, f) => s + (C.n(f.amount) || 0), 0));
       let tb = 0;
       rl.forEach((l, i) => {
-        const g = k => C.n(l[k]) || 0, last = i === rl.length - 1, lit = Math.round((g("litres") + (last ? rfL : 0)) * 100) / 100, dsl = g("fuelCost") + (last ? rfA : 0);
+        const g = k => C.n(l[k]) || 0, last = rLast.get(rid) === l.id, lit = Math.round((g("litres") + (last ? rfL : 0)) * 100) / 100, dsl = g("fuelCost") + (last ? rfA : 0);
         const ex = { I: g("commission"), K: dsl, L: g("toll"), M: g("padi"), N: g("rto"), O: g("loading"), P: g("bridge"), Q: g("otherExp"), R: g("billExp") };
         const tot = Object.values(ex).reduce((s, v) => s + v, 0), bal = g("rent") - tot, sk = g("startKm"), ek = g("endKm"), km = sk && ek > sk ? ek - sk : 0; tb += bal;
         T.C += g("days"); T.D += g("rent"); T.J += lit; T.V += tot; T.AB += km; ["I", "K", "L", "M", "N", "O"].forEach(k => T[k] += ex[k]);
@@ -16880,7 +16882,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07e";
+const APP_VER = "2026-11-07f";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
