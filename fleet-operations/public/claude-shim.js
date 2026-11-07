@@ -633,31 +633,5 @@ html.fo-boot.fo-login body::before{content:none}`;
     wait();
   }, () => reveal());
   ready.then(() => { if (me?.mustChange && !me.offline) me.login ? newIdPassword(true) : forceNewPassword(); });
-  ready.then(() => { const t = setInterval(() => { accountMenu(); if (document.getElementById("foAcct")) clearInterval(t); }, 300); restoreButton(); });
-
-  /* ---------- owner: load a backup file into the database ---------- */
-  function restoreButton() {
-    if (!me?.isOwner) return;
-    const t = setInterval(() => {
-      const anchor = document.getElementById("stBackup"); if (!anchor) return; clearInterval(t);
-      if (document.getElementById("foRestore")) return;
-      const lbl = document.createElement("label"); lbl.className = "btn"; lbl.id = "foRestore"; lbl.textContent = "Restore backup (JSON)"; lbl.style.cursor = "pointer";
-      const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/json,.json"; inp.hidden = true; lbl.appendChild(inp);
-      anchor.after(lbl);
-      inp.onchange = async () => {
-        const f = inp.files[0]; inp.value = ""; if (!f) return;
-        const msg = document.getElementById("stBkMsg");
-        try {
-          const j = JSON.parse(await f.text());
-          if (j.kind !== "backup" || !j.collections) throw new Error("This is not a Fleet Operations backup file.");
-          const docs = Object.entries(j.collections).flatMap(([c, list]) => (list || []).filter(d => d && d.id).map(({ id, ...data }) => ({ coll: c, id: String(id), data })));
-          if (!confirm(`Load ${docs.length} records from this backup (taken ${String(j.exportedAt || "").slice(0, 10)})? Records with the same id are replaced; nothing else is deleted.`)) return;
-          let done = 0;
-          for (let i = 0; i < docs.length; i += 200) { done += (await api("db", { op: "import", docs: docs.slice(i, i + 200) })).imported; if (msg) msg.textContent = `Restoring… ${done} of ${docs.length}`; }
-          if (msg) msg.textContent = `Restored ${done} records. Reloading…`;
-          setTimeout(() => location.reload(), 1200);
-        } catch (e) { if (msg) msg.textContent = "Couldn't restore: " + e.message; }
-      };
-    }, 500);
-  }
+  ready.then(() => { const t = setInterval(() => { accountMenu(); if (document.getElementById("foAcct")) clearInterval(t); }, 300); });
 })();
