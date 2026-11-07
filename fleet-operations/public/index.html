@@ -14271,7 +14271,7 @@ async function tsLayout(L, pdf, b) {
 // Booking slip and spare bus trip sheet print: a preview like the truck trip sheet's. Tick the pages, see them, then save
 // them as images or as one PDF, or share them.
 const toJpg = cv => new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92));
-function pvOpen({ name0, pages, extra, canvases, pdf }) {
+function pvOpen({ name0, pages, extra, picks, canvases, pdf }) {
   pbClose();
   let fmt = "jpg", urls = [], seq = 0; try { fmt = localStorage.getItem("fleet-pvout") === "pdf" ? "pdf" : "jpg"; } catch {}
   const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
@@ -14280,11 +14280,14 @@ function pvOpen({ name0, pages, extra, canvases, pdf }) {
     `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="jpg">🖼 Image</button><button type="button" data-fmt="pdf">📄 PDF</button></div>` +
     (pages.length > 1 ? `<div class="xosub">Pages</div>${pages.map((p, i) => `<label class="dall"><input type="checkbox" data-pv="${i}" checked> <span><b>${esc(p.label)}</b>${p.sub ? `<br><small class="sub">${esc(p.sub)}</small>` : ""}</span></label>`).join("")}` : "") +
     (extra ? `<div class="xosub">Show</div><label class="dall"><input type="checkbox" data-ex${extra.on ? " checked" : ""}> ${esc(extra.label)}</label>` : "") +
+    // picks: lines to tick or untick on the page (each with a small note under it, as HTML).
+    (picks ? `<div class="xosub">${esc(picks.title)}</div>${picks.list.map((x, i) => `<label class="dall"><input type="checkbox" data-pk="${i}" checked> <span><b>${esc(x.label)}</b>${x.sub ? `<br><small class="sub">${x.sub}</small>` : ""}</span></label>`).join("")}` : "") +
     `<p class="dnote">The preview shows the pages as they will be saved or shared: one image for each page, or one PDF with all the ticked pages.</p></div>` +
     `<div class="xoright rtpv"></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
   const pane = box.querySelector(".rtpv"), fname = () => box.querySelector("[data-title]").value.trim() || name0;
-  const st = () => ({ pg: pages.length > 1 ? [...box.querySelectorAll("[data-pv]")].filter(i => i.checked).map(i => +i.dataset.pv) : [0], ex: !!box.querySelector("[data-ex]")?.checked });
+  const st = () => ({ pg: pages.length > 1 ? [...box.querySelectorAll("[data-pv]")].filter(i => i.checked).map(i => +i.dataset.pv) : [0], ex: !!box.querySelector("[data-ex]")?.checked,
+    pk: [...box.querySelectorAll("[data-pk]")].filter(i => i.checked).map(i => +i.dataset.pk) });
   // Each page group (front, back) can run to more than one image (a long back side).
   const picked = async s => (await canvases(s)).filter(x => s.pg.includes(x.g));
   const makeAll = async () => {
@@ -14302,11 +14305,11 @@ function pvOpen({ name0, pages, extra, canvases, pdf }) {
   };
   const sync = () => {
     box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
-    const n = st().pg.length, sv = box.querySelector(".duesave"); sv.disabled = !n; box.querySelector(".dshare").disabled = !n;
-    sv.lastChild.textContent = !n ? "Choose a page" : fmt === "pdf" ? "Save as PDF" : n > 1 ? `Save ${n} images` : "Save as image";
+    const n = picks && !st().pk.length ? 0 : st().pg.length, sv = box.querySelector(".duesave"); sv.disabled = !n; box.querySelector(".dshare").disabled = !n;
+    sv.lastChild.textContent = !n ? (picks ? "Choose a line" : "Choose a page") : fmt === "pdf" ? "Save as PDF" : n > 1 ? `Save ${n} images` : "Save as image";
   };
   const close = () => { urls.forEach(u => URL.revokeObjectURL(u)); pbClose(); };
-  box.addEventListener("change", e => { if (e.target.matches("[data-pv], [data-ex]")) { sync(); draw(); } });
+  box.addEventListener("change", e => { if (e.target.matches("[data-pv], [data-ex], [data-pk]")) { sync(); draw(); } });
   box.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("[data-title]")) e.preventDefault(); });
   box.addEventListener("click", e => {
     if (e.target === box || e.target.closest("[data-xoclose]")) { close(); return; }
@@ -14722,15 +14725,22 @@ function pOpenDocsPop(b, cfg, p) {
   if (pop.querySelector(".dshare")) pop.querySelector(".dshare").onclick = ev => { ev.stopPropagation(); const k = picks(); popShare(ev.currentTarget, () => docShareFiles(null, k, pFileBase(p)), `${p.name} documents`); };
   placePop(pop, b); sync();
 }
-function pOpenDuePop(b, cfg, p) {
-  openPickPop(b, `${p.name} · due within a month`, pDueOf(cfg, p).map(d => ({ ...d, sub: pickSub(d) })), { p: p.id }, (keys, btn) => pSaveJpg(btn, cfg, p, true, keys), { share: keys => pJpgFile(cfg, p, true, keys) });
+// The due badge: the renewals due within a month in the preview window, to save as an image or a PDF, or share.
+function pOpenDuePop(cfg, p) {
+  const due = pDueOf(cfg, p), masked = acc.users !== "edit", keys = s => s.pk.map(i => due[i].k);
+  pvOpen({ name0: `${pFileBase(p)} DUE`, pages: [{ label: "Renewals due" }], picks: { title: "Renewals due within a month", list: due.map(d => ({ label: d.label, sub: pickSub(d) })) },
+    canvases: async s => [{ g: 0, cv: await pCardCanvas(cfg, p, masked, true, keys(s)) }],
+    pdf: async s => { const L = await loadPdfLib(), pdf = await L.PDFDocument.create(), cv = await pCardCanvas(cfg, p, masked, true, keys(s));
+      const img = await pdf.embedJpg(await (await toJpg(cv)).arrayBuffer()), w = cv.width / 2, h = cv.height / 2;
+      pdf.addPage([w, h]).drawImage(img, { x: 0, y: 0, width: w, height: h }); return new Blob([await pdf.save()], { type: "application/pdf" }); } });
 }
 function pOpenPrintPop(b, cfg, p) {
   const items = cfg.dates.map(([k, label]) => ({ k, label, date: p[k], n: p[k] ? daysUntil(p[k]) : null }));
   openPickPop(b, `${p.name} · validity dates`, items.map(d => ({ ...d, sub: pickSub(d) })), { pp: p.id }, (keys, btn) => pSaveJpg(btn, cfg, p, false, keys), { share: keys => pJpgFile(cfg, p, false, keys) });
 }
 // One person's validity dates (or only those due within a month) as a JPG. Staff copies mask the licence number and carry a watermark.
-async function pCardJpg(cfg, p, masked, dueOnly, keys) {
+async function pCardJpg(cfg, p, masked, dueOnly, keys) { return toJpg(await pCardCanvas(cfg, p, masked, dueOnly, keys)); }
+async function pCardCanvas(cfg, p, masked, dueOnly, keys) {
   const rank = d => d.n == null ? 3 : d.n <= 30 ? 0 : d.n <= 90 ? 1 : 2;
   const items = (dueOnly ? pDueOf(cfg, p) : cfg.dates.map(([k, label]) => ({ k, label, date: p[k], n: p[k] ? daysUntil(p[k]) : null }))
     .sort((a, b) => (rank(a) - rank(b)) || String(a.date || "").localeCompare(String(b.date || "")))).filter(d => !keys || keys.includes(d.k));
@@ -14772,7 +14782,7 @@ async function pCardJpg(cfg, p, masked, dueOnly, keys) {
   }
   if (masked) jpgWatermark(g, W, H, F);
   g.fillStyle = "#8a96a3"; g.font = `400 24px ${F}`; g.fillText(`Printed by ${whoAmI()}${masked ? "  ·  Licence number masked" : ""}`, PADX, H - 50);
-  return await new Promise((ok, fail) => c.toBlob(b => b ? ok(b) : fail(new Error("image failed")), "image/jpeg", 0.92));
+  return c;
 }
 async function pJpgFile(cfg, p, dueOnly, keys) {
   const d = new Date(), p2 = n => String(n).padStart(2, "0");
@@ -14933,7 +14943,7 @@ function pWire(cfg) {
     const id = b.dataset.pdue || b.dataset.pdocs || b.dataset.pprint, p = cfg.list().find(x => x.id === id); if (!p) return;
     const open = document.querySelector(".duepop"); closeDuePop();
     if (b.matches(".cprint")) { if (open?.dataset.pp !== id) pOpenPrintPop(b, cfg, p); return; }
-    if (b.matches(".cdue")) { if (open?.dataset.p !== id) pOpenDuePop(b, cfg, p); }
+    if (b.matches(".cdue")) pOpenDuePop(cfg, p);
     else if (open?.dataset.d !== id) pOpenDocsPop(b, cfg, p);
   });
   $(pre === "dv" ? "dPrintBtn" : "cPrintBtn").onclick = e => pPrintAll(cfg, e.currentTarget);
@@ -17322,7 +17332,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08f";
+const APP_VER = "2026-11-08g";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
