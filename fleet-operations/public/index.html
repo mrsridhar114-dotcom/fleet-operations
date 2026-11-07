@@ -1452,6 +1452,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .xolt th { position: sticky; top: 0; background: var(--chip-bg, #eef1f4); text-align: left; padding: 7px 8px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); z-index: 1; }
 .xolt td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .xolt tr[data-row] { cursor: pointer; } .xolt tr[data-row]:hover td { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
 .xolt tr.xogrp td { background: var(--surface-2, #e8eef5); font-weight: 700; padding: 8px; position: static; } .xoextra .xomsv { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; } .xoextra .xomsv label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; } .xoextra .xomsv input { width: 18px; height: 18px; }
+.xolt tr.ms-ok td { background: color-mix(in srgb, #2e8b3d 10%, var(--surface)); }
 .xolt tr.ms-over td { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); } .xolt tr.ms-soon td { background: color-mix(in srgb, #f28c28 20%, var(--surface)); }
 .xolt tr.off td { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); } .xolt tr.off td:first-child { text-decoration: none; }
 .xolt .n { text-align: right; } .xolt .nw { white-space: nowrap; } .xolt th:first-child, .xolt td:first-child { width: 28px; padding-left: 14px; }
@@ -7396,7 +7397,7 @@ async function xpUndoRun() { const u = xpUndo; if (!u) return; xpUndo = null; cl
            lineCols (keys shown in the line list), lineSub(row) → small text under the first text column, sumKey, extra: { html, onClick(button) },
            rowSt(row) → "over" (red) or "soon" (orange) to colour a line in the list, the Excel and the image,
            groupBy(row) → a heading row before each group (lines in group order), split: { label, title(group) } offers one file per group,
-           noCols: hide the column choice (every column not marked off is kept), extra.onChange(input, box) / extra.sync(box) for inputs in extra } */
+           noCols: hide the column choice (every column not marked off is kept), noFooter: no "Printed by" line on the image, rowSt "ok" is green, extra.onChange(input, box) / extra.sync(box) for inputs in extra } */
 const PB_IMG_MAX = 900;
 const pbName = (ext, title) => { const d = new Date(), p2 = n => String(n).padStart(2, "0"), base = String(title || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "report"; return `${base}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.${ext}`; };
 function pbExcel(spec, list, keys, title) {
@@ -7434,14 +7435,14 @@ async function pbImage(spec, list, keys, title, png) {
   H.forEach(c => { cell(c, c.h, x, y + 22); x += c.w; }); y += RH;
   list.forEach((r, n) => {
     if (gHead(n)) { g.fillStyle = "#dde7f3"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 16px ${F}`; g.fillText(fit(spec.groupBy(r), W - 2 * M - 20), M + 10, y + 23); y += RH; }
-    const h = rh(lines[n]), st = spec.rowSt?.(r); if (st || n % 2) { g.fillStyle = st === "over" ? "#ffc7ce" : st === "soon" ? "#ffd8a8" : "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
+    const h = rh(lines[n]), st = spec.rowSt?.(r); if (st || n % 2) { g.fillStyle = st === "over" ? "#ffc7ce" : st === "soon" ? "#ffd8a8" : st === "ok" ? "#e2efda" : "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
     x = M; H.forEach(c => { g.fillStyle = "#18212b"; g.font = c.kind === "num" || c.kind === "date" ? `400 14px ${MONO}` : `400 15px ${F}`;
       if (c === wc) lines[n].forEach((t, j) => g.fillText(t, x + 10, y + 22 + j * 20)); else cell(c, spec.val(r, c.k), x, y + 22); x += c.w; });
     g.strokeStyle = "#dde2e7"; g.lineWidth = 1; g.beginPath(); g.moveTo(M, y + h - 0.5); g.lineTo(W - M, y + h - 0.5); g.stroke(); y += h;
   });
   if (hasTot) { y += 8; g.fillStyle = "#e3efe0"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 15px ${F}`; g.fillText("Total", M + 10, y + 22); x = M;
     H.forEach(c => { if (c.total) { g.font = `700 14px ${MONO}`; const s = list.reduce((a, r) => a + num(spec.raw(r, c.k)), 0); cell(c, Number.isInteger(s) ? nf(s) : nf(s, 2), x, y + 22); } x += c.w; }); y += RH; }
-  g.font = `400 13px ${F}`; g.fillStyle = "#8a949e"; g.fillText(`Printed by ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, M, y + 28);
+  if (!spec.noFooter) { g.font = `400 13px ${F}`; g.fillStyle = "#8a949e"; g.fillText(`Printed by ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, M, y + 28); }
   return { filename: pbName(png ? "png" : "jpg", title), data: await new Promise((ok, fail) => cv.toBlob(b => b ? ok(b) : fail(new Error("image failed")), png ? "image/png" : "image/jpeg", 0.92)) };
 }
 // Share: the device's share screen where the browser has one; otherwise the image is copied (paste it into WhatsApp or email)
@@ -8290,16 +8291,18 @@ $("msDl").onclick = () => {
   const plateK = k => mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k });
   const list = keys.flatMap(k => mtDue(k).map(d => ({ ...d, key: k, plate: plateK(k) })));
   if (!list.length) { toast("No maintenance entered yet."); return; }
-  const st = r => r.st === "over" || r.st === "soon" ? r.st : "";
+  const st = r => r.st === "over" || r.st === "soon" || r.st === "ok" ? r.st : "";
   const V = (r, c) => c === "plate" ? r.plate : c === "type" ? mtItemName(r.it) : c === "date" ? (r.e.date ? xpDateTxt(r.e.date) : "") : c === "km" ? (r.ekm ? nf(r.ekm) : "") : c === "next" ? (r.next ? nf(r.next) : "")
     : c === "left" ? (r.left == null ? "" : mtLeftTxt(r)) : c === "when" ? (r.st === "over" ? "Now" : r.when ? xpDateTxt(r.when) : "") : MT_ST[r.st][0];
   const R = (r, c) => c === "date" ? r.e.date || null : c === "km" ? r.ekm || null : c === "next" ? r.next || null : c === "when" ? (r.st !== "over" && r.when ? r.when : null) : null;
   const one = keys.length === 1;
   const boxes = one ? "" : `<div class="xosub">Vehicles</div><label class="dall"><input type="checkbox" data-msvall checked> All vehicles</label><div class="xomsv">${keys.map(k => `<label><input type="checkbox" data-msv="${esc(k)}" checked> ${esc(plateK(k))}</label>`).join("")}</div>`;
-  pbOpen({ sheet: "Maintenance summary", title0: `Maintenance summary · ${one ? plateK(keys[0]) : "All vehicles"}`, rows: list, rowSt: st, noCols: true,
-    groupBy: one ? null : r => r.plate, split: one ? null : { label: "One file per vehicle", title: g => `Maintenance summary · ${g}` },
-    sub: `As on ${xpDateTxt(todayISO())} · Red: overdue · Orange: due within 5,000 km`,
-    note: "Each vehicle's jobs: overdue (red), due soon (orange), then the rest. Untick any line you don't want.",
+  const tAuto = ks => ks.length === 1 ? `Maintenance summary - ${plateK(ks[0])}` : "Maintenance summary";
+  let lastT = tAuto(keys);
+  pbOpen({ sheet: "Maintenance summary", title0: lastT, rows: list, rowSt: st, noCols: true, noFooter: true,
+    groupBy: one ? null : r => r.plate, split: one ? null : { label: "One file per vehicle", title: g => `Maintenance summary - ${g}` },
+    sub: `As on ${xpDateTxt(todayISO())} · Red: overdue · Orange: due within 5,000 km · Green: OK`,
+    note: "Each vehicle's jobs: overdue (red), due soon (orange), then OK (green). Untick any line you don't want.",
     cols: [{ k: "plate", h: "Vehicle", xl: 16, px: 150, kind: "text", off: true }, { k: "type", h: "Maintenance", xl: 30, px: 0, kind: "text" }, { k: "date", h: "Last Done", xl: 13, px: 120, kind: "date" },
       { k: "km", h: "Kms", xl: 12, px: 110, kind: "num" }, { k: "next", h: "Next Service At", xl: 15, px: 140, kind: "num" }, { k: "left", h: "Km Left", xl: 15, px: 140, kind: "text" },
       { k: "when", h: "Expected Around", xl: 15, px: 140, kind: "date" }, { k: "status", h: "Status", xl: 12, px: 120, kind: "text" }],
@@ -8313,7 +8316,10 @@ $("msDl").onclick = () => {
       sync: box => { const all = box.querySelector("[data-msvall]"); let on = 0, part = 0;
         keys.forEach(k => { const ls = list.map((r, n) => r.key === k ? box.querySelector(`input[data-l="${n}"]`) : null).filter(Boolean), c = ls.filter(i => i.checked).length, v = box.querySelector(`input[data-msv="${CSS.escape(k)}"]`);
           const out = ls.every(i => i.closest("tr").hidden); v.checked = !out && c === ls.length; v.indeterminate = !out && c > 0 && c < ls.length; if (v.checked) on++; else if (c) part++; });
-        all.checked = on === keys.length; all.indeterminate = !all.checked && (on + part) > 0; } } });
+        all.checked = on === keys.length; all.indeterminate = !all.checked && (on + part) > 0;
+        // The title follows the vehicles: one vehicle shown gives "Maintenance summary - <number>" (unless the title was typed over).
+        const t = box.querySelector("[data-title]"), shownK = keys.filter(k => list.some((r, n) => r.key === k && !box.querySelector(`tr[data-row="${n}"]`)?.hidden)), nt = tAuto(shownK);
+        if (t.value === lastT && nt !== lastT) t.value = nt; lastT = nt; } } });
 };
 
 // Service gaps: the default km for each job, and a vehicle's own figure where it differs.
@@ -9668,8 +9674,8 @@ const XL = (() => {
     // (white on a colour, white edges so they stand apart): Summary, route months, spare buses, trucks, expenses, master data, a month with no sheet
     xf(0, 15, 14, 2, 'horizontal="center" vertical="center"'), xf(0, 4, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 3, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 5, 0, 0, 'horizontal="left" vertical="center" wrapText="1"'),
     ...[16, 17, 11, 18, 19, 20].map(fl => xf(0, 15, fl, 3, 'horizontal="center" vertical="center" wrapText="1"')), xf(0, 3, 3, 3, 'horizontal="center" vertical="center"'),
-    // 99–107: the maintenance summary download: text, number, date with no colour, red (overdue) and orange (due soon)
-    ...[0, 21, 22].flatMap(fl => [xf(0, 0, fl, 2, 'vertical="center" wrapText="1"'), xf(165, 0, fl, 2, 'vertical="center"'), xf(164, 0, fl, 2, 'horizontal="left" vertical="center"')])];
+    // 99–107: the maintenance summary download: text, number, date in green (OK), red (overdue) and orange (due soon)
+    ...[9, 21, 22].flatMap(fl => [xf(0, 0, fl, 2, 'vertical="center" wrapText="1"'), xf(165, 0, fl, 2, 'vertical="center"'), xf(164, 0, fl, 2, 'horizontal="left" vertical="center"')])];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="16"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
@@ -17131,7 +17137,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07r";
+const APP_VER = "2026-11-07s";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
