@@ -10254,18 +10254,18 @@ function xlVehicleSheet(recs) {
   return xlMasterSheet("Vehicle Master Data", [{ heads, rows }], { "Plate No.": 16, Class: 17, Age: 19, "Owner Name": 26, "Owner Address": 40, Remarks: 40 });
 }
 /* Download all: Maintenance Summary (every vehicle in the vehicle master with maintenance: each job's last service and the next one
-   due, as on today, with the vehicle's current km on its heading) and Maintenance History (every job done in the year). */
-function xlMaintSheets(fy) {
-  try { return xlMaintSheetsOf(fy); } catch (er) { console.error("Maintenance sheets", er); toast("The maintenance sheets could not be made and are left out of this file."); return []; }
+   due, as on today, with the vehicle's current km on its heading) and Maintenance History (every job in the system, all years). */
+function xlMaintSheets() {
+  try { return xlMaintSheetsOf(); } catch (er) { console.error("Maintenance sheets", er); toast("The maintenance sheets could not be made and are left out of this file."); return []; }
 }
-function xlMaintSheetsOf(fy) {
+function xlMaintSheetsOf() {
   const out = [], today = todayISO().split("-").reverse().join("/"), wide = ws => { const n = Object.keys(ws.widths).length; if (n > 1) ws.merges.push(`A1:${XL.col(n - 1)}1`); ws.zoom = 90; return ws; };
   const T = () => MS_T.en, L = msLines(msKeys(false), T);
   if (L.list.length) { const cols = L.cols(), keys = cols.filter(c => !c.off).map(c => c.k);
     out.push(wide(pbSheet({ sheet: "Maintenance Summary", cols, val: L.V, raw: L.R, rowSt: L.st, groupBy: r => r.plate, grpLabel: g => `${g} · ${L.curTxt(L.keyOfPlate(g))}`, headH: 32 },
       L.list, keys, `Maintenance Summary - as on ${today} · Red: overdue · Orange: due within 5,000 km · Green: OK`))); }
-  const hist = mhRows().filter(r => r.date && fyOf(r.date) === fy);
-  if (hist.length) out.push(wide(pbSheet({ sheet: "Maintenance History", cols: MH_COLS(), val: mhV, raw: mhR }, hist, MH_COLS().map(c => c.k), `Maintenance History - FY ${fyLabel(fy)} (every job done in the year)`)));
+  const hist = mhRows();
+  if (hist.length) out.push(wide(pbSheet({ sheet: "Maintenance History", cols: MH_COLS(), val: mhV, raw: mhR }, hist, MH_COLS().map(c => c.k), `Maintenance History - all jobs in the system, as on ${today}`)));
   return out;
 }
 /* The first sheet of Download all, on one screen: a row per group, its name in column A and its buttons beside it (each a link
@@ -16149,7 +16149,7 @@ $("oDl").onclick = e => { const fy = +$("oDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => { const recs = { ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers };
     const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.vehicleId && t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
     const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
-    const all = XL.names([xlSummarySheet(recs, fy, sheets, busIds), ...sheets, ...xlMaintSheets(fy), xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]);
+    const all = XL.names([xlSummarySheet(recs, fy, sheets, busIds), ...sheets, ...xlMaintSheets(), xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]);
     return [xlHomeSheet(fy, all), ...all]; }); };
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 // + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
@@ -17385,7 +17385,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08k";
+const APP_VER = "2026-11-08l";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
