@@ -1451,6 +1451,8 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .xolines { flex: 1; min-height: 0; overflow: auto; } .xolt { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .xolt th { position: sticky; top: 0; background: var(--chip-bg, #eef1f4); text-align: left; padding: 7px 8px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); z-index: 1; }
 .xolt td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .xolt tr[data-row] { cursor: pointer; } .xolt tr[data-row]:hover td { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+.xolt tr.ms-over td { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); } .xolt tr.ms-soon td { background: color-mix(in srgb, #f28c28 20%, var(--surface)); }
+.xoextra .xomsv { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } .xoextra .xomsv button { padding: 6px 10px; font-size: 13px; } .xoextra .xomsv button[aria-pressed="false"] { opacity: .5; text-decoration: line-through; }
 .xolt tr.off td { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent); } .xolt tr.off td:first-child { text-decoration: none; }
 .xolt .n { text-align: right; } .xolt .nw { white-space: nowrap; } .xolt th:first-child, .xolt td:first-child { width: 28px; padding-left: 14px; }
 .xolsub { display: none; } #view-ttsheet > header.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; } #tsPrint { flex: none; margin-top: 30px; }
@@ -1892,7 +1894,6 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mscards { display: none; } .mscard { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
 .mscard .mscn { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .mscard .mscn b { font-size: 15px; } .mscard.ms-over { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); } .mscard.ms-soon { background: color-mix(in srgb, #f28c28 16%, var(--surface)); border-color: color-mix(in srgb, #f28c28 40%, var(--line)); }
 @media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } }
-.msdlrow { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; } .msdlrow input { width: 20px; height: 20px; flex: none; } .msdlc { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-left: auto; } .msdlall { border-bottom: 2px solid var(--line); }
 .mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
 @media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
 .mtsteps span.on { background: #fff; color: var(--ink); } .mtsteps span.done { background: var(--accent); color: #fff; }
@@ -7392,15 +7393,16 @@ async function xpUndoRun() { const u = xpUndo; if (!u) return; xpUndo = null; cl
    to keep and every line to tick or untick, then Save or Share.
    spec: { id, title0, sub (image subtitle), note (html), cols: [{ k, h, xl, px, kind: "date"|"num"|"text"|"wrap", total }],
            rows, val(row, k) → text, raw(row, k) → number or ISO date for Excel, picked (Set of row indexes, or null),
-           lineCols (keys shown in the line list), lineSub(row) → small text under the first text column, sumKey, extra: { html, onClick(box) } } */
+           lineCols (keys shown in the line list), lineSub(row) → small text under the first text column, sumKey, extra: { html, onClick(button) },
+           rowSt(row) → "over" (red) or "soon" (orange) to colour a line in the list, the Excel and the image } */
 const PB_IMG_MAX = 900;
 const pbName = (ext, title) => { const d = new Date(), p2 = n => String(n).padStart(2, "0"), base = String(title || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "report"; return `${base}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.${ext}`; };
 function pbExcel(spec, list, keys, title) {
   const S = XL.S, ws = XL.sheet((spec.sheet || "Report").slice(0, 30)), H = spec.cols.filter(c => keys.includes(c.k));
   XL.put(ws, "A1", title, S.title);
   H.forEach((c, i) => { XL.put(ws, `${XL.col(i)}3`, c.h, S.head); ws.widths[XL.col(i)] = c.xl || 14; });
-  list.forEach((x, n) => { const r = n + 4; H.forEach((c, i) => { const a = `${XL.col(i)}${r}`, raw = spec.raw ? spec.raw(x, c.k) : null;
-    if (c.kind === "date" && raw) XL.put(ws, a, { d: raw }, S.date); else if (c.kind === "num" && raw != null && raw !== "") XL.put(ws, a, raw, Number.isInteger(raw) ? S.int : S.dec); else XL.put(ws, a, spec.val(x, c.k), S.text); }); });
+  list.forEach((x, n) => { const r = n + 4, M = S.mx[spec.rowSt?.(x)]; H.forEach((c, i) => { const a = `${XL.col(i)}${r}`, raw = spec.raw ? spec.raw(x, c.k) : null;
+    if (c.kind === "date" && raw) XL.put(ws, a, { d: raw }, M ? M.date : S.date); else if (c.kind === "num" && raw != null && raw !== "") XL.put(ws, a, raw, M ? M.int : Number.isInteger(raw) ? S.int : S.dec); else XL.put(ws, a, spec.val(x, c.k), M ? M.text : S.text); }); });
   const tot = H.map((c, i) => c.total ? i : -1).filter(i => i >= 0);
   if (tot.length) { const t = list.length + 4; XL.put(ws, `${XL.col(Math.max(0, tot[0] - 1))}${t}`, "Total", S.ttext);
     tot.forEach(i => { const A = XL.col(i), s = list.reduce((a, x) => a + num(spec.raw(x, H[i].k)), 0); XL.put(ws, `${A}${t}`, s, Number.isInteger(s) ? S.tint : S.tint, `SUM(${A}4:${A}${t - 1})`); }); }
@@ -7425,7 +7427,7 @@ async function pbImage(spec, list, keys, title, png) {
   let y = M + 72, x = M; g.fillStyle = "#eef1f4"; g.fillRect(M, y, W - 2 * M, RH); g.font = `700 14px ${F}`; g.fillStyle = "#18212b";
   H.forEach(c => { cell(c, c.h, x, y + 22); x += c.w; }); y += RH;
   list.forEach((r, n) => {
-    const h = rh(lines[n]); if (n % 2) { g.fillStyle = "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
+    const h = rh(lines[n]), st = spec.rowSt?.(r); if (st || n % 2) { g.fillStyle = st === "over" ? "#ffc7ce" : st === "soon" ? "#ffd8a8" : "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
     x = M; H.forEach(c => { g.fillStyle = "#18212b"; g.font = c.kind === "num" || c.kind === "date" ? `400 14px ${MONO}` : `400 15px ${F}`;
       if (c === wc) lines[n].forEach((t, j) => g.fillText(t, x + 10, y + 22 + j * 20)); else cell(c, spec.val(r, c.k), x, y + 22); x += c.w; });
     g.strokeStyle = "#dde2e7"; g.lineWidth = 1; g.beginPath(); g.moveTo(M, y + h - 0.5); g.lineTo(W - M, y + h - 0.5); g.stroke(); y += h;
@@ -7468,7 +7470,7 @@ function pbOpen(spec) {
     (spec.extra ? `<div class="xoextra">${spec.extra.html}</div>` : "") + `</div>` +
     `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
     `<div class="xolines"><table class="xolt"><thead><tr><th></th>${LC.map((c, i) => `<th class="${c.kind === "num" ? "n" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(c.h)}</th>`).join("")}</tr></thead><tbody>` +
-    list.map((x, n) => `<tr data-row="${n}"><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
+    list.map((x, n) => `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
       LC.map((c, i) => `<td class="${c.kind === "num" ? "n num" : c.kind === "date" ? "num" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(spec.val(x, c.k))}${i === first && spec.lineSub ? `<small class="xolsub">${esc(spec.lineSub(x))}</small>` : ""}</td>`).join("") + `</tr>`).join("") +
     `</tbody></table></div></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
@@ -8259,61 +8261,30 @@ function renderMsum() {
 }
 $("msBusF").onchange = () => { msBus = $("msBusF").value; renderMsum(); };
 $("msList").addEventListener("click", e => { if (e.target.id === "msOldBtn") { msOld = !msOld; renderMsum(); return; } const r = e.target.closest("[data-msentry]"); if (r) mtOpen(ops.maintLog.find(x => x.id === r.dataset.msentry)); });
-/* Download: the vehicle chosen on the page, or (with All vehicles) the ones ticked in a list showing each vehicle's overdue and
-   due-soon count. One sheet per vehicle, its jobs in the page's order: overdue (red), due soon (orange), then the rest. */
-function xlMaintSheets(keys) {
-  const { put, S, sheet, col } = XL, today = todayISO(), dmy = d => d ? d.split("-").reverse().join("/") : "";
-  const heads = ["Maintenance", "Last Done", "Kms", "Next Service At", "Km Left", "Expected Around", "Status"];
-  return keys.map(k => {
-    const plate = mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }), ws = sheet(plate.replace(/\s+/g, "")), due = mtDue(k), now = mtNow(k);
-    put(ws, "A1", `${plate} - Maintenance Summary - as on ${dmy(today)}`, S.sTitle); for (let c = 1; c < 7; c++) put(ws, col(c) + 1, null, S.sTitle); ws.merges.push("A1:G1");
-    put(ws, "A2", now ? `Now about ${nf(now.km)} km (${now.src}, ${dmy(now.date)})${now.perDay ? ` · about ${nf(Math.round(now.perDay))} km a day` : ""} · Red: overdue · Orange: due within 5,000 km` : "No km reading yet", S.sNote);
-    heads.forEach((h, i) => put(ws, col(i) + 4, h, S.sHead));
-    due.forEach((d, i) => { const r = 5 + i, M = S.mx[d.st === "over" || d.st === "soon" ? d.st : "ok"];
-      put(ws, "A" + r, mtItemName(d.it), M.text); put(ws, "B" + r, d.e.date ? { d: d.e.date } : "", M.date); put(ws, "C" + r, d.ekm || "", M.int);
-      put(ws, "D" + r, d.next || "", M.int); put(ws, "E" + r, d.left == null ? "" : d.left <= 0 ? `${nf(-d.left)} km over` : d.left, d.left == null || d.left <= 0 ? M.text : M.int);
-      put(ws, "F" + r, d.st === "over" ? "Now" : d.when ? { d: d.when } : "", d.st !== "over" && d.when ? M.date : M.text); put(ws, "G" + r, MT_ST[d.st][0], M.text); });
-    if (!due.length) put(ws, "A5", "No maintenance entered", S.sTxt);
-    Object.assign(ws.widths, { A: 34, B: 13, C: 12, D: 16, E: 15, F: 16, G: 13 }); Object.assign(ws.heights, { 1: 28.5, 4: 20 }); ws.freeze = 4;
-    return ws;
-  });
-}
-async function msSave(keys, btn) {
-  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
-  if (!dl) { toast("Saving files isn't available in this view."); return false; }
-  if (btn) btn.disabled = true;
-  const one = keys.length === 1 ? mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === keys[0]) || { vehicleId: keys[0] }).replace(/\s+/g, "") : `${keys.length}_Vehicles`;
-  try { await dl.save({ filename: `Maintenance_Summary_${one}_${todayISO().split("-").reverse().join("-")}.xlsx`, data: XL.build(xlMaintSheets(keys)) }); toast("Maintenance summary saved. Look in your Downloads folder."); return true; }
-  catch (er) { if (er?.code !== "declined") toast("Couldn't make the file. Try again."); return false; }
-  finally { if (btn) btn.disabled = false; }
-}
-let msdlSel = null;
+/* Download: the shared Print / download window. Its line list shows every job of the vehicle chosen on the page (with All
+   vehicles: of every vehicle, with a button per vehicle to take its jobs in or out), each vehicle's jobs in the page's order:
+   overdue (red), due soon (orange), then the rest. Saves as Excel or an image, in the same colours. */
 $("msDl").onclick = () => {
-  if (msBus) { msSave([msBus], $("msDl")); return; }
-  const keys = [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
-  if (!keys.length) { toast("No maintenance entered yet."); return; }
-  msdlSel = new Set(keys); msdlRender(keys);
+  const keys = msBus ? [msBus] : [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
+  const plateK = k => mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k });
+  const list = keys.flatMap(k => mtDue(k).map(d => ({ ...d, key: k, plate: plateK(k) })));
+  if (!list.length) { toast("No maintenance entered yet."); return; }
+  const st = r => r.st === "over" || r.st === "soon" ? r.st : "";
+  const V = (r, c) => c === "plate" ? r.plate : c === "type" ? mtItemName(r.it) : c === "date" ? (r.e.date ? xpDateTxt(r.e.date) : "") : c === "km" ? (r.ekm ? nf(r.ekm) : "") : c === "next" ? (r.next ? nf(r.next) : "")
+    : c === "left" ? (r.left == null ? "" : mtLeftTxt(r)) : c === "when" ? (r.st === "over" ? "Now" : r.when ? xpDateTxt(r.when) : "") : MT_ST[r.st][0];
+  const R = (r, c) => c === "date" ? r.e.date || null : c === "km" ? r.ekm || null : c === "next" ? r.next || null : c === "when" ? (r.st !== "over" && r.when ? r.when : null) : null;
+  const one = keys.length === 1, chips = one ? null : `<div class="xosub">Vehicles</div><p class="dnote" style="margin:0">Tap a vehicle to take its jobs out or put them back.</p><div class="xomsv">${keys.map(k => `<button type="button" class="btn" data-msv="${esc(k)}" aria-pressed="true">${esc(plateK(k))}</button>`).join("")}</div>`;
+  pbOpen({ sheet: "Maintenance summary", title0: `Maintenance summary · ${one ? plateK(keys[0]) : "All vehicles"}`, rows: list, rowSt: st,
+    sub: `As on ${xpDateTxt(todayISO())} · Red: overdue · Orange: due within 5,000 km`,
+    note: "Each vehicle's jobs: overdue (red), due soon (orange), then the rest. Untick any line you don't want.",
+    cols: [{ k: "plate", h: "Vehicle", xl: 16, px: 150, kind: "text", off: one }, { k: "type", h: "Maintenance", xl: 30, px: 0, kind: "text" }, { k: "date", h: "Last Done", xl: 13, px: 120, kind: "date" },
+      { k: "km", h: "Kms", xl: 12, px: 110, kind: "num" }, { k: "next", h: "Next Service At", xl: 15, px: 140, kind: "num" }, { k: "left", h: "Km Left", xl: 15, px: 140, kind: "text" },
+      { k: "when", h: "Expected Around", xl: 15, px: 140, kind: "date" }, { k: "status", h: "Status", xl: 12, px: 120, kind: "text" }],
+    lineCols: one ? ["type", "next", "left", "status"] : ["plate", "type", "next", "left", "status"], lineSub: r => `Last ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " km" : ""}`, val: V, raw: R,
+    extra: chips ? { html: chips, onClick: b => { const k = b.dataset.msv, on = b.getAttribute("aria-pressed") !== "true", box = b.closest("#xpOutBox"); b.setAttribute("aria-pressed", on);
+      list.forEach((r, n) => { if (r.key === k) { const i = box.querySelector(`input[data-l="${n}"]`); if (i) i.checked = on; } });
+      box.querySelector("input[data-l]")?.dispatchEvent(new Event("change", { bubbles: true })); } } : null });
 };
-function msdlRender(keys) {
-  if (!$("msdlw")) { document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="msdlw" role="dialog" aria-modal="true" aria-labelledby="msdlTitle" hidden></div>');
-    $("msdlw").addEventListener("change", e => { const i = e.target.dataset.msk; if (i == null && e.target.id !== "msdlAll") return;
-      const all = [...$("msdlw").querySelectorAll("input[data-msk]")];
-      if (e.target.id === "msdlAll") all.forEach(x => x.checked = e.target.checked);
-      msdlSel = new Set(all.filter(x => x.checked).map(x => x.dataset.msk)); msdlSync(); });
-    $("msdlw").addEventListener("click", async e => { const b = e.target.closest("button[data-msdl]"); if (!b) return;
-      if (b.dataset.msdl === "go") { if (await msSave([...msdlSel], b)) msdlClose(); } else msdlClose(); }); }
-  const rows = keys.map(k => { const due = mtDue(k), o = due.filter(d => d.st === "over").length, so = due.filter(d => d.st === "soon").length;
-    return `<label class="msdlrow"><input type="checkbox" data-msk="${esc(k)}" checked><span class="plate psv">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</span>` +
-      `<span class="msdlc">${o ? `<span class="pill mlow">${o} overdue</span>` : ""}${so ? `<span class="pill d30">${so} due soon</span>` : ""}${!o && !so ? `<span class="pill ok">All OK</span>` : ""}<small>${due.length} job${due.length === 1 ? "" : "s"}</small></span></label>`; }).join("");
-  $("msdlw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="msdlTitle">Download maintenance summary</b><span>Tick the vehicles to include · one sheet each</span></div></header>` +
-    `<div class="bwb tws"><label class="msdlrow msdlall"><input type="checkbox" id="msdlAll" checked><b>All vehicles</b></label><div class="msdllist">${rows}</div>` +
-    `<p class="bwnote">In the file each vehicle's jobs are in this order: overdue (red), due soon (orange), then the rest.</p></div>` +
-    `<footer class="bwf two"><button type="button" class="bwalt" data-msdl="close">Cancel</button><button type="button" class="bwgo" data-msdl="go">⬇ Download <span id="msdlN"></span></button></footer>`;
-  $("msdlw").hidden = false; document.documentElement.classList.add("bw-on"); msdlSync();
-}
-function msdlSync() { const n = msdlSel.size, all = $("msdlw").querySelectorAll("input[data-msk]").length, a = $("msdlAll");
-  a.checked = n === all; a.indeterminate = n > 0 && n < all; $("msdlN").textContent = `(${n})`; $("msdlw").querySelector('[data-msdl="go"]').disabled = !n; }
-function msdlClose() { $("msdlw").hidden = true; document.documentElement.classList.remove("bw-on"); msdlSel = null; }
 
 // Service gaps: the default km for each job, and a vehicle's own figure where it differs.
 let msgEd = null;
@@ -17130,7 +17101,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07o";
+const APP_VER = "2026-11-07p";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
