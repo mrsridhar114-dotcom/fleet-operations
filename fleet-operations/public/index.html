@@ -8353,7 +8353,7 @@ const MS_T = {
     left: d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} கி.மீ அதிகம்` : `${nf(d.left)} கி.மீ`,
     item: r => (MS_TA_TYPE[r.it.k] || mtType(r.it.k).name) + (r.it.pos ? " · " + ((/truck/i.test(mtClsOf(r.key)) && MS_TA_TRUCK[r.it.pos]) || MS_TA_POS[r.it.pos] || mtPosName(r.it.pos)) : ""),
     sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: சர்வீஸ் செய்ய நேரம் உள்ளது`, last: "கடைசி", km: "கி.மீ",
-    cur: "வாகனத்தின் தற்போதைய கிலோமீட்டர் ரீடிங்", act: "உண்மையான கிலோமீட்டர்", on: d => `${d} அன்று`, noCur: "பயண / டீசல் ரீடிங் இல்லை", lines: n => `${n} வரிகள்` }
+    cur: "வாகனத்தின் தற்போதைய கிலோமீட்டர் ரீடிங்", act: "ஓடிய மொத்த கிலோமீட்டர்", on: d => `${d} அன்று`, noCur: "பயண / டீசல் ரீடிங் இல்லை", lines: n => `${n} வரிகள்` }
 };
 $("msDl").onclick = () => {
   const keys = msBus ? [msBus] : [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
@@ -17316,7 +17316,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08c";
+const APP_VER = "2026-11-08d";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
