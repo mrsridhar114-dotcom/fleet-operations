@@ -7450,7 +7450,7 @@ function pbExcel(spec, list, keys, title) {
   if (tot.length) { const t = list.length + 4 + gr; XL.put(ws, `${XL.col(Math.max(0, tot[0] - 1))}${t}`, "Total", S.ttext);
     tot.forEach(i => { const A = XL.col(i), s = list.reduce((a, x) => a + num(spec.raw(x, H[i].k)), 0); XL.put(ws, `${A}${t}`, s, Number.isInteger(s) ? S.tint : S.tint, `SUM(${A}4:${A}${t - 1})`); }); }
   ws.freeze = 3;
-  return { filename: pbName("xlsx", spec.fileTitle?.(title) || title), data: XL.build([ws]) };
+  return { filename: spec.fileName ? spec.fileName(list, "xlsx") : pbName("xlsx", title), data: XL.build([ws]) };
 }
 async function pbImage(spec, list, keys, title, png) {
   try { await document.fonts?.ready; } catch {}
@@ -7484,7 +7484,7 @@ async function pbImage(spec, list, keys, title, png) {
   if (hasTot) { y += 8; g.fillStyle = "#e3efe0"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 15px ${F}`; g.fillText("Total", M + 10, y + 22); x = M;
     H.forEach(c => { if (c.total) { g.font = `700 14px ${MONO}`; const s = list.reduce((a, r) => a + num(spec.raw(r, c.k)), 0); cell(c, Number.isInteger(s) ? nf(s) : nf(s, 2), x, y + 22); } x += c.w; }); y += RH; }
   if (!spec.noFooter) { g.font = `400 13px ${F}`; g.fillStyle = "#8a949e"; g.fillText(`Printed by ${whoAmI()} · ${fmtStamp(new Date().toISOString())}`, M, y + 28); }
-  return { filename: pbName(png ? "png" : "jpg", spec.fileTitle?.(title) || title), data: await new Promise((ok, fail) => cv.toBlob(b => b ? ok(b) : fail(new Error("image failed")), png ? "image/png" : "image/jpeg", 0.92)) };
+  return { filename: spec.fileName ? spec.fileName(list, png ? "png" : "jpg") : pbName(png ? "png" : "jpg", title), data: await new Promise((ok, fail) => cv.toBlob(b => b ? ok(b) : fail(new Error("image failed")), png ? "image/png" : "image/jpeg", 0.92)) };
 }
 // Share: the device's share screen where the browser has one; otherwise the image is copied (paste it into WhatsApp or email)
 // and an Excel file is saved to attach.
@@ -8383,7 +8383,10 @@ $("msDl").onclick = () => {
     lineCols: ["type", "next", "left", "status"], lineSub: r => `${T().last} ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " " + T().km : ""}`, val: V, raw: R,
     countTxt: n => T().lines(n),
     top: (rows, sp) => sp.groupBy || !rows.length ? "" : curTxt(rows[0].key),
-    grpLabel: g => `${g} · ${curTxt(keyOfPlate(g))}`, fileTitle: t => t.replace(MS_T.ta.title, "Maintenance summary Tamil"),
+    grpLabel: g => `${g} · ${curTxt(keyOfPlate(g))}`,
+    // File name: vehicle number, Maint, today's date, e.g. TN70Q2499_Maint_07-11-2026.xlsx (All-vehicles when the file has several).
+    fileName: (rows, ext) => { const ks = [...new Set(rows.map(r => r.key))], d = todayISO();
+      return `${ks.length === 1 ? plateK(ks[0]).replace(/[^A-Za-z0-9]+/g, "") : "All-vehicles"}_Maint_${d.slice(8, 10)}-${d.slice(5, 7)}-${d.slice(0, 4)}.${ext}`; },
     // English or Tamil: headings, job names, km left and status follow; the vehicle numbers, dates and km stay as they are.
     setLang: l => { lang = spec.lang = l; try { localStorage.setItem("fleet-mslang", l); } catch {}
       spec.sheet = T().title; spec.sub = T().sub(xpDateTxt(todayISO())); spec.title0 = tAuto(keys); spec.cols.forEach(c => { c.h = T().cols[c.k]; if (c.k === "status") c.px = l === "ta" ? 270 : 110; }); },
@@ -17311,7 +17314,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08a";
+const APP_VER = "2026-11-08b";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
