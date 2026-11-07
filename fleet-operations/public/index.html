@@ -9628,7 +9628,7 @@ function xlTruckSheets(recs, fy) {
     items.forEach(([lc, lab, vc, f, v]) => { put(ws, lc, lab, S.oLab); put(ws, vc, v, ["C", "F"].includes(vc[0]) ? S.oVal : S.oVal2, f); });
     ws.merges.push("C2:D2", "C3:D3", "C4:D4"); // Days is a narrow column: the totals use Days and Trip Rent together
     TK_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 5, h, i < 2 ? S.oHeadR : i === 2 ? S.oHeadC : S.oHeadL));
-    Object.assign(ws.heights, { 1: 28.5, 2: 18.5, 3: 18.5, 4: 15.5, 5: 18.5 }); Object.assign(ws.widths, TK_DL_WIDTHS); ws.freeze = 5; ws.zoom = 40;
+    Object.assign(ws.heights, { 1: 28.5, 2: 18.5, 3: 18.5, 4: 15.5, 5: 18.5 }); Object.assign(ws.widths, TK_DL_WIDTHS); ws.freeze = 5; ws.zoom = 50;
   };
   ids.forEach(id => {
     const ws = Object.assign(sheet(String(C.plate(id)).replace(/\s+/g, "")), { kind: "truck", vid: id }), T = { C: 0, D: 0, I: 0, J: 0, K: 0, L: 0, M: 0, N: 0, O: 0, V: 0, X: 0, AB: 0 };
@@ -9706,7 +9706,7 @@ function xlSpareSheets(recs, fy) {
       ["A4", "Gross", "B4", `SUM(${rg("P")})`, gross], ["F4", "Total Kms", "G4", `SUM(${rg("T")})`, T.T]]
       .forEach(([lc, lab, vc, f, v]) => { put(ws, lc, lab, S.sLab); put(ws, vc, v || 0, S.sVal, f); });
     ws.merges.push("C2:D2", "C3:D3", "C4:D4");
-    SP_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5; ws.zoom = 40;
+    SP_DL_HEADS.forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5; ws.zoom = 50;
     Object.assign(ws.heights, { 1: 28.5, 2: 15.5, 3: 15.5, 4: 15.5, 5: 18.5 });
     Object.assign(ws.widths, { A: 15.2, B: 11, C: 11, D: 13, E: 12, F: 17, G: 10, H: 17, I: 12.9, J: 10.6, K: 8, L: 11.3, M: 12.5, N: 15.7, O: 11.7, P: 10.5, Q: 9, R: 11.7, S: 10.5, T: 10.6, U: 14.5, V: 9.5, W: 24, X: 60 });
     sheets.push(ws);
@@ -9734,7 +9734,7 @@ function xlExpenseSheet(recs, fy, kind) {
   const cats = [...new Set(list.map(xpCatTxt))].sort();
   put(ws, "I2", "Category", S.sHead); put(ws, "J2", "Amount", S.sHead);
   cats.forEach((c, i) => { put(ws, `I${3 + i}`, c, S.sTxt); put(ws, `J${3 + i}`, list.filter(x => xpCatTxt(x) === c).reduce((a, x) => a + Math.round(num(x.amount)), 0), S.sInt, `SUMIF(${rg("D")},I${3 + i},${rg("F")})`); });
-  ["Date", "Description", "Vehicle Number", "Category", "Payment Type", "Amount", "Bills"].forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5;
+  ["Date", "Description", "Vehicle Number", "Category", "Payment Type", "Amount", "Bills"].forEach((h, i) => put(ws, XL.col(i) + 5, h, S.sHead)); ws.freeze = 5; ws.zoom = 90;
   Object.assign(ws.heights, { 1: 28.5, 2: 15.5, 3: 15.5, 5: 18.5 });
   Object.assign(ws.widths, { A: 15, B: 46, C: 16, D: 24, E: 16, F: 13, G: 8, H: 4, I: 26, J: 13 });
   return ws;
@@ -9830,7 +9830,7 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
   });
   Object.assign(ws.widths, { A: 36, B: 17.6, C: 21.3, D: 18, E: 18, F: 25.5, G: 24.4, H: 20.6, I: 30.9, J: 17, K: 18, L: 20.7, M: 25.5, N: 28.5, O: 31.3, P: 28.9, Q: 20.5, R: 28.3, S: 21, T: 19.8, U: 25.5 });
   Object.assign(ws.heights, { 1: 46, 2: 20, 3: 46 }); for (let k = R0; k <= RT; k++) ws.heights[k] = 31;
-  ws.zoom = 40;
+  ws.zoom = 30;
   return ws;
 }
 // The records the downloads need, read fresh (shared records, or this browser's copy).
@@ -16880,7 +16880,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07d";
+const APP_VER = "2026-11-07e";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
