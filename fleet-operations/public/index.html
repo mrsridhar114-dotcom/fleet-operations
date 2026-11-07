@@ -9838,32 +9838,46 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
   return ws;
 }
 /* Master data sheets for Download all, as on today: one row per record with every detail. The name / plate and the validity
-   dates come first, then the other details. A validity date already passed is red, one due within 30 days yellow. */
-function xlMasterSheet(title, heads, rows, widths = {}) {
-  const { put, S, sheet, col } = XL, ws = sheet(title), today = todayISO(), soon = shiftDay(today, 30), last = col(heads.length - 1);
-  put(ws, "A1", `${title} - as on ${today.split("-").reverse().join("/")}`, S.sTitle); for (let c = 1; c < heads.length; c++) put(ws, col(c) + 1, null, S.sTitle); ws.merges.push(`A1:${last}1`);
+   dates come first, then the other details. A validity date already passed is red, one due within 30 days yellow.
+   sections: [{ title, heads: [[heading, kind]], rows }]; a section with a title gets a title row and its own headings. */
+function xlMasterSheet(title, sections, widths = {}) {
+  const { put, S, sheet, col } = XL, ws = sheet(title), today = todayISO(), soon = shiftDay(today, 30), n = Math.max(...sections.map(x => x.heads.length)), last = col(n - 1);
+  put(ws, "A1", `${title} - as on ${today.split("-").reverse().join("/")}`, S.sTitle); for (let c = 1; c < n; c++) put(ws, col(c) + 1, null, S.sTitle); ws.merges.push(`A1:${last}1`);
   put(ws, "A2", "Red: validity date passed · Yellow: due within 30 days", S.sNote);
-  heads.forEach(([h, kind], i) => put(ws, col(i) + 3, h, S.sHead));
-  rows.forEach((row, r) => heads.forEach(([, kind], i) => { const v = row[i], ref = col(i) + (4 + r);
-    if (kind === "valid" || kind === "date") { const ok = /^\d{4}-\d{2}-\d{2}$/.test(v || "");
-      put(ws, ref, ok ? { d: v } : (v || ""), !ok ? S.sTxt : kind === "valid" && v < today ? S.sDateX : kind === "valid" && v <= soon ? S.sDateD : S.sDate); }
-    else put(ws, ref, v ?? "", typeof v === "number" ? S.sInt : S.sTxt); }));
-  ws.freeze = 3; ws.zoom = 90; Object.assign(ws.heights, { 1: 28.5, 3: 48 });
-  heads.forEach(([h, kind], i) => ws.widths[col(i)] = widths[h] || (kind === "valid" ? 18 : kind === "date" ? 14 : Math.min(30, Math.max(11, h.length + 2))));
+  Object.assign(ws.heights, { 1: 28.5 });
+  let r = 3;
+  sections.forEach((sec, si) => {
+    if (sec.title) { if (si) r++; put(ws, "A" + r, `${sec.title} (${sec.rows.length})`, S.sLab); for (let c = 1; c < sec.heads.length; c++) put(ws, col(c) + r, null, S.sLab); ws.merges.push(`A${r}:${col(sec.heads.length - 1)}${r}`); ws.heights[r] = 22; r++; }
+    sec.heads.forEach(([h], i) => put(ws, col(i) + r, h, S.sHead)); ws.heights[r] = 48; r++;
+    sec.rows.forEach(row => { sec.heads.forEach(([, kind], i) => { const v = row[i], ref = col(i) + r;
+      if (kind === "valid" || kind === "date") { const ok = /^\d{4}-\d{2}-\d{2}$/.test(v || "");
+        put(ws, ref, ok ? { d: v } : (v || ""), !ok ? S.sTxt : kind === "valid" && v < today ? S.sDateX : kind === "valid" && v <= soon ? S.sDateD : S.sDate); }
+      else put(ws, ref, v ?? "", typeof v === "number" ? S.sInt : S.sTxt); }); r++; });
+    if (!sec.rows.length) { put(ws, "A" + r, "None", S.sTxt); r++; }
+  });
+  ws.freeze = sections.length === 1 && !sections[0].title ? 3 : 2; ws.zoom = 90;
+  for (let i = 0; i < n; i++) ws.widths[col(i)] = Math.max(...sections.map(({ heads }) => { const h = heads[i]; if (!h) return 0; const [t, kind] = h;
+    return widths[t] || (kind === "valid" ? 18 : kind === "date" ? 14 : Math.min(30, Math.max(11, t.length + 2))); }));
   return ws;
 }
-// Employees: drivers, then conductors, each in name order.
+/* Employees: bus drivers, then truck drivers (a driver ticked for both is in both), drivers with no vehicle class ticked,
+   then the conductors; each in name order, with the columns that apply to them. */
 function xlEmployeeSheet(recs) {
-  const rel = x => [x.relType, x.relation].filter(Boolean).join(" "), age = d => d ? yearsBetween(d, todayISO()) : "", list = v => String(v || "").split(",").map(z => z.trim()).filter(Boolean).join(", ");
+  const rel = x => [x.relType, x.relation].filter(Boolean).join(" "), age = d => d ? yearsBetween(d, todayISO()) : "", list = v => vClassesOf({ vClass: v }).join(", ");
   const by = a => [...(a || [])].sort((x, y) => String(x.name).localeCompare(String(y.name)));
-  const heads = [["Name", "t"], ["Role", "t"], ["Licence No.", "t"], ["Licence Valid (Non-Transport)", "valid"], ["Licence Valid (Transport)", "valid"], ["Conductor Licence Valid", "valid"], ["First Aid Valid", "valid"],
-    ["Status", "t"], ["Badge No.", "t"], ["First Aid Certificate No.", "t"], ["Mobile", "t"], ["Address", "t"], ["Son / Daughter / Wife of", "t"], ["Date of Birth", "date"], ["Age", "t"], ["Date of Joining", "date"],
-    ["Blood Group", "t"], ["Organ Donor", "t"], ["Licence State", "t"], ["RTO", "t"], ["Licence First Issue", "date"], ["Licence Issue Date", "date"], ["Vehicle Classes", "t"], ["Vehicle Categories", "t"], ["Remarks", "t"]];
-  const rows = [...by(recs.drivers).map(d => [d.name, "Driver", fmtDl(d.dlNo), d.valNT, d.valTR, "", "", d.status || "Active", "", "", d.mobile, d.address, rel(d), d.dob, age(d.dob), d.doj,
-      d.blood, d.organDonor, d.state, "", d.firstIssue, d.issueDate, list(d.vClass), list(d.vCat), d.remarks]),
-    ...by(recs.conductors).map(c => [c.name, "Conductor", c.clNo, "", "", c.clValid, c.faValid, c.status || "Active", c.badgeNo, c.faNo, c.mobile, c.address, rel(c), c.dob, age(c.dob), c.doj,
-      c.blood, "", c.state, c.rto, "", c.issueDate, "", "", c.remarks])];
-  return xlMasterSheet("Employee Master Data", heads, rows, { Name: 26, "Licence No.": 20, Address: 45, "Son / Daughter / Wife of": 28, Remarks: 40 });
+  const drv = by(recs.drivers), cls = d => vClassesOf(d), bus = drv.filter(d => cls(d).includes("Bus")), truck = drv.filter(d => cls(d).some(c => /truck/i.test(c)));
+  const other = drv.filter(d => !bus.includes(d) && !truck.includes(d));
+  const dHeads = [["Name", "t"], ["Licence No.", "t"], ["Licence Valid (Non-Transport)", "valid"], ["Licence Valid (Transport)", "valid"], ["Mobile", "t"], ["Address", "t"], ["Son / Daughter / Wife of", "t"],
+    ["Date of Birth", "date"], ["Age", "t"], ["Date of Joining", "date"], ["Blood Group", "t"], ["Organ Donor", "t"], ["Licence State", "t"], ["Licence First Issue", "date"], ["Licence Issue Date", "date"],
+    ["Vehicle Classes", "t"], ["Vehicle Categories", "t"], ["Remarks", "t"]];
+  const dRow = d => [d.name, fmtDl(d.dlNo), d.valNT, d.valTR, d.mobile, d.address, rel(d), d.dob, age(d.dob), d.doj, d.blood, d.organDonor, d.state, d.firstIssue, d.issueDate, list(d.vClass), list(d.vCat), d.remarks];
+  const cHeads = [["Name", "t"], ["Licence No.", "t"], ["Conductor Licence Valid", "valid"], ["First Aid Valid", "valid"], ["Mobile", "t"], ["Address", "t"], ["Son / Daughter / Wife of", "t"],
+    ["Date of Birth", "date"], ["Age", "t"], ["Date of Joining", "date"], ["Blood Group", "t"], ["Badge No.", "t"], ["Licence State", "t"], ["RTO", "t"], ["Licence Issue Date", "date"], ["First Aid Certificate No.", "t"], ["Remarks", "t"]];
+  const cRow = c => [c.name, c.clNo, c.clValid, c.faValid, c.mobile, c.address, rel(c), c.dob, age(c.dob), c.doj, c.blood, c.badgeNo, c.state, c.rto, c.issueDate, c.faNo, c.remarks];
+  const sections = [{ title: "Bus Drivers", heads: dHeads, rows: bus.map(dRow) }, { title: "Truck Drivers", heads: dHeads, rows: truck.map(dRow) }];
+  if (other.length) sections.push({ title: "Drivers with no vehicle class ticked", heads: dHeads, rows: other.map(dRow) });
+  sections.push({ title: "Conductors", heads: cHeads, rows: by(recs.conductors).map(cRow) });
+  return xlMasterSheet("Employee Master Data", sections, { Name: 26, "Licence No.": 20, Address: 45, "Son / Daughter / Wife of": 28, Remarks: 40 });
 }
 const VALID_HEADS = { fcDate: "FC Valid", insuranceExp: "Insurance Valid", taxExp: "Tax Valid", permitExp: "Permit Valid", permitAuthExp: "Permit Auth. Valid", pollutionExp: "Pollution Valid", rcValidity: "RC Valid", speedGovExp: "Speed Governor Valid", gpsExp: "GPS (AIS-140) Valid" };
 // Vehicles: every vehicle in plate order; a document that does not apply to the vehicle's class shows "Not needed".
@@ -9879,7 +9893,7 @@ function xlVehicleSheet(recs) {
     v.ownerName, v.ownerAddress, v.make, v.model, v.usage, v.fuel, v.emission, v.regDate, fmtMfg(v), v.chassisNo, v.engineNo, v.rto, v.seats, v.staffSeats, v.gvw, v.ulw, v.bodyType, v.bodyColour,
     v.fastag, v.fuelTank, v.tyreCount, v.tyreSize, v.batteryMake, v.batteryDate, v.odoStart, fin(v), v.financier,
     ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => docApplies(k, v.type, v.usage) ? v[d.k] ?? "" : "")), v.remarks]);
-  return xlMasterSheet("Vehicle Master Data", heads, rows, { "Plate No.": 16, Class: 17, "Owner Name": 26, "Owner Address": 40, Remarks: 40 });
+  return xlMasterSheet("Vehicle Master Data", [{ heads, rows }], { "Plate No.": 16, Class: 17, "Owner Name": 26, "Owner Address": 40, Remarks: 40 });
 }
 // The records the downloads need, read fresh (shared records, or this browser's copy).
 async function dlRead(colls) {
@@ -16928,7 +16942,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07g";
+const APP_VER = "2026-11-07h";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
