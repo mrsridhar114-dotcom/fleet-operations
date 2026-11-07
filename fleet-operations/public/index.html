@@ -1898,6 +1898,11 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 @media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } }
 .mptable .mpin { width: 130px; padding: 6px 8px; font: inherit; text-align: right; } .mptable input::placeholder { color: var(--muted); font-style: italic; } .mptable tr.mpown td { background: color-mix(in srgb, #2f75b5 7%, var(--surface)); } .mptable tr.mpgrp td { border-top: 2px solid var(--line); } .mptable .mpw { padding-left: 14px; color: var(--ink); }
 .mptable .mpclr, #mpLog .mpclr { padding: 4px 8px; font-size: 12px; white-space: nowrap; } .mptable .mpact { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Maintenance history colours: each vehicle's rows in one colour (blue, purple, teal in turn), each maintenance type a lighter or
+   darker shade of it, the latest visit of each type in bold. Overdue (red) stays on top. */
+.mhtable tr.mhv0 td { --mhc: #3b6fd1; } .mhtable tr.mhv1 td { --mhc: #8a55c9; } .mhtable tr.mhv2 td { --mhc: #1f9a8c; }
+.mhtable tr.mht0 td { background: color-mix(in srgb, var(--mhc) 9%, var(--surface)); } .mhtable tr.mht1 td { background: color-mix(in srgb, var(--mhc) 21%, var(--surface)); }
+.mhtable tr.mhvs td { border-top: 2px solid color-mix(in srgb, var(--mhc) 55%, var(--surface)); } .mhtable tr.mhtop td { font-weight: 700; }
 .mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
 @media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
 .mtsteps span.on { background: #fff; color: var(--ink); } .mtsteps span.done { background: var(--accent); color: #fff; }
@@ -7444,9 +7449,10 @@ function pbSheet(spec, list, keys, title) {
   const top = spec.top?.(list, spec); if (top) { XL.put(ws, "A2", top, S.sLab); for (let i = 1; i < H.length; i++) XL.put(ws, `${XL.col(i)}2`, null, S.sLab); if (H.length > 1) ws.merges.push(`A2:${XL.col(H.length - 1)}2`); ws.heights[2] = 22; }
   H.forEach((c, i) => { XL.put(ws, `${XL.col(i)}3`, c.h, S.head); ws.widths[XL.col(i)] = c.xl || 14; });
   let gr = 0; // heading rows added for groups
+  const SH = spec.shade?.(list); // spec.shade(lines): a colour for each line (the maintenance history)
   list.forEach((x, n) => { if (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x))) { const r = n + 4 + gr++; XL.put(ws, `A${r}`, spec.grpLabel ? spec.grpLabel(spec.groupBy(x)) : spec.groupBy(x), S.sLab);
       for (let i = 1; i < H.length; i++) XL.put(ws, `${XL.col(i)}${r}`, null, S.sLab); if (H.length > 1) ws.merges.push(`A${r}:${XL.col(H.length - 1)}${r}`); ws.heights[r] = 20; }
-    const r = n + 4 + gr, M = S.mx[spec.rowSt?.(x)]; H.forEach((c, i) => { const a = `${XL.col(i)}${r}`, raw = spec.raw ? spec.raw(x, c.k) : null;
+    const r = n + 4 + gr, sh = SH?.[n], M = spec.rowSt?.(x) === "over" || !sh ? S.mx[spec.rowSt?.(x)] : S.mh[sh.v * 2 + sh.t][sh.top ? 1 : 0]; H.forEach((c, i) => { const a = `${XL.col(i)}${r}`, raw = spec.raw ? spec.raw(x, c.k) : null;
     if (c.kind === "date" && raw) XL.put(ws, a, { d: raw }, M ? M.date : S.date); else if (c.kind === "num" && raw != null && raw !== "") XL.put(ws, a, raw, M ? M.int : Number.isInteger(raw) ? S.int : S.dec); else XL.put(ws, a, spec.val(x, c.k), M ? M.text : S.text); }); });
   const tot = H.map((c, i) => c.total ? i : -1).filter(i => i >= 0);
   if (tot.length) { const t = list.length + 4 + gr; XL.put(ws, `${XL.col(Math.max(0, tot[0] - 1))}${t}`, "Total", S.ttext);
@@ -7465,6 +7471,7 @@ async function pbImage(spec, list, keys, title, png) {
   const cv = document.createElement("canvas"), g = cv.getContext("2d"), wc = H.find(c => c.kind === "wrap");
   const wrap = t => { g.font = `400 15px ${F}`; const out = []; let cur = ""; String(t).split(/\s+/).forEach(w => { const n = cur ? cur + " " + w : w; if (cur && g.measureText(n).width > wc.w - 20) { out.push(cur); cur = w; } else cur = n; }); out.push(cur); return out; };
   const lines = list.map(r => wc ? wrap(spec.val(r, wc.k)) : [""]), rh = l => RH + (l.length - 1) * 20, hasTot = H.some(c => c.total);
+  const SHI = spec.shade?.(list);
   const gHead = n => spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(list[n])), nG = list.filter((_, n) => gHead(n)).length;
   const top = spec.top?.(list, spec) || "", TH = top ? 30 : 0;
   // A long heading goes on two or more lines.
@@ -7482,8 +7489,10 @@ async function pbImage(spec, list, keys, title, png) {
   H.forEach((c, i) => { hl[i].forEach((t, j) => cell(c, t, x, y + 22 + j * 18)); x += c.w; }); y += HH;
   list.forEach((r, n) => {
     if (gHead(n)) { g.fillStyle = "#dde7f3"; g.fillRect(M, y, W - 2 * M, RH); g.fillStyle = "#18212b"; g.font = `700 16px ${F}`; g.fillText(fit(spec.grpLabel ? spec.grpLabel(spec.groupBy(r)) : spec.groupBy(r), W - 2 * M - 20), M + 10, y + 23); y += RH; }
-    const h = rh(lines[n]), st = spec.rowSt?.(r); if (st || n % 2) { g.fillStyle = st === "over" ? "#ffc7ce" : st === "soon" ? "#ffd8a8" : st === "ok" ? "#e2efda" : "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
-    x = M; H.forEach(c => { g.fillStyle = "#18212b"; g.font = c.kind === "num" || c.kind === "date" ? `400 14px ${MONO}` : `400 15px ${F}`;
+    const h = rh(lines[n]), st = spec.rowSt?.(r), sh = SHI?.[n];
+    if (sh && st !== "over") { g.fillStyle = "#" + MH_SHADES[sh.v * 2 + sh.t]; g.fillRect(M, y, W - 2 * M, h); }
+    else if (st || n % 2) { g.fillStyle = st === "over" ? "#ffc7ce" : st === "soon" ? "#ffd8a8" : st === "ok" ? "#e2efda" : "#f8f9fa"; g.fillRect(M, y, W - 2 * M, h); }
+    const wt = sh?.top ? 700 : 400; x = M; H.forEach(c => { g.fillStyle = "#18212b"; g.font = c.kind === "num" || c.kind === "date" ? `${wt} 14px ${MONO}` : `${wt} 15px ${F}`;
       if (c === wc) lines[n].forEach((t, j) => g.fillText(t, x + 10, y + 22 + j * 20)); else cell(c, spec.val(r, c.k), x, y + 22); x += c.w; });
     g.strokeStyle = "#dde2e7"; g.lineWidth = 1; g.beginPath(); g.moveTo(M, y + h - 0.5); g.lineTo(W - M, y + h - 0.5); g.stroke(); y += h;
   });
@@ -8552,6 +8561,15 @@ function mhList() {
   const now = new Map(); rows.forEach(r => { if (!now.has(r.key)) now.set(r.key, mtNow(r.key)); r.over = mhShow === "last" && r.next && now.get(r.key) && now.get(r.key).km >= r.next; });
   return rows;
 }
+// Row colour classes: the vehicle's colour (mhv0–2, a new vehicle starts with a line, mhvs), the shade of its maintenance type
+// (mht0 / mht1 in turn within the vehicle) and bold for the first (latest) row of each type.
+function mhShade(rows) {
+  const tk = x => x.it.k + "|" + (x.it.pos || ""); let v = 0, t = 0;
+  return rows.map((r, i) => { const p = rows[i - 1], newV = !!p && p.key !== r.key, newT = !p || newV || tk(p) !== tk(r);
+    if (newV) { v++; t = 0; } else if (p && newT) t++;
+    return { v: v % 3, t: t % 2, newV, top: newT }; });
+}
+const mhCls = rows => mhShade(rows).map(x => `mhv${x.v} mht${x.t}${x.newV ? " mhvs" : ""}${x.top ? " mhtop" : ""}`);
 function renderMhist() {
   const keys = [...new Set(ops.maintLog.map(mtKeyOf))].map(k => [k, mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k))]).sort((a, b) => a[1].localeCompare(b[1]));
   $("mhBus").innerHTML = `<option value="">All vehicles</option>` + keys.map(([k, p]) => `<option value="${esc(k)}">${esc(p)}</option>`).join("");
@@ -8563,8 +8581,8 @@ function renderMhist() {
   $("mhSum").innerHTML = ostat(mhShow === "last" ? "Jobs" : "Jobs done", nf(rows.length), mhShow === "last" ? "latest of each" : "in the history") + ostat("Vehicles", nf(new Set(rows.map(r => r.key)).size), "") +
     ostat("Maintenance types", nf(new Set(rows.map(r => r.it.k)).size), "") + (mhShow === "last" ? ostat("Past next service", nf(rows.filter(r => r.over).length), "by today's km", rows.some(r => r.over) ? "var(--danger)" : "") : "");
   $("mhTable").innerHTML = `<thead><tr><th>Vehicle Number</th><th>Maintenance Type</th><th>Last Maintenance Date</th><th class="n">Last Maintenance Kms</th><th class="n">Next KMS to be Serviced</th><th>Remarks</th></tr></thead><tbody>` +
-    (rows.length ? rows.map(r => `<tr data-mhentry="${r.e.id}"${r.over ? ' class="ms-over"' : ""} tabindex="0" style="cursor:pointer"><td class="num" style="white-space:nowrap">${esc(r.plate)}</td><td>${esc(r.type)}</td><td class="num" data-sort="${esc(r.date)}">${fmtDate(r.date)}</td>` +
-      `<td class="n">${r.km ? nf(r.km) : "—"}</td><td class="n mhnx">${r.next ? nf(r.next) : "—"}</td><td class="mhrem">${esc(r.remarks)}</td></tr>`).join("")
+    (rows.length ? (cls => rows.map((r, i) => `<tr data-mhentry="${r.e.id}" class="${cls[i]}${r.over ? " ms-over" : ""}" tabindex="0" style="cursor:pointer"><td class="num" style="white-space:nowrap">${esc(r.plate)}</td><td>${esc(r.type)}</td><td class="num" data-sort="${esc(r.date)}">${fmtDate(r.date)}</td>` +
+      `<td class="n">${r.km ? nf(r.km) : "—"}</td><td class="n mhnx">${r.next ? nf(r.next) : "—"}</td><td class="mhrem">${esc(r.remarks)}</td></tr>`).join(""))(mhCls(rows))
       : `<tr><td colspan="6" class="sub" style="padding:14px">No maintenance entered yet. Use Maintenance entry, or load your Excel in Utility › Data upload.</td></tr>`) + `</tbody>`;
   if (rows.length) tblTools($("mhTable"), "mhist");
   // On a phone each job is a card.
@@ -8585,7 +8603,7 @@ $("mhPrint").onclick = () => {
   const list = mhList();
   pbOpen({ sheet: "Maintenance history", title0: `Maintenance history${mhBus ? " · " + mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === mhBus)) : ""}`, rows: list, sub: mhShow === "last" ? "Latest of each job" : "Every visit",
     note: "The jobs on the page, with the vehicle and type chosen.",
-    cols: MH_COLS(), lineCols: ["type", "date", "km"], lineSub: r => r.plate, val: mhV, raw: mhR });
+    cols: MH_COLS(), lineCols: ["type", "date", "km"], lineSub: r => r.plate, val: mhV, raw: mhR, shade: mhShade, rowSt: r => r.over ? "over" : "" });
 };
 
 /* ---------- Loading the Excel workbook (Utility › Data upload) ----------
@@ -9810,6 +9828,8 @@ async function renderStorage(force) {
 /* ---------- Excel export ---------- */
 // A small .xlsx writer (no outside library): sheets with styles, merged cells, frozen headings and live formulas.
 // Every formula also carries its worked-out value, so phone previews that don't calculate still show the numbers.
+// Maintenance history colours: blue, purple, teal (one per vehicle in turn), each light and dark (one per maintenance type in turn).
+const MH_SHADES = ["EDF2FB", "D6E1F5", "F4F0FA", "E6DBF4", "EBF6F5", "D0EAE7"];
 const XL = (() => {
   const crcT = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
   const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = crcT[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
@@ -9844,7 +9864,8 @@ const XL = (() => {
     sTitle: 58, sLab: 59, sVal: 60, sHead: 61, sDate: 62, sInt: 63, sDec: 64, sTxt: 65,
     smTitle: 66, smHead: 67, smVeh: 68, smNum: 69, smDay: 70, smTotL: 71, smTotN: 72, smTotD: 73, smSign: 74, smGrandL: 75, smGrand: 76,
     mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84, sDateX: 85, sDateD: 86, sNote: 87, homeBtn: 88, hTitle: 89, hNote: 90, hLab: 91, btn: { sum: 92, route: 93, spare: 94, truck: 95, exp: 96, master: 97, off: 98 },
-    mx: ["", "over", "soon"].reduce((a, k, i) => (a[k || "ok"] = { text: 99 + i * 3, int: 100 + i * 3, date: 101 + i * 3 }, a), {}) };
+    mx: ["", "over", "soon"].reduce((a, k, i) => (a[k || "ok"] = { text: 99 + i * 3, int: 100 + i * 3, date: 101 + i * 3 }, a), {}),
+    mh: MH_SHADES.map((_, i) => [0, 1].map(b => { const n = 108 + (i * 2 + b) * 3; return { text: n, int: n + 1, date: n + 2 }; })) };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -9875,14 +9896,16 @@ const XL = (() => {
     xf(0, 15, 14, 2, 'horizontal="center" vertical="center"'), xf(0, 4, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 3, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 5, 0, 0, 'horizontal="left" vertical="center" wrapText="1"'),
     ...[16, 17, 11, 18, 19, 20].map(fl => xf(0, 15, fl, 3, 'horizontal="center" vertical="center" wrapText="1"')), xf(0, 3, 3, 3, 'horizontal="center" vertical="center"'),
     // 99–107: the maintenance summary download: text, number, date in green (OK), red (overdue) and orange (due soon)
-    ...[9, 21, 22].flatMap(fl => [xf(0, 0, fl, 2, 'vertical="center" wrapText="1"'), xf(165, 0, fl, 2, 'vertical="center"'), xf(164, 0, fl, 2, 'horizontal="left" vertical="center"')])];
+    ...[9, 21, 22].flatMap(fl => [xf(0, 0, fl, 2, 'vertical="center" wrapText="1"'), xf(165, 0, fl, 2, 'vertical="center"'), xf(164, 0, fl, 2, 'horizontal="left" vertical="center"')]),
+    // 108–143: the maintenance history colours (fills 23–28: each vehicle colour light and dark), plain and bold: text, number, date
+    ...MH_SHADES.flatMap((_, i) => [0, 1].flatMap(b => [xf(0, b, 23 + i, 2, 'vertical="center" wrapText="1"'), xf(165, b, 23 + i, 2, 'vertical="center"'), xf(164, b, 23 + i, 2, 'horizontal="left" vertical="center"')]))];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="16"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
     [[1, 28], [1, 24], [0, 16], [1, 16], [1, 36], [1, 24], [1, 72], [1, 18], [1, 20]].map(([b, z]) => `<font>${b ? "<b/>" : ""}<sz val="${z}"/><name val="Calibri"/><family val="2"/></font>`).join("") +
     `<font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font></fonts>` +
-    `<fills count="23"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
-    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF", "FFC55A11", "FFDBDBDB", "FFFFC000", "FF00B050", "FFF4B183", "FF1F4E78", "FF2F75B5", "FF548235", "FF7030A0", "FF44546A", "FFFFC7CE", "FFFFD8A8"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
+    `<fills count="29"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
+    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF", "FFC55A11", "FFDBDBDB", "FFFFC000", "FF00B050", "FFF4B183", "FF1F4E78", "FF2F75B5", "FF548235", "FF7030A0", "FF44546A", "FFFFC7CE", "FFFFD8A8", ...MH_SHADES.map(c => "FF" + c)].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
     `<borders count="4"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}${B.replace(/thin/g, "thick").replace(/FFBFBFBF/g, "FFFFFFFF")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="${XFS.length}">${XFS.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const serial = iso => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(1899, 11, 30)) / 864e5;
@@ -10269,7 +10292,7 @@ function xlMaintSheetsOf() {
     out.push(wide(pbSheet({ sheet: "Maintenance Summary", cols, val: L.V, raw: L.R, rowSt: L.st, groupBy: r => r.plate, grpLabel: g => `${g} · ${L.curTxt(L.keyOfPlate(g))}`, headH: 32 },
       L.list, keys, `Maintenance Summary - as on ${today} · Red: overdue · Orange: due within 5,000 km · Green: OK`))); }
   const hist = mhRows();
-  if (hist.length) out.push(wide(pbSheet({ sheet: "Maintenance History", cols: MH_COLS(), val: mhV, raw: mhR }, hist, MH_COLS().map(c => c.k), `Maintenance History - all jobs in the system, as on ${today}`)));
+  if (hist.length) out.push(wide(pbSheet({ sheet: "Maintenance History", cols: MH_COLS(), val: mhV, raw: mhR, shade: mhShade }, hist, MH_COLS().map(c => c.k), `Maintenance History - all jobs in the system, as on ${today}`)));
   return out;
 }
 /* The first sheet of Download all, on one screen: a row per group, its name in column A and its buttons beside it (each a link
@@ -17389,7 +17412,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08m";
+const APP_VER = "2026-11-08o";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
