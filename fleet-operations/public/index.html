@@ -8347,13 +8347,13 @@ const MS_T = {
   en: { title: "Maintenance summary", cols: { plate: "Vehicle", type: "Maintenance", date: "Last Done", km: "Kms", next: "Next Service At", left: "Km Left", when: "Expected Around", status: "Status" },
     st: { over: "Overdue", soon: "Due soon", ok: "OK", nogap: "No gap set" }, now: "Now", left: mtLeftTxt, item: r => mtItemName(r.it),
     sub: d => `As on ${d} · Red: overdue · Orange: due within 5,000 km · Green: OK`, last: "Last", km: "km",
-    cur: "VEHICLE'S CURRENT RUNNING KILOMETER READING", on: d => `on ${d}`, noCur: "no trip or diesel reading yet", lines: n => `${n} line${n === 1 ? "" : "s"}` },
+    cur: "VEHICLE'S CURRENT RUNNING KILOMETER READING", act: "ACTUAL KILOMETER", on: d => `on ${d}`, noCur: "no trip or diesel reading yet", lines: n => `${n} line${n === 1 ? "" : "s"}` },
   ta: { title: "பராமரிப்பு விவரம்", cols: { plate: "வண்டி எண்", type: "வேலை", date: "கடைசி தேதி", km: "அப்போது கி.மீ", next: "அடுத்த சர்வீஸ்", left: "மீதி கி.மீ", when: "அடுத்த தேதி", status: "நிலை" },
     st: { over: "தாமதம்", soon: "விரைவில்", ok: "சர்வீஸ் செய்ய நேரம் உள்ளது", nogap: "கி.மீ இல்லை" }, now: "இப்போதே",
     left: d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} கி.மீ அதிகம்` : `${nf(d.left)} கி.மீ`,
     item: r => (MS_TA_TYPE[r.it.k] || mtType(r.it.k).name) + (r.it.pos ? " · " + ((/truck/i.test(mtClsOf(r.key)) && MS_TA_TRUCK[r.it.pos]) || MS_TA_POS[r.it.pos] || mtPosName(r.it.pos)) : ""),
     sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: சர்வீஸ் செய்ய நேரம் உள்ளது`, last: "கடைசி", km: "கி.மீ",
-    cur: "வாகனத்தின் தற்போதைய கிலோமீட்டர் ரீடிங்", on: d => `${d} அன்று`, noCur: "பயண / டீசல் ரீடிங் இல்லை", lines: n => `${n} வரிகள்` }
+    cur: "வாகனத்தின் தற்போதைய கிலோமீட்டர் ரீடிங்", act: "உண்மையான கிலோமீட்டர்", on: d => `${d} அன்று`, noCur: "பயண / டீசல் ரீடிங் இல்லை", lines: n => `${n} வரிகள்` }
 };
 $("msDl").onclick = () => {
   const keys = msBus ? [msBus] : [...new Set([...mtFleet().map(v => v.id).filter(k => ops.maintLog.some(x => mtKeyOf(x) === k)), ...ops.maintLog.map(mtKeyOf)])].filter(k => msOld || mtVehOf(k));
@@ -8369,7 +8369,9 @@ $("msDl").onclick = () => {
   const one = keys.length === 1;
   // The vehicle's latest meter reading from its trip sheets, round trips and diesel fills, shown on top of the file (or on each vehicle's heading).
   const cur = new Map(keys.map(k => [k, mtNow(k, true)]));
-  const curTxt = k => { const c = cur.get(k); return `${T().cur}: ${c ? `${nf(c.meter)} ${T().km} (${T().on(xpDateTxt(c.date))})` : T().noCur}`; };
+  // A vehicle with meter adjustments in the vehicle master (meter and actual km) also shows the actual km.
+  const curTxt = k => { const c = cur.get(k), adj = c && odoPairs(mtVehOf(k)).length;
+    return `${T().cur}: ${c ? `${nf(c.meter)} ${T().km} (${T().on(xpDateTxt(c.date))})${adj ? ` · ${T().act}: ${nf(c.km)} ${T().km}` : ""}` : T().noCur}`; };
   const keyOfPlate = g => keys.find(k => plateK(k) === g);
   const boxes = one ? "" : `<div class="xosub">Vehicles</div><label class="dall"><input type="checkbox" data-msvall checked> All vehicles</label><div class="xomsv">${keys.map(k => `<label><input type="checkbox" data-msv="${esc(k)}" checked> ${esc(plateK(k))}</label>`).join("")}</div>`;
   const tAuto = ks => ks.length === 1 ? `${T().title} - ${plateK(ks[0])}` : T().title;
@@ -17314,7 +17316,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08b";
+const APP_VER = "2026-11-08c";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
