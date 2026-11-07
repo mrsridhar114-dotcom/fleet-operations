@@ -7432,7 +7432,7 @@ async function xpUndoRun() { const u = xpUndo; if (!u) return; xpUndo = null; cl
            lineCols (keys shown in the line list), lineSub(row) → small text under the first text column, sumKey, extra: { html, onClick(button) },
            rowSt(row) → "over" (red) or "soon" (orange) to colour a line in the list, the Excel and the image,
            groupBy(row) → a heading row before each group (lines in group order), split: { label, title(group) } offers one file per group,
-           noCols: hide the column choice (every column not marked off is kept), noFooter: no "Printed by" line on the image, rowSt "ok" is green, extra.onChange(input, box) / extra.sync(box) for inputs in extra } */
+           noFooter: no "Printed by" line on the image, rowSt "ok" is green, extra.onChange(input, box) / extra.sync(box) for inputs in extra } */
 const PB_IMG_MAX = 900;
 const pbName = (ext, title) => { const d = new Date(), p2 = n => String(n).padStart(2, "0"), base = String(title || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "report"; return `${base}_${p2(d.getDate())}-${p2(d.getMonth() + 1)}-${d.getFullYear()}.${ext}`; };
 function pbExcel(spec, list, keys, title) {
@@ -7522,7 +7522,7 @@ function pbOpen(spec) {
     `<p class="dnote">${spec.note || ""}</p>` +
     `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
     (spec.setLang ? `<div class="xosub">Language</div><div class="xofmt" role="radiogroup"><button type="button" data-lang="en">English</button><button type="button" data-lang="ta" lang="ta">தமிழ்</button></div>` : "") +
-    `<div${spec.noCols ? " hidden" : ""}><div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${spec.cols.map(c => `<li><label><input type="checkbox" data-c="${c.k}"${c.off ? "" : " checked"}> ${esc(c.h)}</label></li>`).join("")}</ul></div>` +
+    `<div><div class="xosub">Columns <span data-ccount></span></div><label class="dall"><input type="checkbox" data-all="c"> All columns</label><ul class="xocols">${spec.cols.map(c => `<li><label><input type="checkbox" data-c="${c.k}"${c.off ? "" : " checked"}> ${esc(c.h)}</label></li>`).join("")}</ul></div>` +
     (spec.split ? `<div class="xosub">Download as</div><div class="xofmt xosplit" role="radiogroup"><button type="button" data-split="0" aria-pressed="true">One combined file</button><button type="button" data-split="1" aria-pressed="false">${esc(spec.split.label)}</button></div>` : "") +
     (spec.extra ? `<div class="xoextra">${spec.extra.html}</div>` : "") + `</div>` +
     `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
@@ -7577,6 +7577,7 @@ function pbOpen(spec) {
   const relang = l => { spec.setLang(l); if (l === "ta") rtTamilFont();
     const st = [...box.querySelectorAll("tr[data-row]")].map(tr => [tr.querySelector("input").checked, tr.hidden]), gh = [...box.querySelectorAll("tr.xogrp")].map(g => g.hidden), t = box.querySelector(".xolt");
     t.lang = l; t.innerHTML = `<thead>${thead()}</thead><tbody>${tbody()}</tbody>`;
+    box.querySelectorAll("input[data-c]").forEach(i => { const c = spec.cols.find(x => x.k === i.dataset.c); if (c) i.parentNode.lastChild.textContent = " " + c.h; });
     box.querySelectorAll("tr[data-row]").forEach((tr, n) => { tr.querySelector("input").checked = st[n][0]; tr.hidden = st[n][1]; });
     box.querySelectorAll("tr.xogrp").forEach((g, n) => g.hidden = gh[n]); sync(); };
   if (spec.lang === "ta") rtTamilFont();
@@ -8379,9 +8380,9 @@ $("msDl").onclick = () => {
   const boxes = one ? "" : `<div class="xosub">Vehicles</div><label class="dall"><input type="checkbox" data-msvall checked> All vehicles</label><div class="xomsv">${keys.map(k => `<label><input type="checkbox" data-msv="${esc(k)}" checked> ${esc(plateK(k))}</label>`).join("")}</div>`;
   const tAuto = ks => ks.length === 1 ? `${T().title} - ${plateK(ks[0])}` : T().title;
   let lastT = tAuto(keys);
-  const spec = { lang, title0: lastT, rows: list, rowSt: st, noCols: true, noFooter: true,
+  const spec = { lang, title0: lastT, rows: list, rowSt: st, noFooter: true,
     groupBy: one ? null : r => r.plate, split: one ? null : { label: "One file per vehicle", title: g => `${T().title} - ${g}` },
-    note: "Each vehicle's jobs: overdue (red), due soon (orange), then OK (green). Untick any line you don't want. Choose Tamil for the drivers.",
+    note: "Each vehicle's jobs: overdue (red), due soon (orange), then OK (green). Untick any column or line you don't want. Choose Tamil for the drivers.",
     cols: [{ k: "plate", xl: 16, px: 150, kind: "text", off: true }, { k: "type", xl: 30, px: 0, kind: "text" }, { k: "date", xl: 15, px: 150, kind: "date" },
       { k: "km", xl: 13, px: 130, kind: "num" }, { k: "next", xl: 16, px: 150, kind: "num" }, { k: "left", xl: 17, px: 170, kind: "text" },
       { k: "when", xl: 17, px: 170, kind: "date" }, { k: "status", xl: 12, px: 110, kind: "text" }],
@@ -17321,7 +17322,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08e";
+const APP_VER = "2026-11-08f";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
