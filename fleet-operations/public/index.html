@@ -7478,7 +7478,7 @@ function pbOpen(spec) {
     (spec.extra ? `<div class="xoextra">${spec.extra.html}</div>` : "") + `</div>` +
     `<div class="xoright"><div class="xolh"><label class="dall"><input type="checkbox" data-all="l"> All lines</label><span data-lcount></span></div>` +
     `<div class="xolines"><table class="xolt"><thead><tr><th></th>${LC.map((c, i) => `<th class="${c.kind === "num" ? "n" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(c.h)}</th>`).join("")}</tr></thead><tbody>` +
-    list.map((x, n) => (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x)) ? `<tr class="xogrp"><td colspan="${LC.length + 1}">${esc(spec.groupBy(x))}</td></tr>` : "") + `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
+    list.map((x, n) => (spec.groupBy && (n === 0 || spec.groupBy(list[n - 1]) !== spec.groupBy(x)) ? `<tr class="xogrp" data-grp="${esc(spec.groupBy(x))}"><td colspan="${LC.length + 1}">${esc(spec.groupBy(x))}</td></tr>` : "") + `<tr data-row="${n}"${spec.rowSt?.(x) ? ` class="ms-${spec.rowSt(x)}"` : ""}><td><input type="checkbox" data-l="${n}"${!spec.picked || spec.picked.has(n) ? " checked" : ""} aria-label="Include this line"></td>` +
       LC.map((c, i) => `<td class="${c.kind === "num" ? "n num" : c.kind === "date" ? "num" : ""}${i > first && first >= 0 && c.kind !== "num" && i > 1 ? " xohide" : ""}">${esc(spec.val(x, c.k))}${i === first && spec.lineSub ? `<small class="xolsub">${esc(spec.lineSub(x))}</small>` : ""}</td>`).join("") + `</tr>`).join("") +
     `</tbody></table></div></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
@@ -7491,7 +7491,9 @@ function pbOpen(spec) {
   const makeAll = async () => { if (!split) return [await make()];
     const out = [], R = rows(); for (const gk of [...new Set(R.map(spec.groupBy))]) { const part = R.filter(r => spec.groupBy(r) === gk), t = spec.split.title(gk);
       out.push(fmt === "jpg" ? await pbImage({ ...spec, groupBy: null }, part, cols(), t) : pbExcel({ ...spec, groupBy: null }, part, cols(), t)); } return out; };
-  const tick = (sel, all) => { const n = box.querySelectorAll(sel + ":checked").length, m = box.querySelectorAll(sel).length, a = box.querySelector(`input[data-all="${all}"]`); a.checked = n === m; a.indeterminate = n > 0 && n < m; return [n, m]; };
+  // Lines hidden (a group taken out) are not counted and not ticked by All lines.
+  const shown = sel => [...box.querySelectorAll(sel)].filter(i => !i.closest("tr[hidden]"));
+  const tick = (sel, all) => { const n = shown(sel).filter(i => i.checked).length, m = shown(sel).length, a = box.querySelector(`input[data-all="${all}"]`); a.checked = n === m; a.indeterminate = n > 0 && n < m; return [n, m]; };
   const sync = () => {
     const [nc, mc] = tick("input[data-c]", "c"), [nl, ml] = tick("input[data-l]", "l"), big = fmt === "jpg" && nl > PB_IMG_MAX;
     box.querySelector("[data-ccount]").textContent = `· ${nc} of ${mc}`;
@@ -7505,7 +7507,7 @@ function pbOpen(spec) {
     sv.lastChild.textContent = !nc ? "Choose a column" : !nl ? "Choose a line" : `Save as ${fmt === "jpg" ? "image" : "Excel"}${split ? ` · ${nf_} file${nf_ === 1 ? "" : "s"}` : ""}`;
     box.querySelector("[data-xoerr]").textContent = big ? `Too many lines for one image (${nl}). Untick some or filter to ${PB_IMG_MAX} or fewer, or use Excel.` : "";
   };
-  box.addEventListener("change", e => { const a = e.target.dataset.all; if (a) box.querySelectorAll(a === "c" ? "input[data-c]" : "input[data-l]").forEach(i => i.checked = e.target.checked);
+  box.addEventListener("change", e => { const a = e.target.dataset.all; if (a) shown(a === "c" ? "input[data-c]" : "input[data-l]").forEach(i => i.checked = e.target.checked);
     if (spec.extra?.onChange && e.target.closest(".xoextra")) spec.extra.onChange(e.target, box); sync(); });
   box.addEventListener("click", e => {
     if (e.target === box || e.target.closest("[data-xoclose]")) { pbClose(); return; }
@@ -8305,10 +8307,12 @@ $("msDl").onclick = () => {
     extra: one ? null : { html: boxes,
       // A vehicle's box ticks or unticks all its jobs; it shows ticked, unticked or part-ticked from its jobs.
       onChange: (inp, box) => { const ks = inp.dataset.msvall != null ? keys : inp.dataset.msv != null ? [inp.dataset.msv] : [];
-        list.forEach((r, n) => { if (ks.includes(r.key)) { const i = box.querySelector(`input[data-l="${n}"]`); if (i) i.checked = inp.checked; } }); },
+        // A vehicle taken out is hidden on the right (its heading and its jobs); put back, its jobs show ticked.
+        list.forEach((r, n) => { if (ks.includes(r.key)) { const i = box.querySelector(`input[data-l="${n}"]`); if (i) { i.checked = inp.checked; i.closest("tr").hidden = !inp.checked; } } });
+        ks.forEach(k => { const g = box.querySelector(`tr[data-grp="${CSS.escape(plateK(k))}"]`); if (g) g.hidden = !inp.checked; }); },
       sync: box => { const all = box.querySelector("[data-msvall]"); let on = 0, part = 0;
         keys.forEach(k => { const ls = list.map((r, n) => r.key === k ? box.querySelector(`input[data-l="${n}"]`) : null).filter(Boolean), c = ls.filter(i => i.checked).length, v = box.querySelector(`input[data-msv="${CSS.escape(k)}"]`);
-          v.checked = c === ls.length; v.indeterminate = c > 0 && c < ls.length; if (v.checked) on++; else if (c) part++; });
+          const out = ls.every(i => i.closest("tr").hidden); v.checked = !out && c === ls.length; v.indeterminate = !out && c > 0 && c < ls.length; if (v.checked) on++; else if (c) part++; });
         all.checked = on === keys.length; all.indeterminate = !all.checked && (on + part) > 0; } } });
 };
 
@@ -17127,7 +17131,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07q";
+const APP_VER = "2026-11-07r";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
