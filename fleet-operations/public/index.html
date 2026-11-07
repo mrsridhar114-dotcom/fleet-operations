@@ -1891,7 +1891,9 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .bwh .mtsteps { display: flex; flex-direction: row; flex: none; align-self: center; gap: 4px; } .mtchk.mtfix { cursor: default; } .mtchk .mtnx { display: block; margin-bottom: 4px; } .mtnext span { white-space: nowrap; }
 .mscards { display: none; } .mscard { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
 .mscard .mscn { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .mscard .mscn b { font-size: 15px; } .mscard.ms-over { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); } .mscard.ms-soon { background: color-mix(in srgb, #f2c200 14%, var(--surface)); }
-@media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
+@media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } }
+.mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
+@media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
 .mtsteps span.on { background: #fff; color: var(--ink); } .mtsteps span.done { background: var(--accent); color: #fff; }
 .mtkm .bwin { display: flex; align-items: center; gap: 8px; } .mtkm input { font: 700 28px var(--mono); width: 100%; min-height: 58px; } .mtkm b { color: var(--muted); }
 .mttiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } @media (min-width: 701px) { .mttiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -2232,6 +2234,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li data-mod="maintenance"><a class="nav" href="#maintenance-summary" data-view="tmsum">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 4h11v16H8zM5 7v13a1 1 0 0 0 1 1h11"/><path d="M11 9h5M11 13h5M11 17h3"/></svg>
             Maintenance summary</a></li>
+          <li data-mod="maintenance"><a class="nav" href="#maintenance-history" data-view="tmhist">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            Maintenance history</a></li>
         </ul>
       </div>
       <div class="group">
@@ -2902,6 +2907,24 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </header>
       <div class="summary" id="msSum"></div>
       <div id="msList" style="display:flex;flex-direction:column;gap:12px;margin-top:12px"></div>
+    </section>
+
+    <!-- ================= Maintenance history ================= -->
+    <section class="wrap twrap" id="view-tmhist" hidden>
+      <header class="top">
+        <div>
+          <h1>Maintenance history</h1>
+          <p class="sync">Every maintenance job entered or loaded from Excel, newest first. Use the headings to sort and filter. Tap a row to open that entry.</p>
+        </div>
+        <div class="tcontrols">
+          <div class="hf"><label for="mhBus">Vehicle</label><select id="mhBus"></select></div>
+          <div class="hf"><label for="mhType">Maintenance type</label><select id="mhType"></select></div>
+          <div class="hf"><label for="mhShow">Show</label><select id="mhShow"><option value="all">Every visit</option><option value="last">Latest of each job</option></select></div>
+          <button class="btn" type="button" id="mhPrint">🖨 Print / Excel</button>
+        </div>
+      </header>
+      <div class="summary" id="mhSum"></div>
+      <section class="panel" id="mhPanel" style="margin-top:12px"><div class="tscroll"><table class="ctable mhtable" id="mhTable"></table></div><div class="mscards" id="mhCards"></div></section>
     </section>
 
 
@@ -4157,9 +4180,9 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", tmhist: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
@@ -4179,14 +4202,14 @@ function showView() {
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = ["texp", "tmaint", "tmsum"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = ["texp", "tmaint", "tmsum", "tmhist"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
   if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); }
-  if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum();
+  if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum(); if (view === "tmhist") renderMhist();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
 }
@@ -8259,6 +8282,59 @@ async function msgClick(e) {
   $("msgw").hidden = true; document.documentElement.classList.remove("bw-on"); msgEd = null; renderMsum();
 }
 
+/* ---------- Maintenance history ----------
+   One line per job of each visit: vehicle, job (with the wheel), the date and km of that visit, the km of the next service
+   (the km + the service gap, where the job has one) and the remarks (the job's note and the visit's notes). Latest of each job:
+   only the last visit of each job of each vehicle; a job past its km is shown in red. */
+let mhBus = "", mhType = "", mhShow = "all";
+function mhRows() {
+  const out = [];
+  ops.maintLog.forEach(x => { const key = mtKeyOf(x), km = mtAct(key, x.date, x.km);
+    (x.items || []).forEach(it => { const g = mtGap(key, it.k);
+      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
+  return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(b.date).localeCompare(String(a.date)) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
+}
+function mhList() {
+  let rows = mhRows().filter(r => (!mhBus || r.key === mhBus) && (!mhType || r.it.k === mhType));
+  if (mhShow === "last") { const seen = new Set(); rows = rows.filter(r => { const id = r.key + "|" + r.it.k + "|" + (r.it.pos || ""); if (seen.has(id)) return false; seen.add(id); return true; }); }
+  const now = new Map(); rows.forEach(r => { if (!now.has(r.key)) now.set(r.key, mtNow(r.key)); r.over = mhShow === "last" && r.next && now.get(r.key) && now.get(r.key).km >= r.next; });
+  return rows;
+}
+function renderMhist() {
+  const keys = [...new Set(ops.maintLog.map(mtKeyOf))].map(k => [k, mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k))]).sort((a, b) => a[1].localeCompare(b[1]));
+  $("mhBus").innerHTML = `<option value="">All vehicles</option>` + keys.map(([k, p]) => `<option value="${esc(k)}">${esc(p)}</option>`).join("");
+  $("mhBus").value = keys.some(([k]) => k === mhBus) ? mhBus : ""; mhBus = $("mhBus").value;
+  const used = new Set(ops.maintLog.flatMap(x => (x.items || []).map(it => it.k)));
+  $("mhType").innerHTML = `<option value="">All types</option>` + MT_TYPES.filter(t => used.has(t.k)).map(t => `<option value="${t.k}">${esc(t.name)}</option>`).join("");
+  $("mhType").value = used.has(mhType) ? mhType : ""; mhType = $("mhType").value; $("mhShow").value = mhShow;
+  const rows = mhList();
+  $("mhSum").innerHTML = ostat(mhShow === "last" ? "Jobs" : "Jobs done", nf(rows.length), mhShow === "last" ? "latest of each" : "in the history") + ostat("Vehicles", nf(new Set(rows.map(r => r.key)).size), "") +
+    ostat("Maintenance types", nf(new Set(rows.map(r => r.it.k)).size), "") + (mhShow === "last" ? ostat("Past next service", nf(rows.filter(r => r.over).length), "by today's km", rows.some(r => r.over) ? "var(--danger)" : "") : "");
+  $("mhTable").innerHTML = `<thead><tr><th>Vehicle Number</th><th>Maintenance Type</th><th>Last Maintenance Date</th><th class="n">Last Maintenance Kms</th><th class="n">Next KMS to be Serviced</th><th>Remarks</th></tr></thead><tbody>` +
+    (rows.length ? rows.map(r => `<tr data-mhentry="${r.e.id}"${r.over ? ' class="ms-over"' : ""} tabindex="0" style="cursor:pointer"><td class="num" style="white-space:nowrap">${esc(r.plate)}</td><td>${esc(r.type)}</td><td class="num" data-sort="${esc(r.date)}">${fmtDate(r.date)}</td>` +
+      `<td class="n">${r.km ? nf(r.km) : "—"}</td><td class="n mhnx">${r.next ? nf(r.next) : "—"}</td><td class="mhrem">${esc(r.remarks)}</td></tr>`).join("")
+      : `<tr><td colspan="6" class="sub" style="padding:14px">No maintenance entered yet. Use Maintenance entry, or load your Excel in Utility › Data upload.</td></tr>`) + `</tbody>`;
+  if (rows.length) tblTools($("mhTable"), "mhist");
+  // On a phone each job is a card.
+  $("mhCards").innerHTML = rows.length ? rows.map(r => `<button type="button" class="mscard${r.over ? " ms-over" : ""}" data-mhentry="${r.e.id}"><span class="mscn"><b>${esc(r.type)}</b><span class="plate psv">${esc(r.plate)}</span></span>` +
+    `<span>Last: ${fmtDate(r.date)} · ${r.km ? nf(r.km) + " km" : "no km"}</span><span>${r.next ? `Next service at <b>${nf(r.next)} km</b>${r.over ? " · past it" : ""}` : "No service gap set"}</span>${r.remarks ? `<small>${esc(r.remarks)}</small>` : ""}</button>`).join("")
+    : `<p class="sub" style="margin:0">No maintenance entered yet.</p>`;
+}
+$("mhBus").onchange = () => { mhBus = $("mhBus").value; renderMhist(); };
+$("mhType").onchange = () => { mhType = $("mhType").value; renderMhist(); };
+$("mhShow").onchange = () => { mhShow = $("mhShow").value; renderMhist(); };
+$("mhPanel").addEventListener("click", e => { if (e.target.closest(".ttb, .ttmenu")) return; const r = e.target.closest("[data-mhentry]"); if (r) mtOpen(ops.maintLog.find(x => x.id === r.dataset.mhentry)); });
+$("mhPrint").onclick = () => {
+  const list = mhList();
+  const V = (r, c) => c === "plate" ? r.plate : c === "type" ? r.type : c === "date" ? xpDateTxt(r.date) : c === "km" ? (r.km ? nf(r.km) : "") : c === "next" ? (r.next ? nf(r.next) : "") : r.remarks;
+  const R = (r, c) => c === "date" ? r.date : c === "km" ? r.km || null : c === "next" ? r.next || null : null;
+  pbOpen({ sheet: "Maintenance history", title0: `Maintenance history${mhBus ? " · " + mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === mhBus)) : ""}`, rows: list, sub: mhShow === "last" ? "Latest of each job" : "Every visit",
+    note: "The jobs on the page, with the vehicle and type chosen.",
+    cols: [{ k: "plate", h: "Vehicle Number", xl: 16, px: 150, kind: "text" }, { k: "type", h: "Maintenance Type", xl: 30, px: 0, kind: "text" }, { k: "date", h: "Last Maintenance Date", xl: 14, px: 130, kind: "date" },
+      { k: "km", h: "Last Maintenance Kms", xl: 14, px: 130, kind: "num" }, { k: "next", h: "Next KMS to be Serviced", xl: 16, px: 150, kind: "num" }, { k: "remarks", h: "Remarks", xl: 40, px: 0, kind: "wrap" }],
+    lineCols: ["type", "date", "km"], lineSub: r => r.plate, val: V, raw: R });
+};
+
 /* ---------- Loading the Excel workbook (Utility › Data upload) ----------
    Sheets: "Expense List" (Date, Description, Vehicle Number, Category, Payment Type, Amount), "Maintenance Details" (one block per
    vehicle: Maintenance Type, Last Maintenance Date, Kms, Remarks, Next KMS) and "Maintenance Summary" (the latest of each, per vehicle).
@@ -10902,6 +10978,7 @@ function renderOps() {
   if (view === "texp") { renderExp(); return; }
   if (view === "tmaint") { renderMaint(); return; }
   if (view === "tmsum") { renderMsum(); return; }
+  if (view === "tmhist") { renderMhist(); return; }
   const ro = !canTrips;
   $("kRoTag").hidden = !ro;  // the Day sheet's tag follows its own sheet (fillDayForm) $("sRoTag").hidden = canBookings;
   if (view === "thub") renderHub();
@@ -16992,7 +17069,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07m";
+const APP_VER = "2026-11-07n";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
