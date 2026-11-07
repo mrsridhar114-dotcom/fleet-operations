@@ -9502,7 +9502,7 @@ const XL = (() => {
     rTitle: 48, rLab: 49, rVal: 50, rValD: 51, rCrewH: 52, rTxt: 53, rInt: 54, rHead: 55, rDay: 56, rDec: 57,
     sTitle: 58, sLab: 59, sVal: 60, sHead: 61, sDate: 62, sInt: 63, sDec: 64, sTxt: 65,
     smTitle: 66, smHead: 67, smVeh: 68, smNum: 69, smDay: 70, smTotL: 71, smTotN: 72, smTotD: 73, smSign: 74, smGrandL: 75, smGrand: 76,
-    mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84, sDateX: 85, sDateD: 86, sNote: 87, link: 88, homeBtn: 89, linkC: 90 };
+    mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84, sDateX: 85, sDateD: 86, sNote: 87, homeBtn: 88, hTitle: 89, hNote: 90, hLab: 91, btn: { sum: 92, route: 93, spare: 94, truck: 95, exp: 96, master: 97, off: 98 } };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -9528,16 +9528,18 @@ const XL = (() => {
     xf(0, 14, 13, 2, 'vertical="center"'), xf(165, 14, 13, 2, 'vertical="center"'), xf(0, 14, 13, 2, 'horizontal="right" vertical="center"'),
     // 85–87: the master sheets: a validity date that has passed (red), one due within 30 days (yellow), the colour note
     xf(164, 1, 7, 2, 'horizontal="left"'), xf(164, 1, 4, 2, 'horizontal="left"'), xf(0, 3, 0, 0),
-    // 88–90: links to other sheets (blue, underlined), the ⌂ Home button (white on green), a link in a grid (centred)
-    xf(0, 15, 0, 2, 'vertical="center"'), xf(0, 16, 14, 2, 'horizontal="center" vertical="center"'), xf(0, 15, 0, 2, 'horizontal="center" vertical="center"')];
+    // 88: the ⌂ Home button on each sheet (white on green). 89–98: the Home sheet: title, note, row label, then the buttons
+    // (white on a colour, white edges so they stand apart): Summary, route months, spare buses, trucks, expenses, master data, a month with no sheet
+    xf(0, 15, 14, 2, 'horizontal="center" vertical="center"'), xf(0, 4, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 3, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 5, 0, 0, 'horizontal="left" vertical="center" wrapText="1"'),
+    ...[16, 17, 11, 18, 19, 20].map(fl => xf(0, 15, fl, 3, 'horizontal="center" vertical="center" wrapText="1"')), xf(0, 3, 3, 3, 'horizontal="center" vertical="center"')];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
-    `<fonts count="17"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
+    `<fonts count="16"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
     [[1, 28], [1, 24], [0, 16], [1, 16], [1, 36], [1, 24], [1, 72], [1, 18], [1, 20]].map(([b, z]) => `<font>${b ? "<b/>" : ""}<sz val="${z}"/><name val="Calibri"/><family val="2"/></font>`).join("") +
-    `<font><u/><sz val="12"/><color rgb="FF0563C1"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font></fonts>` +
-    `<fills count="16"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
-    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF", "FFC55A11", "FFDBDBDB", "FFFFC000", "FF00B050", "FFF4B183"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
-    `<borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+    `<font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font></fonts>` +
+    `<fills count="21"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
+    ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF", "FFC55A11", "FFDBDBDB", "FFFFC000", "FF00B050", "FFF4B183", "FF1F4E78", "FF2F75B5", "FF548235", "FF7030A0", "FF44546A"].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
+    `<borders count="4"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}${B.replace(/thin/g, "thick").replace(/FFBFBFBF/g, "FFFFFFFF")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="${XFS.length}">${XFS.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const serial = iso => (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(1899, 11, 30)) / 864e5;
   function sheet(name) { return { name, rows: {}, merges: [], widths: {}, heights: {}, freeze: 0, lists: [], links: [] }; }
@@ -9557,7 +9559,7 @@ const XL = (() => {
   function sheetXml(ws) {
     const rows = Object.keys(ws.rows).map(Number).sort((a, b) => a - b).map(r => `<row r="${r}"${ws.heights?.[r] ? ` ht="${ws.heights[r]}" customHeight="1"` : ""}>` +
       Object.keys(ws.rows[r]).map(Number).sort((a, b) => a - b).map(c => cellXml(col(c) + r, ws.rows[r][c])).join("") + "</row>").join("");
-    const zoom = ws.zoom ? ` zoomScale="${ws.zoom}" zoomScaleNormal="${ws.zoom}"` : ""; // ws.zoom: the sheet opens at this % (e.g. 40)
+    const zoom = (ws.noGrid ? ' showGridLines="0"' : "") + (ws.zoom ? ` zoomScale="${ws.zoom}" zoomScaleNormal="${ws.zoom}"` : ""); // ws.zoom: the sheet opens at this % (e.g. 40)
     const view = ws.freeze ? `<sheetViews><sheetView workbookViewId="0"${zoom}><pane ySplit="${ws.freeze}" topLeftCell="A${ws.freeze + 1}" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A${ws.freeze + 1}" sqref="A${ws.freeze + 1}"/></sheetView></sheetViews>` : `<sheetViews><sheetView workbookViewId="0"${zoom}/></sheetViews>`;
     const cols = Object.keys(ws.widths).length ? `<cols>${Object.entries(ws.widths).map(([L, w]) => { const i = idx(L) + 1; return `<col min="${i}" max="${i}" width="${w}" customWidth="1"/>`; }).join("")}</cols>` : "";
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>${view}<sheetFormatPr defaultRowHeight="15"/>${cols}<sheetData>${rows}</sheetData>` +
@@ -9854,8 +9856,8 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
    dates come first, then the other details. A validity date already passed is red, one due within 30 days yellow.
    sections: [{ title, heads: [[heading, kind]], rows }]; a section with a title gets a title row and its own headings. */
 function xlMasterSheet(title, sections, widths = {}) {
-  const { put, S, sheet, col } = XL, ws = sheet(title), today = todayISO(), soon = shiftDay(today, 30), n = Math.max(...sections.map(x => x.heads.length)), last = col(n - 1);
-  put(ws, "A1", `${title} - as on ${today.split("-").reverse().join("/")}`, S.sTitle); for (let c = 1; c < n; c++) put(ws, col(c) + 1, null, S.sTitle); ws.merges.push(`A1:${last}1`);
+  const { put, S, sheet, col } = XL, ws = sheet(title), today = todayISO(), soon = shiftDay(today, 30), n = Math.max(...sections.map(x => x.heads.length)), last = col(Math.min(n, 8) - 1); // the title spans the first columns only, so the sheet opens at the left
+  put(ws, "A1", `${title} - as on ${today.split("-").reverse().join("/")}`, S.sTitle); for (let c = 1; c < Math.min(n, 8); c++) put(ws, col(c) + 1, null, S.sTitle); ws.merges.push(`A1:${last}1`);
   put(ws, "B2", "Red: validity date passed · Yellow: due within 30 days", S.sNote); ws.home = "A2"; ws.heights[2] = 20;
   Object.assign(ws.heights, { 1: 28.5 });
   let r = 3;
@@ -9910,27 +9912,36 @@ function xlVehicleSheet(recs) {
     ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => docApplies(k, v.type, v.usage) ? v[d.k] ?? "" : "")), v.remarks]);
   return xlMasterSheet("Vehicle Master Data", [{ heads, rows }], { "Plate No.": 16, Class: 17, Age: 19, "Owner Name": 26, "Owner Address": 40, Remarks: 40 });
 }
-/* The first sheet of Download all: links to every sheet (route buses as a grid, a bus a row and a month a column), then the
-   spare buses, trucks, expenses and master data. Each other sheet has a ⌂ Home button back to it (made in XL.build). */
+/* The first sheet of Download all, on one screen: a row per group, its name in column A and its buttons beside it (each a link
+   to that sheet). Route buses: a row per bus with a button per month (grey where the month has no sheet). The other groups: buttons
+   three columns wide, four to a row. Each other sheet has a ⌂ Home button back here (made in XL.build). */
 function xlHomeSheet(fy, sheets) {
-  const { put, S, sheet, col } = XL, ws = Object.assign(sheet("Home"), { isHome: true }), C = xlCtx({ vehicles });
-  put(ws, "A1", `Trip Sheets - FY ${fyLabel(fy)}`, S.sTitle); for (let c = 1; c < 13; c++) put(ws, col(c) + 1, null, S.sTitle); ws.merges.push("A1:M1");
-  put(ws, "A2", "Click a name to open that sheet. Every sheet has a ⌂ Home button at the top to come back here.", S.sNote);
+  const { put, S, sheet, col } = XL, ws = Object.assign(sheet("Home"), { isHome: true, noGrid: true }), C = xlCtx({ vehicles }), B = S.btn;
+  put(ws, "A1", `Trip Sheets - FY ${fyLabel(fy)}`, S.hTitle); ws.merges.push("A1:M1");
+  put(ws, "A2", "Click a button to open that sheet. Every sheet has a ⌂ Home button at the top left to come back here.", S.hNote); ws.merges.push("A2:M2");
+  Object.assign(ws.heights, { 1: 34, 2: 18 });
   let r = 4;
-  const link = (ref, w, text, st = S.link) => { put(ws, ref, text, st); ws.links.push({ ref, sheet: w.name }); };
-  const head = (t, n = 1) => { if (r > 4) r++; put(ws, "A" + r, t, S.sLab); for (let c = 1; c < n; c++) put(ws, col(c) + r, null, S.sLab); ws.merges.push(`A${r}:${col(n - 1)}${r}`); ws.heights[r] = 22; r++; };
-  const of = k => sheets.filter(w => w.kind === k), list = (title, items) => { if (!items.length) return; head(title); items.forEach(([w, text, note]) => { link("A" + r, w, text); if (note) put(ws, "B" + r, note, S.sNote); r++; }); };
-  const sum = sheets.find(w => w.name === "Summary"); if (sum) list("Summary", [[sum, "Summary", "Buses, trucks, office expenses and the overall gross; month-wise route and spare bus"]]);
+  const link = (ref, w) => ws.links.push({ ref, sheet: w.name });
+  const gap = () => { ws.heights[r] = 8; r++; };
+  const group = (label, items, style) => { if (!items.length) return;
+    for (let i = 0; i < items.length; i += 4, r++) {
+      put(ws, "A" + r, i ? "" : label, S.hLab); ws.heights[r] = 34;
+      items.slice(i, i + 4).forEach(([w, text], k) => { const c0 = 1 + k * 3, ref = col(c0) + r; put(ws, ref, text, style); put(ws, col(c0 + 1) + r, null, style); put(ws, col(c0 + 2) + r, null, style); ws.merges.push(`${ref}:${col(c0 + 2)}${r}`); link(ref, w); });
+    }
+    gap(); };
+  const of = k => sheets.filter(w => w.kind === k), sum = sheets.find(w => w.name === "Summary");
+  if (sum) group("Summary", [[sum, "Summary"]], B.sum);
   const route = of("route");
-  if (route.length) { head("Route Bus - month sheets", 13);
-    put(ws, "A" + r, "Bus", S.sHead); for (let i = 0; i < 12; i++) put(ws, col(i + 1) + r, new Date(monthYM(fy, i) + "-01T00:00:00").toLocaleDateString("en-GB", { month: "short" }), S.sHead); r++;
-    [...new Set(route.map(w => w.vid))].forEach(id => { put(ws, "A" + r, C.plate(id), S.sTxt);
-      for (let i = 0; i < 12; i++) { const w = route.find(z => z.vid === id && z.ym === monthYM(fy, i)), ref = col(i + 1) + r; w ? link(ref, w, "Open", S.linkC) : put(ws, ref, "", S.sTxt); } r++; }); }
-  list("Spare Buses", of("spare").map(w => [w, C.plate(w.vid), "Spare bus trips for the year"]));
-  list("Trucks", of("truck").map(w => [w, C.plate(w.vid), "Truck trips for the year"]));
-  list("Expenses", [...of("xp-bus"), ...of("xp-truck")].map(w => [w, w.name, "Office expense entries for the year"]));
-  list("Master Data", sheets.filter(w => /Master Data$/.test(w.name)).map(w => [w, w.name, "As on the download date, with validity dates"]));
-  ws.widths.A = 32; for (let c = 1; c < 13; c++) ws.widths[col(c)] = 9; Object.assign(ws.heights, { 1: 28.5, 2: 18 });
+  [...new Set(route.map(w => w.vid))].forEach((id, n, all) => {
+    put(ws, "A" + r, `Route Bus\n${C.plate(id)}`, S.hLab); ws.heights[r] = 34;
+    for (let i = 0; i < 12; i++) { const w = route.find(z => z.vid === id && z.ym === monthYM(fy, i)), ref = col(i + 1) + r, mon = new Date(monthYM(fy, i) + "-01T00:00:00").toLocaleDateString("en-GB", { month: "short" }).slice(0, 3);
+      put(ws, ref, mon, w ? B.route : B.off); if (w) link(ref, w); }
+    r++; if (n === all.length - 1) gap(); });
+  group("Spare Buses", of("spare").map(w => [w, C.plate(w.vid)]), B.spare);
+  group("Trucks", of("truck").map(w => [w, C.plate(w.vid)]), B.truck);
+  group("Expenses", [...of("xp-bus"), ...of("xp-truck")].map(w => [w, w.name]), B.exp);
+  group("Master Data", sheets.filter(w => /Master Data$/.test(w.name)).map(w => [w, w.name.replace(" Master Data", "s")]), B.master);
+  ws.widths.A = 20; for (let c = 1; c < 13; c++) ws.widths[col(c)] = 10.5;
   return ws;
 }
 // The records the downloads need, read fresh (shared records, or this browser's copy).
@@ -16981,7 +16992,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07l";
+const APP_VER = "2026-11-07m";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
