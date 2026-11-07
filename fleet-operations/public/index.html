@@ -8540,7 +8540,11 @@ function mhRows() {
   ops.maintLog.forEach(x => { const key = mtKeyOf(x), km = mtXAct(x);
     (x.items || []).forEach(it => { const g = mtGap(key, it.k, it.pos);
       out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: !mtGapSet(key, it.k, it.pos) && num(it.next) > km ? num(it.next) : g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
-  return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(b.date).localeCompare(String(a.date)) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
+  // Order: vehicle class (bus, truck, car, auto, two wheeler, then the rest), vehicle number, maintenance type (with the wheel),
+  // then the latest visit first (by date, then km).
+  const CLS = ["Bus", "12 Wheeler Truck", "Car", "Auto", "Two Wheeler"], cls = r => { const i = CLS.indexOf(mtVehOf(r.key)?.type); return i < 0 ? CLS.length : i; };
+  const ti = r => { const i = MT_TYPES.indexOf(mtType(r.it.k)); return i < 0 ? MT_TYPES.length : i; }, pi = r => MT_POS.findIndex(p => p[0] === r.it.pos);
+  return out.sort((a, b) => cls(a) - cls(b) || a.plate.localeCompare(b.plate) || ti(a) - ti(b) || pi(a) - pi(b) || String(b.date).localeCompare(String(a.date)) || (b.km || 0) - (a.km || 0));
 }
 function mhList() {
   let rows = mhRows().filter(r => (!mhBus || r.key === mhBus) && (!mhType || r.it.k === mhType));
@@ -17385,7 +17389,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08l";
+const APP_VER = "2026-11-08m";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
