@@ -1898,6 +1898,15 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 @media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } }
 .mptable .mpin { width: 130px; padding: 6px 8px; font: inherit; text-align: right; } .mptable input::placeholder { color: var(--muted); font-style: italic; } .mptable tr.mpown td { background: color-mix(in srgb, #2f75b5 7%, var(--surface)); } .mptable tr.mpgrp td { border-top: 2px solid var(--line); } .mptable .mpw { padding-left: 14px; color: var(--ink); }
 .mptable .mpclr, #mpLog .mpclr { padding: 4px 8px; font-size: 12px; white-space: nowrap; } .mptable .mpact { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Reminders */
+.strbox { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; max-width: 760px; } .strbox table { max-width: 560px; } .strmode { display: flex; flex-direction: column; gap: 8px; }
+.strmode label { align-items: flex-start; } .strmode input { margin-top: 3px; }
+.remform { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; } .remto { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.remto input[type=text] { flex: 1 1 280px; min-width: 220px; } .remacts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; } .lbl { font-weight: 600; font-size: 13px; color: var(--muted); }
+.remtools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; } .remtools .xofmt { width: auto; } .remtools .xofmt button { padding: 6px 14px; }
+.remtable td { vertical-align: middle; } .remtable .remdue { display: flex; flex-direction: column; gap: 4px; } .remtable .remdue span.pill { align-self: flex-start; }
+.btn.wa { background: #1fa855; border-color: #1a9049; color: #fff; white-space: nowrap; } .btn.wa:hover { background: #1a9049; } .btn.wa[aria-disabled=true] { background: var(--chip-bg, #eef1f4); color: var(--muted); border-color: var(--line); pointer-events: none; }
+.remwarn { background: color-mix(in srgb, #f28c28 14%, var(--surface)); border: 1px solid color-mix(in srgb, #f28c28 45%, var(--surface)); border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
 /* Maintenance history colours: each vehicle's rows in one colour (blue, purple, teal in turn), each maintenance type a lighter or
    darker shade of it, the latest visit of each type in bold. Overdue (red) stays on top. */
 .mhtable tr.mhv0 td { --mhc: #3b6fd1; } .mhtable tr.mhv1 td { --mhc: #8a55c9; } .mhtable tr.mhv2 td { --mhc: #1f9a8c; }
@@ -2282,6 +2291,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li id="navStorage"><a class="nav" href="#storage" data-view="storage">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="8" ry="2.8"/><path d="M4 5.5v6.5c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8V5.5"/><path d="M4 12v6.5c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8V12"/></svg>
             Storage &amp; backup</a></li>
+          <li id="navRemind"><a class="nav" href="#reminders" data-view="trem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            Reminders</a></li>
         </ul>
       </div>
       <div class="group">
@@ -3040,6 +3052,33 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div class="tscroll" style="margin-top:10px"><table class="ctable" id="auSess"></table></div></section>
     </section>
 
+    <!-- ================= Reminders ================= -->
+    <section class="wrap" id="view-trem" hidden>
+      <header class="top">
+        <div>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Administration</span><span class="slash">/</span><span>Reminders</span></nav>
+          <h1>Reminders</h1>
+          <p class="sync">Renewals due within 30 days and maintenance due within 5,000 km. Send each one to the driver on WhatsApp with one tap; the office gets the list by email every morning.</p>
+        </div>
+      </header>
+      <div class="summary" id="remSum"></div>
+      <section class="panel remset"><div class="sechead"><h2 class="sec">Daily email</h2><p id="remStatus">Checking…</p></div>
+        <div class="remform">
+          <label class="chk"><input type="checkbox" id="remOn"> Email the reminders every morning at 8:00 am (India time), when anything is due</label>
+          <div class="remto"><span class="lbl">Send to</span>
+            <label class="chk"><input type="radio" name="remTo" value="admins"> All admins <span class="sub" id="remAdmins"></span></label>
+            <label class="chk"><input type="radio" name="remTo" value="list"> These addresses</label>
+            <input type="text" id="rmdList" placeholder="name@example.com, other@example.com" autocomplete="off"></div>
+          <label class="chk"><input type="checkbox" id="remBk"> Email a backup of every record on Sundays (to the same people)</label>
+          <div class="remacts"><button class="btn primary" type="button" id="remSave" disabled>Save</button><button class="btn" type="button" id="remTest">Send a test email now</button><button class="btn" type="button" id="remTestBk">Send a test backup now</button><span class="sub" id="remMsg"></span></div>
+        </div></section>
+      <section class="panel"><div class="sechead"><h2 class="sec">Renewals due within 30 days</h2>
+          <div class="remtools"><span class="lbl">WhatsApp message in</span><div class="xofmt" role="radiogroup" id="remLang"><button type="button" data-rl="ta" lang="ta">தமிழ்</button><button type="button" data-rl="en">English</button></div></div></div>
+        <div class="tscroll"><table class="ctable remtable" id="remRen"></table></div></section>
+      <section class="panel"><div class="sechead"><h2 class="sec">Maintenance due</h2><p>Overdue, or due within 5,000 km, by the km master and each vehicle's latest reading.</p></div>
+        <div class="tscroll"><table class="ctable remtable" id="remMt"></table></div></section>
+    </section>
+
     <section class="wrap" id="view-storage" hidden>
       <header class="top">
         <div>
@@ -3054,10 +3093,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div id="stFiles" style="margin-top:12px"></div></section>
       <section class="panel"><div class="sechead"><h2 class="sec">Records</h2><p id="stRecNote">Every saved entry, by area</p></div>
         <div class="tscroll" style="margin-top:10px"><table class="ctable" id="stRecs"></table></div></section>
-      <section class="panel stbk"><div class="sechead"><h2 class="sec">Backup</h2><p id="stLast"></p></div>
+      <section class="panel stbk"><div class="sechead"><h2 class="sec">Backup &amp; restore</h2><p id="stLast"></p></div>
         <p style="margin:8px 0 12px;max-width:80ch">Keep these somewhere safe, such as Google Drive or email, and take them at least once a month. Attached photos and PDFs stay in the app and are not inside the downloads.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn primary" type="button" data-bk="trips">Trip sheets (Excel)</button><button class="btn primary" type="button" data-bk="bookings">Bookings (Excel)</button><button class="btn" type="button" data-bk="json" id="stBackup">Full backup (JSON)</button><span class="sub" id="stBkMsg"></span></div>
-        <p class="sub" style="margin:10px 0 0;max-width:80ch"><b>Trip sheets</b>: one sheet per truck in your truck income / expense format (round trips with trip balance and payment status), and one per route bus with every day's trip sheet. <b>Bookings</b>: one sheet per spare bus in your spare bus income / expense format, plus the full booking register and all payments. Totals and balances are live Excel formulas. <b>Full backup</b> holds every record, including vehicles, drivers, conductors, users and change history, and is the file to keep for restoring.</p></section>
+        <p class="sub" style="margin:10px 0 0;max-width:80ch"><b>Trip sheets</b>: one sheet per truck in your truck income / expense format (round trips with trip balance and payment status), and one per route bus with every day's trip sheet. <b>Bookings</b>: one sheet per spare bus in your spare bus income / expense format, plus the full booking register and all payments. Totals and balances are live Excel formulas. <b>Full backup</b> holds every record, including vehicles, drivers, conductors, users and change history, and is the file to keep for restoring. A copy is also emailed every Sunday (set it in Reminders).</p>
+        <div class="strest"><h3 class="sec" style="font-size:16px;margin:18px 0 4px">Restore from a backup</h3>
+          <p class="sub" style="margin:0 0 10px;max-width:80ch">Choose a Full backup file (.json), or the .json.gz from the Sunday email. You see what is in it first; nothing changes until you press Restore. Before restoring, the app saves a backup of today's data, so a restore can be undone.</p>
+          <label class="btn" style="cursor:pointer">Choose backup file…<input type="file" id="stRestFile" accept=".json,.gz,application/json,application/gzip" hidden></label>
+          <div id="stRestBox"></div></div></section>
     </section>
 
     <section class="wrap" id="view-users" hidden>
@@ -4216,7 +4259,7 @@ async function connect() {
 /* ---------- routing & nav ---------- */
 const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", tmhist: "maintenance", tmplan: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "maintenance-master": "tmplan", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "reminders": "trem", "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "maintenance-master": "tmplan", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
@@ -4232,16 +4275,17 @@ function showView() {
   // On a phone the route bus day is entered on the phone trip sheet; the wide daily entry form is for a computer.
   if (want === "tday" && matchMedia("(max-width: 700px)").matches) want = "trsheet";
   if (want === "trexp" && view !== "trexp") { rxOpen = ""; rxAdding = false; }
-  view = (want === "tguide" && acc.bookings === "none" && acc.tripsheets === "none") || acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil") && acc.users !== "edit") ? "denied" : want;
+  view = (want === "tguide" && acc.bookings === "none" && acc.tripsheets === "none") || acc[VIEW_MOD[want]] === "none" || (want === "tappr" && acc.bookings !== "edit") || (want === "trep" && acc.bookings === "request") || ((want === "storage" || want === "audit" || want === "tutil" || want === "trem") && acc.users !== "edit") ? "denied" : want;
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "tmplan", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "tmplan", "trem", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
   const navKey = ["texp", "tmaint", "tmsum", "tmhist", "tmplan"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
+  if (view === "trem") renderRemind();
   if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); }
   if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum(); if (view === "tmhist") renderMhist(); if (view === "tmplan") renderMplan();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
@@ -4291,7 +4335,7 @@ function applyAccess() {
   $("navAppr").hidden = acc.bookings !== "edit";
   $("navRep").hidden = acc.bookings === "none" || acc.bookings === "request";
   $("navGuide").hidden = acc.bookings === "none" && acc.tripsheets === "none";
-  $("navStorage").hidden = acc.users !== "edit";
+  $("navStorage").hidden = acc.users !== "edit"; $("navRemind").hidden = acc.users !== "edit";
   $("navAudit").hidden = acc.users !== "edit"; $("navUtil").hidden = acc.users !== "edit";  // Utility: admin only
   canTsUpd = platformWrite && (acc.tripsheets === "update" || acc.tripsheets === "edit");
   canCloseTrips = platformWrite && acc.users === "edit";  // closing and reopening trips: admin only, until it gets a role of its own
@@ -8439,6 +8483,100 @@ $("msDl").onclick = () => {
 // Km master: the summary's button opens it for the vehicle chosen.
 $("msGaps").onclick = () => { mpBus = msBus; location.hash = "#maintenance-master"; };
 
+/* ---------- Reminders (admins) ----------
+   Renewals due within 30 days (drivers, conductors, vehicles in service) and maintenance overdue or due within 5,000 km.
+   Each line has a WhatsApp button: a ready message in Tamil or English, to the driver's or conductor's mobile, or (for a
+   vehicle) to the contact chosen in WhatsApp. The daily email itself is sent by the website (api/remind.js) every morning;
+   the settings here are kept in appMeta "reminders". */
+let remLang = "ta"; try { remLang = localStorage.getItem("fleet-remlang") === "en" ? "en" : "ta"; } catch {}
+let remSrv = null, remSet = null;
+const REM_DOC_TA = { FC: "FC", Insurance: "இன்சூரன்ஸ்", Tax: "வரி (Tax)", Permit: "பர்மிட்", "Permit authorization": "பர்மிட் அனுமதி", Pollution: "புகை சான்று", "RC renewal": "RC புதுப்பித்தல்", "Speed governor": "ஸ்பீடு கவர்னர்", "GPS tracker": "GPS டிராக்கர்" };
+const srvApi = async (path, body) => { const r = await fetch("/api/" + path, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  let j = null; try { j = await r.json(); } catch {} if (!j) throw Object.assign(new Error("Not available here"), { status: 0 });
+  if (!r.ok) throw Object.assign(new Error(j.error || r.statusText || "Request failed"), { status: r.status, code: j.code }); return j; };
+// What is due: one line per person or vehicle, with its due dates.
+function remRenewals() {
+  const soon = shiftDay(todayISO(), 30), out = [], due = (x, list) => list.filter(([k]) => x[k] && x[k] <= soon).map(([k, what]) => ({ k, what, date: x[k], n: daysUntil(x[k]) }));
+  [[drivers, P_CFG.driver, "Driver"], [conductors, P_CFG.conductor, "Conductor"]].forEach(([list, cfg, kind]) => list.filter(pActive).forEach(p => {
+    const items = due(p, cfg.dates); if (items.length) out.push({ kind, name: p.name || kind, mobile: p.mobile || "", items, p, cfg }); }));
+  vehicles.filter(v => v.status !== "Sold / Scrapped").forEach(v => { const items = due(v, DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).map(([k, , short]) => [k, short]));
+    if (items.length) out.push({ kind: "Vehicle", name: plateOf(v), items, v }); });
+  out.forEach(x => x.items.sort((a, b) => a.n - b.n));
+  return out.sort((a, b) => a.items[0].n - b.items[0].n || a.name.localeCompare(b.name));
+}
+const remMaint = () => msKeys(false).map(k => ({ k, plate: mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }), now: mtNow(k, true), due: mtDue(k).filter(d => d.st === "over" || d.st === "soon") })).filter(x => x.due.length)
+  .sort((a, b) => a.due[0].left - b.due[0].left);
+// A WhatsApp link: to a 10-digit Indian mobile, or (no number) WhatsApp asks whom to send it to.
+const waLink = (mobile, text) => { let d = String(mobile || "").replace(/\D/g, ""); if (d.length === 10) d = "91" + d; else if (!(d.length === 12 && d.startsWith("91"))) d = "";
+  return `https://wa.me/${d}?text=${encodeURIComponent(text)}`; };
+function remRenText(x) {
+  const ta = remLang === "ta", T = PC_T[remLang], date = d => fmtDate(d.date);
+  if (x.kind !== "Vehicle") {
+    const lines = x.items.map(d => `• ${T.tr(d.what)}: ${date(d)} (${T.when(d.n)})`);
+    return ta ? `வணக்கம் ${x.name},\nஉங்கள் ${x.kind === "Driver" ? "ஓட்டுநர்" : "நடத்துநர்"} ஆவணங்கள் புதுப்பிக்க வேண்டும்:\n${lines.join("\n")}\nதயவுசெய்து ${x.items.some(d => d.n < 0) ? "உடனே" : "விரைவில்"} புதுப்பிக்கவும்.\n- VBS`
+      : `Hello ${x.name},\nYour documents need renewal:\n${lines.join("\n")}\nPlease renew ${x.items.some(d => d.n < 0) ? "immediately" : "soon"}.\n- VBS`;
+  }
+  const lines = x.items.map(d => `• ${ta ? REM_DOC_TA[d.what] || d.what : d.what}: ${date(d)} (${T.when(d.n)})`);
+  return ta ? `${x.name} வண்டி ஆவணங்கள் புதுப்பிக்க வேண்டும்:\n${lines.join("\n")}\n- VBS` : `${x.name}: documents to renew\n${lines.join("\n")}\n- VBS`;
+}
+function remMtText(m) {
+  const T = MS_T[remLang], ta = remLang === "ta", now = m.now ? `${nf(m.now.meter)} ${T.km}` : "";
+  const lines = m.due.map(d => `• ${T.item({ ...d, key: m.k })}: ${T.left(d)} (${T.st[d.st]})`);
+  return ta ? `${m.plate} வண்டி பராமரிப்பு:\n${lines.join("\n")}${now ? `\nதற்போதைய கிலோமீட்டர்: ${now}` : ""}\n${m.due.some(d => d.st === "over") ? "உடனே" : "விரைவில்"} சர்வீஸ் செய்யவும்.\n- VBS`
+    : `${m.plate} maintenance due:\n${lines.join("\n")}${now ? `\nCurrent km: ${now}` : ""}\nPlease get it serviced ${m.due.some(d => d.st === "over") ? "now" : "soon"}.\n- VBS`;
+}
+function renderRemind() {
+  const R = remRenewals(), M = remMaint(), nExp = R.reduce((a, x) => a + x.items.filter(d => d.n < 0).length, 0), nOver = M.reduce((a, m) => a + m.due.filter(d => d.st === "over").length, 0);
+  $("remSum").innerHTML = ostat("Renewals due", nf(R.reduce((a, x) => a + x.items.length, 0)), "within 30 days") + ostat("Expired", nf(nExp), "already past the date", nExp ? "var(--danger)" : "") +
+    ostat("Maintenance due", nf(M.reduce((a, m) => a + m.due.length, 0)), "within 5,000 km") + ostat("Overdue", nf(nOver), "past the km", nOver ? "var(--danger)" : "");
+  document.querySelectorAll("#remLang [data-rl]").forEach(b => b.setAttribute("aria-pressed", b.dataset.rl === remLang));
+  const wa = (mobile, text, title) => `<a class="btn wa" href="${esc(waLink(mobile, text))}" target="_blank" rel="noopener" title="${esc(title)}">WhatsApp</a>`;
+  $("remRen").innerHTML = `<thead><tr><th>Who / vehicle</th><th>Due</th><th>Mobile</th><th></th></tr></thead><tbody>` + (R.length ? R.map(x => `<tr><td><b>${esc(x.name)}</b><br><span class="sub">${x.kind}</span></td>` +
+    `<td><div class="remdue">${x.items.map(d => `<span><span class="pill ${listBand(d.n)} num">${fmtDate(d.date)}</span> ${esc(x.kind === "Vehicle" ? d.what : PC_T.en.tr(d.what))} · ${esc(whenText(d.n))}</span>`).join("")}</div></td>` +
+    `<td class="num">${x.kind === "Vehicle" ? `<span class="sub">Choose in WhatsApp</span>` : x.mobile ? esc(fmtMobile(x.mobile)) : `<span class="sub">No mobile</span>`}</td>` +
+    `<td>${wa(x.kind === "Vehicle" ? "" : x.mobile, remRenText(x), x.kind === "Vehicle" ? "Opens WhatsApp to choose whom to send it to" : `Send to ${x.name} on WhatsApp`)}</td></tr>`).join("")
+    : `<tr><td colspan="4" class="sub" style="padding:14px">Nothing due in the next 30 days.</td></tr>`) + `</tbody>`;
+  $("remMt").innerHTML = `<thead><tr><th>Vehicle</th><th>Maintenance due</th><th>Current km</th><th></th></tr></thead><tbody>` + (M.length ? M.map(m => `<tr><td><b>${esc(m.plate)}</b></td>` +
+    `<td><div class="remdue">${m.due.map(d => `<span><span class="pill ${MT_ST[d.st][1]}">${MT_ST[d.st][0]}</span> ${esc(mtItemName(d.it))} · ${esc(mtLeftTxt(d))}</span>`).join("")}</div></td>` +
+    `<td class="num">${m.now ? `${nf(m.now.meter)} km<br><span class="sub">${fmtDate(m.now.date)}</span>` : `<span class="sub">No reading</span>`}</td><td>${wa("", remMtText(m), "Opens WhatsApp to choose whom to send it to")}</td></tr>`).join("")
+    : `<tr><td colspan="4" class="sub" style="padding:14px">No maintenance due.</td></tr>`) + `</tbody>`;
+  remSettingsFill(); remStatus();
+}
+const remSettings = () => ({ emailOn: true, backupWeekly: true, to: "admins", list: "", ...(remSet || {}) });
+async function remSettingsFill() {
+  if ($("remSave").dataset.dirty) return;
+  if (!remSet) { try { remSet = tripDb ? (await tripDb.collection("appMeta").doc("reminders").get()).data() || {} : JSON.parse(localStorage.getItem("fleet-remset") || "{}"); } catch { remSet = {}; } }
+  const S = remSettings(); $("remOn").checked = S.emailOn !== false; $("remBk").checked = S.backupWeekly !== false; $("rmdList").value = S.list || "";
+  document.querySelectorAll('input[name="remTo"]').forEach(r => r.checked = r.value === (S.to === "list" ? "list" : "admins")); $("rmdList").disabled = S.to !== "list";
+}
+// What the website says: is the morning email set up, who gets it, when it last went.
+async function remStatus() {
+  const el = $("remStatus");
+  try { remSrv = await srvApi("remind", { op: "status" }); }
+  catch (e) { remSrv = null; el.innerHTML = e.status === 404 || !e.status ? "The daily email works on the website only." : esc(e.message); return; }
+  $("remAdmins").textContent = remSrv.to?.length && remSettings().to !== "list" ? "(" + remSrv.to.join(", ") + ")" : "";
+  const last = remSrv.last, lastTxt = last ? `Last run ${fmtStamp(last.at)}${last.sent ? ` · emailed ${nf(last.items || 0)} item${last.items === 1 ? "" : "s"}` : last.note ? ` · ${last.note}` : " · nothing was due"}${last.backup ? ` · backup ${nf(last.backup.records)} records` : ""}.` : "Not sent yet.";
+  el.innerHTML = !remSrv.mail ? `<div class="remwarn"><b>Email isn't set up.</b> The website needs GMAIL_USER and GMAIL_APP_PASSWORD in Vercel (the same ones used for "Forgot password").</div>`
+    : !remSrv.cron ? `<div class="remwarn"><b>One step left:</b> add the setting <b>CRON_SECRET</b> in Vercel (Project › Settings › Environment Variables) with any long secret text of 16 or more letters and numbers, then redeploy. Until then the morning email does not go; the test buttons work.</div>`
+    : esc(lastTxt);
+}
+const remDirty = () => { $("remSave").disabled = false; $("remSave").dataset.dirty = "1"; $("rmdList").disabled = !document.querySelector('input[name="remTo"][value="list"]').checked; };
+["remOn", "remBk", "rmdList"].forEach(id => $(id).addEventListener("input", remDirty));
+document.querySelectorAll('input[name="remTo"]').forEach(r => r.addEventListener("change", remDirty));
+$("remSave").onclick = async () => {
+  const to = document.querySelector('input[name="remTo"]:checked')?.value || "admins", list = $("rmdList").value.trim();
+  if (to === "list" && !list.split(/[,;\s]+/).filter(Boolean).every(x => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x))) { $("remMsg").textContent = "Check the email addresses: separate them with commas."; return; }
+  const d = { emailOn: $("remOn").checked, backupWeekly: $("remBk").checked, to, list, ...rxStamp() };
+  try { if (tripDb) await tripDb.collection("appMeta").doc("reminders").set(d); else localStorage.setItem("fleet-remset", JSON.stringify(d)); remSet = d; delete $("remSave").dataset.dirty; $("remSave").disabled = true; $("remMsg").textContent = "Saved."; remStatus(); }
+  catch { $("remMsg").textContent = "Couldn't save. Check your connection and try again."; }
+};
+const remTest = backup => async ev => { const b = ev.currentTarget; b.disabled = true; $("remMsg").textContent = backup ? "Making the backup and sending it…" : "Sending…";
+  try { const r = await srvApi("remind", { op: "test", backup }); $("remMsg").textContent = r.note ? r.note : `Sent to ${nf(r.to)} ${r.to === 1 ? "person" : "people"}${r.backup ? ` · backup of ${nf(r.backup.records)} records${r.backup.attached ? "" : " (too large to attach)"}` : ""}. Check the inbox.`; remStatus(); }
+  catch (e) { $("remMsg").textContent = e.status ? e.message : "The test email works on the website only."; }
+  finally { b.disabled = false; } };
+$("remTest").onclick = remTest(false); $("remTestBk").onclick = remTest(true);
+$("remLang").addEventListener("click", e => { const b = e.target.closest("[data-rl]"); if (!b) return; remLang = b.dataset.rl; try { localStorage.setItem("fleet-remlang", remLang); } catch {} renderRemind(); });
+
 /* ---------- Maintenance km master ----------
    The preferred km between services for each maintenance type, for: every vehicle, all vehicles of a class (all buses, all
    trucks) or one vehicle. The proposal comes from the history (the km between two visits of the same job and wheel, the middle
@@ -9776,6 +9914,8 @@ const stAreas = () => [
   ["trips", "Route bus trip sheets (daily)", TLS], ["tripMonths", "Route bus monthly sheets", TMLS], ["tripYears", "Route bus yearly sheets", TYLS],
   ["bookings", "Spare bus bookings", OPS_LS.bookings], ["bookingHistory", "Booking change history", BHLS],
   ["truckTrips", "Truck trips", OPS_LS.truckTrips], ["truckRounds", "Truck rounds", OPS_LS.truckRounds], ["fuelLog", "Spare bus diesel fills", OPS_LS.fuelLog], ["routeExpenses", "Route expenses (by starting place)", OPS_LS.routeExpenses], ["padiSlabs", "Padi calculation rules", OPS_LS.padiSlabs], ["expenseReqs", "Expenses sent for approval", OPS_LS.expenseReqs], ["auditSessions", "Sign-in records", ""], ["auditLog", "Activity log", ""],
+  ["expenses", "Expenses", OPS_LS.expenses], ["maintLog", "Maintenance entries", OPS_LS.maintLog], ["maintTypes", "Maintenance km master", OPS_LS.maintTypes],
+  ["routeSheets", "Conductor day sheets", OPS_LS.routeSheets], ["drvEntries", "Truck driver entries", OPS_LS.drvEntries],
   ["appMeta", "App settings", ""]
 ];
 let stData = null, stBusy = false;
@@ -9789,6 +9929,63 @@ async function stReadAll() {
   }
   return out;
 }
+/* Backup & restore. A full backup is every live record of every collection; on the website it comes from the server (so
+   nothing is missed), elsewhere from this browser's copy. Restoring loads a backup file back: only the records missing in
+   the app, or everything (records not in the file then go to the recycle bin for 30 days). A backup of today's data is
+   saved first. */
+async function stBackupFile(local) {
+  try { const rows = []; let since = 0;
+    for (;;) { const p = await srvApi("db", { op: "backup", since }); rows.push(...p.rows); since = p.next; if (!p.more || !p.rows.length) break; }
+    const collections = {}; rows.forEach(r => (collections[r.c] ||= []).push({ id: r.id, ...(r.d || {}) }));
+    return { app: "Fleet Operations", kind: "backup", version: 2, exportedAt: new Date().toISOString(), exportedBy: whoAmI(), counts: Object.fromEntries(Object.entries(collections).map(([k, v]) => [k, v.length])), collections };
+  } catch (e) { if (e.status) throw e; }
+  const recs = local || await stReadAll(), collections = Object.fromEntries(Object.entries(recs).filter(([, v]) => v)), counts = Object.fromEntries(Object.entries(collections).map(([k, v]) => [k, v.length]));
+  return { app: "Fleet Operations", kind: "backup", version: 2, exportedAt: new Date().toISOString(), exportedBy: whoAmI(), counts, collections };
+}
+let stRest = null;
+$("stRestFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return; const box = $("stRestBox");
+  try {
+    let text; if (/\.gz$/i.test(f.name)) text = await new Response(f.stream().pipeThrough(new DecompressionStream("gzip"))).text(); else text = await f.text();
+    const j = JSON.parse(text); if (j.kind !== "backup" || !j.collections) throw new Error("not a backup");
+    const docs = Object.entries(j.collections).flatMap(([c, list]) => (list || []).filter(d => d && d.id).map(({ id, ...data }) => ({ coll: c, id: String(id), data })));
+    stRest = { j, docs, name: f.name };
+    const now = stData?.recs || await stReadAll(), label = c => stAreas().find(a => a[0] === c)?.[1] || c, colls = [...new Set([...Object.keys(j.collections), ...stAreas().map(a => a[0])])].filter(c => (j.collections[c] || []).length || now[c]?.length);
+    box.innerHTML = `<div class="strbox"><p><b>${esc(f.name)}</b> · taken ${j.exportedAt ? fmtStamp(j.exportedAt) : "—"}${j.exportedBy ? ` by ${esc(j.exportedBy)}` : ""} · ${nf(docs.length)} records</p>` +
+      `<div class="tscroll"><table class="ctable"><thead><tr><th>Area</th><th class="n">In the file</th><th class="n">In the app now</th></tr></thead><tbody>${colls.map(c => `<tr><td>${esc(label(c))}</td><td class="n num">${nf((j.collections[c] || []).length)}</td><td class="n num">${now[c] ? nf(now[c].length) : "—"}</td></tr>`).join("")}</tbody></table></div>` +
+      `<div class="strmode"><label class="chk"><input type="radio" name="stRestMode" value="missing" checked> <span><b>Only missing records</b> (safe): puts back records that are in the file but not in the app, such as deleted ones. Nothing else changes.</span></label>` +
+      `<label class="chk"><input type="radio" name="stRestMode" value="replace"> <span><b>Replace everything</b>: the app goes back to exactly this backup. Changes made after it are undone and records added after it go to the recycle bin.</span></label></div>` +
+      `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" type="button" id="stRestGo">Restore</button><button class="btn" type="button" id="stRestCancel">Cancel</button><span class="sub" id="stRestMsg"></span></div></div>`;
+  } catch { stRest = null; box.innerHTML = `<p class="err">This is not a Fleet Operations backup file.</p>`; }
+};
+$("stRestBox").addEventListener("click", async e => {
+  if (e.target.id === "stRestCancel") { stRest = null; $("stRestBox").innerHTML = ""; return; }
+  if (e.target.id !== "stRestGo" || !stRest) return;
+  const mode = document.querySelector('input[name="stRestMode"]:checked')?.value || "missing", msg = $("stRestMsg"), go = e.target;
+  if (!tripDb) { msg.textContent = "Restoring works on the website only."; return; }
+  if (!await askYesNo(mode === "replace" ? `Replace everything with the backup of ${stRest.j.exportedAt ? fmtStamp(stRest.j.exportedAt) : "this file"}? Changes made after it are undone. A backup of today's data is saved first.`
+    : `Put back the records missing in the app from this backup (${nf(stRest.docs.length)} records in the file)? A backup of today's data is saved first.`, { yes: "Yes, restore", danger: mode === "replace" })) return;
+  go.disabled = true;
+  try {
+    // 1. Today's data, saved first.
+    msg.textContent = "Saving a backup of today's data first…";
+    const cur = await stBackupFile(), dl = await auDownloads(); if (!dl) throw new Error("Saving files isn't available here.");
+    await dl.save({ filename: `fleet-operations-before-restore-${todayISO()}.json`, data: JSON.stringify(cur, null, 1) });
+    // 2. The records from the file, in batches kept under the size a request may have.
+    let written = 0, batch = [], size = 0;
+    const flush = async () => { if (!batch.length) return; written += (await srvApi("db", { op: "load", mode, docs: batch })).written; batch = []; size = 0; msg.textContent = `Restoring… ${nf(written)} written`; };
+    for (const d of stRest.docs) { const n = JSON.stringify(d).length; if (batch.length >= 300 || size + n > 2.5e6) await flush(); batch.push(d); size += n; }
+    await flush();
+    // 3. Replace everything: records that were not in the backup go to the recycle bin (the activity log stays).
+    let removed = 0;
+    if (mode === "replace") {
+      const keep = new Set(stRest.docs.map(d => d.coll + "|" + d.id)), gone = Object.entries(cur.collections).flatMap(([c, list]) => list.map(d => ({ coll: c, id: d.id }))).filter(d => !keep.has(d.coll + "|" + d.id) && d.coll !== "auditLog" && d.coll !== "auditSessions");
+      for (let i = 0; i < gone.length; i += 300) removed += (await srvApi("db", { op: "prune", mode, docs: gone.slice(i, i + 300) })).removed;
+    }
+    msg.textContent = `Restored: ${nf(written)} record${written === 1 ? "" : "s"} written${mode === "replace" ? `, ${nf(removed)} moved to the recycle bin` : ""}. Reloading…`;
+    toast("Restore finished"); setTimeout(() => location.reload(), 1500);
+  } catch (er) { msg.textContent = er?.code === "declined" ? "Not restored: the backup of today's data was not saved." : `Couldn't finish: ${er.message || "try again"}. Records already written stay; run the restore again to complete it.`; go.disabled = false; }
+});
 async function renderStorage(force) {
   if (stBusy) return;
   // Read again once the shared database and file storage have connected after the page opened.
@@ -10537,7 +10734,7 @@ $("view-storage").addEventListener("click", async e => {
     let data, filename, what;
     if (kind === "trips") { data = xlTrips(recs); filename = `fleet-trip-sheets-${day}.xlsx`; what = `${nf((recs.truckTrips || []).length + (recs.trips || []).length)} trip entries`; }
     else if (kind === "bookings") { data = xlBookings(recs); filename = `fleet-bookings-${day}.xlsx`; what = `${nf((recs.bookings || []).length)} bookings`; }
-    else { data = JSON.stringify({ app: "Fleet Operations", kind: "backup", version: 1, exportedAt: at, exportedBy: whoAmI(), counts, collections: recs }, null, 1); filename = `fleet-operations-backup-${day}.json`; what = `${nf(Object.values(counts).reduce((a, n) => a + (n || 0), 0))} records`; }
+    else { const f = await stBackupFile(recs); data = JSON.stringify(f, null, 1); Object.assign(counts, f.counts); filename = `fleet-operations-backup-${day}.json`; what = `${nf(Object.values(counts).reduce((a, n) => a + (n || 0), 0))} records`; }
     let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
     if (!dl) { $("stBkMsg").textContent = "Saving files isn't available in this view. Reload the page and try again."; return; }
     await dl.save({ filename, data });
@@ -17421,7 +17618,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08p";
+const APP_VER = "2026-11-09a";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
