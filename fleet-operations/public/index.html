@@ -14271,7 +14271,7 @@ async function tsLayout(L, pdf, b) {
 // Booking slip and spare bus trip sheet print: a preview like the truck trip sheet's. Tick the pages, see them, then save
 // them as images or as one PDF, or share them.
 const toJpg = cv => new Promise((ok, fail) => cv.toBlob(x => x ? ok(x) : fail(new Error("image failed")), "image/jpeg", 0.92));
-function pvOpen({ name0, pages, extra, picks, langKey, canvases, pdf }) {
+function pvOpen({ name0, exactName, pages, extra, picks, langKey, canvases, pdf }) {
   pbClose();
   let fmt = "jpg", urls = [], seq = 0, lang = "en"; try { if (langKey && localStorage.getItem(langKey) === "ta") lang = "ta"; } catch {} try { fmt = localStorage.getItem("fleet-pvout") === "pdf" ? "pdf" : "jpg"; } catch {}
   const box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
@@ -14288,14 +14288,16 @@ function pvOpen({ name0, pages, extra, picks, langKey, canvases, pdf }) {
     `<div class="xoright rtpv"></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
   const pane = box.querySelector(".rtpv"), fname = () => box.querySelector("[data-title]").value.trim() || name0;
+  // exactName: the file is saved with the name as shown (no date added); otherwise the date is added to it.
+  const pvName = (ext, n) => exactName ? `${n.replace(/[\\/:*?"<>|]+/g, "-")}.${ext}` : pbName(ext, n);
   const st = () => ({ pg: pages.length > 1 ? [...box.querySelectorAll("[data-pv]")].filter(i => i.checked).map(i => +i.dataset.pv) : [0], ex: !!box.querySelector("[data-ex]")?.checked,
     pk: [...box.querySelectorAll("[data-pk]")].filter(i => i.checked).map(i => +i.dataset.pk), lang });
   // Each page group (front, back) can run to more than one image (a long back side).
   const picked = async s => (await canvases(s)).filter(x => s.pg.includes(x.g));
   const makeAll = async () => {
-    const s = st(); if (fmt === "pdf") return [{ filename: pbName("pdf", fname()), data: await pdf(s) }];
+    const s = st(); if (fmt === "pdf") return [{ filename: pvName("pdf", fname()), data: await pdf(s) }];
     const cv = await picked(s), cnt = {}; return Promise.all(cv.map(async x => { cnt[x.g] = (cnt[x.g] || 0) + 1; const lab = pages.length > 1 ? ` ${pages[x.g].label.toLowerCase()}${cnt[x.g] > 1 ? " " + cnt[x.g] : ""}` : "";
-      return { filename: pbName("jpg", fname() + lab), data: await toJpg(x.cv) }; }));
+      return { filename: pvName("jpg", fname() + lab), data: await toJpg(x.cv) }; }));
   };
   const draw = async () => {
     const k = ++seq; pane.classList.add("busy");
@@ -14732,7 +14734,9 @@ function pOpenDocsPop(b, cfg, p) {
 // The due badge: the renewals due within a month in the preview window, to save as an image or a PDF, or share.
 function pOpenDuePop(cfg, p) {
   const due = pDueOf(cfg, p), masked = acc.users !== "edit", keys = s => s.pk.map(i => due[i].k);
-  pvOpen({ name0: `${pFileBase(p)} DUE`, pages: [{ label: "Renewals due" }], langKey: "fleet-duelang", picks: { title: "Renewals due within a month", list: due.map(d => ({ label: d.label, sub: pickSub(d) })) },
+  // File name: the person's name, Due, today's date, e.g. RAMESH-KUMAR_Due_07-11-2026.jpg
+  const d = todayISO(), nm = String(p.name || cfg.Noun).trim().replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").toUpperCase() || pFileBase(p);
+  pvOpen({ name0: `${nm}_Due_${d.slice(8, 10)}-${d.slice(5, 7)}-${d.slice(0, 4)}`, exactName: true, pages: [{ label: "Renewals due" }], langKey: "fleet-duelang", picks: { title: "Renewals due within a month", list: due.map(d => ({ label: d.label, sub: pickSub(d) })) },
     canvases: async s => [{ g: 0, cv: await pCardCanvas(cfg, p, masked, true, keys(s), s.lang) }],
     pdf: async s => { const L = await loadPdfLib(), pdf = await L.PDFDocument.create(), cv = await pCardCanvas(cfg, p, masked, true, keys(s), s.lang);
       const img = await pdf.embedJpg(await (await toJpg(cv)).arrayBuffer()), w = cv.width / 2, h = cv.height / 2;
@@ -17352,7 +17356,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-08h";
+const APP_VER = "2026-11-08i";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
