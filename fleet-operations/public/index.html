@@ -6954,11 +6954,13 @@ function mtGap(key, k) { const d = mtGapsDoc(), b = d.bus?.[key]?.[k], g = d.gap
 // Maintenance runs on actual km: every odometer reading is turned into actual km with the vehicle master's
 // meter and actual km lines (a vehicle without them uses the reading as it is).
 function mtAct(key, date, km) { const v = mtVehOf(key); return v && num(km) && odoPairs(v).length ? Math.round(odoActual(v, date, km)) : num(km); }
+// A maintenance entry's km in actual km. Entries loaded from Excel already hold the actual km (the sheet's Kms column; the meter reading is in the remarks).
+const mtXAct = x => x.src === "excel" || x.kmAct ? num(x.km) : mtAct(mtKeyOf(x), x.date, x.km);
 // The latest km reading known for a vehicle (maintenance, diesel fills, trip sheets, bookings, truck trips) in actual km, and its km per day.
 // Latest by date (the highest km on that day), so an old reading typed with a wrong or a replaced meter's km does not stay "now".
 function mtNow(key) {
   const v = mtVehOf(key), pts = [], add = (date, km, src) => { if (date && num(km)) pts.push([date, mtAct(key, date, km), src, num(km)]); };
-  ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => add(x.date, x.km, "maintenance"));
+  ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => { if (x.date && num(x.km)) pts.push([x.date, mtXAct(x), "maintenance", num(x.km)]); });
   if (v) {
     ops.fuelLog.filter(f => f.vehicleId === v.id).forEach(f => add(f.date, f.odo, "diesel fill"));
     [...trips, ...dayTrips, ...tripsLocal].filter(t => t.vehicleId === v.id).forEach(t => add(t.date, t.odo, "trip sheet"));
@@ -6977,10 +6979,10 @@ function mtDue(key) {
   const now = mtNow(key), last = new Map();
   ops.maintLog.filter(x => mtKeyOf(x) === key).forEach(x => (x.items || []).forEach(it => {
     const id = it.k + "|" + (it.pos || ""), cur = last.get(id);
-    const a = mtAct(key, x.date, x.km); if (!cur || x.date > cur.e.date || (x.date === cur.e.date && a > cur.a)) last.set(id, { it, e: x, a });
+    const a = mtXAct(x); if (!cur || x.date > cur.e.date || (x.date === cur.e.date && a > cur.a)) last.set(id, { it, e: x, a });
   }));
   return [...last.values()].map(({ it, e, a }) => {
-    const gap = mtGap(key, it.k), next = gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
+    const gap = mtGap(key, it.k), next = num(it.next) > a ? num(it.next) : gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
     const when = left != null && now?.perDay ? shiftDay(now.date, Math.round(left / now.perDay)) : "";
     const st = next == null ? "nogap" : left == null ? "ok" : left <= 0 ? "over" : left <= 5000 ? "soon" : "ok";
     return { it, e, ekm: a, gap, next, left, when, st };
@@ -8139,7 +8141,7 @@ function renderMaint() {
       (due.length ? `<div class="mtdue"><b>Due now</b>${due.slice(0, 6).map(d => `<span class="pill ${MT_ST[d.st][1]}">${esc(mtItemName(d.it))} · ${esc(mtLeftTxt(d))}</span>`).join("")}${due.length > 6 ? `<a href="#maintenance-summary">+${due.length - 6} more</a>` : ""}</div>` : "") +
       `</section>` +
       `<section class="panel"><h2 class="sec">Work done on ${esc(mtPlateOf({ vehicleId: mtBus }))}</h2>` +
-      (hist.length ? `<div class="mtlist">${hist.slice(0, 60).map(x => `<button type="button" class="mtcard" data-mtopen="${x.id}"><span class="mth"><b>${fmtDate(x.date)}</b><span>${nf(mtAct(mtKeyOf(x), x.date, x.km))} km</span></span>` +
+      (hist.length ? `<div class="mtlist">${hist.slice(0, 60).map(x => `<button type="button" class="mtcard" data-mtopen="${x.id}"><span class="mth"><b>${fmtDate(x.date)}</b><span>${nf(mtXAct(x))} km</span></span>` +
         `<span class="mti">${(x.items || []).map(it => `<span>${esc(mtItemName(it))}</span>`).join("")}</span>${x.notes ? `<small>${esc(x.notes)}</small>` : ""}</button>`).join("")}</div>`
         : `<p class="sub" style="margin:8px 0 0">Nothing entered yet.</p>`) + `</section>` : "");
 }
@@ -8163,11 +8165,11 @@ function mtOpen(x) {
   if (!x) setTimeout(() => $("mtKm")?.focus(), 60);
 }
 const mtHas = (k, pos) => mtw.items.some(it => it.k === k && (it.pos || "") === (pos || ""));
-const mtLast = () => ops.maintLog.filter(x => mtKeyOf(x) === mtw.key && x.id !== mtw.id && num(x.km)).sort((a, b) => mtAct(mtw.key, b.date, b.km) - mtAct(mtw.key, a.date, a.km))[0];
+const mtLast = () => ops.maintLog.filter(x => mtKeyOf(x) === mtw.key && x.id !== mtw.id && num(x.km)).sort((a, b) => mtXAct(b) - mtXAct(a))[0];
 // The reading typed (odometer) in actual km.
-const mtwAct = () => mtAct(mtw.key, mtw.date, mtw.km);
+const mtwAct = () => mtw.src === "excel" || mtw.kmAct ? num(mtw.km) : mtAct(mtw.key, mtw.date, mtw.km);
 function mtKmWarn() {
-  const km = mtwAct(), last = mtLast(), lastA = last ? mtAct(mtw.key, last.date, last.km) : 0, now = mtw.now;
+  const km = mtwAct(), last = mtLast(), lastA = last ? mtXAct(last) : 0, now = mtw.now;
   if (!km) return "";
   if (last && km < lastA && mtw.date >= last.date) return `Less than the last maintenance reading (${nf(lastA)} km on ${fmtDate(last.date)}). Check the meter.`;
   if (now && km > now.km + 30000) return `Much more than the last known reading (${nf(now.km)} km on ${fmtDate(now.date)}). Check the meter.`;
@@ -8188,7 +8190,7 @@ function mtRender() {
   if (s === 0) {
     const last = mtLast(), w = mtKmWarn();
     body = rsSec("1", "Kilometer reading", `<p class="rsq">What does the km meter show now?</p><label class="bwf1 mtkm"><span class="bwin"><input id="mtKm" type="number" inputmode="numeric" min="0" data-k="km" value="${esc(mtw.km)}" placeholder="e.g. 188502" aria-label="Kilometer reading"${ro}><b>km</b></span></label><p class="lgact" id="mtKmAct">${num(mtw.km) && mtwAct() > 0 && mtwAct() !== num(mtw.km) ? `Actual ${nf(mtwAct())} km` : ""}</p>` +
-      `<p class="bwnote">${last ? `Last maintenance: <b>${nf(mtAct(mtw.key, last.date, last.km))} km</b> on ${fmtDate(last.date)}` : mtw.now ? `Last known reading: <b>${nf(mtw.now.km)} km</b> on ${fmtDate(mtw.now.date)}` : "First maintenance entry for this vehicle."}</p>` +
+      `<p class="bwnote">${last ? `Last maintenance: <b>${nf(mtXAct(last))} km</b> on ${fmtDate(last.date)}` : mtw.now ? `Last known reading: <b>${nf(mtw.now.km)} km</b> on ${fmtDate(mtw.now.date)}` : "First maintenance entry for this vehicle."}</p>` +
       `<p class="rswarnt" id="mtKmWarn"${w ? "" : " hidden"}>${esc(w)}</p>`) +
       rsSec("2", "Date", `<label class="bwf1"><span>Date the work was done</span><input type="date" data-k="date" value="${esc(mtw.date)}" max="${todayISO()}"${ro}></label>` +
         `<div class="bwseg c2" style="margin-top:8px"><button type="button" data-mt="today" aria-pressed="${mtw.date === todayISO()}"${ro}>Today</button><button type="button" data-mt="yday" aria-pressed="${mtw.date === shiftDay(todayISO(), -1)}"${ro}>Yesterday</button></div>`);
@@ -8354,9 +8356,9 @@ async function msgClick(e) {
 let mhBus = "", mhType = "", mhShow = "all";
 function mhRows() {
   const out = [];
-  ops.maintLog.forEach(x => { const key = mtKeyOf(x), km = mtAct(key, x.date, x.km);
+  ops.maintLog.forEach(x => { const key = mtKeyOf(x), km = mtXAct(x);
     (x.items || []).forEach(it => { const g = mtGap(key, it.k);
-      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
+      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: num(it.next) > km ? num(it.next) : g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
   return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(b.date).localeCompare(String(a.date)) || MT_TYPES.indexOf(mtType(a.it.k)) - MT_TYPES.indexOf(mtType(b.it.k)) || String(a.it.pos).localeCompare(String(b.it.pos)));
 }
 function mhList() {
@@ -8424,10 +8426,11 @@ function mtParseType(raw) {
   const dm = /on\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(s), km = /kms?\s*:?\s*(\d{4,7})/i.exec(s);
   return { k, pos, note, date: dm ? upIso(+dm[3], +dm[2], +dm[1]) : "", km: km ? +km[1] : null };
 }
-function mtParseBook(sheets) {
+// opts: { plate } the vehicle chosen on the upload page, for a sheet that has no "MAINTENANCE - <vehicle>" title.
+function mtParseBook(sheets, opts = {}) {
   const byName = re => sheets.find(s => re.test(s.name));
   const vehOf = plate => vehicles.find(v => plateKey(v.plateNo) === plateKey(plate));
-  const out = { expenses: [], entries: new Map(), gaps: {}, map: new Map(), plates: new Map(), skipped: 0, swapped: 0 };
+  const out = { expenses: [], entries: new Map(), gaps: {}, map: new Map(), plates: new Map(), skipped: 0, swapped: 0, noPlate: 0 };
   const plateUse = (p, n = 1) => { const k = plateKey(p); if (!k) return; const v = vehOf(p), x = out.plates.get(k) || { plate: v ? plateOf(v) : upText(p), v, xp: 0, mt: 0 }; out.plates.set(k, x); return x; };
   // Expenses: rows are in date order, so a date Excel may have read as month/day takes the reading closest to the row before.
   const xs = byName(/expense/i);
@@ -8450,7 +8453,9 @@ function mtParseBook(sheets) {
     if (!date) { out.skipped++; return; }
     const v = vehOf(plate), key = v ? v.id : "p:" + plateKey(plate), eid = `${key}|${date}|${km || ""}`;
     const e = out.entries.get(eid) || { key, vehicleId: v?.id || "", plate: v ? plateOf(v) : upText(plate), date, km: km || 0, items: [], notes: [], src };
-    (p.pos.length ? p.pos : [""]).forEach(pos => { if (!e.items.some(it => it.k === p.k && (it.pos || "") === pos)) e.items.push(pos ? { k: p.k, pos } : { k: p.k }); });
+    // The sheet's Next KMS stays with the job (it is the km of its next service).
+    const nxt = nx && km && nx > km && nx - km <= 300000 ? Math.round(nx) : 0;
+    (p.pos.length ? p.pos : [""]).forEach(pos => { if (!e.items.some(it => it.k === p.k && (it.pos || "") === pos)) e.items.push({ k: p.k, ...(pos ? { pos } : {}), ...(nxt ? { next: nxt } : {}) }); });
     if (p.note && !e.notes.includes(p.note)) e.notes.push(p.note); if (remark && !e.notes.includes(remark)) e.notes.push(remark);
     out.entries.set(eid, e); const pu = plateUse(plate); if (pu && src === "details") pu.mt++;
     if (nx && km && nx > km && nx - km <= 300000) (out.gaps[key] ||= {})[p.k] = nx - km;
@@ -8465,17 +8470,20 @@ function mtParseBook(sheets) {
       if (/^maintenance\s*-/i.test(a)) { plate = a.replace(/^maintenance\s*-\s*/i, "").replace(/\s*-\s*\d{4}\s*$/, "").trim(); C = null; return; }
       if (/^[a-z]{2}\s*\d{1,2}\s*[a-z]{0,3}\s*\d{3,4}$/i.test(a) && !cells.slice(first + 1).some(Boolean)) { plate = a; C = null; return; }
       if (/^maintenance type$/i.test(a)) { const h = cells.map(x => x.toLowerCase()), at = re => h.findIndex((x, i) => i >= first && i < first + 7 && re.test(x));
-        C = { type: first, last: at(/last maintenance date/), done: at(/completion date/), km: at(/^kms?$/), rem: at(/remark/), next: at(/next kms/) }; return; }
+        C = { type: first, last: at(/last maintenance date/), done: at(/completion date/), km: at(/^kms?$|maintenance kms?$/), rem: at(/remark/), next: at(/next kms/) };
+        if (!plate && opts.plate) plate = opts.plate; return; }
+      if (C && !plate && first === C.type) { out.noPlate++; return; }
       if (!plate || !C || first !== C.type) return;
       const date = (C.done >= 0 && dateOf(r[C.done])) || (C.last >= 0 && dateOf(r[C.last])) || "";
       const kmc = C.km >= 0 ? upNum(r[C.km]) : null, km = kmc && kmc < 3e6 ? Math.round(kmc) : kmIn(r);
-      const rem = C.rem >= 0 && typeof r[C.rem] === "string" ? upText(r[C.rem]) : "";
-      add(plate, a, date, km, rem, C.next >= 0 ? upNum(r[C.next]) : null, src); }); };
+      const rem = [C.rem >= 0 && typeof r[C.rem] === "string" ? upText(r[C.rem]) : "", C.next >= 0 && typeof r[C.next] === "string" && /[a-z]/i.test(r[C.next]) ? upText(r[C.next]) : ""].filter(Boolean).join(" · ");
+      add(plate, a, date, km, rem, C.next >= 0 && typeof r[C.next] === "number" ? r[C.next] : null, src); }); };
   const md = byName(/maintenance details/i), ms = byName(/maintenance summary/i);
   if (md) blocks(md, "details");
   if (ms) blocks(ms, "summary");
   // A workbook whose sheets have other names ("Sheet1"): every sheet with "MAINTENANCE - <vehicle>" blocks is read as details.
-  if (!md && !ms) sheets.filter(sh => sh.rows.some(r => r?.some(c => /^maintenance\s*-/i.test(upText(c))))).forEach(sh => blocks(sh, "details"));
+  // A sheet with only the Maintenance Type heading (one vehicle's history) is read for the vehicle chosen on the page.
+  if (!md && !ms) sheets.filter(sh => sh.rows.some(r => r?.some(c => /^maintenance\s*-|^maintenance type$/i.test(upText(c))))).forEach(sh => blocks(sh, "details"));
   out.future = out.expenses.filter(x => x.date > todayISO()).map(x => `${fmtDate(x.date)} · ${x.desc}`);
   // A job written without its km on a day that has a km reading for the same vehicle joins that visit.
   for (const [id, e] of [...out.entries]) if (!e.km) { const to = [...out.entries.values()].find(o => o !== e && o.key === e.key && o.date === e.date && o.km);
@@ -8490,7 +8498,9 @@ function emPreview(res) {
   const R = res.em, have = new Set(ops.expenses.map(x => x.id)), haveM = new Set(ops.maintLog.map(x => x.id));
   const newX = R.expenses.filter(x => !have.has(x.id)), newM = R.entries.filter(x => !haveM.has(x.id));
   const types = [...R.map.entries()].sort((a, b) => b[1].n - a[1].n);
-  return `<div class="upsum"><span><b>${R.expenses.length}</b> expenses (${newX.length} new)</span><span><b>${R.entries.length}</b> maintenance visits (${newM.length} new)</span><span><b>${R.entries.reduce((a, e) => a + e.items.length, 0)}</b> jobs</span><span><b>${R.skipped}</b> empty rows left out</span></div>` +
+  const vSel = R.noPlate || upState.emVeh ? `<div class="emveh"><div class="hf"><label for="emVeh">Vehicle for the sheet without a vehicle number</label><select id="emVeh"><option value="">Choose the vehicle…</option>${mtFleet().map(v => `<option value="${v.id}"${v.id === upState.emVeh ? " selected" : ""}>${esc(plateOf(v))}</option>`).join("")}</select></div>` +
+    (R.noPlate ? `<p class="err" style="margin:0">${R.noPlate} maintenance row${R.noPlate === 1 ? " has" : "s have"} no vehicle number in the sheet. Choose the vehicle to load ${R.noPlate === 1 ? "it" : "them"}.</p>` : `<p class="sub" style="margin:0">Rows without a vehicle number in the sheet are loaded for this vehicle.</p>`) + `</div>` : "";
+  return vSel + `<div class="upsum"><span><b>${R.expenses.length}</b> expenses (${newX.length} new)</span><span><b>${R.entries.length}</b> maintenance visits (${newM.length} new)</span><span><b>${R.entries.reduce((a, e) => a + e.items.length, 0)}</b> jobs</span><span><b>${R.skipped}</b> empty rows left out</span></div>` +
     (R.future.length ? `<p class="err" style="margin:0">Dates in the future, please check in the Excel: ${R.future.map(esc).join("; ")}.</p>` : "") +
     (R.swapped ? `<p class="sub" style="margin:0">${R.swapped} expense date${R.swapped === 1 ? " was" : "s were"} read by Excel as month/day (e.g. 7 April as 4 July). They have been put back to day/month from the rows around them: please check them after loading.</p>` : "") +
     `<h3 class="sec" style="margin:4px 0 0">Vehicles</h3><div class="tscroll"><table class="ctable"><thead><tr><th>In the Excel</th><th>Vehicle master</th><th class="n">Expenses</th><th class="n">Maintenance rows</th></tr></thead><tbody>` +
@@ -8814,7 +8824,7 @@ const UP_KINDS = {
   },
   em: {
     label: "Expenses and maintenance (Excel workbook)",
-    note: "The workbook with the sheets Expense List, Maintenance Details and Maintenance Summary, or any sheet with one \"MAINTENANCE - vehicle number\" block per vehicle. Nothing is saved until you check the list and press Load.",
+    note: "The workbook with the sheets Expense List, Maintenance Details and Maintenance Summary, or any sheet with one \"MAINTENANCE - vehicle number\" block per vehicle, or one vehicle's history (Maintenance Type, Last Maintenance Date, Kms, Remarks, Next KMS) with the vehicle chosen after the file is read. Nothing is saved until you check the list and press Load.",
     em: true
   },
   spare: {
@@ -9210,7 +9220,10 @@ async function upLoad() {
   if (K.em) {
     try {
       if (!/\.xlsx$/i.test(f.name)) { upState.rows = { error: "Choose the Excel workbook (.xlsx)." }; renderUpload(); return; }
-      upState.emDone = ""; upState.rows = { em: mtParseBook(await upReadXlsx(await f.arrayBuffer(), true)) };
+      if (upState.emFile !== f.name) { upState.emFile = f.name; const g = (f.name.toUpperCase().match(/[A-Z]{2}\s*-?\s*\d{1,2}[A-Z0-9 -]*/g) || []).map(plateKey).filter(k => k.length >= 4);
+        const hit = g.length ? vehicles.filter(v => g.some(k => plateKey(v.plateNo).startsWith(k) || k.startsWith(plateKey(v.plateNo)))) : []; upState.emVeh = hit.length === 1 ? hit[0].id : ""; }
+      const pv = vehicles.find(v => v.id === upState.emVeh);
+      upState.emDone = ""; upState.rows = { em: mtParseBook(await upReadXlsx(await f.arrayBuffer(), true), { plate: pv ? pv.plateNo : "" }) };
     } catch { upState.rows = { error: "This file could not be read. Open it in Excel, save it as .xlsx and try again." }; }
     renderUpload(); return;
   }
@@ -9247,6 +9260,7 @@ $("upFile").addEventListener("change", () => {
   upLoad();
 });
 ["upBus", "upPaid", "upMonth", "upFy"].forEach(id => $(id).addEventListener("change", upLoad));
+$("upOut").addEventListener("change", e => { if (e.target.id === "emVeh") { upState.emVeh = e.target.value; upLoad(); } });
 $("upOut").addEventListener("click", e => { if (e.target.id === "emGo") emImport(); if (e.target.id === "xpUpGo") xpUpImport(); if (e.target.id === "tkGo") tkImport(); });
 $("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; $("upBus").value = ""; renderUpload(); upLoad(); });
 $("upOut").addEventListener("change", e => {
@@ -17137,7 +17151,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07s";
+const APP_VER = "2026-11-07t";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
