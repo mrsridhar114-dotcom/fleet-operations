@@ -2839,7 +2839,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </header>
       <section class="panel upform updl" aria-labelledby="dlAllH">
         <h2 id="dlAllH">Download everything for a financial year</h2>
-        <p class="sub">One Excel file: each route bus month by month, each spare bus, each truck, then Bus Expenses and Truck Expenses.</p>
+        <p class="sub">One Excel file: the Summary, each route bus month by month, each spare bus, each truck, Bus Expenses and Truck Expenses, then the Employee and Vehicle master data with validity dates.</p>
         <div class="hf"><label for="oDlFy">Financial year</label><select id="oDlFy"></select></div>
         <button class="btn primary" type="button" id="oDl">⬇ Download all</button>
         <div id="oDlNoBus" class="nobus" hidden></div>
@@ -9502,7 +9502,7 @@ const XL = (() => {
     rTitle: 48, rLab: 49, rVal: 50, rValD: 51, rCrewH: 52, rTxt: 53, rInt: 54, rHead: 55, rDay: 56, rDec: 57,
     sTitle: 58, sLab: 59, sVal: 60, sHead: 61, sDate: 62, sInt: 63, sDec: 64, sTxt: 65,
     smTitle: 66, smHead: 67, smVeh: 68, smNum: 69, smDay: 70, smTotL: 71, smTotN: 72, smTotD: 73, smSign: 74, smGrandL: 75, smGrand: 76,
-    mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84 };
+    mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84, sDateX: 85, sDateD: 86, sNote: 87 };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -9525,7 +9525,9 @@ const XL = (() => {
     xf(0, 10, 14, 2, 'horizontal="center" vertical="center"'), xf(165, 12, 14, 2, 'horizontal="center" vertical="center" shrinkToFit="1"'),
     // 77–84: the Summary sheet's month-wise tables: title, headings, month, number, days, totals
     xf(0, 11, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 13, 15, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 8, 0, 2, 'vertical="center"'), xf(165, 8, 0, 2, 'vertical="center"'), xf(0, 8, 0, 2, 'horizontal="right" vertical="center"'),
-    xf(0, 14, 13, 2, 'vertical="center"'), xf(165, 14, 13, 2, 'vertical="center"'), xf(0, 14, 13, 2, 'horizontal="right" vertical="center"')];
+    xf(0, 14, 13, 2, 'vertical="center"'), xf(165, 14, 13, 2, 'vertical="center"'), xf(0, 14, 13, 2, 'horizontal="right" vertical="center"'),
+    // 85–87: the master sheets: a validity date that has passed (red), one due within 30 days (yellow), the colour note
+    xf(164, 1, 7, 2, 'horizontal="left"'), xf(164, 1, 4, 2, 'horizontal="left"'), xf(0, 3, 0, 0)];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="15"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
@@ -9834,6 +9836,50 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
   Object.assign(ws.heights, { 1: 46, 2: 20, 3: 46 }); for (let k = R0; k <= RT; k++) ws.heights[k] = 31;
   ws.zoom = 30;
   return ws;
+}
+/* Master data sheets for Download all, as on today: one row per record with every detail. The name / plate and the validity
+   dates come first, then the other details. A validity date already passed is red, one due within 30 days yellow. */
+function xlMasterSheet(title, heads, rows, widths = {}) {
+  const { put, S, sheet, col } = XL, ws = sheet(title), today = todayISO(), soon = shiftDay(today, 30), last = col(heads.length - 1);
+  put(ws, "A1", `${title} - as on ${today.split("-").reverse().join("/")}`, S.sTitle); for (let c = 1; c < heads.length; c++) put(ws, col(c) + 1, null, S.sTitle); ws.merges.push(`A1:${last}1`);
+  put(ws, "A2", "Red: validity date passed · Yellow: due within 30 days", S.sNote);
+  heads.forEach(([h, kind], i) => put(ws, col(i) + 3, h, S.sHead));
+  rows.forEach((row, r) => heads.forEach(([, kind], i) => { const v = row[i], ref = col(i) + (4 + r);
+    if (kind === "valid" || kind === "date") { const ok = /^\d{4}-\d{2}-\d{2}$/.test(v || "");
+      put(ws, ref, ok ? { d: v } : (v || ""), !ok ? S.sTxt : kind === "valid" && v < today ? S.sDateX : kind === "valid" && v <= soon ? S.sDateD : S.sDate); }
+    else put(ws, ref, v ?? "", typeof v === "number" ? S.sInt : S.sTxt); }));
+  ws.freeze = 3; ws.zoom = 90; Object.assign(ws.heights, { 1: 28.5, 3: 48 });
+  heads.forEach(([h, kind], i) => ws.widths[col(i)] = widths[h] || (kind === "valid" ? 18 : kind === "date" ? 14 : Math.min(30, Math.max(11, h.length + 2))));
+  return ws;
+}
+// Employees: drivers, then conductors, each in name order.
+function xlEmployeeSheet(recs) {
+  const rel = x => [x.relType, x.relation].filter(Boolean).join(" "), age = d => d ? yearsBetween(d, todayISO()) : "", list = v => String(v || "").split(",").map(z => z.trim()).filter(Boolean).join(", ");
+  const by = a => [...(a || [])].sort((x, y) => String(x.name).localeCompare(String(y.name)));
+  const heads = [["Name", "t"], ["Role", "t"], ["Licence No.", "t"], ["Licence Valid (Non-Transport)", "valid"], ["Licence Valid (Transport)", "valid"], ["Conductor Licence Valid", "valid"], ["First Aid Valid", "valid"],
+    ["Status", "t"], ["Badge No.", "t"], ["First Aid Certificate No.", "t"], ["Mobile", "t"], ["Address", "t"], ["Son / Daughter / Wife of", "t"], ["Date of Birth", "date"], ["Age", "t"], ["Date of Joining", "date"],
+    ["Blood Group", "t"], ["Organ Donor", "t"], ["Licence State", "t"], ["RTO", "t"], ["Licence First Issue", "date"], ["Licence Issue Date", "date"], ["Vehicle Classes", "t"], ["Vehicle Categories", "t"], ["Remarks", "t"]];
+  const rows = [...by(recs.drivers).map(d => [d.name, "Driver", fmtDl(d.dlNo), d.valNT, d.valTR, "", "", d.status || "Active", "", "", d.mobile, d.address, rel(d), d.dob, age(d.dob), d.doj,
+      d.blood, d.organDonor, d.state, "", d.firstIssue, d.issueDate, list(d.vClass), list(d.vCat), d.remarks]),
+    ...by(recs.conductors).map(c => [c.name, "Conductor", c.clNo, "", "", c.clValid, c.faValid, c.status || "Active", c.badgeNo, c.faNo, c.mobile, c.address, rel(c), c.dob, age(c.dob), c.doj,
+      c.blood, "", c.state, c.rto, "", c.issueDate, "", "", c.remarks])];
+  return xlMasterSheet("Employee Master Data", heads, rows, { Name: 26, "Licence No.": 20, Address: 45, "Son / Daughter / Wife of": 28, Remarks: 40 });
+}
+const VALID_HEADS = { fcDate: "FC Valid", insuranceExp: "Insurance Valid", taxExp: "Tax Valid", permitExp: "Permit Valid", permitAuthExp: "Permit Auth. Valid", pollutionExp: "Pollution Valid", rcValidity: "RC Valid", speedGovExp: "Speed Governor Valid", gpsExp: "GPS (AIS-140) Valid" };
+// Vehicles: every vehicle in plate order; a document that does not apply to the vehicle's class shows "Not needed".
+function xlVehicleSheet(recs) {
+  const fin = v => v.financed === "yes" ? "Yes" : v.financed === "no" ? "No" : "", dd = (v, k) => docApplies(k, v.type, v.usage) ? v[k] || "" : "Not needed";
+  const heads = [["Plate No.", "t"], ["Class", "t"], ["Operation", "t"], ["Status", "t"], ...DOCS.map(([k]) => [VALID_HEADS[k] || k, "valid"]), ["Loan End Date", "valid"],
+    ["Owner Name", "t"], ["Owner Address", "t"], ["Make", "t"], ["Model", "t"], ["Usage", "t"], ["Fuel", "t"], ["Emission", "t"], ["Registration Date", "date"], ["Manufactured", "t"],
+    ["Chassis No.", "t"], ["Engine No.", "t"], ["RTO", "t"], ["Seats", "t"], ["Staff Seats", "t"], ["GVW (kg)", "t"], ["ULW (kg)", "t"], ["Body Type", "t"], ["Body Colour", "t"],
+    ["FASTag", "t"], ["Fuel Tank (L)", "t"], ["Tyres", "t"], ["Tyre Size", "t"], ["Battery Make", "t"], ["Battery Date", "date"], ["Odometer at Start", "t"], ["Financed", "t"], ["Financier", "t"],
+    ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => [d.full, d.date ? "date" : "t"])), ["Remarks", "t"]];
+  const rows = [...(recs.vehicles || [])].sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo))).map(v => [v.plateNo || vName(v), v.type, v.type === "Bus" ? v.opType : "", v.status || "Active",
+    ...DOCS.map(([k]) => dd(v, k)), v.financed === "yes" ? v.loanEndDate || "" : "",
+    v.ownerName, v.ownerAddress, v.make, v.model, v.usage, v.fuel, v.emission, v.regDate, fmtMfg(v), v.chassisNo, v.engineNo, v.rto, v.seats, v.staffSeats, v.gvw, v.ulw, v.bodyType, v.bodyColour,
+    v.fastag, v.fuelTank, v.tyreCount, v.tyreSize, v.batteryMake, v.batteryDate, v.odoStart, fin(v), v.financier,
+    ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => docApplies(k, v.type, v.usage) ? v[d.k] ?? "" : "")), v.remarks]);
+  return xlMasterSheet("Vehicle Master Data", heads, rows, { "Plate No.": 16, Class: 17, "Owner Name": 26, "Owner Address": 40, Remarks: 40 });
 }
 // The records the downloads need, read fresh (shared records, or this browser's copy).
 async function dlRead(colls) {
@@ -15647,7 +15693,7 @@ $("oDl").onclick = e => { const fy = +$("oDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => { const recs = { ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers };
     const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.vehicleId && t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
     const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
-    return [xlSummarySheet(recs, fy, sheets, busIds), ...sheets]; }); };
+    return [xlSummarySheet(recs, fy, sheets, busIds), ...sheets, xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]; }); };
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 // + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
 $("kAdd").onclick = () => { const last = roundsOf(kBusId).filter(r => r.status !== "Closed").sort((a, b) => b.to.localeCompare(a.to))[0]; openRound(last ? last.id : null, "leg", null); };
@@ -16882,7 +16928,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-07f";
+const APP_VER = "2026-11-07g";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
