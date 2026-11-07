@@ -3,6 +3,7 @@
 import { q } from "../lib/db.js";
 import { send, fail, who, readBody } from "../lib/http.js";
 import { canRead, canWrite, readScope, ownOnly, readOnlyColls } from "../lib/access.js";
+import { backupPage } from "../lib/backup.js";
 
 const COLL = /^[A-Za-z0-9_]{1,64}$/, ID = /^[A-Za-z0-9_\-:.@]{1,200}$/;
 const OPEN = ["appUsers", "accessRequests"]; // what someone not yet approved may read
@@ -90,19 +91,41 @@ export default async function handler(req, res) {
       return send(res, 200, { ok: true, ver: Number(r[0].ver) });
     }
 
-    // Owner only: load a backup file made with "Full backup (JSON)", a batch at a time.
-    if (op === "import") {
-      if (!me.owner) return fail(res, 403, "permission_denied", "Only the owner can import a backup.");
-      const docs = Array.isArray(b.docs) ? b.docs.slice(0, 500) : [];
+    // Admins: Storage › Backup & restore.
+    // backup: every live record of every collection, a page at a time (from version `since`).
+    // load: a batch of records from a backup file. mode "missing" puts back only records that are not in the app
+    //   (never there, or deleted); mode "replace" also sets every record that is in the file back to its backed-up copy.
+    // prune ("replace" only): records that were not in the backup go to the recycle bin (30 days), as a delete does.
+    if (op === "backup" || op === "load" || op === "prune") {
+      if (me.access?.users !== "edit") return fail(res, 403, "permission_denied", "Only an admin can back up or restore.");
+      if (op === "backup") return send(res, 200, await backupPage(Math.max(0, Number(b.since) || 0)));
+      const list = Array.isArray(b.docs) ? b.docs.slice(0, 500) : [];
       let n = 0;
-      for (const d of docs) {
-        const coll = String(d.coll || ""), id = String(d.id || "");
-        if (!COLL.test(coll) || !ID.test(id) || !d.data || typeof d.data !== "object") continue;
-        await q(`insert into fleet_docs (coll, id, data, ver, deleted) values ($1, $2, $3::jsonb, nextval('fleet_ver'), false)
-          on conflict (coll, id) do update set data = excluded.data, ver = excluded.ver, deleted = false, updated_at = now()`, [coll, id, JSON.stringify(d.data)]);
+      if (op === "load") {
+        const replace = b.mode === "replace";
+        for (const d of list) {
+          const coll = String(d?.coll || ""), id = String(d?.id || "");
+          if (!COLL.test(coll) || !ID.test(id) || !d.data || typeof d.data !== "object" || Array.isArray(d.data)) continue;
+          const json = JSON.stringify(d.data); if (Buffer.byteLength(json) > MAX_DOC) continue;
+          const r = await q(`insert into fleet_docs (coll, id, data, ver, deleted) values ($1, $2, $3::jsonb, nextval('fleet_ver'), false)
+            on conflict (coll, id) do update set data = excluded.data, ver = excluded.ver, deleted = false, updated_at = now()
+            where fleet_docs.deleted ${replace ? "or fleet_docs.data is distinct from excluded.data" : ""} returning ver`, [coll, id, json]);
+          n += r.length;
+        }
+        return send(res, 200, { ok: true, written: n });
+      }
+      if (b.mode !== "replace") return fail(res, 400, "invalid_argument", "Only a full replace removes records.");
+      for (const d of list) {
+        const coll = String(d?.coll || ""), id = String(d?.id || "");
+        if (!COLL.test(coll) || !ID.test(id) || coll === "auditLog" || coll === "auditSessions") continue; // the activity log is never removed
+        const cur = await q(`select data from fleet_docs where coll = $1 and id = $2 and not deleted`, [coll, id]);
+        if (!cur.length) continue;
+        await q(`insert into fleet_trash (coll, id, data, deleted_by, deleted_by_name) values ($1, $2, $3::jsonb, $4, $5)`, [coll, id, JSON.stringify(cur[0].data), me.id, (me.name || me.email) + " (restore)"]);
+        await q(`update fleet_docs set deleted = true, data = '{}'::jsonb, ver = nextval('fleet_ver'), updated_at = now() where coll = $1 and id = $2`, [coll, id]);
         n++;
       }
-      return send(res, 200, { ok: true, imported: n });
+      await q(`delete from fleet_trash where deleted_at < now() - interval '${KEEP_DAYS} days'`);
+      return send(res, 200, { ok: true, removed: n });
     }
     return fail(res, 400, "bad_request", "Unknown op");
   } catch (e) {
