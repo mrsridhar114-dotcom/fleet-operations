@@ -6233,6 +6233,9 @@ const nf = (n, d = 0) => Number(n).toLocaleString("en-IN", { minimumFractionDigi
 const pad2 = n => String(n).padStart(2, "0");
 const fyOf = iso => { const y = +iso.slice(0, 4), m = +iso.slice(5, 7); return m >= 4 ? y : y - 1; };
 const fyLabel = y => `${y}-${String((y + 1) % 100).padStart(2, "0")}`;
+// The financial years the screens offer: next year back to FY 2018-19, the first year of the office's records.
+const FY_FIRST = 2018;
+const fyYears = () => { const ys = []; for (let y = fyOf(todayISO()) + 1; y >= FY_FIRST; y--) ys.push(y); return ys; };
 const monthYM = (fy, idx) => { const m = ((idx + 3) % 12) + 1, y = idx < 9 ? fy : fy + 1; return `${y}-${pad2(m)}`; };
 const daysIn = ym => new Date(+ym.slice(0, 4), +ym.slice(5, 7), 0).getDate();
 const routeBuses = () => vehicles.filter(v => v.type === "Bus" && v.opType === "Route" && v.status !== "Sold / Scrapped")
@@ -6328,7 +6331,7 @@ function prevOdo(date) {
 /* setup */
 function buildTripSheet() {
   const thisFy = fyOf(todayISO());
-  $("tFy").innerHTML = [thisFy + 1, thisFy, thisFy - 1, thisFy - 2, thisFy - 3].map(y => `<option value="${y}">FY ${fyLabel(y)} (Apr ${y} – Mar ${y + 1})</option>`).join("");
+  $("tFy").innerHTML = fyYears().map(y => `<option value="${y}">FY ${fyLabel(y)} (Apr ${y} – Mar ${y + 1})</option>`).join("");
   tFyStart = thisFy; $("tFy").value = String(thisFy);
   const ym = todayISO().slice(0, 7); tMonthIdx = (+ym.slice(5, 7) + 8) % 12;
   $("tBus").addEventListener("change", () => { tBusId = $("tBus").value; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); renderTrips(); });
@@ -6737,7 +6740,7 @@ const truckList = () => activeOf(v => v.type === "12 Wheeler Truck");
 const inclDays = (a, b) => a && b && b >= a ? dayDiff(a, b) + 1 : "";
 const ostat = (k, v, sub = "", color = "") => `<div class="stat"><div class="k">${k}</div><div class="v"${color ? ` style="color:${color}"` : ""}>${v}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</div>`;
 const ncell = v => v ? `<td class="n">${nf(v)}</td>` : `<td class="n"><span class="sub">—</span></td>`;
-const fyOptions = sel => { const y = fyOf(todayISO()); $(sel).innerHTML = [y + 1, y, y - 1, y - 2, y - 3].map(f => `<option value="${f}">FY ${fyLabel(f)}</option>`).join(""); $(sel).value = String(y); return y; };
+const fyOptions = sel => { const y = fyOf(todayISO()); $(sel).innerHTML = fyYears().map(f => `<option value="${f}">FY ${fyLabel(f)}</option>`).join(""); $(sel).value = String(y); return y; };
 
 function subscribeOps() {
   if (!tripDb) { Object.keys(OPS_LS).forEach(c => ops[c] = loadLS(OPS_LS[c])); return; }
@@ -11009,9 +11012,9 @@ async function dlRead(colls) {
     else out[c] = ls ? loadLS(ls) : (ops[c] || []).slice(); }
   return out;
 }
-// Financial years to offer: the ones with trips, bookings or truck trips, and this one; newest first.
+// Financial years to offer: this one back to FY 2018-19, and any other year with bookings or truck trips; newest first.
 function dlFyOpts(sel, pick) {
-  const ys = new Set([fyOf(todayISO()), ...ops.bookings.filter(b => b.from).map(b => fyOf(b.from)), ...ops.truckTrips.filter(l => l.from).map(l => fyOf(l.from))]);
+  const ys = new Set([...fyYears().slice(1), ...ops.bookings.filter(b => b.from).map(b => fyOf(b.from)), ...ops.truckTrips.filter(l => l.from).map(l => fyOf(l.from))]);
   const cur = pick ?? (+sel.value || fyOf(todayISO())); sel.innerHTML = [...ys].sort((a, b) => b - a).map(y => `<option value="${y}"${y === cur ? " selected" : ""}>${fyLabel(y)}</option>`).join("");
 }
 // Confirmed spare bus bookings with no bus chosen: left out of the downloads, listed under Download all to open and fix.
@@ -18086,7 +18089,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12f";
+const APP_VER = "2026-11-12g";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
