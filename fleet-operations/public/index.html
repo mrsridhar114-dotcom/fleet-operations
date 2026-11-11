@@ -4526,8 +4526,8 @@ function listThumb(v) {
 }
 // Expiry dates shown in the vehicle list, coloured by how soon they fall due.
 const LIST_DOCS = [["fcDate", "Fitness Valid Up To"], ["insuranceExp", "Insurance Valid Up To"], ["taxExp", "Tax Valid Up To"], ["permitExp", "Permit Valid Up To"], ["permitAuthExp", "NP Permit Valid Up To"], ["pollutionExp", "Pollution Valid Up To"]];
-// Vehicle list dates: dd/mm/yyyy in the computer table, dd/mon/yyyy (03/oct/2027) on the phone cards.
-const VC_MON = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+// Vehicle list dates: dd/mm/yyyy in the computer table, dd/Mon/yyyy (03/Oct/2027) on the phone cards.
+const VC_MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const vcDate = iso => /^\d{4}-\d{2}-\d{2}/.test(iso || "") ? `<span class="vdn">${fmtDate(iso)}</span><span class="vdm">${iso.slice(8, 10)}/${VC_MON[+iso.slice(5, 7) - 1]}/${iso.slice(0, 4)}</span>` : fmtDate(iso);
 function expCell(v, k) {
   if (!docApplies(k, v.type, v.usage)) return `<span class="sub">Not applicable</span>`;
@@ -17634,7 +17634,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-11c";
+const APP_VER = "2026-11-11d";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
