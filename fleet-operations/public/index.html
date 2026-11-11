@@ -2987,7 +2987,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </header>
       <section class="panel upform updl" aria-labelledby="dlAllH">
         <h2 id="dlAllH">Download everything for a financial year</h2>
-        <p class="sub">One Excel file: the Summary, each route bus month by month, each spare bus, each truck, Bus Expenses and Truck Expenses, then the Employee and Vehicle master data with validity dates.</p>
+        <p class="sub">One Excel file: the Summary, each route bus month by month, each spare bus, each truck, Bus Expenses and Truck Expenses, then the Employee and Vehicle master data with validity dates. Choose All financial years for one such file per year.</p>
         <div class="hf"><label for="oDlFy">Financial year</label><select id="oDlFy"></select></div>
         <button class="btn primary" type="button" id="oDl">⬇ Download all</button>
         <div id="oDlNoBus" class="nobus" hidden></div>
@@ -4414,7 +4414,7 @@ function showView() {
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
   if (view === "trem") renderRemind();
-  if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); }
+  if (view === "tutil") { dlFyOpts($("oDlFy"), undefined, true); dlNoBusRender(); renderUpload(); }
   if (view === "tfcst") renderFcst();
   if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum(); if (view === "tmhist") renderMhist(); if (view === "tmplan") renderMplan();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
@@ -11105,9 +11105,11 @@ async function dlRead(colls) {
   return out;
 }
 // Financial years to offer: this one back to FY 2018-19, and any other year with bookings or truck trips; newest first.
-function dlFyOpts(sel, pick) {
-  const ys = new Set([...fyYears().slice(1), ...ops.bookings.filter(b => b.from).map(b => fyOf(b.from)), ...ops.truckTrips.filter(l => l.from).map(l => fyOf(l.from))]);
-  const cur = pick ?? (+sel.value || fyOf(todayISO())); sel.innerHTML = [...ys].sort((a, b) => b - a).map(y => `<option value="${y}"${y === cur ? " selected" : ""}>${fyLabel(y)}</option>`).join("");
+// With all, the list starts with "All financial years" (Download all: one file per year).
+const dlFyList = () => [...new Set([...fyYears().slice(1), ...ops.bookings.filter(b => b.from).map(b => fyOf(b.from)), ...ops.truckTrips.filter(l => l.from).map(l => fyOf(l.from))])].sort((a, b) => b - a);
+function dlFyOpts(sel, pick, all) {
+  const cur = pick ?? (all && sel.value === "all" ? "all" : (+sel.value || fyOf(todayISO())));
+  sel.innerHTML = (all ? `<option value="all"${cur === "all" ? " selected" : ""}>All financial years</option>` : "") + dlFyList().map(y => `<option value="${y}"${y === cur ? " selected" : ""}>${fyLabel(y)}</option>`).join("");
 }
 // Confirmed spare bus bookings with no bus chosen: left out of the downloads, listed under Download all to open and fix.
 const dlNoBus = () => ops.bookings.filter(b => !b.vehicleId && ["booked", "ontrip", "completed"].includes(b.status)).sort((a, b) => String(a.from).localeCompare(String(b.from)));
@@ -12200,7 +12202,7 @@ function renderOps() {
   if (view === "tpadi") { renderPadi(); return; }
   if (view === "tkrep") { renderPk(); return; }
   if (view === "tdrv") { renderDrv(); return; }
-  if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); return; }
+  if (view === "tutil") { dlFyOpts($("oDlFy"), undefined, true); dlNoBusRender(); renderUpload(); return; }
   if (view === "texp") { renderExp(); return; }
   if (view === "tfcst") { renderFcst(); return; }
   if (view === "tmaint") { renderMaint(); return; }
@@ -17092,12 +17094,32 @@ $("tDl").onclick = e => { if (!tBusId) { toast("Choose a bus first."); return; }
 $("tsDl").onclick = e => { const fy = +$("tsDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Spare_Bus_FY${fyLabel(fy)}.xlsx`, async () => xlSpareSheets({ ...(await dlRead(["bookings"])), vehicles, drivers }, fy)); };
 // Utility › Data upload & download (admin): the route buses month by month, the spare buses, the trucks, then Bus and Truck Expenses, for the year chosen.
-$("oDl").onclick = e => { const fy = +$("oDlFy").value || fyOf(todayISO());
-  dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => { const recs = { ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers };
-    const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.vehicleId && t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
-    const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
-    const all = XL.names([xlSummarySheet(recs, fy, sheets, busIds), ...sheets, ...xlMaintSheets(), xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]);
-    return [xlHomeSheet(fy, all), ...all]; }); };
+const dlAllRead = async () => ({ ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers });
+function dlAllSheets(recs, fy) {
+  const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.vehicleId && t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
+  const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
+  const all = XL.names([xlSummarySheet(recs, fy, sheets, busIds), ...sheets, ...xlMaintSheets(), xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]);
+  return [xlHomeSheet(fy, all), ...all];
+}
+// A year with no trips, bookings, truck trips or expenses (All financial years leaves it out).
+const dlFyHasData = (recs, fy) => recs.trips.some(t => t.date && fyOf(t.date) === fy) || recs.bookings.some(b => b.from && fyOf(b.from) === fy)
+  || recs.truckTrips.some(l => l.from && fyOf(l.from) === fy) || recs.expenses.some(x => x.date && fyOf(x.date) === fy);
+// All financial years: the same file for each year with records, newest first, one after another.
+async function dlAllYears(btn) {
+  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
+  if (!dl) { toast("Saving files isn't available in this view."); return; }
+  const was = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…"; let n = 0;
+  try { const recs = await dlAllRead(), ys = dlFyList().filter(fy => dlFyHasData(recs, fy));
+    if (!ys.length) { toast("Nothing to download."); return; }
+    for (const fy of ys) { btn.textContent = `Preparing FY ${fyLabel(fy)} (${n + 1} of ${ys.length})…`;
+      await dl.save({ filename: `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, data: XL.build(dlAllSheets(recs, fy)) }); n++; }
+    toast(`Downloaded ${n} file${n > 1 ? "s" : ""}, FY ${fyLabel(ys[ys.length - 1])} to FY ${fyLabel(ys[0])}`); }
+  catch (er) { if (er?.code !== "declined") toast(er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't make the file. Try again."); else if (n) toast(`Stopped after ${n} file${n > 1 ? "s" : ""}`); }
+  finally { btn.disabled = false; btn.textContent = was; }
+}
+$("oDl").onclick = e => { if ($("oDlFy").value === "all") { dlAllYears(e.currentTarget); return; }
+  const fy = +$("oDlFy").value || fyOf(todayISO());
+  dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => dlAllSheets(await dlAllRead(), fy)); };
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
 // + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
 $("kAdd").onclick = () => { const last = roundsOf(kBusId).filter(r => r.status !== "Closed").sort((a, b) => b.to.localeCompare(a.to))[0]; openRound(last ? last.id : null, "leg", null); };
@@ -18332,7 +18354,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12j";
+const APP_VER = "2026-11-12k";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
