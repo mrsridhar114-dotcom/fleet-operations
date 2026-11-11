@@ -876,6 +876,7 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
 .pdoclist a.dname { text-decoration: underline; }
 .pdoclist .dfile { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
 .pdoclist .dfile.miss { color: var(--danger); }
+.pdoclist .dpages { font-size: 11.5px; line-height: 1.4; } .pdoclist .dpages .filelink { font-weight: 600; }
 .pdoclist .pill { font-size: 11px; padding: 1px 6px; white-space: nowrap; }
 .pdoclist .btn { grid-row: auto; grid-column: auto; padding: 3px 9px; font-size: 12px; }
 .pdoclist .dold { grid-column: 2 / -1; }
@@ -4075,6 +4076,17 @@ const FILE_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
 const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const typesFor = k => k === "photo" ? PHOTO_TYPES : FILE_TYPES;
 const fileOf = (v, k) => v && v[k + "File"] ? { id: v[k + "File"], name: v[k + "FileName"] || "Document" } : null;
+/* A document can have more pages than its main file (insurance front and back, several permit pages): the first file is
+   kept as k + "File", the others as k + "Pages": [{ file, fileName }]. Attaching a new copy replaces all its pages. */
+const pagesOf = (r, k) => (Array.isArray(r?.[k + "Pages"]) ? r[k + "Pages"] : []).filter(x => x?.file).map(x => ({ id: x.file, name: x.fileName || "Document" }));
+const withPages = (r, list) => list.flatMap(x => [x, ...pagesOf(r, x.k).map((f, i) => ({ k: x.k + "~" + (i + 2), tag: `${x.tag} page ${i + 2}`, label: `${x.label} (page ${i + 2})`, f }))]);
+const pagesHtml = (r, k) => { const P = pagesOf(r, k); return P.length ? `<span class="dpages">${P.map((f, i) => `<a class="filelink" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener" title="${esc(f.name)}">Page ${i + 2}</a>`).join(" · ")}</span>` : ""; };
+// The record with these files as the document's copy: the first as the main file, the rest as its other pages.
+const withDocFiles = (r, k, up) => ({ ...r, [k + "File"]: up[0].id, [k + "FileName"]: up[0].name, [k + "Pages"]: up.slice(1).map(u => ({ file: u.id, fileName: u.name })) });
+// A form save keeps a document's other pages while its main file is the same one (a new copy from the form replaces them).
+const keepPages = (prev, rec) => Object.keys(prev || {}).filter(k => k.endsWith("Pages") && Array.isArray(prev[k])).forEach(k => { const b = k.slice(0, -5); if (rec[b + "File"] && rec[b + "File"] === prev[b + "File"]) rec[k] = prev[k]; });
+const docFilesOk = files => { const bad = files.find(f => !FILE_TYPES.includes(f.type) || f.size > 20 * 1024 * 1024);
+  if (bad) toast(!FILE_TYPES.includes(bad.type) ? "Attach a PDF, JPG or PNG file." : "That file is over 20 MB. Attach a smaller scan."); return !bad; };
 function fileLineHtml(k, cur) {
   const can = !!assetsCap;
   const thumb = k === "photo" && cur ? `<img class="fthumb" src="/_blob/${encodeURIComponent(cur.id)}" alt="">` : "";
@@ -4705,26 +4717,26 @@ function renderDocList(v) {
     const when = date ? `<span class="pill ${listBand(daysUntil(date))} num">${fmtDate(date)}</span>` : "";
     // One compact line per document, so the whole list fits on the screen without scrolling.
     return `<div class="docrow" data-slot="${k}"><span class="dst ${f ? "ok" : "no"}" title="${f ? "Attached" : "Not attached"}">${f ? "✔" : "✖"}</span>
-      <span class="ds">${f ? `<a class="filelink dname" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(label)}</a><span class="dfile">${esc(f.name)}</span>` : `<span class="dname">${esc(label)}</span><span class="dfile miss">Not attached</span>`}</span>
-      ${can ? `<label class="btn">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" hidden></label>` : ""}${earlierHtml(v.id, k) ? `<span class="dold">${earlierHtml(v.id, k)}</span>` : ""}</div>`;
+      <span class="ds">${f ? `<a class="filelink dname" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(label)}</a><span class="dfile">${esc(f.name)}</span>${pagesHtml(v, k)}` : `<span class="dname">${esc(label)}</span><span class="dfile miss">Not attached</span>`}</span>
+      ${can ? `<label class="btn" title="Choose one file, or several for a document with more pages">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" multiple hidden></label>` : ""}${earlierHtml(v.id, k) ? `<span class="dold">${earlierHtml(v.id, k)}</span>` : ""}</div>`;
   }).join("");
 }
-async function attachDoc(vid, k, file) {
-  const v0 = vehicles.find(x => x.id === vid); if (!v0) return false;
-  if (!FILE_TYPES.includes(file.type)) { toast("Attach a PDF, JPG or PNG file."); return false; }
-  if (file.size > 20 * 1024 * 1024) { toast("That file is over 20 MB. Attach a smaller scan."); return false; }
-  const r = await assetsCap.upload(file, { type: file.type });
-  const v = vehicles.find(x => x.id === vid) || v0, prevId = v[k + "File"] || "", prevName = v[k + "FileName"] || "";
-  await saveVehicle({ ...v, [k + "File"]: r.id, [k + "FileName"]: file.name });
-  await addHistory([{ vehicleId: vid, field: k + "FileName", from: prevName, to: file.name, fromFileId: prevId, toFileId: r.id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", note: "Attached from Documents" }]).catch(() => {});
+// One or more files as a document's copy (several files = its pages, in the order chosen).
+async function attachDoc(vid, k, files) {
+  const v0 = vehicles.find(x => x.id === vid); if (!v0 || !docFilesOk(files)) return false;
+  const up = []; for (const f of files) up.push({ id: (await assetsCap.upload(f, { type: f.type })).id, name: f.name });
+  const v = vehicles.find(x => x.id === vid) || v0, prevId = v[k + "File"] || "", prevName = v[k + "FileName"] || "", prevPages = pagesOf(v, k).length;
+  await saveVehicle(withDocFiles(v, k, up));
+  await addHistory([{ vehicleId: vid, field: k + "FileName", from: prevName, to: up[0].name, fromFileId: prevId, toFileId: up[0].id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "",
+    note: "Attached from Documents" + (up.length > 1 ? ` (${up.length} pages)` : "") + (prevPages ? `; the earlier copy had ${prevPages + 1} pages` : "") }]).catch(() => {});
   return true;
 }
 const uploadErr = e => e?.code === "too_large" ? "That file is too large." : e?.code === "unsupported_type" ? "Attach a PDF, JPG or PNG file." : e?.code === "quota_or_state" ? "File storage is full." : "Couldn't upload the file. Try again.";
 $("vDocList").addEventListener("change", async e => {
   const inp = e.target.closest("input[data-attach]"); if (!inp || !inp.files[0] || !vViewId) return;
-  const k = inp.dataset.attach, file = inp.files[0], vid = vViewId, row = inp.closest(".docrow");
-  row.querySelector(".dfile").outerHTML = `<span class="dfile sub">Uploading ${esc(file.name)}…</span>`; inp.closest("label").classList.add("disabled");
-  try { if (await attachDoc(vid, k, file)) toast("Document attached."); }
+  const k = inp.dataset.attach, files = [...inp.files], vid = vViewId, row = inp.closest(".docrow");
+  row.querySelector(".dfile").outerHTML = `<span class="dfile sub">Uploading ${files.length > 1 ? `${files.length} pages` : esc(files[0].name)}…</span>`; inp.closest("label").classList.add("disabled");
+  try { if (await attachDoc(vid, k, files)) toast(files.length > 1 ? `Document attached (${files.length} pages).` : "Document attached."); }
   catch (er) { toast(uploadErr(er)); }
   const v = vehicles.find(x => x.id === vid); if (v && vViewId === vid) renderDocList(v);
 });
@@ -4737,9 +4749,9 @@ let sevFiles = [];
 $("vAddSevIn").addEventListener("change", e => {
   const v = vehicles.find(x => x.id === vViewId); sevFiles = [...e.target.files]; e.target.value = "";
   if (!v || !sevFiles.length) return;
-  const slots = docSlots(v), keys = slots.map(x => x[0]), used = new Set();
+  const slots = docSlots(v), keys = slots.map(x => x[0]);
   const opts = sel => `<option value="">Choose…</option>${slots.map(([k, l]) => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(l)}</option>`).join("")}<option value="-">Skip this file</option>`;
-  $("vSevPanel").innerHTML = `<b>Which document is each file?</b>${sevFiles.map((f, i) => { let g = guessSlot(f.name, keys); if (used.has(g)) g = ""; if (g) used.add(g);
+  $("vSevPanel").innerHTML = `<b>Which document is each file?</b><span class="hint">Choose the same document for several files when it has more pages; they are kept as its pages, in this order.</span>${sevFiles.map((f, i) => { const g = guessSlot(f.name, keys);
       return `<div class="sevrow"><span class="fnm">${esc(f.name)}</span><select data-i="${i}" aria-label="Document for ${esc(f.name)}">${opts(g)}</select></div>`; }).join("")}
     <span class="err" id="e-sev"></span><div class="acts"><button type="button" class="btn" id="sevCancel">Cancel</button><button type="button" class="btn primary" id="sevSave">Save all</button></div>`;
   $("vSevPanel").hidden = false;
@@ -4750,18 +4762,20 @@ $("vAddSevIn").addEventListener("change", e => {
     const picks = [...$("vSevPanel").querySelectorAll("select")].map(s => [sevFiles[+s.dataset.i], s.value]);
     if (picks.some(([, k]) => !k)) { $("e-sev").textContent = "Choose a document for every file, or pick “Skip this file”."; return; }
     const ks = picks.map(p => p[1]).filter(k => k !== "-");
-    if (new Set(ks).size !== ks.length) { $("e-sev").textContent = "Two files are set to the same document. Choose a different one for each."; return; }
     if (!ks.length) { $("vSevPanel").hidden = true; return; }
     const btn = $("sevSave"), vid = vViewId; btn.disabled = true; $("e-sev").textContent = "";
-    let ok = 0, failed = [];
-    for (const [f, k] of picks.filter(p => p[1] !== "-")) {
-      btn.textContent = `Uploading ${ok + failed.length + 1} of ${ks.length}…`;
-      try { if (await attachDoc(vid, k, f)) ok++; else failed.push(f.name); } catch (er) { failed.push(f.name); }
+    // Files set to the same document go in together as its pages.
+    const groups = new Map(); picks.filter(p => p[1] !== "-").forEach(([f, k]) => groups.set(k, [...(groups.get(k) || []), f]));
+    let ok = 0, done = 0, failed = [];
+    for (const [k, fs] of groups) {
+      btn.textContent = `Uploading ${done + 1}${fs.length > 1 ? `–${done + fs.length}` : ""} of ${ks.length}…`;
+      try { if (await attachDoc(vid, k, fs)) ok += fs.length; else failed.push(...fs.map(f => f.name)); } catch (er) { failed.push(...fs.map(f => f.name)); }
+      done += fs.length;
     }
     btn.disabled = false;
     if (failed.length) { $("e-sev").textContent = `Couldn't attach: ${failed.join(", ")}. Try those again.`; btn.textContent = "Save all"; }
     else { $("vSevPanel").hidden = true; sevFiles = []; }
-    if (ok) toast(`${ok} document${ok === 1 ? "" : "s"} attached.`);
+    if (ok) toast(`${ok} file${ok === 1 ? "" : "s"} attached.`);
     const v2 = vehicles.find(x => x.id === vid); if (v2 && vViewId === vid) renderDocList(v2);
   };
 });
@@ -5424,6 +5438,7 @@ $("form").addEventListener("submit", async e => {
   const wasEdit = !!editingId;
   const prev = vehicles.find(x => x.id === v.id) || {};
   if (xDocs(prev).length) v.extraDocs = prev.extraDocs;
+  keepPages(prev, v);
   const at = new Date().toISOString(), note = $("chgNote").value.trim();
   const who = { at, byUser: myUserId || "", byAccount: myId() || "", ...(note ? { note } : {}) };
   const keys = ALL_KEYS();
@@ -5546,7 +5561,7 @@ async function rSave(btn) {
     if (rFile && slot) {
       btn.textContent = "Uploading…";
       const r = await assetsCap.upload(rFile, { type: rFile.type });
-      next[slot + "File"] = r.id; next[slot + "FileName"] = rFile.name;
+      next[slot + "File"] = r.id; next[slot + "FileName"] = rFile.name; delete next[slot + "Pages"];
       hist.push({ [idKey]: id, field: slot + "FileName", from: cur[slot + "FileName"] || "", to: rFile.name, fromFileId: cur[slot + "File"] || "", toFileId: r.id, ...who });
     }
     if (kind === "vehicle") { await saveVehicle(next); await addHistory(hist).catch(() => {}); }
@@ -5784,6 +5799,7 @@ $("dForm").addEventListener("submit", async e => {
   const wasEdit = !!dEditingId;
   const prev = drivers.find(x => x.id === d.id) || {}, note = $("dNote").value.trim();
   if (xDocs(prev).length) d.extraDocs = prev.extraDocs;
+  keepPages(prev, d);
   const who = { at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", ...(note ? { note } : {}) };
   const changes = wasEdit ? [] : [{ driverId: d.id, field: "_created", from: "", to: "", ...who }];
   D_KEYS.forEach(k => {
@@ -6047,6 +6063,7 @@ $("cForm").addEventListener("submit", async e => {
   const wasEdit = !!cEditingId;
   const prev = conductors.find(x => x.id === c.id) || {}, note = $("cNote").value.trim();
   if (xDocs(prev).length) c.extraDocs = prev.extraDocs;
+  keepPages(prev, c);
   const who = { at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", ...(note ? { note } : {}) };
   const changes = wasEdit ? [] : [{ conductorId: c.id, field: "_created", from: "", to: "", ...who }];
   C_KEYS.forEach(k => {
@@ -14688,7 +14705,7 @@ function dueSoonBtn(v) {
 }
 // Attached documents of a vehicle (latest copy only), for the admin's download list.
 const vDocFiles = v => [["rc", "RC", "RC copy"], ...DOCS.map(([k, , short]) => [k, short, short])]
-  .map(([k, tag, label]) => ({ k, tag, label, f: fileOf(v, k) })).filter(x => x.f).concat(xDocFiles(v));
+  .map(([k, tag, label]) => ({ k, tag, label, f: fileOf(v, k) })).filter(x => x.f).flatMap(x => withPages(v, [x])).concat(xDocFiles(v));
 function docsBtn(v) {
   if (acc.users !== "edit" || !vDocFiles(v).length) return "";
   return `<button type="button" class="cdocs" data-vdocs="${v.id}" aria-label="Download attached documents" title="Download attached documents"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>`;
@@ -14971,7 +14988,7 @@ const P_CFG = {
 const pActive = p => (p.status || "Active") !== "Inactive";
 const pDueOf = (cfg, p) => !pActive(p) ? [] : cfg.dates.filter(([k]) => p[k] && daysUntil(p[k]) <= 30)
   .map(([k, label]) => ({ k, label, date: p[k], n: daysUntil(p[k]) })).sort((a, b) => a.n - b.n);
-const pFiles = (cfg, p) => cfg.slots(p).map(([k, label]) => ({ k, tag: label.replace(/[,()]/g, ""), label, f: dFile(p, k) })).filter(x => x.f).concat(xDocFiles(p));
+const pFiles = (cfg, p) => withPages(p, cfg.slots(p).map(([k, label]) => ({ k, tag: label.replace(/[,()]/g, ""), label, f: dFile(p, k) })).filter(x => x.f)).concat(xDocFiles(p));
 const pMask = s => { const k = normDl(s); return k ? "******" + k.slice(-4) : "-"; };
 // File names start with the person's first name, e.g. RAMESH_18-10-2026_16-55.jpg
 const pFileBase = p => (String(p.name || "").trim().split(/\s+/)[0] || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase() || "PERSON";
@@ -15172,18 +15189,17 @@ function pRenderDocs(cfg, p) {
   $(pre + "DocList").innerHTML = slots.map(([k, label, date]) => {
     const f = dFile(p, k), when = date ? `<span class="pill ${listBand(daysUntil(date))} num">${fmtDate(date)}</span>` : "", older = cfg.earlier(p.id, k);
     return `<div class="docrow" data-slot="${k}"><span class="dst ${f ? "ok" : "no"}" title="${f ? "Attached" : "Not attached"}">${f ? "✔" : "✖"}</span>
-      <span class="ds">${f ? `<a class="filelink dname" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(label)}</a><span class="dfile">${esc(f.name)}</span>` : `<span class="dname">${esc(label)}</span><span class="dfile miss">Not attached</span>`}</span>
-      ${can ? `<label class="btn">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" hidden></label>` : ""}${older ? `<span class="dold">${older}</span>` : ""}</div>`;
+      <span class="ds">${f ? `<a class="filelink dname" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener" title="${esc(f.name)}">${esc(label)}</a><span class="dfile">${esc(f.name)}</span>${pagesHtml(p, k)}` : `<span class="dname">${esc(label)}</span><span class="dfile miss">Not attached</span>`}</span>
+      ${can ? `<label class="btn" title="Choose one file, or several for a document with more pages">${f ? "Replace" : "Attach"}<input type="file" data-attach="${k}" accept="${FILE_TYPES.join(",")}" multiple hidden></label>` : ""}${older ? `<span class="dold">${older}</span>` : ""}</div>`;
   }).join("");
 }
-async function pAttach(cfg, id, k, file) {
-  if (!cfg.list().find(x => x.id === id)) return false;
-  if (!FILE_TYPES.includes(file.type)) { toast("Attach a PDF, JPG or PNG file."); return false; }
-  if (file.size > 20 * 1024 * 1024) { toast("That file is over 20 MB. Attach a smaller scan."); return false; }
-  const r = await assetsCap.upload(file, { type: file.type });
-  const p = cfg.list().find(x => x.id === id), prevId = p[k + "File"] || "", prevName = p[k + "FileName"] || "";
-  await cfg.save({ ...p, [k + "File"]: r.id, [k + "FileName"]: file.name });
-  await cfg.addHist([{ [cfg.histKey]: id, field: k + "FileName", from: prevName, to: file.name, fromFileId: prevId, toFileId: r.id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", note: "Attached from Documents" }]).catch(() => {});
+async function pAttach(cfg, id, k, files) {
+  if (!cfg.list().find(x => x.id === id) || !docFilesOk(files)) return false;
+  const up = []; for (const f of files) up.push({ id: (await assetsCap.upload(f, { type: f.type })).id, name: f.name });
+  const p = cfg.list().find(x => x.id === id), prevId = p[k + "File"] || "", prevName = p[k + "FileName"] || "", prevPages = pagesOf(p, k).length;
+  await cfg.save(withDocFiles(p, k, up));
+  await cfg.addHist([{ [cfg.histKey]: id, field: k + "FileName", from: prevName, to: up[0].name, fromFileId: prevId, toFileId: up[0].id, at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "",
+    note: "Attached from Documents" + (up.length > 1 ? ` (${up.length} pages)` : "") + (prevPages ? `; the earlier copy had ${prevPages + 1} pages` : "") }]).catch(() => {});
   return true;
 }
 function pSetDocPop(cfg, open) { const pre = cfg.pre; $(pre + "DocSec").hidden = !open; $(pre + "AttBtn").setAttribute("aria-expanded", String(open)); if (!open) $(pre + "SevPanel").hidden = true; }
@@ -15194,9 +15210,9 @@ function pWire(cfg) {
   $(cfg.drawer).addEventListener("click", e => { if (e.isTrusted && !$(pre + "DocSec").hidden && !e.target.closest(`#${pre}DocSec, #${pre}AttBtn`)) pSetDocPop(cfg, false); });
   $(pre + "DocList").addEventListener("change", async e => {
     const inp = e.target.closest("input[data-attach]"), id = cfg.viewId(); if (!inp || !inp.files[0] || !id) return;
-    const k = inp.dataset.attach, file = inp.files[0], row = inp.closest(".docrow");
-    row.querySelector(".dfile").outerHTML = `<span class="dfile sub">Uploading ${esc(file.name)}…</span>`; inp.closest("label").classList.add("disabled");
-    try { if (await pAttach(cfg, id, k, file)) toast("Document attached."); } catch (er) { toast(uploadErr(er)); }
+    const k = inp.dataset.attach, files = [...inp.files], row = inp.closest(".docrow");
+    row.querySelector(".dfile").outerHTML = `<span class="dfile sub">Uploading ${files.length > 1 ? `${files.length} pages` : esc(files[0].name)}…</span>`; inp.closest("label").classList.add("disabled");
+    try { if (await pAttach(cfg, id, k, files)) toast(files.length > 1 ? `Document attached (${files.length} pages).` : "Document attached."); } catch (er) { toast(uploadErr(er)); }
     redraw(id);
   });
   $(pre + "DocsBtn").addEventListener("click", e => {
@@ -15208,10 +15224,10 @@ function pWire(cfg) {
   $(pre + "AddSevIn").addEventListener("change", e => {
     const p = cur(), panel = $(pre + "SevPanel"); files = [...e.target.files]; e.target.value = "";
     if (!p || !files.length) return;
-    const slots = cfg.slots(p), used = new Set();
+    const slots = cfg.slots(p);
     const guess = name => { const n = String(name).toLowerCase(), g = cfg.guess.find(([, re]) => re.test(n)); return g ? g[0] : ""; };
     const opts = sel => `<option value="">Choose…</option>${slots.map(([k, l]) => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(l)}</option>`).join("")}<option value="-">Skip this file</option>`;
-    panel.innerHTML = `<b>Which document is each file?</b>${files.map((f, i) => { let g = guess(f.name); if (used.has(g)) g = ""; if (g) used.add(g);
+    panel.innerHTML = `<b>Which document is each file?</b><span class="hint">Choose the same document for several files when it has more pages; they are kept as its pages, in this order.</span>${files.map((f, i) => { const g = guess(f.name);
         return `<div class="sevrow"><span class="fnm">${esc(f.name)}</span><select data-i="${i}" aria-label="Document for ${esc(f.name)}">${opts(g)}</select></div>`; }).join("")}
       <span class="err" data-err></span><div class="acts"><button type="button" class="btn" data-cancel>Cancel</button><button type="button" class="btn primary" data-save>Save all</button></div>`;
     panel.hidden = false;
@@ -15223,18 +15239,20 @@ function pWire(cfg) {
       const picks = [...panel.querySelectorAll("select")].map(s => [files[+s.dataset.i], s.value]);
       if (picks.some(([, k]) => !k)) { err.textContent = "Choose a document for every file, or pick “Skip this file”."; return; }
       const ks = picks.map(x => x[1]).filter(k => k !== "-");
-      if (new Set(ks).size !== ks.length) { err.textContent = "Two files are set to the same document. Choose a different one for each."; return; }
       if (!ks.length) { panel.hidden = true; return; }
       const id = cfg.viewId(); save.disabled = true; err.textContent = "";
-      let ok = 0; const failed = [];
-      for (const [f, k] of picks.filter(x => x[1] !== "-")) {
-        save.textContent = `Uploading ${ok + failed.length + 1} of ${ks.length}…`;
-        try { if (await pAttach(cfg, id, k, f)) ok++; else failed.push(f.name); } catch { failed.push(f.name); }
+      // Files set to the same document go in together as its pages.
+      const groups = new Map(); picks.filter(x => x[1] !== "-").forEach(([f, k]) => groups.set(k, [...(groups.get(k) || []), f]));
+      let ok = 0, done = 0; const failed = [];
+      for (const [k, fs] of groups) {
+        save.textContent = `Uploading ${done + 1}${fs.length > 1 ? `–${done + fs.length}` : ""} of ${ks.length}…`;
+        try { if (await pAttach(cfg, id, k, fs)) ok += fs.length; else failed.push(...fs.map(f => f.name)); } catch { failed.push(...fs.map(f => f.name)); }
+        done += fs.length;
       }
       save.disabled = false;
       if (failed.length) { err.textContent = `Couldn't attach: ${failed.join(", ")}. Try those again.`; save.textContent = "Save all"; }
       else { panel.hidden = true; files = []; }
-      if (ok) toast(`${ok} document${ok === 1 ? "" : "s"} attached.`);
+      if (ok) toast(`${ok} file${ok === 1 ? "" : "s"} attached.`);
       redraw(id);
     };
   });
@@ -17634,7 +17652,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-11d";
+const APP_VER = "2026-11-12a";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
