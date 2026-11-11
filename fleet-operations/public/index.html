@@ -9632,6 +9632,10 @@ function upRouteRows(rows, bus, ym, file, ctx = {}) {
     else if (t.litres && t.dieselRate) { t.fuelCost = Math.round(t.litres * t.dieselRate); row.notes.push(`no fuel price; worked out as ${t.litres} L × ₹${t.dieselRate}`); }
     if (v("payD")) t.driverPay = Math.round(v("payD")); if (v("payC")) t.conductorPay = Math.round(v("payC")); if (v("payK")) t.checkerPay = Math.round(v("payK"));
     [1, 2, 3, 4, 5].forEach(i => { if (v("s" + i)) t["s" + i] = Math.round(v("s" + i)); });
+    // Old workbooks (2018) have no pay columns: the padi is worked out from the collection — driver 5%, conductor and checker
+    // 4.5% each, for whoever is named that day — and comes out of the sheet's expense, so the day's total expense stays as typed.
+    if (ctx.padiPct && at.payD == null && at.payC == null && at.payK == null) { const c = tripCollection(t);
+      if (c > 0) { if (t.driverName) t.driverPay = Math.round(c * 0.05); if (t.conductorName) t.conductorPay = Math.round(c * 0.045); if (t.checkerName) t.checkerPay = Math.round(c * 0.045); row.padiPct = true; } }
     const base = num(t.fuelCost) + tripPay(t), sheetExp = Math.round(v("expense"));
     if (sheetExp > base) { t.ex_misc = sheetExp - base; if (!t.fuelCost) row.notes.push(`no diesel amount; the expense ${rs(t.ex_misc)} goes in as Other`); }
     else if (sheetExp && sheetExp < base) row.notes.push(`the sheet's expense ${rs(sheetExp)} is less than diesel and pay (${rs(base)}); diesel and pay are kept`);
@@ -9826,7 +9830,7 @@ async function histRead(sheets, file) {
       for (const plate of byBus.keys()) {
         const v = histVeh(H, plate, "route"), prev = odo.has(v.id) ? odo.get(v.id) : ((have.get(v.id) || []).filter(t => t.date < `${m.ym}-01` && t.odo).sort((a, b) => b.date.localeCompare(a.date))[0]?.odo ?? v.odoStart ?? null);
         const rows = [m.head, ...m.data.map(r => r?.__bus === plate ? r : [])];
-        const res = upRouteRows(rows, v.id, m.ym, `${file} · ${m.sh.name.trim()}`, { have: have.get(v.id) || [], prevOdo: prev });
+        const res = upRouteRows(rows, v.id, m.ym, `${file} · ${m.sh.name.trim()}`, { have: have.get(v.id) || [], prevOdo: prev, padiPct: true });
         if (res.error) { issue("route", mon.sheet, 0, res.error, true); continue; }
         odo.set(v.id, res.endOdo);
         res.rows.forEach(x => {
@@ -9844,7 +9848,14 @@ async function histRead(sheets, file) {
           x.problems.forEach(p => issue("route", mon.sheet, x.line, `${x.date ? fmtDate(x.date) + ": " : ""}${p}. Left out.`, true));
           x.notes.forEach(n => issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}): ${n}${/left out/.test(n) ? "" : "."}`, /left out/.test(n)));
           if (x.t && m.bal >= 0) { const sb = upNum(src[m.bal]); if (sb != null && Math.round(sb) !== x.t.balance) issue("route", mon.sheet, x.line, `${fmtDate(x.date)}: the sheet's balance ${rs(Math.round(sb))} is not collection less expenses (${rs(x.t.balance)}).`); }
-          if (x.have) issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}) is already in the app${x.changes?.length ? ` with different values (${x.changes.map(c => `${c.label}: app ${c.from}, sheet ${c.to}`).join("; ")})` : ""}. The app's record is left as it is.`, true);
+          // A day this import loaded before without padi: the padi goes in now, out of Other, so the day's expense stays the same.
+          if (x.have && x.t && x.padiPct && !tripPay(x.have) && x.have.importedFrom && !x.problems.length) {
+            const h = x.have, f = { ...h, driverPay: x.t.driverPay, conductorPay: x.t.conductorPay, checkerPay: x.t.checkerPay }; ["driverPay", "conductorPay", "checkerPay"].forEach(k => { if (!f[k]) delete f[k]; });
+            const pay = tripPay(f), misc = num(h.ex_misc); f.ex_misc = Math.max(0, misc - pay); if (!f.ex_misc) delete f.ex_misc; f.otherExp = itemised(f); if (!f.otherExp) delete f.otherExp;
+            f.expense = tripExpense(f); f.balance = num(f.collection) - f.expense; x.fixPadi = f;
+            if (f.expense !== num(h.expense)) issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}): the padi worked out (${rs(pay)}) is more than the sheet's expense less diesel, so the day's expense goes from ${rs(num(h.expense))} to ${rs(f.expense)}.`);
+          }
+          if (x.have && !x.fixPadi) issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}) is already in the app${x.changes?.length ? ` with different values (${x.changes.map(c => `${c.label}: app ${c.from}, sheet ${c.to}`).join("; ")})` : ""}. The app's record is left as it is.`, true);
           if (x.t && !x.problems.length) H.routeDays.set(x.date, plateOf(v));
           mon.rows.push(x);
         });
@@ -9967,12 +9978,12 @@ async function histRead(sheets, file) {
 }
 // What Accept will save.
 function histPlan(H) {
-  return { route: H.route.filter(x => x.t && !x.problems.length && !x.have && !x.empty), spare: H.spare.filter(x => x.b && !x.problems.length && !x.have && !x.skip),
+  return { route: H.route.filter(x => x.t && !x.problems.length && (!x.have || x.fixPadi) && !x.empty), spare: H.spare.filter(x => x.b && !x.problems.length && !x.have && !x.skip),
     truck: H.truck.filter(x => !x.probs.length && !x.have && x.T.v), xp: H.xp.filter(x => !x.probs.length && !x.have), mt: H.mt ? H.mt.entries.filter(e => !e.have) : [] };
 }
 function histPreview(H) {
   const P = histPlan(H), areaRows = [
-    ["Route bus days", H.route.filter(x => !x.empty).length, P.route.length, H.route.filter(x => x.have).length, `Collection ${rs(P.route.reduce((a, x) => a + num(x.t.collection), 0))} · Expenses ${rs(P.route.reduce((a, x) => a + num(x.t.expense), 0))}`],
+    ["Route bus days", H.route.filter(x => !x.empty).length, P.route.length, H.route.filter(x => x.have && !x.fixPadi).length, `Collection ${rs(P.route.reduce((a, x) => a + num((x.fixPadi || x.t).collection), 0))} · Expenses ${rs(P.route.reduce((a, x) => a + num((x.fixPadi || x.t).expense), 0))}${H.route.some(x => x.padiPct) ? ` · Padi worked out at 5% (driver) and 4.5% (conductor, checker) of the collection: ${rs(P.route.reduce((a, x) => a + tripPay(x.fixPadi || x.t), 0))}${P.route.some(x => x.fixPadi) ? `, of which ${P.route.filter(x => x.fixPadi).length} days already loaded get their padi added` : ""}` : ""}`],
     ["Spare bus trips", H.spare.filter(x => x.b).length, P.spare.length, H.spare.filter(x => x.have).length, `Collection ${rs(P.spare.reduce((a, x) => a + num(x.c.due), 0))} · Expenses ${rs(P.spare.reduce((a, x) => a + num(x.c.exp), 0))}`],
     ["Truck trips", H.truck.length, P.truck.length, H.truck.filter(x => x.have).length, `Rent ${rs(P.truck.reduce((a, x) => a + num(x.leg.rent), 0))}`],
     ["Expenses", H.xp.length, P.xp.length, H.xp.filter(x => x.have).length, rs(P.xp.reduce((a, x) => a + x.amount, 0))],
@@ -10001,7 +10012,7 @@ async function histImport() {
   const run = async (list, save, conc = 6) => { let i = 0; await Promise.all(Array.from({ length: conc }, async () => { while (i < list.length) { const x = list[i++];
     try { await save(x); n++; } catch (e) { failed++; why ||= e?.message || ""; } if ((n + failed) % 25 === 0) busy(); } })); };
   await run([...H.newVeh.values()], v => saveVehicle(v), 1);
-  await run(P.route, x => dayTripSave(x.t));
+  await run(P.route, x => dayTripSave(x.fixPadi || x.t));
   await run(P.spare, async x => { const b = { ...x.b, no: nextBkNo() }; await opsSave("bookings", b); if (!ops.bookings.some(o => o.id === b.id)) ops.bookings.push(b);
     await addBHistory(bookingChanges(null, b, `Imported from ${H.file} (${x.sheet}, row ${x.line})`)).catch(() => {}); }, 1);
   const rounds = new Map();
@@ -18548,7 +18559,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12l";
+const APP_VER = "2026-11-12m";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
