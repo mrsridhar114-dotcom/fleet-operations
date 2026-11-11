@@ -377,12 +377,13 @@ tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width:
 /* Vehicle cards on a phone: the number first, then owner, class, chassis, engine, registration, then the expiry dates
    (FC, tax, insurance, pollution, permit, permit authorization). The computer table keeps its own column order. */
 @media (max-width: 720px) {
+  #view-vehicles td[data-label] { grid-template-columns: 10.25em minmax(0, 1fr); } /* room for "Insurance Valid Up To" on one line */
   #view-vehicles td[data-label="Owner name"] { order: 1; } #view-vehicles td[data-label="Vehicle class"] { order: 2; }
   #view-vehicles td[data-label="Chassis number"] { order: 3; } #view-vehicles td[data-label="Engine number"] { order: 4; }
-  #view-vehicles td[data-label="Registration date"] { order: 5; } #view-vehicles td[data-label="FC expiry"] { order: 6; }
-  #view-vehicles td[data-label="Tax expiry"] { order: 7; } #view-vehicles td[data-label="Insurance expiry"] { order: 8; }
-  #view-vehicles td[data-label="Pollution expiry"] { order: 9; } #view-vehicles td[data-label="Permit expiry"] { order: 10; }
-  #view-vehicles td[data-label="Permit authorization expiry"] { order: 11; }
+  #view-vehicles td[data-label="Registration date"] { order: 5; } #view-vehicles td[data-label="Fitness Valid Up To"] { order: 6; }
+  #view-vehicles td[data-label="Tax Valid Up To"] { order: 7; } #view-vehicles td[data-label="Insurance Valid Up To"] { order: 8; }
+  #view-vehicles td[data-label="Pollution Valid Up To"] { order: 9; } #view-vehicles td[data-label="Permit Valid Up To"] { order: 10; }
+  #view-vehicles td[data-label="NP Permit Valid Up To"] { order: 11; }
 }
 /* ---------- drawer ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(10, 18, 26, .45); z-index: 40; }
@@ -4522,7 +4523,7 @@ function listThumb(v) {
   return ph ? `<img class="lthumb" src="/_blob/${encodeURIComponent(ph.id)}" alt="" loading="lazy">` : `<span class="lthumb none" title="No photo">${CAR_SVG}</span>`;
 }
 // Expiry dates shown in the vehicle list, coloured by how soon they fall due.
-const LIST_DOCS = [["fcDate", "FC expiry"], ["insuranceExp", "Insurance expiry"], ["taxExp", "Tax expiry"], ["permitExp", "Permit expiry"], ["permitAuthExp", "Permit authorization expiry"], ["pollutionExp", "Pollution expiry"]];
+const LIST_DOCS = [["fcDate", "Fitness Valid Up To"], ["insuranceExp", "Insurance Valid Up To"], ["taxExp", "Tax Valid Up To"], ["permitExp", "Permit Valid Up To"], ["permitAuthExp", "NP Permit Valid Up To"], ["pollutionExp", "Pollution Valid Up To"]];
 function expCell(v, k) {
   if (!docApplies(k, v.type, v.usage)) return `<span class="sub">Not applicable</span>`;
   const iso = v[k];
@@ -17628,7 +17629,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-11a";
+const APP_VER = "2026-11-11b";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
