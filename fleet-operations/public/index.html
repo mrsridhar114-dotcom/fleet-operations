@@ -374,6 +374,16 @@ tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width:
   .register tbody tr { gap: 8px 12px; }
   .count { margin-left: 0; width: 100%; }
 }
+/* Vehicle cards on a phone: the number first, then owner, class, chassis, engine, registration, then the expiry dates
+   (FC, tax, insurance, pollution, permit, permit authorization). The computer table keeps its own column order. */
+@media (max-width: 720px) {
+  #view-vehicles td[data-label="Owner name"] { order: 1; } #view-vehicles td[data-label="Vehicle class"] { order: 2; }
+  #view-vehicles td[data-label="Chassis number"] { order: 3; } #view-vehicles td[data-label="Engine number"] { order: 4; }
+  #view-vehicles td[data-label="Registration date"] { order: 5; } #view-vehicles td[data-label="FC expiry"] { order: 6; }
+  #view-vehicles td[data-label="Tax expiry"] { order: 7; } #view-vehicles td[data-label="Insurance expiry"] { order: 8; }
+  #view-vehicles td[data-label="Pollution expiry"] { order: 9; } #view-vehicles td[data-label="Permit expiry"] { order: 10; }
+  #view-vehicles td[data-label="Permit authorization expiry"] { order: 11; }
+}
 /* ---------- drawer ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(10, 18, 26, .45); z-index: 40; }
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(460px, 100%); background: var(--surface); box-shadow: var(--shadow); z-index: 41; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -17618,7 +17628,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-09a";
+const APP_VER = "2026-11-11a";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
