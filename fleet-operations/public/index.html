@@ -1268,6 +1268,20 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .uptable tr.bad td { background: var(--danger-soft); } .uptable tr.chg td { background: var(--warn-soft); } .uptable tr.off td { opacity: .5; }
 .updiff { margin: 4px 0 0; padding-left: 16px; font-size: 12px; } .updiff s { color: var(--muted); } .upall { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
 .uptable td:first-child input { width: 16px; height: 16px; } .uptable tr.skip td { color: var(--muted); } .uptable td { vertical-align: top; }
+/* Dashboard tabs and charts */
+.dstabs { margin: 0 0 14px; } .dstoday { display: flex; flex-direction: column; gap: 16px; } .dstoday[hidden], .dstab[hidden] { display: none; }
+.dstab { display: flex; flex-direction: column; gap: 16px; } #dsKpis { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); } a.stat.dslink { color: inherit; text-decoration: none; } a.stat.dslink:hover { background: var(--accent-soft); }
+.dsctl { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; } .dsf select { display: block; min-height: 44px; margin-top: 4px; } .dsctl .sub { display: block; font-weight: 600; margin-bottom: 4px; }
+.dsgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; align-items: start; }
+.dspanel { min-width: 0; } .dsbox { margin-top: 10px; min-width: 0; } .dscroll { overflow-x: auto; } .dsvg { display: block; }
+.dsvg text { font: 11px var(--mono); fill: var(--muted); } .dsvg text.hl { fill: var(--ink); font-weight: 700; } .dsvg line.g { stroke: var(--line); } .dsvg line.z { stroke: var(--muted); } .dsvg rect.hl { stroke: var(--ink); stroke-width: 1; }
+.dslegend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; font-size: 12px; color: var(--muted); } .dslegend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
+.dshb { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; } .dshr { display: grid; grid-template-columns: minmax(120px, 30%) minmax(0, 1fr) 96px; gap: 4px 10px; align-items: center; font-size: 13px; }
+.dshr .l { font-weight: 600; overflow-wrap: anywhere; } .dshr .t { height: 16px; background: var(--bg); border-radius: 4px; overflow: hidden; } .dshr .t i { display: block; height: 100%; border-radius: 4px; } .dshr b { text-align: right; font-family: var(--mono); }
+.dshr small { grid-column: 2 / 4; color: var(--muted); font-size: 12px; margin-top: -4px; } .dshr .l small { color: var(--muted); font-weight: 400; display: block; }
+.dsmini td, .dsmini th { white-space: nowrap; } .dsmini tr.on td { background: var(--accent-soft); font-weight: 600; } .dsh3 { font-size: 14px; margin: 4px 0 6px; }
+.dsheat { border-collapse: separate; border-spacing: 2px; font: 11px var(--mono); } .dsheat th { color: var(--muted); font-weight: 600; padding: 2px 4px; } .dsheat td { min-width: 44px; height: 26px; text-align: center; border-radius: 4px; color: var(--ink); } .dsheat td.avg { font-weight: 700; background: var(--bg); }
+@media (max-width: 700px) { .dshr { grid-template-columns: minmax(0, 1fr) 90px; } .dshr .t { grid-column: 1 / 3; grid-row: 2; } .dshr small { grid-column: 1 / 3; } }
 /* Dashboard › Year wise history */
 .ywpick { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; } .ywvehf { flex: 1 1 300px; min-width: 0; } .ywvehf select { width: 100%; min-height: 44px; } .ywmeasf { flex: 3 1 480px; min-width: 0; }
 #ywStats { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
@@ -2432,7 +2446,12 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         </div>
         <div class="tcontrols"><a class="btn" href="#year-wise-history">Year wise history</a></div>
       </header>
-
+      <nav class="ttabs dstabs" id="dsTabs" role="tablist" aria-label="Dashboard" hidden></nav>
+      <div id="ds-money" class="dstab" hidden></div>
+      <div id="ds-vehicles" class="dstab" hidden></div>
+      <div id="ds-insights" class="dstab" hidden></div>
+      <div id="ds-today" class="dstoday">
+      <section class="summary tsum dskpis" id="dsKpis" aria-label="Headline figures" hidden></section>
       <section class="panel dtodo" id="dashTodo" hidden></section>
       <div class="kpis" id="kpis"></div>
 
@@ -2477,6 +2496,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           </table>
         </div>
       </section>
+      </div>
     </section>
 
     <!-- ================= Vehicle master ================= -->
@@ -4464,6 +4484,7 @@ function showView() {
   if (view === "tutil") { dlFyOpts($("oDlFy"), undefined, true); dlNoBusRender(); renderUpload(); }
   if (view === "tfcst") renderFcst();
   if (view === "tyw") { renderYw(); if (ywRecs) ywLoad(); }
+  if (view === "renewals") { dsRender(); if (dsData) dsLoad(); }
   if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum(); if (view === "tmhist") renderMhist(); if (view === "tmplan") renderMplan();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
@@ -12226,6 +12247,224 @@ $("view-tyw").addEventListener("change", e => {
   if (t.id === "ywVeh") { ywVeh = t.value; ywSel = ""; try { localStorage.setItem("fleet-ywveh", ywVeh); } catch {} renderYw(); }
   if (t.name === "ywMeas") { ywMeas = t.value; try { localStorage.setItem("fleet-ywmeas", ywMeas); } catch {} renderYw(); }
 });
+/* ---------- Dashboard tabs: Today, Money, Vehicles, Insights ----------
+   Today is the renewal dashboard with four headline figures on top. Money, Vehicles and Insights draw charts from every year
+   in the app: route bus days, spare bus trips (bookings), truck trips and the office expenses. Balances are the trip sheets'
+   balances (collection less trip expenses), the same as the Year wise history; office expenses are shown on their own and
+   taken off where a chart says "after office expenses". Charts are inline SVG drawn to the width of their box. */
+const DS_BIZ = [["route", "Route bus", "var(--accent)"], ["spare", "Spare bus", "#3b82f6"], ["truck", "Trucks", "#e08a1e"]];
+const DS_TABS = [["today", "Today"], ["money", "Money"], ["vehicles", "Vehicles"], ["insights", "Insights"]];
+let dsTab = "today", dsFy = null, dsBiz = "all", dsVFy = "all", dsData = null, dsBusy = false;
+try { dsTab = localStorage.getItem("fleet-dstab") || "today"; dsBiz = localStorage.getItem("fleet-dsbiz") || "all"; } catch {}
+const dsMoneyOk = () => !!acc.trips && acc.trips !== "none";
+// ₹ in short Indian form for chart labels: 12K, 1.2L, 1.5Cr.
+const dsK = n => { const a = Math.abs(n), s = n < 0 ? "−" : ""; return a >= 1e7 ? `${s}${nf(a / 1e7, 1)}Cr` : a >= 1e5 ? `${s}${nf(a / 1e5, 1)}L` : a >= 1e3 ? `${s}${nf(a / 1e3, 0)}K` : `${s}${nf(a)}`; };
+const dsShiftM = (ym, n) => { const d = new Date(+ym.slice(0, 4), +ym.slice(5, 7) - 1 + n, 1); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; };
+const dsMon = ym => `${new Date(ym + "-01T00:00:00").toLocaleDateString("en-GB", { month: "short" })} ${ym.slice(2, 4)}`;
+const dsZ = () => ({ col: 0, exp: 0, bal: 0, days: 0, lit: 0, fuel: 0, pay: 0, km: 0, comm: 0, idle: 0, n: 0 });
+function dsCat(x) {
+  const k = fcClass(x); if (k) return FC_COLS.find(c => c[0] === k)[1];
+  const s = `${x.category || ""} ${x.desc || ""}`.toLowerCase();
+  if (/diesel|petrol|\bfuel/.test(s)) return "Diesel"; if (/salary|padi|wage|bata/.test(s)) return "Salary & padi"; if (/toll|fastag/.test(s)) return "Toll";
+  const c = String(x.category || "").trim(); return c ? c[0].toUpperCase() + c.slice(1).toLowerCase() : "Other";
+}
+async function dsLoad() {
+  if (dsBusy) return; dsBusy = true;
+  try { dsData = dsCompute(await dlRead(["trips", "bookings", "truckTrips", "truckRounds", "expenses"])); } catch { dsData = null; }
+  finally { dsBusy = false; }
+  if (view === "renewals") dsRender();
+}
+// Month by month for each business, and each vehicle's figures by financial year.
+function dsCompute(R) {
+  const M = {}, V = {}, mo = ym => M[ym] ||= { route: dsZ(), spare: dsZ(), truck: dsZ(), office: 0, cats: {} };
+  const veh = (id, kind) => { const x = V[id] ||= { id, kind, kinds: new Set(), fy: {} }; x.kinds.add(kind); return x; }, vfy = (x, fy) => x.fy[fy] ||= { ...dsZ(), office: 0 };
+  const put = (o, d) => Object.entries(d).forEach(([k, v]) => { o[k] = (o[k] || 0) + (v || 0); });
+  const both = (id, kind, date, d) => { put(mo(date.slice(0, 7))[kind], d); put(vfy(veh(id, kind), fyOf(date)), d); };
+  // Route bus: one record a day; km from one reading to the next (a jump over 1,500 km or a lower reading counts 0).
+  const byBus = {}; (R.trips || []).forEach(t => { if (t.vehicleId && t.date) (byBus[t.vehicleId] ||= []).push(t); });
+  Object.entries(byBus).forEach(([id, list]) => { let prev = null;
+    list.sort((a, b) => a.date.localeCompare(b.date)).forEach(t => {
+      const o = num(t.odo); let km = 0; if (o > 0) { if (prev != null && o > prev && o - prev <= 1500) km = o - prev; prev = o; }
+      if (t.notRun) { both(id, "route", t.date, { idle: 1 }); return; }
+      const col = tripCollection(t), exp = tripExpense(t);
+      both(id, "route", t.date, { col, exp, bal: col - exp, days: 1, lit: num(t.litres), fuel: num(t.fuelCost), pay: tripPay(t), km, n: 1 });
+    }); });
+  // Spare bus: confirmed trips by their start date, as the booking reports work them out.
+  (R.bookings || []).filter(YW_BOOKED).forEach(b => { const c = bkCalc(b);
+    both(b.vehicleId, "spare", b.from, { col: c.due, exp: c.exp, bal: c.profit, days: num(b.days), lit: num(b.litres), fuel: num(b.fuelCost), pay: num(b.padiPaid) + num(b.cleanerPadi), km: c.km, n: 1 }); });
+  // Trucks: each trip by its start date; diesel filled for the whole round trip goes with its last trip.
+  const legs = (R.truckTrips || []).filter(l => l.vehicleId && l.from), last = new Map();
+  [...legs].sort((a, b) => String(a.from).localeCompare(String(b.from))).forEach(l => last.set(l.roundId || l.id, l));
+  const rf = new Map((R.truckRounds || []).map(r => [r.id, (r.fuels || []).reduce((a, f) => ({ lit: a.lit + num(f.litres), amt: a.amt + num(f.amount) }), { lit: 0, amt: 0 })]));
+  legs.forEach(l => { const c = legCalc(l), k = l.roundId || l.id, f = last.get(k) === l ? rf.get(k) : null, fa = Math.round(f?.amt || 0);
+    both(l.vehicleId, "truck", l.from, { col: num(l.rent), exp: c.exp + fa, bal: c.bal - fa, days: num(l.days), lit: num(l.litres) + (f?.lit || 0), fuel: num(l.fuelCost) + fa, pay: num(l.padi), km: c.km, comm: num(l.commission), n: 1 }); });
+  // Office expenses: by category, and on the vehicle when one is named.
+  (R.expenses || []).forEach(x => { const a = num(x.amount); if (!x.date || !a) return; const m = mo(x.date.slice(0, 7)), cat = dsCat(x); m.office += a; m.cats[cat] = (m.cats[cat] || 0) + a;
+    if (x.vehicleId) { const v = vehicles.find(y => y.id === x.vehicleId), kind = V[x.vehicleId]?.kind || (/truck/i.test(v?.type || "") ? "truck" : "route"); vfy(veh(x.vehicleId, kind), fyOf(x.date)).office += a; } });
+  const fys = [...new Set(Object.keys(M).map(ym => fyOf(ym + "-01")))].sort((a, b) => a - b);
+  return { M, V, R, fys };
+}
+const dsM = ym => dsData?.M[ym] || { route: dsZ(), spare: dsZ(), truck: dsZ(), office: 0, cats: {} };
+const dsBizKeys = () => dsBiz === "all" ? DS_BIZ.map(b => b[0]) : [dsBiz];
+const dsBal = (ym, keys = dsBizKeys()) => keys.reduce((a, k) => a + dsM(ym)[k].bal, 0);
+const dsFyMonths = fy => Array.from({ length: 12 }, (_, i) => monthYM(fy, i));
+/* ---- chart drawing ---- */
+function dsScale(min, max) {
+  if (min === max) { max = max || 1; min = Math.min(0, min); }
+  const raw = (max - min) / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), step = [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= raw);
+  const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step, ticks = []; for (let v = lo; v <= hi + step / 2; v += step) ticks.push(v);
+  return { lo, hi, ticks };
+}
+// Bars by label (stacked, or side by side) with optional lines over them. series: [{ name, color, values, line?, dash? }].
+function dsChart(el, labels, series, { stacked = true, h = 240, fmt = dsK, slot = 30, hi = -1, max = null } = {}) {
+  if (!el) return;
+  const bars = series.filter(s => !s.line), lines = series.filter(s => s.line), n = labels.length;
+  const W = Math.max(el.clientWidth || 640, n * slot + 70), L = 56, T = 12, B = 30, H = h, ih = H - T - B, iw = W - L - 10, sw = iw / Math.max(1, n);
+  const tops = labels.map((_, i) => stacked ? [bars.reduce((a, s) => a + Math.max(0, s.values[i] || 0), 0), bars.reduce((a, s) => a + Math.min(0, s.values[i] || 0), 0)] : [Math.max(0, ...bars.map(s => s.values[i] || 0)), Math.min(0, ...bars.map(s => s.values[i] || 0))]);
+  const lv = lines.flatMap(s => s.values.filter(v => v != null));
+  const sc = dsScale(Math.min(0, ...tops.map(t => t[1]), ...lv), max ?? Math.max(0, ...tops.map(t => t[0]), ...lv));
+  const y = v => T + ih - (v - sc.lo) / (sc.hi - sc.lo) * ih, x = i => L + i * sw;
+  let g = sc.ticks.map(v => `<line x1="${L}" x2="${W - 10}" y1="${y(v)}" y2="${y(v)}" class="${v === 0 ? "z" : "g"}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v)}</text>`).join("");
+  const every = Math.ceil(n / Math.max(1, Math.floor(iw / 46)));
+  g += labels.map((l, i) => i % every ? "" : `<text x="${x(i) + sw / 2}" y="${H - 10}" text-anchor="middle"${i === hi ? ' class="hl"' : ""}>${esc(l)}</text>`).join("");
+  labels.forEach((l, i) => {
+    if (stacked) { let up = 0, dn = 0; bars.forEach(s => { const v = s.values[i] || 0; if (!v) return; const a = v > 0 ? up : dn, b = a + v; v > 0 ? up = b : dn = b;
+        g += `<rect x="${x(i) + sw * 0.15}" width="${sw * 0.7}" y="${Math.min(y(a), y(b))}" height="${Math.max(1, Math.abs(y(a) - y(b)))}" fill="${s.color}"${i === hi ? ' class="hl"' : ""}><title>${esc(l)} · ${esc(s.name)}: ${rs(v)}</title></rect>`; }); }
+    else { const bw = sw * 0.8 / Math.max(1, bars.length); bars.forEach((s, k) => { const v = s.values[i] || 0; if (!v) return;
+        g += `<rect x="${x(i) + sw * 0.1 + k * bw}" width="${bw * 0.92}" y="${Math.min(y(0), y(v))}" height="${Math.max(1, Math.abs(y(0) - y(v)))}" fill="${s.color}"><title>${esc(l)} · ${esc(s.name)}: ${fmt === dsK ? rs(v) : fmt(v)}</title></rect>`; }); }
+  });
+  lines.forEach(s => { let d = "", on = false; s.values.forEach((v, i) => { if (v == null) { on = false; return; } d += `${on ? "L" : "M"}${(x(i) + sw / 2).toFixed(1)},${y(v).toFixed(1)}`; on = true; });
+    g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.width || 2}"${s.dash ? ' stroke-dasharray="5 4"' : ""}/>` +
+      s.values.map((v, i) => v == null || s.dots === false ? "" : `<circle cx="${x(i) + sw / 2}" cy="${y(v)}" r="${s.width > 2 ? 3.5 : 2.5}" fill="${s.color}"><title>${esc(labels[i])} · ${esc(s.name)}: ${fmt === dsK ? rs(v) : fmt(v)}</title></circle>`).join(""); });
+  el.innerHTML = `<div class="dscroll"><svg class="dsvg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(el.dataset.label || "")}">${g}</svg></div>` +
+    `<div class="dslegend">${series.filter(s => !s.noKey).map(s => `<span><i style="background:${s.color}${s.line ? ";height:3px" : ""}"></i>${esc(s.name)}</span>`).join("")}</div>`;
+}
+// Horizontal bars: rows [{ label, value, sub, color }].
+const dsHbars = (rows, fmt = rs) => { const max = Math.max(1, ...rows.map(r => Math.abs(r.value)));
+  return `<div class="dshb">${rows.map(r => `<div class="dshr"><span class="l">${r.label}</span><div class="t"><i style="width:${(Math.abs(r.value) / max * 100).toFixed(1)}%;background:${r.value < 0 ? "var(--danger)" : r.color || "var(--accent)"}"></i></div><b>${fmt(r.value)}</b>${r.sub ? `<small>${r.sub}</small>` : ""}</div>`).join("")}</div>`; };
+const dsPanel = (id, title, note = "") => `<section class="panel dspanel"><div class="sechead"><h2 class="sec">${title}</h2>${note ? `<p>${note}</p>` : ""}</div><div id="${id}" class="dsbox"></div></section>`;
+const dsFySel = (id, cur, all) => `<label class="dsf"><span class="sub">Financial year</span><select id="${id}">${all ? `<option value="all"${cur === "all" ? " selected" : ""}>All years</option>` : ""}${[...dsData.fys].reverse().map(y => `<option value="${y}"${y === cur ? " selected" : ""}>FY ${fyLabel(y)}</option>`).join("")}</select></label>`;
+const dsBizSeg = () => `<div><span class="sub">Business</span><div class="seg" role="radiogroup" aria-label="Business">${[["all", "All"], ...DS_BIZ].map(([k, l]) => `<label><input type="radio" name="dsBiz" value="${k}"${k === dsBiz ? " checked" : ""}><span>${l}</span></label>`).join("")}</div></div>`;
+/* ---- tabs ---- */
+function dsRender() {
+  const ok = dsMoneyOk(); $("dsTabs").hidden = !ok; if (!ok) dsTab = "today";
+  $("dsTabs").innerHTML = DS_TABS.map(([k, l]) => `<button type="button" role="tab" data-dstab="${k}" aria-selected="${k === dsTab}">${l}</button>`).join("");
+  DS_TABS.forEach(([k]) => { const el = $("ds-" + k); if (el) el.hidden = k !== dsTab; });
+  if (ok && !dsData && !dsBusy) dsLoad();
+  if (dsTab === "today") return dsToday();
+  const box = $("ds-" + dsTab);
+  if (!dsData) { box.innerHTML = `<div class="empty panel"><strong>Reading every year's records…</strong>The charts appear in a moment.</div>`; return; }
+  if (!dsData.fys.length) { box.innerHTML = `<div class="empty panel"><strong>No records yet</strong>Trip sheets, bookings, truck trips and expenses show here once entered.</div>`; return; }
+  const cur = fyOf(todayISO()); if (dsFy == null || !dsData.fys.includes(dsFy)) dsFy = dsData.fys.includes(cur) ? cur : dsData.fys.at(-1);
+  ({ money: dsMoney, vehicles: dsVehicles, insights: dsInsights })[dsTab]();
+}
+// Today: the headline figures over the renewal dashboard.
+function dsToday() {
+  const el = $("dsKpis"); if (!el) return; if (!dsMoneyOk()) { el.innerHTML = ""; el.hidden = true; return; } el.hidden = false;
+  if (!dsData) { el.innerHTML = ["This month", "Financial year so far", "Spare bus: to collect", "Maintenance overdue"].map(k => ostat(k, "…")).join(""); return; }
+  const today = todayISO(), ym = today.slice(0, 7), lym = `${+ym.slice(0, 4) - 1}${ym.slice(4)}`, fy = fyOf(today), all = DS_BIZ.map(b => b[0]);
+  const m = dsBal(ym, all), lm = dsBal(lym, all), sofar = dsFyMonths(fy).filter(x => x <= ym), fyB = sofar.reduce((a, x) => a + dsBal(x, all), 0), lfyB = dsFyMonths(fy - 1).slice(0, sofar.length).reduce((a, x) => a + dsBal(x, all), 0);
+  const pc = (a, b) => b ? `${a >= b ? "+" : "−"}${Math.abs(Math.round((a - b) / Math.abs(b) * 100))}%` : "";
+  const due = dsData.R.bookings.filter(b => YW_BOOKED(b) && !b.closedOn).map(b => bkCalc(b).balance).filter(v => v > 0);
+  const live = vehicles.filter(v => v.status !== "Sold / Scrapped"), over = live.map(v => mtDue(v.id).filter(d => d.st === "over").length).filter(Boolean);
+  el.innerHTML = ostat("This month so far", rs(m), `All of ${dsMon(lym)}: ${rs(lm)}`, m < 0 ? "var(--danger)" : "") +
+    ostat(`FY ${fyLabel(fy)} so far`, rs(fyB), `Same months of FY ${fyLabel(fy - 1)}: ${rs(lfyB)}${lfyB ? ` · ${pc(fyB, lfyB)}` : ""}`, fyB < lfyB ? "var(--danger)" : "var(--ok)") +
+    ostat("Spare bus: to collect", rs(due.reduce((a, v) => a + v, 0)), `${due.length} booking${due.length === 1 ? "" : "s"} with money still due`) +
+    `<a class="stat dslink" href="#maintenance-summary">` + `<div class="k">Maintenance overdue</div><div class="v"${over.length ? ' style="color:var(--danger)"' : ""}>${over.reduce((a, v) => a + v, 0)}</div><div class="sub">job${over.reduce((a, v) => a + v, 0) === 1 ? "" : "s"} on ${over.length} vehicle${over.length === 1 ? "" : "s"} · open the summary ›</div></a>`;
+}
+function dsMoney() {
+  const box = $("ds-money"), fy = dsFy, keys = dsBizKeys(), fys = dsData.fys, cur = todayISO().slice(0, 7);
+  box.innerHTML = `<section class="panel dsctl">${dsFySel("dsFySel", fy)}${dsBizSeg()}</section>` +
+    dsPanel("dsM1", "Balance month by month", "The 24 months up to the end of the year chosen") +
+    `<div class="dsgrid">` + dsPanel("dsM2", "Each year, April to March", "The year chosen in green, the year before in blue") + dsPanel("dsM3", "Year totals", "Trip balance, and the line after office expenses") + `</div>` +
+    (dsBiz === "all" ? dsPanel("dsM4", "Share of the balance by business", "Each year as 100%") : "") +
+    dsPanel("dsM5", `Office expenses by category · FY ${fyLabel(fy)}`, "From Expenses, by month") +
+    `<div class="dsgrid">` + dsPanel("dsM6", "Diesel price paid", "Route bus, average ₹ a litre each month") + dsPanel("dsM7", "Diesel and crew pay as a share of collection", "By year") + `</div>`;
+  // 1. 24 months
+  const end = monthYM(fy, 11) > cur && fy === fyOf(todayISO()) ? cur : monthYM(fy, 11), m24 = []; for (let d = end; m24.length < 24; d = dsShiftM(d, -1)) m24.unshift(d);
+  dsChart($("dsM1"), m24.map(dsMon), [...DS_BIZ.filter(b => keys.includes(b[0])).map(([k, l, c]) => ({ name: l, color: c, values: m24.map(ym => dsM(ym)[k].bal) })),
+    ...(keys.length > 1 ? [{ name: "Total", color: "var(--ink)", line: true, values: m24.map(ym => dsBal(ym)) }] : [])], { hi: m24.indexOf(cur) });
+  // 2. each year as a line
+  const grey = ["#9aa79c", "#b3bdb5", "#c7cfc9", "#d6dcd8", "#e1e6e2", "#a8b3aa", "#bfc8c1"];
+  dsChart($("dsM2"), MONTHS.map(m => m.slice(0, 3)), fys.map((y, i) => ({ name: `FY ${fyLabel(y)}`, line: true, color: y === fy ? "var(--accent)" : y === fy - 1 ? "#3b82f6" : grey[i % grey.length], width: y === fy ? 3 : y === fy - 1 ? 2.5 : 1.5,
+    dots: y === fy || y === fy - 1, noKey: !(y === fy || y === fy - 1), values: dsFyMonths(y).map(ym => ym > cur || !keys.some(k => dsM(ym)[k].n) ? null : dsBal(ym)) })).sort((a, b) => (a.width || 0) - (b.width || 0)));
+  // 3. year totals
+  const tot = y => dsFyMonths(y).reduce((a, ym) => a + dsBal(ym), 0), off = y => dsFyMonths(y).reduce((a, ym) => a + dsM(ym).office, 0);
+  dsChart($("dsM3"), fys.map(y => fyLabel(y)), [...DS_BIZ.filter(b => keys.includes(b[0])).map(([k, l, c]) => ({ name: l, color: c, values: fys.map(y => dsFyMonths(y).reduce((a, ym) => a + dsM(ym)[k].bal, 0)) })),
+    ...(dsBiz === "all" ? [{ name: "After office expenses", color: "var(--danger)", line: true, values: fys.map(y => tot(y) - off(y)) }] : [])], { slot: 44, hi: fys.indexOf(fy) });
+  $("dsM3").insertAdjacentHTML("beforeend", `<div class="tscroll"><table class="ctable dsmini"><thead><tr><th>Year</th><th class="n">Balance</th><th class="n">Change</th>${dsBiz === "all" ? '<th class="n">Office expenses</th><th class="n">After office expenses</th>' : ""}</tr></thead><tbody>${[...fys].reverse().map(y => { const t = tot(y), p = tot(y - 1);
+    return `<tr${y === fy ? ' class="on"' : ""}><td>FY ${fyLabel(y)}</td><td class="n">${nf(Math.round(t))}</td><td class="n ${p && t < p ? "ywdn" : p ? "ywup" : ""}">${fys.includes(y - 1) && p ? `${t >= p ? "+" : "−"}${Math.abs(Math.round((t - p) / Math.abs(p) * 100))}%` : ""}</td>${dsBiz === "all" ? `<td class="n">${nf(Math.round(off(y)))}</td><td class="n">${nf(Math.round(t - off(y)))}</td>` : ""}</tr>`; }).join("")}</tbody></table></div>`);
+  // 4. share
+  if (dsBiz === "all") dsChart($("dsM4"), fys.map(y => fyLabel(y)), DS_BIZ.map(([k, l, c]) => ({ name: l, color: c, values: fys.map(y => { const s = DS_BIZ.map(b => Math.max(0, dsFyMonths(y).reduce((a, ym) => a + dsM(ym)[b[0]].bal, 0))), all = s.reduce((a, v) => a + v, 0);
+    return all ? Math.max(0, dsFyMonths(y).reduce((a, ym) => a + dsM(ym)[k].bal, 0)) / all * 100 : 0; }) })), { slot: 44, fmt: v => `${nf(v)}%`, hi: fys.indexOf(fy), max: 100 });
+  // 5. office expenses by category
+  const yms = dsFyMonths(fy), catT = {}; yms.forEach(ym => Object.entries(dsM(ym).cats).forEach(([c, a]) => { catT[c] = (catT[c] || 0) + a; }));
+  const top = Object.entries(catT).sort((a, b) => b[1] - a[1]).slice(0, 7).map(c => c[0]), pal = ["#2b6e1a", "#3b82f6", "#e08a1e", "#8b5cf6", "#0ea5a4", "#dc5a5a", "#a3a83a", "#9aa79c"];
+  dsChart($("dsM5"), yms.map(dsMon), [...top.map((c, i) => ({ name: c, color: pal[i], values: yms.map(ym => dsM(ym).cats[c] || 0) })),
+    { name: "Other", color: pal[7], values: yms.map(ym => Object.entries(dsM(ym).cats).filter(([c]) => !top.includes(c)).reduce((a, [, v]) => a + v, 0)) }], { hi: yms.indexOf(cur) });
+  $("dsM5").insertAdjacentHTML("beforeend", Object.keys(catT).length ? dsHbars(Object.entries(catT).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([c, a], i) => ({ label: esc(c), value: a, color: pal[Math.min(i, 7)] }))) : `<p class="sub">No office expenses in this year.</p>`);
+  // 6. diesel price (all months with route days)
+  const allYm = Object.keys(dsData.M).sort().filter(ym => dsM(ym).route.lit > 0);
+  dsChart($("dsM6"), allYm.map(dsMon), [{ name: "₹ a litre", color: "#e08a1e", line: true, dots: false, values: allYm.map(ym => Math.round(dsM(ym).route.fuel / dsM(ym).route.lit * 100) / 100) }], { slot: 6, fmt: v => `₹${nf(v)}` });
+  // 7. diesel and crew pay share of collection, by year, for the business chosen
+  const share = (y, f) => { const c = keys.reduce((a, k) => a + dsFyMonths(y).reduce((s, ym) => s + dsM(ym)[k].col, 0), 0); return c ? keys.reduce((a, k) => a + dsFyMonths(y).reduce((s, ym) => s + dsM(ym)[k][f], 0), 0) / c * 100 : null; };
+  dsChart($("dsM7"), fys.map(y => fyLabel(y)), [{ name: "Diesel % of collection", color: "#e08a1e", line: true, width: 2.5, values: fys.map(y => share(y, "fuel")) }, { name: "Crew pay % of collection", color: "#3b82f6", line: true, width: 2.5, values: fys.map(y => share(y, "pay")) }], { slot: 44, fmt: v => `${nf(v)}%`, hi: fys.indexOf(fy) });
+}
+function dsVehicles() {
+  const box = $("ds-vehicles"), all = dsVFy === "all", fy = all ? null : +dsVFy, fys = dsData.fys, pick = x => all ? Object.values(x.fy).reduce((a, f) => { Object.keys(f).forEach(k => { a[k] = (a[k] || 0) + f[k]; }); return a; }, {}) : x.fy[fy] || null;
+  const pl = id => { const v = vehicles.find(x => x.id === id); return v ? esc(plateOf(v)) + (v.status === "Sold / Scrapped" ? " <small>(sold)</small>" : "") : "Removed vehicle"; }, kindL = { route: "Route bus", spare: "Spare bus", truck: "Truck" };
+  const rows = Object.values(dsData.V).map(x => ({ x, f: pick(x) })).filter(r => r.f && (r.f.n || r.f.office));
+  box.innerHTML = `<section class="panel dsctl">${dsFySel("dsVFySel", all ? "all" : fy, true)}</section>` +
+    dsPanel("dsV1", "Profit by vehicle", `${all ? "Every year" : `FY ${fyLabel(fy)}`}: trip balance less the office expenses entered on the vehicle`) +
+    dsPanel("dsV2", "Earnings and cost per km", "Kilometres from the readings entered") +
+    dsPanel("dsV3", "Mileage by year", "Km per litre for each bus and truck: a falling line is worth a check-up") +
+    `<div class="dsgrid">` + dsPanel("dsV4", `Days on the road · FY ${fyLabel(all ? dsFy : fy)}`, "Route bus days run, spare bus days booked, truck days running") + dsPanel("dsV5", "Truck routes by balance", `${all ? "Every year" : `FY ${fyLabel(fy)}`}, top 12`) + `</div>`;
+  const net = r => num(r.f.bal) - num(r.f.office);
+  $("dsV1").innerHTML = rows.length ? dsHbars([...rows].sort((a, b) => net(b) - net(a)).map(r => ({ label: `${pl(r.x.id)} <small>${[...r.x.kinds].map(k => kindL[k]).join(" + ")}</small>`, value: net(r),
+    color: DS_BIZ.find(b => b[0] === r.x.kind)?.[2], sub: `Collection ${dsK(num(r.f.col))} · trip expenses ${dsK(num(r.f.exp))} · office ${dsK(num(r.f.office))}` }))) : `<p class="sub">No records in this year.</p>`;
+  const kmRows = rows.filter(r => num(r.f.km) > 0).sort((a, b) => (net(b) / b.f.km) - (net(a) / a.f.km));
+  $("dsV2").innerHTML = kmRows.length ? `<div class="tscroll"><table class="ctable dsmini"><thead><tr><th>Vehicle</th><th class="n">Km</th><th class="n">Earned / km</th><th class="n">Cost / km</th><th class="n">Profit / km</th><th class="n">Km / litre</th></tr></thead><tbody>${kmRows.map(r => { const k = r.f.km, c = num(r.f.exp) + num(r.f.office);
+    return `<tr><td>${pl(r.x.id)} <small class="sub">${[...r.x.kinds].map(k => kindL[k]).join(" + ")}</small></td><td class="n">${nf(k)}</td><td class="n">₹${nf(r.f.col / k, 1)}</td><td class="n">₹${nf(c / k, 1)}</td><td class="n ${net(r) < 0 ? "ywdn" : ""}">₹${nf(net(r) / k, 1)}</td><td class="n">${r.f.lit && k / r.f.lit >= 1 && k / r.f.lit <= 15 ? nf(k / r.f.lit, 2) : "—"}</td></tr>`; }).join("")}</tbody></table></div>` : `<p class="sub">No km readings in this year.</p>`;
+  const mv = Object.values(dsData.V).filter(x => fys.some(y => num(x.fy[y]?.km) > 0 && num(x.fy[y]?.lit) > 0)), pal = ["var(--accent)", "#3b82f6", "#e08a1e", "#8b5cf6", "#0ea5a4", "#dc5a5a", "#a3a83a", "#64748b", "#d946ef"];
+  dsChart($("dsV3"), fys.map(y => fyLabel(y)), mv.map((x, i) => ({ name: plateOf(vehicles.find(v => v.id === x.id)) || "Removed", color: pal[i % pal.length], line: true, width: 2, values: fys.map(y => { const f = x.fy[y], m = f && f.km > 0 && f.lit > 0 ? f.km / f.lit : 0; return m >= 1 && m <= 15 ? Math.round(m * 100) / 100 : null; }) })), { slot: 44, fmt: v => nf(v, 1) });
+  const ufy = all ? dsFy : fy, yms = dsFyMonths(ufy);
+  dsChart($("dsV4"), yms.map(dsMon), DS_BIZ.map(([k, l, c]) => ({ name: k === "route" ? "Route days run" : k === "spare" ? "Spare days booked" : "Truck days running", color: c, values: yms.map(ym => Math.round(dsM(ym)[k].days * 10) / 10) })), { stacked: false, fmt: v => nf(v), slot: 40 });
+  const lanes = {}; dsData.R.truckTrips.filter(l => l.vehicleId && l.from && (all || fyOf(l.from) === fy)).forEach(l => { const k = `${lgPlace(l.origin) || "?"} → ${lgPlace(l.dest) || "?"}`, c = legCalc(l), z = lanes[k] ||= { n: 0, rent: 0, bal: 0, comm: 0 }; z.n++; z.rent += num(l.rent); z.bal += c.bal; z.comm += num(l.commission); });
+  $("dsV5").innerHTML = Object.keys(lanes).length ? dsHbars(Object.entries(lanes).sort((a, b) => b[1].bal - a[1].bal).slice(0, 12).map(([k, z]) => ({ label: esc(k), value: z.bal, color: "#e08a1e", sub: `${z.n} trip${z.n === 1 ? "" : "s"} · rent ${dsK(z.rent)} · commission ${dsK(z.comm)}` }))) : `<p class="sub">No truck trips in this year.</p>`;
+}
+function dsInsights() {
+  const box = $("ds-insights"), fy = dsFy, [from, to] = [`${fy}-04-01`, `${fy + 1}-03-31`], T = dsData.R.trips.filter(t => t.date >= from && t.date <= to && !t.notRun && t.vehicleId);
+  box.innerHTML = `<section class="panel dsctl">${dsFySel("dsIFySel", fy)}</section>` +
+    dsPanel("dsI1", `Route collection by weekday · FY ${fyLabel(fy)}`, "Average collection a day; darker is higher") +
+    `<div class="dsgrid">` + dsPanel("dsI2", "Collection by single", `Average a day for S1–S5, FY ${fyLabel(fy)} against the year before`) + dsPanel("dsI4", "The next three months", "Expected balance: the same months of the last three years, averaged") + `</div>` +
+    dsPanel("dsI3", `Crew · FY ${fyLabel(fy)}`, "Route bus days by driver and conductor. Route, day and season affect these too, so compare like with like.");
+  // 1. weekday × month
+  const wd = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], cell = {}; T.forEach(t => { const d = (new Date(t.date + "T00:00:00").getDay() + 6) % 7, k = `${d}|${t.date.slice(0, 7)}`, z = cell[k] ||= { s: 0, n: 0 }; z.s += tripCollection(t); z.n++; });
+  const yms = dsFyMonths(fy), vals = Object.values(cell).map(z => z.s / z.n), lo = Math.min(...vals), hi = Math.max(...vals), shade = v => `color-mix(in srgb, var(--accent) ${Math.round(8 + (v - lo) / Math.max(1, hi - lo) * 72)}%, var(--surface))`;
+  const rowAvg = d => { const z = Object.entries(cell).filter(([k]) => k.startsWith(d + "|")).reduce((a, [, z]) => ({ s: a.s + z.s, n: a.n + z.n }), { s: 0, n: 0 }); return z.n ? z.s / z.n : null; };
+  $("dsI1").innerHTML = T.length ? `<div class="tscroll"><table class="dsheat"><thead><tr><th></th>${yms.map(ym => `<th>${dsMon(ym).slice(0, 3)}</th>`).join("")}<th>Year</th></tr></thead><tbody>${wd.map((w, d) => `<tr><th scope="row">${w}</th>${yms.map(ym => { const z = cell[`${d}|${ym}`];
+    return z ? `<td style="background:${shade(z.s / z.n)}" title="${w} in ${dsMon(ym)}: ${rs(z.s / z.n)} a day over ${z.n} day${z.n === 1 ? "" : "s"}">${dsK(z.s / z.n)}</td>` : "<td></td>"; }).join("")}<td class="avg">${rowAvg(d) != null ? dsK(rowAvg(d)) : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="sub">No route days in this year.</p>`;
+  // 2. singles
+  const sAvg = list => [1, 2, 3, 4, 5].map(i => { const l = list.filter(t => num(t["s" + i]) > 0); return l.length ? l.reduce((a, t) => a + num(t["s" + i]), 0) / l.length : 0; });
+  const P = dsData.R.trips.filter(t => t.date >= `${fy - 1}-04-01` && t.date <= `${fy}-03-31` && !t.notRun);
+  dsChart($("dsI2"), ["S1", "S2", "S3", "S4", "S5"], [{ name: `FY ${fyLabel(fy)}`, color: "var(--accent)", values: sAvg(T) }, { name: `FY ${fyLabel(fy - 1)}`, color: "#3b82f6", values: sAvg(P) }], { stacked: false, slot: 60, fmt: v => dsK(v) });
+  // 4. next three months
+  const now = todayISO().slice(0, 7), next = [0, 1, 2].map(i => dsShiftM(now, i)), past = (ym, k) => [1, 2, 3].map(y => `${+ym.slice(0, 4) - y}${ym.slice(4)}`).map(p => dsM(p)[k]).filter(z => z.n > 0).map(z => z.bal);
+  const avg = l => l.length ? l.reduce((a, v) => a + v, 0) / l.length : 0;
+  dsChart($("dsI4"), next.map(dsMon), [...DS_BIZ.map(([k, l, c]) => ({ name: l, color: c, values: next.map(ym => Math.round(avg(past(ym, k)))) })),
+    { name: "Same month last year", color: "var(--ink)", line: true, dash: true, values: next.map(ym => dsBal(`${+ym.slice(0, 4) - 1}${ym.slice(4)}`, DS_BIZ.map(b => b[0]))) }], { slot: 80 });
+  $("dsI4").insertAdjacentHTML("beforeend", `<p class="sub" style="margin:8px 0 0">Expected in total: <b>${rs(next.reduce((a, ym) => a + DS_BIZ.reduce((s, [k]) => s + avg(past(ym, k)), 0), 0))}</b> over ${next.map(dsMon).join(", ")}. The Expense forecast in Reports shows what the vehicles are expected to spend.</p>`);
+  // 3. crew
+  const crew = (kind, list) => { const m = {}; T.forEach(t => { const n = t[kind + "Name"] || (list.find(p => p.id === t[kind + "Id"])?.name); if (!n) return; const k = String(n).trim().toUpperCase(), z = m[k] ||= { n: 0, col: 0, bal: 0, lit: 0 }; z.n++; const c = tripCollection(t); z.col += c; z.bal += c - tripExpense(t); z.lit += num(t.litres); });
+    return Object.entries(m).filter(([, z]) => z.n >= 5).sort((a, b) => b[1].col / b[1].n - a[1].col / a[1].n); };
+  const tbl = (title, rows, lit) => `<h3 class="dsh3">${title}</h3>` + (rows.length ? `<div class="tscroll"><table class="ctable dsmini"><thead><tr><th>Name</th><th class="n">Days</th><th class="n">Avg collection / day</th><th class="n">Avg balance / day</th>${lit ? '<th class="n">Diesel L / day</th>' : ""}</tr></thead><tbody>${rows.map(([n, z]) => `<tr><td>${esc(n)}</td><td class="n">${z.n}</td><td class="n">${nf(z.col / z.n)}</td><td class="n">${nf(z.bal / z.n)}</td>${lit ? `<td class="n">${nf(z.lit / z.n, 1)}</td>` : ""}</tr>`).join("")}</tbody></table></div>` : `<p class="sub">No one with 5 or more days in this year.</p>`);
+  $("dsI3").innerHTML = `<div class="dsgrid">${tbl("Drivers", crew("driver", drivers), true)}<div>${tbl("Conductors", crew("conductor", conductors), false)}</div></div>`;
+}
+$("view-renewals").addEventListener("click", e => { const t = e.target.closest("[data-dstab]"); if (!t) return; dsTab = t.dataset.dstab; try { localStorage.setItem("fleet-dstab", dsTab); } catch {} dsRender(); });
+$("view-renewals").addEventListener("change", e => { const t = e.target;
+  if (t.id === "dsFySel" || t.id === "dsIFySel") { dsFy = +t.value; dsRender(); }
+  if (t.id === "dsVFySel") { dsVFy = t.value; if (t.value !== "all") dsFy = +t.value; dsRender(); }
+  if (t.name === "dsBiz") { dsBiz = t.value; try { localStorage.setItem("fleet-dsbiz", dsBiz); } catch {} dsRender(); } });
 /* ---------- booking reports ---------- */
 // Confirmed bookings (booked, on trip, completed) counted in the month they start. Financial year April to March.
 let rFy = null, rMon = "";
@@ -18627,7 +18866,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12s";
+const APP_VER = "2026-11-12t";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
