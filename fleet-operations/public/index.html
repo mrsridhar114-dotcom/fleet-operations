@@ -377,6 +377,7 @@ tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width:
 /* Vehicle cards on a phone: the number first, then owner, class, chassis, engine, registration, then the expiry dates
    (FC, tax, insurance, pollution, permit, permit authorization). The computer table keeps its own column order. */
 @media (max-width: 720px) {
+  #view-vehicles .vdn { display: none; } #view-vehicles .vdm { display: inline; }
   #view-vehicles td[data-label] { grid-template-columns: 10.25em minmax(0, 1fr); } /* room for "Insurance Valid Up To" on one line */
   #view-vehicles td[data-label="Owner name"] { order: 1; } #view-vehicles td[data-label="Vehicle class"] { order: 2; }
   #view-vehicles td[data-label="Chassis number"] { order: 3; } #view-vehicles td[data-label="Engine number"] { order: 4; }
@@ -385,6 +386,7 @@ tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width:
   #view-vehicles td[data-label="Pollution Valid Up To"] { order: 9; } #view-vehicles td[data-label="Permit Valid Up To"] { order: 10; }
   #view-vehicles td[data-label="NP Permit Valid Up To"] { order: 11; }
 }
+.vdm { display: none; }
 /* ---------- drawer ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(10, 18, 26, .45); z-index: 40; }
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(460px, 100%); background: var(--surface); box-shadow: var(--shadow); z-index: 41; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -4524,13 +4526,16 @@ function listThumb(v) {
 }
 // Expiry dates shown in the vehicle list, coloured by how soon they fall due.
 const LIST_DOCS = [["fcDate", "Fitness Valid Up To"], ["insuranceExp", "Insurance Valid Up To"], ["taxExp", "Tax Valid Up To"], ["permitExp", "Permit Valid Up To"], ["permitAuthExp", "NP Permit Valid Up To"], ["pollutionExp", "Pollution Valid Up To"]];
+// Vehicle list dates: dd/mm/yyyy in the computer table, dd/mon/yyyy (03/oct/2027) on the phone cards.
+const VC_MON = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+const vcDate = iso => /^\d{4}-\d{2}-\d{2}/.test(iso || "") ? `<span class="vdn">${fmtDate(iso)}</span><span class="vdm">${iso.slice(8, 10)}/${VC_MON[+iso.slice(5, 7) - 1]}/${iso.slice(0, 4)}</span>` : fmtDate(iso);
 function expCell(v, k) {
   if (!docApplies(k, v.type, v.usage)) return `<span class="sub">Not applicable</span>`;
   const iso = v[k];
   if (!iso) return `<span class="sub">Not recorded</span>`;
-  if (v.status === "Sold / Scrapped") return `<span class="num">${fmtDate(iso)}</span>`;
+  if (v.status === "Sold / Scrapped") return `<span class="num">${vcDate(iso)}</span>`;
   const n = daysUntil(iso);
-  return `<span class="pill ${listBand(n)} num exppill" title="${esc(whenText(n))}">${n < 0 ? '<span class="expw">Expired </span>' : ""}${fmtDate(iso)}</span>`;
+  return `<span class="pill ${listBand(n)} num exppill" title="${esc(whenText(n))}">${n < 0 ? '<span class="expw">Expired </span>' : ""}${vcDate(iso)}</span>`;
 }
 function filtered() {
   const q = "", ff = "", ft = "";
@@ -4564,7 +4569,7 @@ function renderMaster() {
     return `<tr class="rowlink${v.status === "Sold / Scrapped" ? " retired" : ""}" data-open="${v.id}">
       <td class="c-name">${dueSoonBtn(v)}<button type="button" class="linkbtn" data-act="view" data-id="${v.id}" aria-label="View ${esc(vFull(v))}"><span class="vid">${listThumb(v)}${plateHtml(v)}</span></button>${v.status !== "Sold / Scrapped" ? `<span class="cacts">${docsBtn(v)}<button type="button" class="cprint" data-vprint="${v.id}" aria-label="Save renewal dates of ${esc(v.plateNo || vName(v))} as an image" title="Save renewal dates as an image"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg></button></span>` : ""}${v.status && v.status !== "Active" ? `<div><span class="pill ${STATUS_CLS[v.status]}" style="margin-top:4px">${esc(v.status)}</span></div>` : ""}</td>
       <td class="c-cls" data-label="Vehicle class"><span>${esc(v.type)}${v.type === "Bus" && v.opType ? ` <span class="sub">· ${esc(v.opType)}</span>` : ""}</span></td>
-      <td data-label="Registration date"><span><span class="num">${fmtDate(v.regDate)}</span> <span class="sub">${age(v.regDate)}</span></span></td>
+      <td data-label="Registration date"><span><span class="num">${vcDate(v.regDate)}</span> <span class="sub">${age(v.regDate)}</span></span></td>
       <td data-label="Chassis number">${v.chassisNo ? `<span class="num idno">${esc(v.chassisNo)}</span>` : `<span class="sub">Not recorded</span>`}</td>
       <td data-label="Engine number">${v.engineNo ? `<span class="num idno">${esc(v.engineNo)}</span>` : `<span class="sub">Not recorded</span>`}</td>
       <td class="c-own" data-label="Owner name">${v.ownerName ? `<span>${esc(v.ownerName)}</span>` : `<span class="sub">Not recorded</span>`}</td>
@@ -17629,7 +17634,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-11b";
+const APP_VER = "2026-11-11c";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
