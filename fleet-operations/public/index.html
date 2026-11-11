@@ -12077,7 +12077,7 @@ $("view-tfcst").addEventListener("change", e => {
 });
 
 /* ---------- Year wise history (Dashboard) ----------
-   One vehicle, or every bus that ran the route, month by month: the months down the side, each financial year across (newest
+   The route bus (every bus that ran the route), the spare bus (every bus on spare trips) or one truck, month by month: the months down the side, each financial year across (newest
    first), as the office Year Wise sheet. A figure opens that month in full beside the same month a year before. The figures are
    the ones Download all writes: route buses from the monthly sheets, spare buses from their bookings, trucks from their trip sheets. */
 const YW_MEAS = [["bal", "Balance"], ["col", "Collection"], ["exp", "Expense"], ["days", "Days run"], ["lit", "Diesel (litres)"], ["dsl", "Diesel (₹)"], ["sal", "Salary / padi"], ["km", "Kilometres"]];
@@ -12094,19 +12094,18 @@ async function ywLoad() {
   finally { ywBusy = false; }
   if (view === "tyw") renderYw();
 }
-// The choices: the route (every bus on it), then each route bus, spare bus and truck with records, sold ones too.
+// The choices: the route bus (every bus that ran the route), the spare bus (every bus on spare trips), then each truck, sold ones too.
+const YW_BOOKED = b => b.vehicleId && b.from && ["booked", "ontrip", "completed"].includes(b.status);
 function ywOptions() {
   const R = ywRecs, pl = id => plateOf(vehicles.find(v => v.id === id)), sold = id => vehicles.find(v => v.id === id)?.status === "Sold / Scrapped" ? " (sold)" : "";
-  const ids = list => [...new Set(list.filter(Boolean))].filter(id => vehicles.some(v => v.id === id)).sort((a, b) => String(pl(a)).localeCompare(String(pl(b))));
-  const route = ids(R.trips.map(t => t.vehicleId)), spare = ids(R.bookings.filter(b => b.from && ["booked", "ontrip", "completed"].includes(b.status)).map(b => b.vehicleId)), truck = ids(R.truckTrips.filter(l => l.from).map(l => l.vehicleId));
-  return [["route", "Route bus — every bus that ran the route", "route"], ...route.map(id => ["r:" + id, `${pl(id)} · Route bus${sold(id)}`, "route"]),
-    ...spare.map(id => ["s:" + id, `${pl(id)} · Spare bus${sold(id)}`, "spare"]), ...truck.map(id => ["t:" + id, `${pl(id)} · Truck${sold(id)}`, "truck"])];
+  const truck = [...new Set(R.truckTrips.filter(l => l.from).map(l => l.vehicleId).filter(Boolean))].filter(id => vehicles.some(v => v.id === id)).sort((a, b) => String(pl(a)).localeCompare(String(pl(b))));
+  return [["route", "Route bus", "route"], ["spare", "Spare bus", "spare"], ...truck.map(id => ["t:" + id, `${pl(id)} · Truck${sold(id)}`, "truck"])];
 }
 // fy → 12 months (April first), each null (no record) or the month's sums.
 function ywCompute(key) {
   const R = ywRecs, out = new Map(), C = xlCtx(R), n = v => C.n(v) || 0, plate = id => plateOf(vehicles.find(v => v.id === id));
-  if (key === "route" || key.startsWith("r:")) {
-    const ids = key === "route" ? [...new Set(R.trips.map(t => t.vehicleId).filter(Boolean))] : [key.slice(2)];
+  if (key === "route") {
+    const ids = [...new Set(R.trips.map(t => t.vehicleId).filter(Boolean))];
     for (const id of ids) for (const fy of [...new Set(R.trips.filter(t => t.vehicleId === id && t.date).map(t => fyOf(t.date)))])
       for (const w of routeFySheets(id, fy, R)) {
         const a = ywSlot(out, fy, ywIdx(w.ym)), g = c => ywCell(w, c), lo = g("H3"), hi = g("H4");
@@ -12114,10 +12113,9 @@ function ywCompute(key) {
         if (lo) a.plo = a.plo ? Math.min(a.plo, lo) : lo; if (hi) a.phi = Math.max(a.phi || 0, hi); a.plates.add(plate(id));
       }
     out.type = "route";
-  } else if (key.startsWith("s:")) {
-    const id = key.slice(2);
-    R.bookings.filter(b => b.vehicleId === id && b.from && ["booked", "ontrip", "completed"].includes(b.status)).forEach(b => {
-      const a = ywSlot(out, fyOf(b.from), ywIdx(b.from.slice(0, 7))), o = { trips: 1, days: n(b.days), rent: n(b.rent), toll: n(b.toll), drvp: n(b.padiPaid), clp: n(b.cleanerPadi), permit: n(b.permit), lit: n(b.litres), dsl: n(b.fuelCost), oth: n(b.otherExp) };
+  } else if (key === "spare") {
+    R.bookings.filter(YW_BOOKED).forEach(b => {
+      const id = b.vehicleId, a = ywSlot(out, fyOf(b.from), ywIdx(b.from.slice(0, 7))), o = { trips: 1, days: n(b.days), rent: n(b.rent), toll: n(b.toll), drvp: n(b.padiPaid), clp: n(b.cleanerPadi), permit: n(b.permit), lit: n(b.litres), dsl: n(b.fuelCost), oth: n(b.otherExp) };
       const sk = n(b.startKm), ek = n(b.endKm); o.km = sk > 0 && ek > sk ? ek - sk : 0; o.col = o.rent + o.toll; o.exp = o.drvp + o.clp + o.permit + o.toll + o.dsl + o.oth; o.bal = o.col - o.exp;
       ywAdd(a, o); a.plates.add(plate(id));
     });
@@ -12160,11 +12158,11 @@ function renderYw() {
   if (!ywRecs) { $("ywVeh").innerHTML = `<option>Loading…</option>`; ["ywStats", "ywTable", "ywBars", "ywDetail"].forEach(id => $(id).innerHTML = ""); $("ywEmpty").hidden = true; $("ywLoading").hidden = false; ywLoad(); return; }
   $("ywLoading").hidden = true;
   const opts = ywOptions(); if (!opts.some(o => o[0] === ywVeh)) ywVeh = "route";
-  const grp = { route: "Route buses", spare: "Spare buses", truck: "Trucks" };
-  $("ywVeh").innerHTML = `<option value="route"${ywVeh === "route" ? " selected" : ""}>${esc(opts[0][1])}</option>` + ["route", "spare", "truck"].map(g => { const l = opts.slice(1).filter(o => o[2] === g); return l.length ? `<optgroup label="${grp[g]}">${l.map(o => `<option value="${o[0]}"${o[0] === ywVeh ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</optgroup>` : ""; }).join("");
+  const opt = o => `<option value="${o[0]}"${o[0] === ywVeh ? " selected" : ""}>${esc(o[1])}</option>`, tl = opts.filter(o => o[2] === "truck");
+  $("ywVeh").innerHTML = opts.slice(0, 2).map(opt).join("") + (tl.length ? `<optgroup label="Trucks">${tl.map(opt).join("")}</optgroup>` : "");
   $("ywMeas").innerHTML = YW_MEAS.map(([k, l]) => `<label><input type="radio" name="ywMeas" value="${k}"${k === ywMeas ? " checked" : ""}><span>${l}</span></label>`).join("");
   if (ywDataKey !== ywVeh) { ywData = ywCompute(ywVeh); ywDataKey = ywVeh; }
-  const D = ywData, type = D.type, fys = [...D.keys()].sort((a, b) => b - a), mLbl = YW_MEAS.find(m => m[0] === ywMeas)[1], vLbl = opts.find(o => o[0] === ywVeh)[1].replace(/ — .*/, "").replace(/ · .*/, "");
+  const D = ywData, type = D.type, fys = [...D.keys()].sort((a, b) => b - a), mLbl = YW_MEAS.find(m => m[0] === ywMeas)[1], vLbl = opts.find(o => o[0] === ywVeh)[1].replace(/ · .*/, "");
   $("ywHead").textContent = `${vLbl} · ${mLbl} by month${["lit", "days", "km"].includes(ywMeas) ? "" : " (₹)"}`;
   $("ywEmpty").hidden = !!fys.length;
   if (!fys.length) { ["ywStats", "ywTable", "ywBars", "ywDetail"].forEach(id => $(id).innerHTML = ""); $("ywDetail").hidden = true; return; }
@@ -12213,7 +12211,7 @@ async function ywExcel() {
     XL.put(ws, "A16", "Total", S.ttext); fys.forEach((fy, c) => { const A = XL.col(c + 1); XL.put(ws, `${A}16`, 0, S.tint, `SUM(${A}4:${A}15)`); }); ws.freeze = 3; return ws; });
   let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
   if (!dl) { toast("Saving files isn't available in this view. Reload the page and try again."); return; }
-  try { await dl.save({ filename: `Year_Wise_${veh.replace(/ — .*| · .*/g, "").replace(/[^\w-]+/g, "_")}.xlsx`, data: XL.build(XL.names(sheets)) }); toast("Year wise history saved"); }
+  try { await dl.save({ filename: `Year_Wise_${veh.replace(/ · .*/g, "").replace(/[^\w-]+/g, "_")}.xlsx`, data: XL.build(XL.names(sheets)) }); toast("Year wise history saved"); }
   catch (er) { if (er?.code !== "declined") toast("Couldn't save the file."); }
 }
 $("view-tyw").addEventListener("click", e => {
@@ -18629,7 +18627,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12r";
+const APP_VER = "2026-11-12s";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
