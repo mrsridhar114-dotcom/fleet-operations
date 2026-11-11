@@ -1267,6 +1267,31 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .uptable tr.bad td { background: var(--danger-soft); } .uptable tr.chg td { background: var(--warn-soft); } .uptable tr.off td { opacity: .5; }
 .updiff { margin: 4px 0 0; padding-left: 16px; font-size: 12px; } .updiff s { color: var(--muted); } .upall { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
 .uptable td:first-child input { width: 16px; height: 16px; } .uptable tr.skip td { color: var(--muted); } .uptable td { vertical-align: top; }
+/* Reports › Expense forecast */
+.fcpick { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; }
+.fcvehf { flex: 1 1 420px; min-width: 0; } .fclab { display: block; margin-bottom: 6px; font-weight: 600; }
+.fcchips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 44px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; box-sizing: border-box; }
+.fcchip { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 4px 0 12px; border-radius: 999px; background: var(--accent-soft); font-size: 13px; font-weight: 600; }
+.fcchip button { width: 26px; height: 26px; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; }
+.fcchips select { border: 0; background: none; color: var(--accent); font: 600 13px var(--body); min-height: 32px; cursor: pointer; }
+.fcquick { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; } .fcquick .linkbtn { color: var(--accent); font-size: 13px; font-weight: 600; }
+.fcfyf select { min-height: 44px; }
+.fctable th[scope="row"] { white-space: nowrap; } .fctable .fcsep { border-left: 2px solid var(--line); } .fctable tr.fcfut { background: color-mix(in srgb, #2563eb 4%, var(--surface)); }
+.fccell { all: unset; cursor: pointer; font-family: var(--mono); padding: 2px 4px; border-radius: 4px; } .fccell:hover:not(:disabled) { background: var(--accent-soft); } .fccell.on { background: var(--accent-soft); outline: 2px solid var(--accent); } .fccell:disabled { cursor: default; color: var(--muted); }
+.fctag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font: 700 10px var(--body); letter-spacing: .04em; text-transform: uppercase; vertical-align: middle; }
+.fctag.spent { background: var(--accent-soft); color: var(--accent); } .fctag.fore { background: color-mix(in srgb, #2563eb 14%, var(--surface)); color: #1d4ea8; } .fctag.over { background: #fdecec; color: var(--danger); }
+.fcsofar { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.fcnum { font-family: var(--mono); }
+.fccards { display: none; } .fcfullbtn { display: none; }
+.fccard { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 10px; } .fccard header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg); } .fccard.fut header { background: color-mix(in srgb, #2563eb 8%, var(--surface)); }
+.fcline { all: unset; box-sizing: border-box; width: 100%; display: flex; justify-content: space-between; gap: 10px; padding: 9px 12px; border-top: 1px solid var(--line); cursor: pointer; font-size: 14px; } .fccard .sub { margin: 0; padding: 9px 12px; }
+@media (max-width: 700px) { .fctwrap { display: none; } .fccards, .fcfullbtn { display: block; } .fcshowtable .fctwrap { display: block; } .fcshowtable .fccards { display: none; } }
+.fcdetail { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); } .fcdetail ul { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; } .fcdetail li .fcnum { float: right; margin-left: 12px; }
+.fcgrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+#fcStats { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.fctable th, .fctable td { padding-left: 6px; padding-right: 6px; } .fctable th[scope="row"] { padding-left: 10px; }
+#fcRen tr.fcunk td { background: color-mix(in srgb, #f28c28 12%, var(--surface)); }
+.fcjobs { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; } .fcjobs .over { color: var(--danger); font-weight: 600; }
 .tnone { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; padding: 12px 14px; border-radius: 8px; background: color-mix(in srgb, #f28c28 14%, var(--surface)); color: var(--ink); }
 .tnone[hidden] { display: none; }
 .upok { padding: 12px 14px; border-radius: 8px; background: var(--ok-soft); color: var(--ink); }
@@ -2335,6 +2360,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <li id="navRep"><a class="nav" href="#booking-reports" data-view="breports">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3M20 16V6"/></svg>
             Reports</a></li>
+          <li id="navFcst" data-mod="expenses"><a class="nav" href="#expense-forecast" data-view="tfcst">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V4M4 20h16"/><path d="M7 15l4-4 3 3 5-6"/><path d="M15 8h4v4"/></svg>
+            Expense forecast</a></li>
           <li id="navGuide"><a class="nav" href="#training-guide" data-view="guide">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7M8 11h7"/></svg>
             Training guide</a></li>
@@ -2829,6 +2857,33 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </section>
 
     <!-- ================= Booking reports ================= -->
+    <section class="wrap twrap" id="view-tfcst" hidden>
+      <header class="top">
+        <div>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><span>Reports</span><span class="slash">/</span><span>Expense forecast</span></nav>
+          <h1>Expense forecast</h1>
+          <p class="sync">What the chosen vehicles are expected to spend, month by month. Months already gone show what was spent.</p>
+        </div>
+        <div class="tcontrols"><button class="btn" type="button" id="fcXls">⬇ Excel</button><button class="btn" type="button" id="fcPrint">Print</button></div>
+      </header>
+      <section class="panel fcpick">
+        <div class="fcvehf"><span class="sub fclab" id="fcVehL">Vehicles</span><div id="fcVeh"></div></div>
+        <label class="fcfyf"><span class="sub fclab">Financial year</span><select id="fcFy"></select></label>
+        <div><span class="sub fclab">Period</span><div class="seg" role="radiogroup" aria-label="Period" id="fcPer"><label><input type="radio" name="fcPer" value="q1"><span>Q1 Apr–Jun</span></label><label><input type="radio" name="fcPer" value="q2"><span>Q2 Jul–Sep</span></label><label><input type="radio" name="fcPer" value="q3"><span>Q3 Oct–Dec</span></label><label><input type="radio" name="fcPer" value="q4"><span>Q4 Jan–Mar</span></label><label><input type="radio" name="fcPer" value="year"><span>Full year</span></label></div></div>
+      </section>
+      <div class="empty panel" id="fcEmpty" hidden><strong>No vehicle chosen</strong>Choose the vehicles above, or tap All vehicles.</div>
+      <section class="summary tsum" id="fcStats" aria-label="Forecast summary"></section>
+      <section class="panel"><div class="sechead"><h2 class="sec">Month by month</h2><button class="btn fcfullbtn" type="button" id="fcFull">Full table</button></div>
+        <div class="tscroll fctwrap"><table class="ctable fctable" id="fcTable"></table></div>
+        <div id="fcCards" class="fccards"></div>
+        <p class="sub" id="fcNote" style="margin:10px 0 0"></p>
+        <div class="fcdetail" id="fcDetail" hidden></div></section>
+      <div class="fcgrid">
+        <section class="panel"><h2 class="sec">Renewals due</h2><div class="tscroll" style="margin-top:10px"><table class="ctable" id="fcRen"></table></div></section>
+        <section class="panel"><h2 class="sec">Repairs expected, by vehicle</h2><p class="sub" id="fcRepNote" style="margin:4px 0 0"></p><div class="tscroll" style="margin-top:10px"><table class="ctable" id="fcRep"></table></div>
+          <h2 class="sec" style="margin-top:18px">Jobs due by km</h2><p class="sub" style="margin:4px 0 0">From the maintenance km master. Their cost is inside Repairs.</p><ul class="fcjobs" id="fcJobs"></ul></section>
+      </div>
+    </section>
     <section class="wrap twrap" id="view-trep" hidden>
       <header class="top">
         <div>
@@ -4330,9 +4385,9 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { texp: "expenses", tmaint: "maintenance", tmsum: "maintenance", tmhist: "maintenance", tmplan: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { texp: "expenses", tfcst: "expenses", tmaint: "maintenance", tmsum: "maintenance", tmhist: "maintenance", tmplan: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "reminders": "trem", "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "maintenance-master": "tmplan", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "reminders": "trem", "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "maintenance-master": "tmplan", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "expense-forecast": "tfcst", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
@@ -4352,14 +4407,15 @@ function showView() {
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "tmplan", "trem", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = ["texp", "tmaint", "tmsum", "tmhist", "tmplan"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "tmplan", "trem", "tfcst", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = ["texp", "tmaint", "tmsum", "tmhist", "tmplan", "tfcst"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
   if (view === "storage") renderStorage();
   if (view === "trem") renderRemind();
   if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); }
+  if (view === "tfcst") renderFcst();
   if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum(); if (view === "tmhist") renderMhist(); if (view === "tmplan") renderMplan();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
@@ -10217,7 +10273,7 @@ function renderApprovals() {
 // deleted anywhere in the app is logged once in "auditLog" with who, when, which module and what. Change-history
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
-const AU_PAGE = { trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Route bus day sheet", tspare: "Booking planner",
+const AU_PAGE = { tfcst: "Expense forecast", trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Route bus day sheet", tspare: "Booking planner",
   ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", trexp: "Route expenses", tpadi: "Padi calculation", tkrep: "Truck profit report", tdrv: "Truck driver (phone)", tutil: "Data upload & download", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
@@ -11785,6 +11841,156 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("change", e => { if (e.target.id === "rsBusSel") { rsBus = e.target.value; renderRsList(); } });
 
+/* ---------- Reports › Expense forecast ----------
+   For the vehicles chosen and a period of a financial year: month by month, what was spent (months gone) and what is expected
+   (this month on). Renewals fall in the month of the vehicle's expiry date, at the last amount paid for that vehicle (the
+   insurance premium on the vehicle when insurance was never paid here); with no amount known they are listed, not added.
+   Repairs (spare parts, tyres, mechanic and maintenance) are what each vehicle spent in the same month a year before. */
+const FC_COLS = [["ins", "Insurance"], ["fc", "FC"], ["tax", "Quarter tax"], ["permit", "Permit"], ["np", "NP permit"], ["poll", "Pollution"], ["spare", "Spare parts"], ["tyre", "Tyres"], ["mech", "Mechanic & maint."]];
+const FC_REN = { ins: "insuranceExp", fc: "fcDate", tax: "taxExp", permit: "permitExp", np: "permitAuthExp", poll: "pollutionExp" };
+const FC_REPAIR = ["spare", "tyre", "mech"];
+const FC_TAX_STEP = { Quarterly: 3, "Half-yearly": 6, Annual: 12 };
+// Which column an expense belongs to, from its category and description (old records keep most work under "Maintenance").
+function fcClass(x) {
+  const c = String(x.category || "").toLowerCase(), s = `${c} ${String(x.desc || "").toLowerCase()}`;
+  if (/insurance/.test(s)) return "ins";
+  if (/pollution|emission|\bpuc\b/.test(s)) return "poll";
+  if (/np\s*permit|national\s*permit|authori[sz]ation/.test(s)) return "np";
+  if (/permit/.test(s)) return "permit";
+  if (/^fc\b|\bf\.?c\b|fitness/.test(s)) return "fc";
+  if (/quarter|quartely|road\s*tax|\btax\b/.test(s) && !/toll/.test(s)) return "tax";
+  const work = !c || /maint|mechanic|spare|repair|service/.test(c);
+  if (work && /tyre|tire|\btubes?\b|retread|rethread|puncture|alignment|wheel\s*balanc|michelin|\bmrf\b|apollo|\bceat\b|bridgestone|type change/.test(s)) return "tyre";
+  if (/spare/.test(c) || (work && /spare|\bparts?\b|bearing|filter|\bbelt|clutch|\bkit\b|bush|seal|pump|bulb|battery|brake|lining|piston|valve|hose|cable|wiper/.test(s))) return "spare";
+  if (work) return "mech";
+  return "";
+}
+let fcSel = null, fcFy = null, fcPer = null, fcCell = "";
+const fcVehs = () => vehicles.filter(v => v.status !== "Sold / Scrapped").sort((a, b) => String(plateOf(a)).localeCompare(String(plateOf(b))));
+function fcInit() {
+  if (fcSel) return;
+  let saved = null; try { saved = JSON.parse(localStorage.getItem("fleet-fcveh") || "null"); } catch {}
+  const ok = new Set(fcVehs().map(v => v.id));
+  fcSel = Array.isArray(saved) ? saved.filter(id => ok.has(id)) : [...ok];
+  fcFy = fyOf(todayISO()); fcPer = "q" + (Math.floor(((+todayISO().slice(5, 7) + 8) % 12) / 3) + 1);
+}
+const fcSave = () => { try { localStorage.setItem("fleet-fcveh", JSON.stringify(fcSel)); } catch {} };
+const fcMonths = () => { const all = Array.from({ length: 12 }, (_, i) => { const m = (i + 3) % 12 + 1; return `${m >= 4 ? fcFy : fcFy + 1}-${pad2(m)}`; });
+  return fcPer === "year" ? all : all.slice((+fcPer[1] - 1) * 3, +fcPer[1] * 3); };
+const fcPerLabel = () => fcPer === "year" ? `FY ${fyLabel(fcFy)}` : `Q${fcPer[1]} ${["Apr–Jun", "Jul–Sep", "Oct–Dec", "Jan–Mar"][+fcPer[1] - 1]} ${fcPer === "q4" ? fcFy + 1 : fcFy}`;
+const fcMon = ym => `${VC_MON[+ym.slice(5, 7) - 1]} ${ym.slice(0, 4)}`;
+const fcAddM = (iso, n) => { const d = new Date(iso + "T00:00:00"), day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+// Everything the report shows, worked out once per render.
+function fcCompute() {
+  const V = fcSel.map(id => vehicles.find(v => v.id === id)).filter(Boolean), months = fcMonths(), cm = todayISO().slice(0, 7), today = todayISO();
+  const keyOf = new Map(V.map(v => [plateKey(plateOf(v)), v]));
+  const xs = ops.expenses.filter(x => x.date && num(x.amount)).map(x => ({ x, v: V.find(v => v.id === x.vehicleId) || (!x.vehicleId ? keyOf.get(plateKey(x.plate)) : null), k: fcClass(x) })).filter(e => e.v && e.k);
+  const cell = {}; const add = (ym, k, amt, item) => { const c = (cell[ym + "|" + k] ||= { amt: 0, items: [], unknown: 0 }); if (amt == null) c.unknown++; else c.amt += amt; c.items.push(item); };
+  // Months gone: what was spent.
+  months.filter(ym => ym < cm).forEach(ym => xs.filter(e => e.x.date.slice(0, 7) === ym).forEach(e => add(ym, e.k, num(e.x.amount), { v: e.v, text: `${fmtDate(e.x.date)} · ${e.x.desc || e.x.category}`, amt: num(e.x.amount) })));
+  // This month on: renewals by expiry date.
+  const fut = months.filter(ym => ym >= cm), ren = [];
+  if (fut.length) V.forEach(v => Object.entries(FC_REN).forEach(([k, f]) => {
+    let d = v[f]; if (!/^\d{4}-\d{2}-\d{2}$/.test(d || "")) return;
+    const step = k === "tax" ? FC_TAX_STEP[v.taxType] || 0 : 0, last = xs.filter(e => e.v === v && e.k === k).sort((a, b) => b.x.date.localeCompare(a.x.date))[0];
+    const amt = last ? num(last.x.amount) : k === "ins" && num(v.insPremium) ? num(v.insPremium) : null;
+    const basis = last ? `Last paid ${fmtDate(last.x.date)}` : amt != null ? "Insurance premium on the vehicle" : "No earlier payment. Not in the totals.";
+    const end = fut.at(-1);
+    // Overdue: expired before this month and not renewed in the app.
+    if (d < `${cm}-01`) { if (!step) { if (fut[0] === cm) { ren.push({ v, k, date: d, due: cm, amt, basis, overdue: true }); } return; } while (d < `${cm}-01`) d = fcAddM(d, step); }
+    for (; d.slice(0, 7) <= end; d = fcAddM(d, step)) { if (d.slice(0, 7) >= fut[0]) ren.push({ v, k, date: d, due: d.slice(0, 7), amt, basis, overdue: d < today }); if (!step) break; }
+  }));
+  ren.sort((a, b) => a.date.localeCompare(b.date)).forEach(r => add(r.due, r.k, r.amt, { v: r.v, text: `${FC_COLS.find(c => c[0] === r.k)[1]} ${r.overdue ? "expired" : "due"} ${fmtDate(r.date)} · ${r.basis}`, amt: r.amt }));
+  // This month on: repairs as spent in the same month a year before, per vehicle.
+  const rep = new Map();
+  fut.forEach(ym => { const ly = `${+ym.slice(0, 4) - 1}${ym.slice(4)}`;
+    xs.filter(e => FC_REPAIR.includes(e.k) && e.x.date.slice(0, 7) === ly).forEach(e => { add(ym, e.k, num(e.x.amount), { v: e.v, text: `As in ${fcMon(ly)}: ${fmtDate(e.x.date)} · ${e.x.desc || e.x.category}`, amt: num(e.x.amount) });
+      const r = rep.get(e.v) || { spare: 0, tyre: 0, mech: 0 }; r[e.k] += num(e.x.amount); rep.set(e.v, r); }); });
+  const soFar = fut[0] === cm ? xs.filter(e => e.x.date.slice(0, 7) === cm).reduce((a, e) => a + num(e.x.amount), 0) : 0;
+  const lastYear = months.reduce((a, ym) => { const ly = `${+ym.slice(0, 4) - 1}${ym.slice(4)}`; return a + xs.filter(e => e.x.date.slice(0, 7) === ly).reduce((s, e) => s + num(e.x.amount), 0); }, 0);
+  return { V, months, cm, cell, ren, rep, soFar, lastYear };
+}
+function renderFcst() {
+  if (!$("fcTable")) return;
+  fcInit();
+  const all = fcVehs(), on = new Set(fcSel), pick = all.filter(v => !on.has(v.id));
+  $("fcVeh").innerHTML = `<div class="fcchips">${fcSel.map(id => vehicles.find(v => v.id === id)).filter(Boolean).map(v => `<span class="fcchip">${esc(plateOf(v))}<button type="button" data-fcdel="${v.id}" aria-label="Remove ${esc(plateOf(v))}">✕</button></span>`).join("")}` +
+    (pick.length ? `<select id="fcAdd" aria-label="Add a vehicle"><option value="">+ Add vehicle</option>${pick.map(v => `<option value="${v.id}">${esc(plateOf(v))} · ${esc(v.type || "")}</option>`).join("")}</select>` : "") + `</div>` +
+    `<div class="fcquick"><button type="button" class="linkbtn" data-fcq="bus">All buses</button><button type="button" class="linkbtn" data-fcq="truck">All trucks</button><button type="button" class="linkbtn" data-fcq="all">All vehicles</button><button type="button" class="linkbtn" data-fcq="none">Clear</button></div>`;
+  $("fcVehL").textContent = `Vehicles (${fcSel.length} of ${all.length})`;
+  $("fcFy").innerHTML = fyYears().map(y => `<option value="${y}"${y === fcFy ? " selected" : ""}>FY ${fyLabel(y)}</option>`).join("");
+  $("fcPer").querySelectorAll("input").forEach(i => { i.checked = i.value === fcPer; });
+  if (!fcSel.length) { ["fcStats", "fcTable", "fcCards", "fcRen", "fcRep", "fcJobs", "fcDetail"].forEach(id => $(id).innerHTML = ""); $("fcEmpty").hidden = false; return; }
+  $("fcEmpty").hidden = true;
+  const C = fcCompute(), F = C.months.map(ym => { const row = { ym, gone: ym < C.cm, t: 0, unknown: 0 }; FC_COLS.forEach(([k]) => { const c = C.cell[ym + "|" + k]; row[k] = c?.amt || 0; row.t += row[k]; row.unknown += c?.unknown || 0; }); return row; });
+  const sum = k => F.reduce((a, r) => a + r[k], 0), total = sum("t"), spent = F.filter(r => r.gone).reduce((a, r) => a + r.t, 0);
+  const renT = FC_COLS.slice(0, 6).reduce((a, [k]) => a + sum(k), 0), repT = FC_REPAIR.reduce((a, k) => a + sum(k), 0), unk = C.ren.filter(r => r.amt == null).length, diff = total - C.lastYear;
+  $("fcStats").innerHTML = ostat(fcPerLabel(), rs(total), F.some(r => r.gone) ? `${rs(spent)} spent + ${rs(total - spent)} expected` : "All expected") +
+    ostat("Renewals", rs(renT), `${C.ren.length} renewal${C.ren.length === 1 ? "" : "s"} due${unk ? ` · ${unk} amount${unk === 1 ? "" : "s"} not known` : ""}`) +
+    ostat("Repairs", rs(repT), "Spare parts, tyres, mechanic and maintenance") +
+    ostat("Same period last year", rs(C.lastYear), C.lastYear ? `This period ${rs(Math.abs(diff))} ${diff >= 0 ? "more" : "less"} (${diff >= 0 ? "+" : "−"}${Math.round(Math.abs(diff) / C.lastYear * 100)}%)` : "Nothing recorded", diff > 0 && C.lastYear ? "var(--danger)" : "");
+  const tag = r => r.gone ? `<span class="fctag spent">Spent</span>` : `<span class="fctag fore">Forecast</span>`, v0 = (n, k, ym) => `<td class="n${n ? "" : " fczero"}"><button type="button" class="fccell${fcCell === ym + "|" + k ? " on" : ""}" data-fccell="${ym}|${k}"${n || C.cell[ym + "|" + k]?.items.length ? "" : " disabled"}>${n ? nf(n) : "—"}${C.cell[ym + "|" + k]?.unknown ? "*" : ""}</button></td>`;
+  $("fcTable").innerHTML = `<thead><tr><th>Month</th>${FC_COLS.map(([k, l]) => `<th class="n${k === "spare" ? " fcsep" : ""}">${l}</th>`).join("")}<th class="n fcsep">Total</th></tr></thead><tbody>` +
+    F.map(r => `<tr class="${r.gone ? "" : "fcfut"}"><th scope="row">${fcMon(r.ym)} ${tag(r)}${r.ym === C.cm && C.soFar ? `<small class="fcsofar">${rs(C.soFar)} spent so far</small>` : ""}</th>${FC_COLS.map(([k]) => v0(r[k], k, r.ym).replace('<td class="n', `<td class="n${k === "spare" ? " fcsep" : ""}`)).join("")}<td class="n fcsep"><b>${nf(r.t)}</b></td></tr>`).join("") +
+    `</tbody><tfoot><tr><th scope="row">Total</th>${FC_COLS.map(([k]) => `<td class="n${k === "spare" ? " fcsep" : ""}">${nf(sum(k))}</td>`).join("")}<td class="n fcsep"><b>${nf(total)}</b></td></tr></tfoot>`;
+  $("fcCards").innerHTML = F.map(r => `<section class="fccard${r.gone ? "" : " fut"}"><header><b>${fcMon(r.ym)} ${tag(r)}</b><b class="fcnum">${rs(r.t)}</b></header>${FC_COLS.filter(([k]) => r[k] || C.cell[r.ym + "|" + k]?.unknown).map(([k, l]) => `<button type="button" class="fcline" data-fccell="${r.ym}|${k}"><span>${l}</span><span class="fcnum">${r[k] ? nf(r[k]) : "Not known"}</span></button>`).join("") || `<p class="sub">Nothing ${r.gone ? "spent" : "expected"}.</p>`}</section>`).join("");
+  $("fcNote").textContent = `Renewals go in the month of the expiry date, at the last amount paid for that vehicle. Repairs are what each vehicle spent in the same month last year.${unk ? " * a renewal with no amount known: listed below, not added." : ""} Tap a figure to see what is behind it.`;
+  fcDetailRender(C);
+  $("fcRen").innerHTML = C.ren.length ? `<thead><tr><th>Vehicle</th><th>Renewal</th><th>Due</th><th class="n">Amount</th><th>Based on</th></tr></thead><tbody>${C.ren.map(r => `<tr class="${r.amt == null ? "fcunk" : ""}"><td><b>${esc(plateOf(r.v))}</b></td><td>${FC_COLS.find(c => c[0] === r.k)[1]}</td><td>${fmtDate(r.date)}${r.overdue ? ` <span class="fctag over">Expired</span>` : ""}</td><td class="n">${r.amt == null ? "Not known" : nf(r.amt)}</td><td>${esc(r.basis)}</td></tr>`).join("")}</tbody>`
+    : `<tbody><tr><td class="sub">No renewal falls in the months ahead of this period.</td></tr></tbody>`;
+  const reps = [...C.rep.entries()], rt = k => reps.reduce((a, [, r]) => a + r[k], 0), fut = F.filter(r => !r.gone);
+  $("fcRepNote").textContent = fut.length ? `${fcMon(fut[0].ym)}${fut.length > 1 ? ` – ${fcMon(fut.at(-1).ym)}` : ""}, from what each vehicle spent in the same months a year before.` : "Every month of this period is gone: see the table above for what was spent.";
+  $("fcRep").innerHTML = reps.length ? `<thead><tr><th>Vehicle</th><th class="n">Spares</th><th class="n">Tyres</th><th class="n">Mechanic</th><th class="n">Total</th></tr></thead><tbody>${reps.map(([v, r]) => `<tr><th scope="row">${esc(plateOf(v))}</th><td class="n">${r.spare ? nf(r.spare) : "—"}</td><td class="n">${r.tyre ? nf(r.tyre) : "—"}</td><td class="n">${r.mech ? nf(r.mech) : "—"}</td><td class="n"><b>${nf(r.spare + r.tyre + r.mech)}</b></td></tr>`).join("")}</tbody><tfoot><tr><th scope="row">Total</th><td class="n">${nf(rt("spare"))}</td><td class="n">${nf(rt("tyre"))}</td><td class="n">${nf(rt("mech"))}</td><td class="n"><b>${nf(rt("spare") + rt("tyre") + rt("mech"))}</b></td></tr></tfoot>`
+    : `<tbody><tr><td class="sub">${fut.length ? "No repairs recorded for these vehicles in the same months last year." : ""}</td></tr></tbody>`;
+  const jobs = C.V.flatMap(v => mtDue(v.id).filter(d => d.st === "over" || d.st === "soon").map(d => ({ v, d })));
+  $("fcJobs").innerHTML = jobs.length ? jobs.map(({ v, d }) => `<li><b>${esc(plateOf(v))}</b> · ${esc(mtItemName(d.it))} · ${d.st === "over" ? `<span class="over">overdue${d.left < 0 ? ` by ${nf(-d.left)} km` : ""}</span>` : `due in ${nf(d.left)} km`}</li>`).join("") : `<li class="sub">No job due by km on these vehicles.</li>`;
+}
+function fcDetailRender(C) {
+  const el = $("fcDetail"), c = fcCell && (C || fcCompute()).cell[fcCell];
+  if (!c) { el.hidden = true; el.innerHTML = ""; return; }
+  const [ym, k] = fcCell.split("|");
+  el.hidden = false;
+  el.innerHTML = `<div class="sechead"><h3 class="sec">${FC_COLS.find(x => x[0] === k)[1]} · ${fcMon(ym)}</h3><button type="button" class="xclose" data-fcclose aria-label="Close">✕</button></div><ul>${c.items.map(i => `<li><b>${esc(plateOf(i.v))}</b> · ${esc(i.text)}<span class="fcnum">${i.amt == null ? "Not known" : rs(i.amt)}</span></li>`).join("")}</ul>`;
+}
+async function fcExcel() {
+  const C = fcCompute(), S = XL.S, ws = XL.sheet("Forecast"), title = `Expense forecast · ${fcPerLabel()}`;
+  XL.put(ws, "A1", title, S.title); XL.put(ws, "A2", `Vehicles: ${C.V.map(v => plateOf(v)).join(", ")} · made ${fmtDate(todayISO())}`, S.sLab);
+  const H = ["Month", "", ...FC_COLS.map(c => c[1]), "Total"]; H.forEach((h, i) => { XL.put(ws, `${XL.col(i)}3`, h, S.head); ws.widths[XL.col(i)] = i === 0 ? 12 : i === 1 ? 10 : 14; });
+  C.months.forEach((ym, n) => { const r = n + 4; XL.put(ws, `A${r}`, fcMon(ym), S.text); XL.put(ws, `B${r}`, ym < C.cm ? "Spent" : "Forecast", S.text);
+    FC_COLS.forEach(([k], i) => XL.put(ws, `${XL.col(i + 2)}${r}`, C.cell[ym + "|" + k]?.amt || 0, S.int));
+    XL.put(ws, `${XL.col(FC_COLS.length + 2)}${r}`, 0, S.tint, `SUM(C${r}:${XL.col(FC_COLS.length + 1)}${r})`); });
+  const t = C.months.length + 4; XL.put(ws, `A${t}`, "Total", S.ttext);
+  for (let i = 2; i < FC_COLS.length + 3; i++) { const A = XL.col(i); XL.put(ws, `${A}${t}`, 0, S.tint, `SUM(${A}4:${A}${t - 1})`); }
+  ws.freeze = 3;
+  const wr = XL.sheet("Renewals"); XL.put(wr, "A1", `Renewals due · ${fcPerLabel()}`, S.title);
+  ["Vehicle", "Renewal", "Due", "Amount", "Based on"].forEach((h, i) => { XL.put(wr, `${XL.col(i)}3`, h, S.head); wr.widths[XL.col(i)] = [16, 14, 12, 12, 40][i]; });
+  C.ren.forEach((r, n) => { const row = n + 4; XL.put(wr, `A${row}`, plateOf(r.v), S.text); XL.put(wr, `B${row}`, FC_COLS.find(c => c[0] === r.k)[1], S.text); XL.put(wr, `C${row}`, { d: r.date }, S.date);
+    XL.put(wr, `D${row}`, r.amt == null ? "Not known" : r.amt, r.amt == null ? S.text : S.int); XL.put(wr, `E${row}`, r.basis + (r.overdue ? " · expired" : ""), S.text); });
+  const wp = XL.sheet("Repairs by vehicle"); XL.put(wp, "A1", `Repairs expected · ${fcPerLabel()}`, S.title);
+  ["Vehicle", "Spare parts", "Tyres", "Mechanic & maint.", "Total"].forEach((h, i) => { XL.put(wp, `${XL.col(i)}3`, h, S.head); wp.widths[XL.col(i)] = i ? 16 : 18; });
+  [...C.rep.entries()].forEach(([v, r], n) => { const row = n + 4; XL.put(wp, `A${row}`, plateOf(v), S.text); XL.put(wp, `B${row}`, r.spare, S.int); XL.put(wp, `C${row}`, r.tyre, S.int); XL.put(wp, `D${row}`, r.mech, S.int); XL.put(wp, `E${row}`, 0, S.tint, `SUM(B${row}:D${row})`); });
+  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
+  if (!dl) { toast("Saving files isn't available in this view. Reload the page and try again."); return; }
+  try { await dl.save({ filename: `expense-forecast-${fcPerLabel().replace(/[^\w-]+/g, "-")}.xlsx`, data: XL.build([ws, wr, wp]) }); toast("Forecast saved"); }
+  catch (er) { if (er?.code !== "declined") toast("Couldn't save the file."); }
+}
+$("view-tfcst").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.fcdel) { fcSel = fcSel.filter(id => id !== b.dataset.fcdel); fcSave(); renderFcst(); return; }
+  if (b.dataset.fcq) { const q = b.dataset.fcq, all = fcVehs(); fcSel = q === "none" ? [] : all.filter(v => q === "all" || (q === "bus" ? v.type === "Bus" : /truck/i.test(v.type || ""))).map(v => v.id); fcSave(); renderFcst(); return; }
+  if (b.dataset.fccell) { fcCell = fcCell === b.dataset.fccell ? "" : b.dataset.fccell; renderFcst(); if (fcCell) $("fcDetail").scrollIntoView({ block: "nearest" }); return; }
+  if (b.hasAttribute("data-fcclose")) { fcCell = ""; renderFcst(); return; }
+  if (b.id === "fcXls") { fcExcel(); return; }
+  if (b.id === "fcPrint") { print(); return; }
+  if (b.id === "fcFull") { $("view-tfcst").classList.toggle("fcshowtable"); b.textContent = $("view-tfcst").classList.contains("fcshowtable") ? "Month cards" : "Full table"; }
+});
+$("view-tfcst").addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "fcAdd" && t.value) { fcSel.push(t.value); fcSave(); renderFcst(); }
+  if (t.id === "fcFy") { fcFy = +t.value; fcCell = ""; renderFcst(); }
+  if (t.name === "fcPer") { fcPer = t.value; fcCell = ""; renderFcst(); }
+});
+
 /* ---------- booking reports ---------- */
 // Confirmed bookings (booked, on trip, completed) counted in the month they start. Financial year April to March.
 let rFy = null, rMon = "";
@@ -11996,6 +12202,7 @@ function renderOps() {
   if (view === "tdrv") { renderDrv(); return; }
   if (view === "tutil") { dlFyOpts($("oDlFy")); dlNoBusRender(); renderUpload(); return; }
   if (view === "texp") { renderExp(); return; }
+  if (view === "tfcst") { renderFcst(); return; }
   if (view === "tmaint") { renderMaint(); return; }
   if (view === "tmsum") { renderMsum(); return; }
   if (view === "tmhist") { renderMhist(); return; }
@@ -18125,7 +18332,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12i";
+const APP_VER = "2026-11-12j";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
