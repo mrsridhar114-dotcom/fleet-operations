@@ -1895,18 +1895,74 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 @media (max-width: 700px) { .xptable td:nth-child(7) { display: none !important; } .xpsfoot b { padding-right: 0; } .xpgridt tbody tr:nth-child(even) td { background: none; } .xpgridt tbody tr.on { background: var(--accent-soft); } }
 .xpsegs { flex-wrap: nowrap; gap: 0; } .xpsegs button { padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 14px var(--body); cursor: pointer; }
 .xpsegs button:first-child { border-radius: 8px 0 0 8px; } .xpsegs button:last-child { border-radius: 0 8px 8px 0; } .xpsegs button + button { border-left: 0; } .xpsegs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-#mtw .bwb, #mtw .bwf { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
-#mtw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
-.bwf1 :is(input[type=date], .dmyt), .bwf1 select { box-sizing: border-box; width: 100%; height: 60px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); }
-.bwin input[type=number] { flex: 1; min-width: 0; height: 58px; border: 0; background: none; color: inherit; font: inherit; padding: 0 12px; outline: none; } .bwin > b { padding-left: 14px; color: var(--muted); }
-.bwchips.mtplates { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } .bwchips.mtplates button { font-family: var(--mono); letter-spacing: .02em; }
+/* Maintenance entry: the vehicle list, the one-screen entry and the wheels sheet */
 .mthome { display: flex; flex-direction: column; gap: 12px; max-width: 760px; }
-.mtgo .bwgo { width: 100%; } .mtdue { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; } .mtdue b { margin-right: 4px; }
+.mtq { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--muted); }
+.mtq input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font: 500 17px var(--body); }
+.mtgrp { display: flex; flex-direction: column; gap: 8px; } .mtgrp[hidden] { display: none; }
+.mtgh { margin: 4px 2px 0; font: 700 12px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.mtveh { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.mtveh[hidden] { display: none; } .mtveh:disabled { cursor: default; }
+.mtvi { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; } .mtvi .plate { font-size: 17px; } .mtvi > span:not(.mtpills) { font-size: 13px; color: var(--muted); }
+.mtpills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.mtplus { flex: none; width: 44px; height: 44px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 24px; font-weight: 600; }
 .mtlist { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .mtcard { display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
-.mtcard .mth { display: flex; justify-content: space-between; gap: 10px; } .mtcard .mth span { font-family: var(--mono); color: var(--muted); }
+.mtcard .mth { display: flex; justify-content: space-between; gap: 10px; } .mtcard .mth span { font-family: var(--mono); color: var(--muted); white-space: nowrap; }
 .mtcard .mti { display: flex; flex-wrap: wrap; gap: 4px; } .mtcard .mti span { font-size: 13px; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; } .mtcard small { color: var(--muted); }
-.bwh .mtsteps { display: flex; flex-direction: row; flex: none; align-self: center; gap: 4px; } .mtchk.mtfix { cursor: default; } .mtchk .mtnx { display: block; margin-bottom: 4px; } .mtnext span { white-space: nowrap; }
+#mtw .bwb, #mtw .bwf { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+#mtw .bwf { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+.bwb.mtb { gap: 14px; padding: 14px 14px 20px; }
+.mtbox { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.mtkm { display: flex; flex-direction: column; gap: 6px; } .mtlbl { font-size: 14px; font-weight: 600; color: var(--muted); }
+.mtkm .bwin { display: flex; align-items: center; gap: 8px; border: 2px solid var(--accent); } .mtkm input { font: 700 28px var(--mono); width: 100%; min-height: 56px; } .mtkm b { color: var(--muted); padding-right: 14px; }
+.mtkmln { margin: 0; font-size: 13px; color: var(--muted); }
+.mtdate button { min-height: 46px; font-size: 15px; }
+#mtw .mtod :is(input[type=date], .dmyt) { height: 52px; font-size: 18px; }
+.mtb section { display: flex; flex-direction: column; gap: 8px; } .mtb .mtbox { gap: 8px; }
+.mtjobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } @media (min-width: 701px) { .mtjobs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.mtjob { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 64px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.mtjob b { display: flex; align-items: center; gap: 6px; font-size: 15px; } .mtjob small { font-size: 12px; font-weight: 600; color: var(--muted); }
+.mtjob small.over { color: var(--danger); } .mtjob small.soon { color: var(--warn); } .mtjob small.mtwh-t { color: var(--accent); }
+.mtjob[aria-pressed="true"] { border: 2px solid var(--accent); padding: 7px 9px; background: var(--accent-soft); } .mttk { flex: none; color: var(--accent); }
+.mtgrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mtfind { display: flex; align-items: center; gap: 6px; width: 160px; height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); box-sizing: border-box; }
+.mtfind input { width: 100%; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font: 500 14px var(--body); }
+.mtchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.mtchip { display: inline-flex; align-items: center; gap: 5px; min-height: 40px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 500 14px var(--body); cursor: pointer; }
+.mtchip[hidden] { display: none; } .mtchip[aria-pressed="true"] { border: 2px solid var(--accent); padding: 0 12px; background: var(--accent-soft); font-weight: 600; }
+.mtaddnote { align-self: flex-start; min-height: 44px; padding: 0 2px; border: 0; background: none; color: var(--accent); font: 600 15px var(--body); cursor: pointer; }
+.mtnote textarea { font-size: 17px; }
+.mtfoot { display: flex; flex-direction: column; gap: 8px; } .mtfoot p { margin: 0; font-size: 13px; color: var(--muted); }
+.mtfb { display: grid; gap: 10px; } .mtfb.two { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); } .mtfb .bwgo { font-size: 18px; }
+.bwh .xclose { align-self: center; }
+.mtdone { text-align: center; padding: 20px 4px; } .mtok { width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 34px; font-weight: 800; }
+.mtnext { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; text-align: left; } .mtnext h3 { margin: 0 2px; font: 700 12px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.mtnext div { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); } .mtnext span { color: var(--muted); white-space: nowrap; }
+.mtstill { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; padding: 12px 14px; border-radius: 12px; text-align: left; background: color-mix(in srgb, #f28c28 16%, var(--surface)); }
+.mtshade { position: fixed; inset: 0; z-index: 1; border: 0; padding: 0; background: rgba(15, 25, 20, .55); cursor: default; }
+.mtsheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; max-width: 520px; max-height: 94vh; margin: 0 auto; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px)); border-radius: 20px 20px 0 0; background: var(--surface); color: var(--ink); overscroll-behavior: contain; }
+.mtsh { display: flex; align-items: flex-start; gap: 10px; } .mtsh > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .mtsh b { font-size: 19px; } .mtsh span { font-size: 13px; color: var(--muted); }
+.mtlr { display: flex; justify-content: space-between; width: 320px; max-width: 100%; margin: 0 auto; font: 700 11px var(--body); letter-spacing: .08em; color: var(--muted); }
+.mtvdraw { position: relative; flex: none; width: 320px; margin: 0 auto; }
+.mtvdraw i, .mtvdraw span.mtaxn, .mtvdraw .mtfront { position: absolute; display: block; }
+.mtbody { left: 96px; width: 128px; box-sizing: border-box; border: 2px solid #8fa58a; border-radius: 6px; background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+.mtbody.bus { left: 100px; width: 120px; border-radius: 30px 30px 12px 12px; }
+.mtcab { left: 102px; top: 0; width: 116px; box-sizing: border-box; border: 2px solid #8fa58a; border-radius: 26px 26px 8px 8px; background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.mtwin { left: 114px; top: 10px; width: 92px; height: 20px; border-radius: 10px 10px 4px 4px; background: color-mix(in srgb, #8fa58a 45%, var(--surface)); }
+.mtfront { left: 100px; top: 33px; width: 120px; text-align: center; font: 700 11px var(--body); letter-spacing: .08em; color: var(--muted); }
+.mtaxle { left: 66px; width: 188px; height: 6px; border-radius: 3px; background: #8fa58a; } .mtaxle.w { left: 46px; width: 228px; }
+.mtvdraw span.mtaxn { left: 100px; width: 120px; display: flex; flex-direction: column; align-items: center; font: 600 12px/1.35 var(--body); color: var(--ink); text-align: center; }
+.mtaxn .over { color: var(--danger); } .mtaxn .soon { color: var(--warn); }
+.mtwhl { position: absolute; height: 62px; padding: 0; border: 2px dashed #b8c7b3; border-radius: 12px; background: transparent; display: flex; align-items: center; justify-content: center; gap: 3px; cursor: pointer; }
+.mtwhl.on { border: 2px solid var(--accent); background: var(--accent-soft); }
+.mtwhl .mtty { position: static; width: 20px; height: 50px; border-radius: 6px; background: repeating-linear-gradient(0deg, #2b332e 0 6px, #46524b 6px 9px); }
+.mtwhl .mtty.on { background: repeating-linear-gradient(0deg, #2f7d1e 0 6px, #46a032 6px 9px); }
+.mtwhl em { position: absolute; right: -8px; top: -8px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; } .mtwhl em .mttk { color: #fff; width: 12px; height: 12px; }
+.mtquick button { min-height: 44px; font-size: 14px; }
+.bwf1 :is(input[type=date], .dmyt), .bwf1 select { box-sizing: border-box; width: 100%; height: 60px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); }
+.bwin input[type=number] { flex: 1; min-width: 0; height: 58px; border: 0; background: none; color: inherit; font: inherit; padding: 0 12px; outline: none; } .bwin > b { padding-left: 14px; color: var(--muted); }
 .mscards { display: none; } .mscard { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
 .mscard .mscn { display: flex; justify-content: space-between; align-items: center; gap: 8px; } .mscard .mscn b { font-size: 15px; } .mscard.ms-over { background: color-mix(in srgb, var(--danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); } .mscard.ms-soon { background: color-mix(in srgb, #f28c28 16%, var(--surface)); border-color: color-mix(in srgb, #f28c28 40%, var(--line)); }
 @media (max-width: 700px) { .msbus .tscroll { display: none; } .mscards { display: flex; flex-direction: column; gap: 8px; } }
@@ -1927,26 +1983,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mhtable tr.mht0 td { background: color-mix(in srgb, var(--mhc) 9%, var(--surface)); } .mhtable tr.mht1 td { background: color-mix(in srgb, var(--mhc) 21%, var(--surface)); }
 .mhtable tr.mhvs td { border-top: 2px solid color-mix(in srgb, var(--mhc) 55%, var(--surface)); } .mhtable tr.mhtop td { font-weight: 700; }
 .mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
-@media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } } .mtsteps span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--body); background: rgba(255,255,255,.15); color: #fff; }
-.mtsteps span.on { background: #fff; color: var(--ink); } .mtsteps span.done { background: var(--accent); color: #fff; }
-.mtkm .bwin { display: flex; align-items: center; gap: 8px; } .mtkm input { font: 700 28px var(--mono); width: 100%; min-height: 58px; } .mtkm b { color: var(--muted); }
-.mttiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } @media (min-width: 701px) { .mttiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.mttile { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 64px; padding: 10px 12px 10px 42px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
-.mttile b { font-size: 16px; } .mttile small { font-size: 12px; color: var(--muted); } .mttile small.over { color: var(--danger); font-weight: 600; } .mttile small.soon { color: var(--warn); font-weight: 600; }
-.mttile[aria-pressed="true"], .mttile.on { border-color: var(--accent); background: var(--accent-soft); }
-.mtck { position: absolute; left: 10px; top: 12px; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; font-weight: 800; color: #fff; }
-.mttile[aria-pressed="true"] .mtck, .mttile.on .mtck { background: var(--accent); border-color: var(--accent); }
-.mttile.mtpos { padding: 0; grid-column: 1 / -1; } .mtpt { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 64px; padding: 10px 12px 10px 42px; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-.mtwheels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 0 10px 10px; }
-.mtwheels button { min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
-.mtwheels button small { font-size: 11px; font-weight: 600; } .mtwheels button small.over { color: var(--danger); } .mtwheels button small.soon { color: var(--warn); }
-.mtwheels button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); } .mtwheels button[aria-pressed="true"] small { color: inherit; }
-.mtwheels .mtall { border-style: dashed; color: var(--accent); }
-.mtsum { display: flex; flex-direction: column; gap: 8px; } .mtchk { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
-.mtchk span { color: var(--muted); font-size: 13px; grid-column: 1; } .mtchk b { grid-column: 1; font-size: 16px; line-height: 1.5; } .mtchk b small { font-weight: 500; color: var(--muted); }
-.mtchk i { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-style: normal; color: var(--accent); font-weight: 600; font-size: 14px; }
-.mtdone { text-align: center; padding: 20px 4px; } .mtok { width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 34px; font-weight: 800; }
-.mtnext { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; text-align: left; } .mtnext div { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); } .mtnext span { color: var(--muted); }
+@media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } }
 .msh { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-bottom: 8px; } .msh .sec { margin: 0; }
 .mstable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mstable tr.ms-soon td { background: color-mix(in srgb, #f28c28 18%, var(--surface)); }
 .msgtable input { width: 120px; height: 36px; text-align: right; border: 1px solid var(--line); border-radius: 8px; padding: 0 8px; background: var(--surface); color: var(--ink); font: inherit; }
@@ -2925,7 +2962,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <header class="top">
         <div>
           <h1>Maintenance entry<span class="ro-tag" id="mtRoTag" hidden>View only</span></h1>
-          <p class="sync">Choose the vehicle, then tap New maintenance. The km reading and the date come first.</p>
+          <p class="sync">Tap a vehicle to enter the work done on it.</p>
         </div>
         <div class="tcontrols"><a class="btn" href="#maintenance-summary">Maintenance summary</a></div>
       </header>
@@ -8268,45 +8305,77 @@ $("xpForm").addEventListener("click", async e => {
 });
 
 /* ---------- Maintenance entry ---------- */
-let mtBus = "", mtw = null;
-try { mtBus = localStorage.getItem("fleet-mtbus") || ""; } catch {}
+// Phone first: tap a vehicle, then one screen (km and date, the work done, a note) with Save at the bottom.
+let mtw = null, mtQ = "";
+const MT_X = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const MT_FIND = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
+const MT_TICK = '<svg class="mttk" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+// The work due on a vehicle (overdue or within 5,000 km), one line per job: for a job done wheel by wheel, its most urgent wheel.
+function mtDueJobs(key) { const m = new Map(); mtDue(key).filter(d => d.st === "over" || d.st === "soon").forEach(d => { if (!m.has(d.it.k)) m.set(d.it.k, d); }); return [...m.values()]; }
+const mtDueTxt = d => d.st === "over" ? (d.left < 0 ? `Overdue by ${nf(-d.left)} km` : "Due now") : `Due in ${nf(d.left)} km`;
+// The wheels drawn for a job done wheel by wheel: [axle name, its two positions, tyres on each side, the axle's place from the top].
+const MT_LAYOUT = {
+  truck: { h: 440, cab: 96, axles: [["Front", ["fl", "fr"], 1, 56], ["Second axle", ["sl", "sr"], 1, 150], ["Back housing", ["bl", "br"], 2, 330], ["Back dummy", ["dl", "dr"], 2, 400]],
+    quick: [["Front 2 axles", ["fl", "fr", "sl", "sr"]], ["Back 2 axles", ["bl", "br", "dl", "dr"]], ["All 12", ["fl", "fr", "sl", "sr", "bl", "br", "dl", "dr"]]] },
+  bus: { h: 400, axles: [["Front axle", ["fl", "fr"], 1, 100], ["Back axle", ["bl", "br"], 2, 310]], quick: [["Front", ["fl", "fr"]], ["Back", ["bl", "br"]], ["All wheels", ["fl", "fr", "bl", "br"]]] },
+  car: { h: 360, axles: [["Front axle", ["fl", "fr"], 1, 90], ["Back axle", ["bl", "br"], 1, 270]], quick: [["Front", ["fl", "fr"]], ["Back", ["bl", "br"]], ["All wheels", ["fl", "fr", "bl", "br"]]] }
+};
+const mtLayout = key => { const t = mtVehOf(key)?.type || ""; return /truck/i.test(t) ? MT_LAYOUT.truck : !t || /bus/i.test(t) ? MT_LAYOUT.bus : MT_LAYOUT.car; };
+const mtPosLbl = (key, p) => (mtLayout(key) === MT_LAYOUT.truck && MP_TRUCK_POS[p]) || mtPosName(p);
+
 function renderMaint() {
-  const fleet = mtFleet(); if (!fleet.some(v => v.id === mtBus) && !ops.maintLog.some(x => mtKeyOf(x) === mtBus)) mtBus = fleet[0]?.id || "";
-  const add = canMtAdd(), now = mtBus ? mtNow(mtBus) : null, due = mtBus ? mtDue(mtBus).filter(d => d.st === "over" || d.st === "soon") : [];
-  const hist = ops.maintLog.filter(x => mtKeyOf(x) === mtBus).sort((a, b) => b.date.localeCompare(a.date) || num(b.km) - num(a.km));
+  const add = canMtAdd(), all = mtFleet().map(v => ({ v, now: mtNow(v.id), due: mtDueJobs(v.id) }));
+  const over = x => x.due.some(d => d.st === "over"), dueF = all.filter(x => x.due.length).sort((a, b) => over(b) - over(a) || b.due.length - a.due.length), rest = all.filter(x => !x.due.length);
   $("mtRoTag").hidden = add;
+  const pills = due => { const f = due[0]; return `<span class="mtpills"><span class="pill ${f.st === "over" ? "mlow" : "d30"}">${esc(mtType(f.it.k).name)} ${f.st === "over" ? "overdue" : `in ${nf(f.left)} km`}</span>${due.length > 1 ? `<span class="pill d30">+${due.length - 1} more due</span>` : ""}</span>`; };
+  const card = x => `<button type="button" class="mtveh" data-mtveh="${x.v.id}" data-q="${esc(plateKey(plateOf(x.v)))}"${add ? "" : " disabled"}><span class="mtvi"><b class="plate">${esc(plateOf(x.v))}</b>` +
+    `<span>${x.now ? `Last ${nf(x.now.km)} km · ${fmtDate(x.now.date)}` : "No km reading yet"}</span>${x.due.length ? pills(x.due) : ""}</span>${add ? `<span class="mtplus" aria-hidden="true">＋</span>` : ""}</button>`;
+  const recent = ops.maintLog.slice().sort((a, b) => b.date.localeCompare(a.date) || String(b.createdOn || "").localeCompare(String(a.createdOn || ""))).slice(0, 20);
   $("mtHome").innerHTML =
-    `<section class="panel"><h2 class="sec">1 · Choose the vehicle</h2><div class="bwchips mtplates" style="margin-top:8px">${fleet.map(v => `<button type="button" data-mtbus="${v.id}" aria-pressed="${mtBus === v.id}">${esc(plateOf(v))}</button>`).join("")}</div></section>` +
-    (mtBus ? `<section class="panel mtgo">` +
-      (add ? `<button type="button" class="bwgo" data-mtnew>＋ New maintenance for ${esc(mtPlateOf({ vehicleId: mtBus }))}</button>` : "") +
-      `<p class="sub" style="margin:8px 0 0">${now ? `Last km reading: <b>${nf(now.km)} km</b>${now.meter !== now.km ? ` (meter ${nf(now.meter)})` : ""} on ${fmtDate(now.date)} (${now.src})` : "No km reading yet for this vehicle."}</p>` +
-      (due.length ? `<div class="mtdue"><b>Due now</b>${due.slice(0, 6).map(d => `<span class="pill ${MT_ST[d.st][1]}">${esc(mtItemName(d.it))} · ${esc(mtLeftTxt(d))}</span>`).join("")}${due.length > 6 ? `<a href="#maintenance-summary">+${due.length - 6} more</a>` : ""}</div>` : "") +
-      `</section>` +
-      `<section class="panel"><h2 class="sec">Work done on ${esc(mtPlateOf({ vehicleId: mtBus }))}</h2>` +
-      (hist.length ? `<div class="mtlist">${hist.slice(0, 60).map(x => `<button type="button" class="mtcard" data-mtopen="${x.id}"><span class="mth"><b>${fmtDate(x.date)}</b><span>${nf(mtXAct(x))} km</span></span>` +
-        `<span class="mti">${(x.items || []).map(it => `<span>${esc(mtItemName(it))}</span>`).join("")}</span>${x.notes ? `<small>${esc(x.notes)}</small>` : ""}</button>`).join("")}</div>`
-        : `<p class="sub" style="margin:8px 0 0">Nothing entered yet.</p>`) + `</section>` : "");
+    `<label class="mtq">${MT_FIND}<input type="search" id="mtQ" value="${esc(mtQ)}" placeholder="Vehicle number, e.g. 2277" aria-label="Find a vehicle" autocomplete="off"></label>` +
+    (dueF.length ? `<section class="mtgrp" data-grp><h2 class="mtgh">Work due first</h2>${dueF.map(card).join("")}</section>` : "") +
+    (rest.length ? `<section class="mtgrp" data-grp><h2 class="mtgh">${dueF.length ? "All other vehicles" : "All vehicles"}</h2>${rest.map(card).join("")}</section>` : "") +
+    `<p class="sub mtnone" id="mtNone" hidden>${all.length ? "No vehicle matches." : "No vehicles yet. Add them under Vehicles."}</p>` +
+    `<section class="panel"><h2 class="sec">Recent entries</h2>${recent.length ? `<div class="mtlist">${recent.map(x => `<button type="button" class="mtcard" data-mtopen="${x.id}"><span class="mth"><b>${esc(mtPlateOf(x))} · ${fmtDate(x.date)}</b><span>${nf(mtXAct(x))} km</span></span>` +
+      `<span class="mti">${(x.items || []).map(it => `<span>${esc(mtItemName(it))}</span>`).join("")}</span>${x.notes ? `<small>${esc(x.notes)}</small>` : ""}</button>`).join("")}</div>` +
+      `<p class="sub" style="margin:10px 0 0">All past work is in <a href="#maintenance-history">Maintenance history</a>.</p>` : `<p class="sub" style="margin:8px 0 0">Nothing entered yet.</p>`}</section>`;
+  mtFilter();
 }
+function mtFilter() {
+  const q = plateKey(mtQ); let n = 0;
+  $("mtHome").querySelectorAll("[data-mtveh]").forEach(b => { const on = !q || b.dataset.q.includes(q); b.hidden = !on; n += on; });
+  $("mtHome").querySelectorAll("[data-grp]").forEach(s => { s.hidden = !s.querySelector("[data-mtveh]:not([hidden])"); });
+  $("mtNone").hidden = n > 0;
+}
+$("mtHome").addEventListener("input", e => { if (e.target.id === "mtQ") { mtQ = e.target.value; mtFilter(); } });
 $("mtHome").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.mtbus) { mtBus = b.dataset.mtbus; try { localStorage.setItem("fleet-mtbus", mtBus); } catch {} renderMaint(); return; }
-  if (b.dataset.mtnew != null) { mtOpen(null); return; }
+  if (b.dataset.mtveh) { mtOpen(null, b.dataset.mtveh); return; }
   if (b.dataset.mtopen) mtOpen(ops.maintLog.find(x => x.id === b.dataset.mtopen));
 });
 
-// The steps: 1 km and date · 2 work done · 3 notes · 4 check and save. A saved visit opens on step 4.
-const MT_STEPS = ["Km and date", "Work done", "Notes", "Check and save"];
-function mtOpen(x) {
-  const key = x ? mtKeyOf(x) : mtBus, now = mtNow(key);
+// A new entry for a vehicle (x empty, vid the vehicle), or a saved one (x).
+function mtOpen(x, vid) {
+  if (!x && !vid) return;
+  const key = x ? mtKeyOf(x) : vid;
   const edit = x ? canMt() || (canMtAdd() && x.by && x.by === myUserId) : canMtAdd();
-  mtw = { key, step: x ? 3 : 0, id: x?.id || "", vehicleId: x ? x.vehicleId || "" : mtBus, plate: x?.plate || "", km: x ? String(x.km ?? "") : "", date: x?.date || todayISO(),
-    items: (x?.items || []).map(it => ({ ...it })), notes: x?.notes || "", now, edit, open: {}, more: false, saving: false, done: null, by: x?.by, byName: x?.byName, createdOn: x?.createdOn, src: x?.src };
-  if (!$("mtw")) { document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="mtw" role="dialog" aria-modal="true" aria-labelledby="mtTitle" hidden></div>');
-    $("mtw").addEventListener("click", mtClick); $("mtw").addEventListener("input", e => { const k = e.target.dataset.k; if (!k || !mtw) return; mtw[k] = e.target.value; if (k === "km") mtKmNote(); }); }
+  mtw = { key, id: x?.id || "", vehicleId: x ? x.vehicleId || "" : vid, plate: x?.plate || "", km: x ? String(x.km ?? "") : "", date: x?.date || todayISO(),
+    items: (x?.items || []).map(it => ({ ...it })), notes: x?.notes || "", now: mtNow(key), edit, noteOpen: !!x?.notes, otherDate: false, q: "", wheel: "", wsel: [], saving: false, done: null,
+    by: x?.by, byName: x?.byName, createdOn: x?.createdOn, src: x?.src, kmAct: x?.kmAct };
+  mtw.orig = mtSnap();
+  if (!$("mtw")) {
+    document.body.insertAdjacentHTML("beforeend", '<div class="bw" id="mtw" role="dialog" aria-modal="true" aria-labelledby="mtTitle" hidden></div>');
+    $("mtw").addEventListener("click", mtClick);
+    $("mtw").addEventListener("input", e => { if (!mtw) return; const t = e.target;
+      if (t.dataset.mtq != null) { mtw.q = t.value; mtJobFilter(); return; }
+      const k = t.dataset.k; if (!k || (k === "date" && !t.value)) return; mtw[k] = t.value; if (k === "notes") mtSync(); else mtKmNote(); });
+    $("mtw").addEventListener("change", e => { if (!mtw || e.target.dataset.k !== "date" || !e.target.value) return; mtw.date = e.target.value; mtKmNote(); });
+  }
   mtRender(); $("mtw").hidden = false; document.documentElement.classList.add("bw-on");
-  if (!x) setTimeout(() => $("mtKm")?.focus(), 60);
+  if (!x && mtw.edit) setTimeout(() => $("mtKm")?.focus(), 60);
 }
-const mtHas = (k, pos) => mtw.items.some(it => it.k === k && (it.pos || "") === (pos || ""));
+const mtSnap = () => JSON.stringify([mtw.km, mtw.date, mtw.items, mtw.notes]);
+const mtSortItems = () => mtw.items.sort((x, y) => MT_TYPES.indexOf(mtType(x.k)) - MT_TYPES.indexOf(mtType(y.k)) || MT_POS.findIndex(p => p[0] === x.pos) - MT_POS.findIndex(p => p[0] === y.pos));
 const mtLast = () => ops.maintLog.filter(x => mtKeyOf(x) === mtw.key && x.id !== mtw.id && num(x.km)).sort((a, b) => mtXAct(b) - mtXAct(a))[0];
 // The reading typed (odometer) in actual km.
 const mtwAct = () => mtw.src === "excel" || mtw.kmAct ? num(mtw.km) : mtAct(mtw.key, mtw.date, mtw.km);
@@ -8317,86 +8386,132 @@ function mtKmWarn() {
   if (now && km > now.km + 30000) return `Much more than the last known reading (${nf(now.km)} km on ${fmtDate(now.date)}). Check the meter.`;
   return "";
 }
-function mtKmNote() { const w = mtKmWarn(), el = $("mtKmWarn"); if (el) { el.textContent = w; el.hidden = !w; }
-  const ac = $("mtKmAct"); if (ac) ac.textContent = num(mtw.km) && mtwAct() > 0 && mtwAct() !== num(mtw.km) ? `Actual ${nf(mtwAct())} km` : ""; const go = $("mtw").querySelector('[data-mt="next"]'); if (go && mtw.step === 0) go.disabled = !num(mtw.km) || !mtw.date; }
+// Under the km box: the last reading known, the actual km when the meter differs, and the km since.
+function mtKmLine() {
+  const n = mtw.now, typed = num(mtw.km), act = mtwAct();
+  let s = n ? `Last reading ${nf(n.km)} km on ${fmtDate(n.date)} (${n.src})` : "First km reading for this vehicle.";
+  if (typed && act > 0 && act !== typed) s += ` · actual ${nf(act)} km`;
+  if (typed && n && act > n.km) s += ` · +${nf(act - n.km)} km`;
+  return s;
+}
+function mtKmNote() { const w = mtKmWarn(), el = $("mtKmWarn"); if (el) { el.textContent = w; el.hidden = !w; } if ($("mtKmAct")) $("mtKmAct").textContent = mtKmLine(); mtSync(); }
+const mtJobCount = () => new Set(mtw.items.map(it => it.k)).size;
+const mtWheelsTxt = k => { const ps = mtw.items.filter(it => it.k === k && it.pos).map(it => it.pos); return ps.length > 2 ? `${ps.length} wheels` : ps.map(p => mtPosLbl(mtw.key, p)).join(", "); };
+const mtDateTxt = () => mtw.date === todayISO() ? "Today" : mtw.date === shiftDay(todayISO(), -1) ? "Yesterday" : fmtDate(mtw.date);
+function mtSumTxt() {
+  const ks = [...new Set(mtw.items.map(it => it.k))], wn = k => mtw.items.filter(it => it.k === k && it.pos).length;
+  return `${num(mtw.km) ? nf(num(mtw.km)) + " km" : "No km yet"} · ${mtDateTxt()} · ${ks.length ? ks.map(k => mtType(k).name + (wn(k) ? ` (${wn(k)} wheel${wn(k) === 1 ? "" : "s"})` : "")).join(", ") : "no work chosen"}`;
+}
+const mtSaveTxt = () => { const n = mtJobCount(); return n ? `Save ${n} job${n === 1 ? "" : "s"}` : "Save"; };
+const mtCanSave = () => mtw.edit && !mtw.saving && num(mtw.km) > 0 && !!mtw.date && mtw.items.length > 0;
+function mtSync() {
+  if (!mtw || mtw.done) return;
+  if ($("mtSumLn")) $("mtSumLn").textContent = mtSumTxt();
+  const b = $("mtw").querySelector('[data-mt="save"]'); if (b) { b.disabled = !mtCanSave(); $("mtSaveL").textContent = mtw.saving ? "Saving…" : mtSaveTxt(); }
+}
+function mtJobFilter() { const q = mtw.q.trim().toLowerCase(); $("mtw").querySelectorAll(".mtchip").forEach(c => { c.hidden = !!q && !c.dataset.n.includes(q); }); }
 function mtRender() {
-  const s = mtw.step, plate = mtPlateOf({ vehicleId: mtw.vehicleId, plate: mtw.plate }), ro = mtw.edit ? "" : " disabled";
-  let body = "";
+  const plate = mtPlateOf({ vehicleId: mtw.vehicleId, plate: mtw.plate }), ro = mtw.edit ? "" : " disabled";
+  const head = sub => `<header class="bwh"><div style="flex:1;min-width:0"><b id="mtTitle">${esc(plate)}</b><span>${sub}</span></div>` +
+    `<button type="button" class="xclose" data-mt="close" aria-label="Close" title="${mtw.done || !mtw.edit ? "Close" : "Close without saving"}">${MT_X}</button></header>`;
   if (mtw.done) {
-    body = `<div class="mtdone"><div class="mtok">✓</div><h2>Saved</h2><p>${esc(plate)} · ${fmtDate(mtw.date)} · ${nf(num(mtw.km))} km${mtwAct() !== num(mtw.km) ? ` (actual ${nf(mtwAct())})` : ""}</p>` +
-      `<div class="mtnext">${mtw.done.map(d => `<div><b>${esc(mtItemName(d.it))}</b><span>${d.next ? `Next at ${nf(d.next)} km` : "No service gap set"}</span></div>`).join("")}</div></div>`;
-    $("mtw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="mtTitle">Maintenance · ${esc(plate)}</b><span>Saved</span></div></header><div class="bwb tws">${body}</div>` +
-      `<footer class="bwf two"><button type="button" class="bwalt" data-mt="another">＋ Add another</button><button type="button" class="bwgo" data-mt="close">${BW_ICON.ok} Done</button></footer>`;
+    const still = mtDueJobs(mtw.key).filter(d => !mtw.items.some(it => it.k === d.it.k));
+    $("mtw").innerHTML = head("Saved") + `<div class="bwb"><div class="mtdone"><div class="mtok">✓</div><h2>Saved</h2><p>${esc(plate)} · ${fmtDate(mtw.date)} · ${nf(num(mtw.km))} km${mtwAct() !== num(mtw.km) ? ` (actual ${nf(mtwAct())})` : ""}</p>` +
+      `<div class="mtnext"><h3>Next due</h3>${mtw.done.map(d => `<div><b>${esc(d.name)}</b><span>${d.next ? `at ${nf(d.next)} km` : "No service gap set"}</span></div>`).join("")}</div>` +
+      (still.length ? `<div class="mtstill"><b>Still due on this vehicle</b><span>${still.map(d => `${esc(mtType(d.it.k).name)} ${d.st === "over" ? "overdue" : `in ${nf(d.left)} km`}`).join(" · ")}</span></div>` : "") + `</div></div>` +
+      `<footer class="bwf two"><button type="button" class="bwalt" data-mt="nextveh">Next vehicle</button><button type="button" class="bwgo" data-mt="close">${BW_ICON.ok} Done</button></footer>`;
     return;
   }
-  if (s === 0) {
-    const last = mtLast(), w = mtKmWarn();
-    body = rsSec("1", "Kilometer reading", `<p class="rsq">What does the km meter show now?</p><label class="bwf1 mtkm"><span class="bwin"><input id="mtKm" type="number" inputmode="numeric" min="0" data-k="km" value="${esc(mtw.km)}" placeholder="e.g. 188502" aria-label="Kilometer reading"${ro}><b>km</b></span></label><p class="lgact" id="mtKmAct">${num(mtw.km) && mtwAct() > 0 && mtwAct() !== num(mtw.km) ? `Actual ${nf(mtwAct())} km` : ""}</p>` +
-      `<p class="bwnote">${last ? `Last maintenance: <b>${nf(mtXAct(last))} km</b> on ${fmtDate(last.date)}` : mtw.now ? `Last known reading: <b>${nf(mtw.now.km)} km</b> on ${fmtDate(mtw.now.date)}` : "First maintenance entry for this vehicle."}</p>` +
-      `<p class="rswarnt" id="mtKmWarn"${w ? "" : " hidden"}>${esc(w)}</p>`) +
-      rsSec("2", "Date", `<label class="bwf1"><span>Date the work was done</span><input type="date" data-k="date" value="${esc(mtw.date)}" max="${todayISO()}"${ro}></label>` +
-        `<div class="bwseg c2" style="margin-top:8px"><button type="button" data-mt="today" aria-pressed="${mtw.date === todayISO()}"${ro}>Today</button><button type="button" data-mt="yday" aria-pressed="${mtw.date === shiftDay(todayISO(), -1)}"${ro}>Yesterday</button></div>`);
-  } else if (s === 1) {
-    const due = new Map(mtDue(mtw.key).map(d => [d.it.k + "|" + (d.it.pos || ""), d]));
-    const hint = (k, pos) => { const d = due.get(k + "|" + (pos || "")); return d && d.left != null ? `<small class="${d.st}">${d.st === "over" ? "Overdue" : "Due in " + nf(d.left) + " km"}</small>` : ""; };
-    const tile = t => {
-      const on = mtw.items.some(it => it.k === t.k), open = on || mtw.open[t.k];
-      if (!t.pos) return `<button type="button" class="mttile" data-mtk="${t.k}" aria-pressed="${on}"${ro}><span class="mtck">${on ? "✓" : ""}</span><b>${esc(t.name)}</b>${hint(t.k)}</button>`;
-      const pos = mtw.more || mtw.items.some(it => it.k === t.k && /^[sd]/.test(it.pos || "")) ? MT_POS : MT_POS.slice(0, 4);
-      return `<div class="mttile mtpos${open ? " open" : ""}${on ? " on" : ""}"><button type="button" class="mtpt" data-mtopenk="${t.k}" aria-expanded="${!!open}"${ro}><span class="mtck">${on ? "✓" : ""}</span><b>${esc(t.name)}</b><small>${on ? mtw.items.filter(it => it.k === t.k).length + " wheel" + (mtw.items.filter(it => it.k === t.k).length === 1 ? "" : "s") : "Tap, then choose the wheels"}</small></button>` +
-        (open ? `<div class="mtwheels">${pos.map(([p, l]) => `<button type="button" data-mtk="${t.k}" data-pos="${p}" aria-pressed="${mtHas(t.k, p)}"${ro}>${mtHas(t.k, p) ? "✓ " : ""}${l}${hint(t.k, p)}</button>`).join("")}` +
-          `<button type="button" class="mtall" data-mtall="${t.k}"${ro}>All 4 wheels</button>${mtw.more ? "" : `<button type="button" class="mtall" data-mt="more"${ro}>More axles…</button>`}</div>` : "") + `</div>`;
-    };
-    body = `<p class="rsq" style="margin:4px 2px 10px">Tap everything that was done on ${fmtDate(mtw.date)}.</p><div class="mttiles">${MT_TYPES.map(tile).join("")}</div>` +
-      `<p class="bwnote">${mtw.items.length ? `${mtw.items.length} job${mtw.items.length === 1 ? "" : "s"} chosen` : "Nothing chosen yet"}</p>`;
-  } else if (s === 2) {
-    body = rsSec("3", "Notes", `<p class="rsq">Anything to remember? (not needed)</p><label class="bwf1"><textarea data-k="notes" rows="4" maxlength="400" placeholder="e.g. battery numbers, mechanic, place, parts changed"${ro}>${esc(mtw.notes)}</textarea></label>`);
-  } else {
-    const gaps = mtw.items.map(it => { const g = mtGap(mtw.key, it.k, it.pos); return { it, next: g && num(mtw.km) ? mtwAct() + g : null }; });
-    const row = (n, t, v) => `<button type="button" class="mtchk" data-mtgo="${n}"${ro}><span>${t}</span><b>${v}</b>${mtw.edit ? '<i>Change</i>' : ""}</button>`;
-    body = `<div class="mtsum"><div class="mtchk mtfix"><span>Vehicle</span><b>${esc(plate)}</b></div>` + row(0, "Km and date", `${num(mtw.km) ? nf(num(mtw.km)) + " km" + (mtwAct() !== num(mtw.km) ? ` (actual ${nf(mtwAct())})` : "") : "—"} · ${fmtDate(mtw.date)}`) +
-      `<button type="button" class="mtchk" data-mtgo="1"${ro}><span>Work done</span><b>${gaps.length ? gaps.map(g => `${esc(mtItemName(g.it))}${g.next ? `<small class="mtnx">next at ${nf(g.next)} km</small>` : ""}`).join("<br>") : "Nothing chosen"}</b>${mtw.edit ? "<i>Change</i>" : ""}</button>` +
-      row(2, "Notes", esc(mtw.notes || "—")) + `</div>` +
-      (mtw.byName ? `<p class="bwnote">Entered by ${esc(mtw.byName)}${mtw.createdOn ? ` on ${fmtDate(mtw.createdOn.slice(0, 10))}` : ""}${mtw.src === "excel" ? " (from Excel)" : ""}</p>` : "") +
-      `<p class="err" id="mtErr" style="margin:6px 0 0"></p>`;
-  }
-  const dots = `<div class="mtsteps">${MT_STEPS.map((t, i) => `<span class="${i === s ? "on" : i < s ? "done" : ""}">${i + 1}</span>`).join("")}</div>`;
-  const next = s === 0 ? !num(mtw.km) || !mtw.date : s === 1 ? !mtw.items.length : false;
-  $("mtw").innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="mtTitle">${mtw.id ? "Maintenance" : "New maintenance"} · ${esc(plate)}</b><span>${MT_STEPS[s]}</span></div>${dots}</header>` +
-    `<div class="bwb tws" id="mtBody">${body}</div>` +
-    (s < 3 ? `<footer class="bwf two"><button type="button" class="bwalt" data-mt="${s === 0 ? "close" : "prev"}">${s === 0 ? "Cancel" : "‹ Back"}</button><button type="button" class="bwgo" data-mt="next"${next ? " disabled" : ""}>Next ›</button></footer>`
-      : `<footer class="bwf${mtw.id && canMt() ? " two" : ""}">${mtw.id && canMt() ? `<button type="button" class="bwalt" data-mt="del">Delete</button>` : ""}${mtw.edit ? `<button type="button" class="bwgo" data-mt="save"${mtw.saving || !mtw.items.length || !num(mtw.km) ? " disabled" : ""}>${BW_ICON.ok} ${mtw.saving ? "Saving…" : "Save"}</button>` : `<button type="button" class="bwalt" data-mt="close">Close</button>`}</footer>`);
-  $("mtBody").scrollTop = 0;
+  const dueJ = mtDueJobs(mtw.key), dueK = new Set(dueJ.map(d => d.it.k)), sel = k => mtw.items.some(it => it.k === k), w = mtKmWarn();
+  const wn = k => mtw.items.filter(it => it.k === k && it.pos).length;
+  const isT = mtw.date === todayISO() && !mtw.otherDate, isY = mtw.date === shiftDay(todayISO(), -1) && !mtw.otherDate, other = !isT && !isY;
+  const tile = d => { const t = mtType(d.it.k), on = sel(t.k);
+    return `<button type="button" class="mtjob" data-mtk="${t.k}" aria-pressed="${on}"${ro}><b>${on ? MT_TICK : ""}${esc(t.name)}</b>` +
+      (on && t.pos ? `<small class="mtwh-t">${esc(mtWheelsTxt(t.k))} ›</small>` : `<small class="${d.st}">${mtDueTxt(d)}${t.pos ? " ›" : ""}</small>`) + `</button>`; };
+  const chip = t => { const on = sel(t.k);
+    return `<button type="button" class="mtchip" data-mtk="${t.k}" data-n="${esc(t.name.toLowerCase())}" aria-pressed="${on}"${ro}>${on ? MT_TICK : ""}${esc(t.name)}${t.pos ? (on ? ` · ${wn(t.k)} wheel${wn(t.k) === 1 ? "" : "s"}` : " ›") : ""}</button>`; };
+  const body =
+    `<section class="mtbox"><label class="mtkm"><span class="mtlbl">Km meter now</span><span class="bwin"><input id="mtKm" type="number" inputmode="numeric" min="0" data-k="km" value="${esc(mtw.km)}" placeholder="e.g. 188502"${ro}><b>km</b></span></label>` +
+      `<p class="mtkmln" id="mtKmAct">${esc(mtKmLine())}</p><p class="rswarnt" id="mtKmWarn"${w ? "" : " hidden"}>${esc(w)}</p>` +
+      `<div class="bwseg c3 mtdate"><button type="button" data-mt="today" aria-pressed="${isT}"${ro}>Today</button><button type="button" data-mt="yday" aria-pressed="${isY}"${ro}>Yesterday</button><button type="button" data-mt="odate" aria-pressed="${other}"${ro}>Other date</button></div>` +
+      (other ? `<label class="bwf1 mtod"><input type="date" data-k="date" value="${esc(mtw.date)}" max="${todayISO()}" aria-label="Date the work was done"${ro}></label>` : "") + `</section>` +
+    (dueJ.length ? `<section><h3 class="mtgh">Due on this vehicle</h3><div class="mtjobs">${dueJ.map(tile).join("")}</div></section>` : "") +
+    `<section><div class="mtgrow"><h3 class="mtgh">${dueJ.length ? "Other work" : "Work done"}</h3><label class="mtfind">${MT_FIND}<input type="search" data-mtq value="${esc(mtw.q)}" placeholder="Find a job" aria-label="Find a job"></label></div>` +
+      `<div class="mtchips">${MT_TYPES.filter(t => !dueK.has(t.k)).map(chip).join("")}</div></section>` +
+    (mtw.noteOpen || mtw.notes ? `<label class="bwf1 mtnote"><span>Note</span><textarea data-k="notes" rows="3" maxlength="400" placeholder="e.g. battery numbers, mechanic, place, parts changed"${ro}>${esc(mtw.notes)}</textarea></label>`
+      : mtw.edit ? `<button type="button" class="mtaddnote" data-mt="note">✎ Add a note (mechanic, parts, battery no.)</button>` : "") +
+    (mtw.byName ? `<p class="bwnote">Entered by ${esc(mtw.byName)}${mtw.createdOn ? ` on ${fmtDate(mtw.createdOn.slice(0, 10))}` : ""}${mtw.src === "excel" ? " (from Excel)" : ""}</p>` : "") +
+    `<p class="err" id="mtErr"></p>`;
+  const del = mtw.id && canMt();
+  const foot = mtw.edit ? `<footer class="bwf mtfoot"><p id="mtSumLn">${esc(mtSumTxt())}</p><div class="mtfb${del ? " two" : ""}">${del ? `<button type="button" class="bwalt" data-mt="del">Delete</button>` : ""}` +
+    `<button type="button" class="bwgo" data-mt="save"${mtCanSave() ? "" : " disabled"}>${BW_ICON.ok}<span id="mtSaveL">${mtw.saving ? "Saving…" : mtSaveTxt()}</span></button></div></footer>` : "";
+  const top = $("mtBody")?.scrollTop || 0;
+  $("mtw").innerHTML = head(mtw.edit ? (mtw.id ? "Maintenance entry" : "New maintenance") : "View only") + `<div class="bwb mtb" id="mtBody">${body}</div>` + foot + (mtw.wheel ? mtSheet(plate, ro) : "");
+  $("mtBody").scrollTop = top; if (mtw.q) mtJobFilter();
+}
+// The wheels of a job done wheel by wheel, on a picture of the vehicle from above (front at the top). A pair of back tyres is one wheel.
+function mtSheet(plate, ro) {
+  const k = mtw.wheel, t = mtType(k), L = mtLayout(mtw.key), truck = L === MT_LAYOUT.truck, S = mtw.wsel;
+  const dueBy = new Map(mtDue(mtw.key).filter(d => d.it.k === k).map(d => [d.it.pos, d]));
+  const tyre = on => `<i class="mtty${on ? " on" : ""}"></i>`;
+  const shape = truck ? `<i class="mtcab" style="height:${L.cab}px"></i><i class="mtwin"></i><span class="mtfront">FRONT</span><i class="mtbody" style="top:${L.cab + 8}px;height:${L.h - L.cab - 8}px"></i>`
+    : `<i class="mtbody bus" style="top:0;height:${L.h}px"></i><i class="mtwin"></i><span class="mtfront">FRONT</span>`;
+  const draw = L.axles.map(([name, ps, ty, y]) => {
+    const d = ps.map(p => dueBy.get(p)).filter(x => x && (x.st === "over" || x.st === "soon")).sort((a, b) => a.left - b.left)[0];
+    return `<i class="mtaxle${ty > 1 ? " w" : ""}" style="top:${y - 3}px"></i><span class="mtaxn" style="top:${y + 8}px">${name}${d ? `<span class="${d.st}">${d.st === "over" ? "Overdue" : `Due in ${nf(d.left)} km`}</span>` : ""}</span>` +
+      ps.map((p, i) => { const on = S.includes(p), wd = ty > 1 ? 70 : 48;
+        return `<button type="button" class="mtwhl${on ? " on" : ""}" data-mtpos="${p}" aria-pressed="${on}" aria-label="${esc(mtPosLbl(mtw.key, p))}${ty > 1 ? ", 2 tyres" : ""}" style="top:${y - 31}px;left:${i ? 224 : 96 - wd}px;width:${wd}px"${ro}>${tyre(on).repeat(ty)}${on ? `<em>${MT_TICK}</em>` : ""}</button>`; }).join("");
+  }).join("");
+  const inL = p => L.axles.some(a => a[1].includes(p)), nSel = S.filter(inL).length, tyres = L.axles.reduce((s, a) => s + a[1].filter(p => S.includes(p)).length * a[2], 0);
+  return `<button type="button" class="mtshade" data-mt="wcancel" aria-label="Close" tabindex="-1"></button><section class="mtsheet" role="dialog" aria-modal="true" aria-label="${esc(t.name)} wheels">` +
+    `<div class="mtsh"><div><b>${esc(t.name)}</b><span>${esc(plate)} · ${truck ? "12 wheeler. Each pair of back tyres is one wheel." : "Tap the wheels that were done."}</span></div>` +
+    `<button type="button" class="xclose" data-mt="wcancel" aria-label="Close" title="Close without changing">${MT_X}</button></div>` +
+    `<div class="mtlr"><span>LEFT</span><span>RIGHT</span></div><div class="mtvdraw" style="height:${L.h}px">${shape}${draw}</div>` +
+    `<div class="bwseg c3 mtquick">${L.quick.map(([l], i) => `<button type="button" data-mtq3="${i}"${ro}>${l}</button>`).join("")}</div>` +
+    `<button type="button" class="bwgo" data-mt="wdone"${ro}>${nSel ? `Done · ${nSel} wheel${nSel === 1 ? "" : "s"}${tyres !== nSel ? ` (${tyres} tyres)` : ""}` : "Done · no wheels"}</button></section>`;
 }
 async function mtClick(e) {
   const b = e.target.closest("button"); if (!b || b.disabled || !mtw) return;
   const a = b.dataset.mt;
-  if (a === "close") { mtClose(); return; }
-  if (a === "another") { const k = mtw.key; mtClose(); mtBus = k; mtOpen(null); return; }
-  if (a === "today" || a === "yday") { mtw.date = a === "today" ? todayISO() : shiftDay(todayISO(), -1); mtRender(); return; }
-  if (a === "next") { if (mtw.step === 0 && mtKmWarn() && !await askYesNo(`${mtKmWarn()} Go on with ${nf(num(mtw.km))} km?`, { yes: "Yes, it is right", no: "Change it" })) return; mtw.step = Math.min(3, mtw.step + 1); mtRender(); return; }
-  if (a === "prev") { mtw.step = Math.max(0, mtw.step - 1); mtRender(); return; }
-  if (a === "more") { mtw.more = true; mtRender(); return; }
-  if (b.dataset.mtgo != null) { mtw.step = +b.dataset.mtgo; mtRender(); return; }
-  if (b.dataset.mtopenk) { const k = b.dataset.mtopenk; mtw.open[k] = !mtw.open[k] || mtw.items.some(it => it.k === k); mtRender(); return; }
-  if (b.dataset.mtall) { const k = b.dataset.mtall, four = MT_POS.slice(0, 4).map(p => p[0]), all = four.every(p => mtHas(k, p));
-    mtw.items = mtw.items.filter(it => !(it.k === k && four.includes(it.pos))); if (!all) four.forEach(p => mtw.items.push({ k, pos: p })); mtRender(); return; }
-  if (b.dataset.mtk) { const k = b.dataset.mtk, pos = b.dataset.pos || "";
-    if (mtHas(k, pos)) mtw.items = mtw.items.filter(it => !(it.k === k && (it.pos || "") === pos)); else mtw.items.push(pos ? { k, pos } : { k });
-    mtw.items.sort((x, y) => MT_TYPES.indexOf(mtType(x.k)) - MT_TYPES.indexOf(mtType(y.k)) || MT_POS.findIndex(p => p[0] === x.pos) - MT_POS.findIndex(p => p[0] === y.pos)); mtRender(); return; }
+  if (a === "close") {
+    if (!mtw.done && mtw.edit && mtSnap() !== mtw.orig && !await askYesNo("Close without saving? What you entered here will be lost.", { yes: "Yes, close", no: "Keep entering", danger: true })) return;
+    mtClose(); return;
+  }
+  if (a === "nextveh") { mtClose(); mtQ = ""; renderMaint(); $("mtQ")?.focus(); return; }
+  if (a === "today" || a === "yday") { mtw.date = a === "today" ? todayISO() : shiftDay(todayISO(), -1); mtw.otherDate = false; mtRender(); mtKmNote(); return; }
+  if (a === "odate") { mtw.otherDate = true; mtRender(); $("mtw").querySelector(".mtod :is(.dmyt, input)")?.focus(); return; }
+  if (a === "note") { mtw.noteOpen = true; mtRender(); $("mtw").querySelector(".mtnote textarea")?.focus(); return; }
+  if (b.dataset.mtk) {
+    const k = b.dataset.mtk;
+    if (mtType(k).pos) { mtw.wheel = k; mtw.wsel = mtw.items.filter(it => it.k === k && it.pos).map(it => it.pos); mtRender(); return; }
+    if (mtw.items.some(it => it.k === k)) mtw.items = mtw.items.filter(it => it.k !== k); else mtw.items.push({ k });
+    mtSortItems(); mtRender(); return;
+  }
+  if (b.dataset.mtpos) { const p = b.dataset.mtpos; mtw.wsel = mtw.wsel.includes(p) ? mtw.wsel.filter(x => x !== p) : [...mtw.wsel, p]; mtRender(); return; }
+  if (b.dataset.mtq3 != null) { const ps = mtLayout(mtw.key).quick[+b.dataset.mtq3][1], on = ps.every(p => mtw.wsel.includes(p));
+    mtw.wsel = on ? mtw.wsel.filter(p => !ps.includes(p)) : [...new Set([...mtw.wsel, ...ps])]; mtRender(); return; }
+  if (a === "wcancel") { mtw.wheel = ""; mtRender(); return; }
+  if (a === "wdone") { const k = mtw.wheel; mtw.items = [...mtw.items.filter(it => it.k !== k), ...mtw.wsel.map(pos => ({ k, pos }))]; mtSortItems(); mtw.wheel = ""; mtRender(); return; }
   if (a === "del") {
     if (!await askYesNo("Delete this maintenance entry?", { yes: "Yes, delete", danger: true })) return;
     try { await opsDelete("maintLog", mtw.id); toast("Maintenance entry deleted"); mtClose(); } catch { toast("Couldn't delete. Try again."); } return;
   }
   if (a === "save") {
     const km = Math.round(num(mtw.km));
-    if (!km || !mtw.date) { mtw.step = 0; mtRender(); return; }
+    if (!km || !mtw.date || !mtw.items.length) return;
+    if (mtKmWarn() && !await askYesNo(`${mtKmWarn()} Save with ${nf(km)} km?`, { yes: "Yes, it is right", no: "Change it" })) { $("mtKm")?.focus(); return; }
     const doc = { id: mtw.id || "mt_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), vehicleId: mtw.vehicleId || "", plate: mtw.vehicleId ? plateOf(mtVehOf(mtw.vehicleId)) : mtw.plate,
-      date: mtw.date, km, items: mtw.items, notes: upText(mtw.notes), by: mtw.by || myUserId || "", byName: mtw.byName || whoAmI(), createdOn: mtw.createdOn || new Date().toISOString(), ...rxStamp(), ...(mtw.src ? { src: mtw.src } : {}) };
-    mtw.saving = true; mtRender();
-    try { await opsSave("maintLog", doc); mtw.id = doc.id; mtw.saving = false;
-      mtw.done = doc.items.map(it => { const g = mtGap(mtw.key, it.k, it.pos); return { it, next: g ? mtwAct() + g : null }; }); mtRender(); toast("Maintenance saved"); }
-    catch { mtw.saving = false; mtRender(); toast("Couldn't save. Check your connection and try again."); }
+      date: mtw.date, km, items: mtw.items, notes: upText(mtw.notes), by: mtw.by || myUserId || "", byName: mtw.byName || whoAmI(), createdOn: mtw.createdOn || new Date().toISOString(), ...rxStamp(),
+      ...(mtw.src ? { src: mtw.src } : {}), ...(mtw.kmAct ? { kmAct: mtw.kmAct } : {}) };
+    mtw.saving = true; mtSync();
+    try {
+      await opsSave("maintLog", doc); mtw.id = doc.id; mtw.saving = false;
+      // Next due, one line per job and next km (the wheels of a job with the same next km together).
+      const lines = new Map();
+      doc.items.forEach(it => { const g = mtGap(mtw.key, it.k, it.pos), next = g ? mtwAct() + g : null, id = it.k + "|" + next, l = lines.get(id) || { k: it.k, ps: [], next }; if (it.pos) l.ps.push(it.pos); lines.set(id, l); });
+      mtw.done = [...lines.values()].map(l => ({ name: mtType(l.k).name + (l.ps.length ? ` · ${l.ps.length > 2 ? `${l.ps.length} wheels` : l.ps.map(p => mtPosLbl(mtw.key, p)).join(", ")}` : ""), next: l.next }));
+      mtRender(); toast("Maintenance saved");
+    } catch { mtw.saving = false; mtSync(); toast("Couldn't save. Check your connection and try again."); }
   }
 }
 function mtClose() { if ($("mtw")) $("mtw").hidden = true; document.documentElement.classList.remove("bw-on"); mtw = null; renderMaint(); }
@@ -17652,7 +17767,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12a";
+const APP_VER = "2026-11-12b";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
