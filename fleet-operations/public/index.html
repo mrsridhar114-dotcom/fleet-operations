@@ -496,6 +496,7 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .ktmove { flex: none; display: inline-flex; align-items: center; gap: 2px; border: 1px dashed var(--accent); border-bottom: 0; border-radius: 6px 6px 0 0; padding: 2px 4px; font-size: 13px; background: var(--accent-soft); }
 .ktmove b { padding: 0 6px; } .ktabs .ktmove button { top: 0; border: 0; padding: 6px 9px; font-size: 16px; line-height: 1; color: var(--accent); border-radius: 6px; }
 .ktabs .ktmove button:hover:not(:disabled) { background: var(--surface); } .ktabs .ktmove button:disabled { opacity: .3; }
+.ttabs button .tabbus { display: block; font: 600 10px var(--mono); color: var(--muted); letter-spacing: .02em; margin-top: 1px; }
 .ttabs button .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-left: 6px; vertical-align: 2px; }
 .ttabs button.year { margin-left: auto; }
 .tsumwrap { display: flex; flex-direction: column; gap: 12px; }
@@ -1309,7 +1310,7 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 #fcRen tr.fcunk td { background: color-mix(in srgb, #f28c28 12%, var(--surface)); }
 .fcjobs { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; } .fcjobs .over { color: var(--danger); font-weight: 600; }
 .tnone { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; padding: 12px 14px; border-radius: 8px; background: color-mix(in srgb, #f28c28 14%, var(--surface)); color: var(--ink); }
-.tnone[hidden] { display: none; }
+.tnone[hidden] { display: none; } .tnone.tbuses { margin: 12px 0 0; background: color-mix(in srgb, #2563eb 8%, var(--surface)); }
 .upok { padding: 12px 14px; border-radius: 8px; background: var(--ok-soft); color: var(--ink); }
 @media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } .uptpl { flex-direction: column; align-items: stretch; } }
 /* Route expenses and padi calculation */
@@ -2564,9 +2565,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <header class="top">
         <div>
           <h1>Route bus<span class="ro-tag" id="tRoTag" hidden>View only</span></h1>
+          <p class="sync" id="tBusNow"></p>
         </div>
         <div class="tcontrols">
-          <div class="hf" id="tBusF"><label for="tBus">Bus</label><select id="tBus"></select></div>
           <div class="hf"><label for="tFy">Financial year</label><select id="tFy"></select></div>
           <div class="seg" role="radiogroup" aria-label="View" id="tViewSeg"><label><input type="radio" name="tView" value="month"><span>Month view</span></label><label><input type="radio" name="tView" value="table"><span>Table</span></label></div>
           <button class="btn" type="button" id="tPrint" title="Print or download the month, as Excel or as an image">Print</button>
@@ -2577,9 +2578,9 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </header>
       <div class="ro-banner" id="tRoBanner" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>You have view-only access to the trip sheet.</span></div>
       <div class="empty panel" id="tNoBus" hidden><strong>No route buses yet</strong>Add a vehicle with class Bus and operation type Route under Masters › Vehicle. It will appear here.</div>
-      <div class="tnone" id="tNone" role="status" hidden></div>
       <div id="tBody">
         <nav class="ttabs" id="tTabs" role="tablist" aria-label="Month"></nav>
+        <div class="tnone tbuses" id="tNone" role="status" hidden></div>
         <div id="tMonthView">
           <section class="tsumwrap" id="tSummary" aria-label="Month summary"></section>
           <div class="tmdays" id="tRsDays" hidden></div>
@@ -6381,44 +6382,57 @@ function subscribeTrips() {
   // This bus, this financial year, plus March before it so April can find its opening km.
   const from = `${tFyStart}-03-01`, to = `${tFyStart + 1}-03-31`;
   tripUnsub = tripsRef.where("vehicleId", "==", tBusId).where("date", ">=", from).where("date", "<=", to)
-    .onSnapshot(snap => { trips = snap.docs.map(d => ({ id: d.id, ...d.data() })); tLoadedKey = key; renderTrips(); }, () => {});
+    .onSnapshot(snap => { trips = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderTrips(); }, () => {});
   tripMonthUnsub = tripMonthsRef.where("vehicleId", "==", tBusId)
     .onSnapshot(snap => { tripMonths = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderTrips(); }, () => {});
   tripYearUnsub?.(); tripYearsRef = tripDb.collection("tripYears");
   tripYearUnsub = tripYearsRef.where("vehicleId", "==", tBusId)
     .onSnapshot(snap => { tripYears = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderTrips(); }, () => {});
 }
-// When the bus chosen has no trips in the year chosen: say so, and offer the buses (spare and sold ones too) that have trips that year.
-let tOther = { key: "", list: null }, tAskKey = "", tLoadedKey = "";
+/* The route, not a bus: which bus ran each month of the financial year (most days first). The month tabs carry the bus and the
+   sheet shows that bus's days, so there is no bus to choose. A month two buses ran shows the one with most days, with the other a tap away. */
+let tRoute = { fy: null, map: null }, tPick = {};
 const tFyRange = () => [`${tFyStart}-04-01`, `${tFyStart + 1}-03-31`];
 const tBusTag = v => v.status === "Sold / Scrapped" ? " (sold)" : v.opType === "Route" ? "" : v.opType === "Spare" ? " (now spare)" : " (not on the route now)";
-const tGoBus = id => { $("tBus").value = id; $("tBus").dispatchEvent(new Event("change")); };
-async function tCheckOther() {
-  const key = `${tBusId}|${tFyStart}`; if (!tBusId || tOther.key === key) return; tOther = { key, list: null };
-  const [from, to] = tFyRange(), list = [];
-  for (const v of vehicles.filter(v => v.type === "Bus" && v.id !== tBusId)) {
-    let n = 0;
-    if (!tripDb) n = tripsLocal.filter(t => t.vehicleId === v.id && t.date >= from && t.date <= to).length;
-    else try { n = (await tripDb.collection("trips").where("vehicleId", "==", v.id).where("date", ">=", from).where("date", "<=", to).get()).size; } catch {}
-    if (n) list.push({ v, n });
-  }
-  if (tOther.key !== key) return;
-  tOther.list = list.sort((a, b) => b.n - a.n); renderTNone();
-  if (!list.length || tAskKey !== key) return;
-  tAskKey = ""; const o = list[0], name = v => `${plateOf(v)}${tBusTag(v)}`;
-  if (await askYesNo(`${plateOf(vehicles.find(v => v.id === tBusId))} has no trips in FY ${fyLabel(tFyStart)}. ${list.map(x => `${name(x.v)} has ${nf(x.n)} day${x.n === 1 ? "" : "s"}`).join("; ")} in this year. Show ${name(o.v)}?`, { yes: `Show ${plateOf(o.v)}`, no: "Stay on this bus" })
-    && `${tBusId}|${tFyStart}` === key) tGoBus(o.v.id);
+async function tRouteLoad() {
+  const fy = tFyStart; tRoute = { fy, map: null }; const [from, to] = tFyRange(); let list = [];
+  if (!tripDb) list = tripsLocal.filter(t => t.date >= from && t.date <= to);
+  else try { list = (await tripDb.collection("trips").where("date", ">=", from).where("date", "<=", to).get()).docs.map(d => d.data()); } catch { list = []; }
+  if (tRoute.fy !== fy) return;
+  const map = {}; list.forEach(t => { if (!t.vehicleId || !t.date) return; const m = map[t.date.slice(0, 7)] ||= {}, x = m[t.vehicleId] ||= { id: t.vehicleId, n: 0, from: t.date, to: t.date };
+    x.n++; if (t.date < x.from) x.from = t.date; if (t.date > x.to) x.to = t.date; });
+  tRoute.map = Object.fromEntries(Object.entries(map).map(([ym, m]) => [ym, Object.values(m).sort((a, b) => b.n - a.n)]));
+  tRouteApply();
 }
+// The bus for a month: the one picked, else the one with most days; a month with no days takes the bus on the route now
+// (this month and later) or the bus of the nearest month that has days.
+function tMonthBus(ym) {
+  const map = tRoute.map || {}, l = map[ym]; if (tPick[ym]) return tPick[ym]; if (l?.length) return l[0].id;
+  const cur = routeBuses()[0]?.id, yms = Object.keys(map).sort(), prev = yms.filter(x => x < ym).pop(), next = yms.find(x => x > ym);
+  return (ym >= todayISO().slice(0, 7) ? cur : prev ? map[prev][0].id : next ? map[next][0].id : cur) || tBusId;
+}
+const tYearDays = () => { const n = {}; Object.values(tRoute.map || {}).flat().forEach(b => { n[b.id] = (n[b.id] || 0) + b.n; }); return n; };
+function tYearBus() { const n = tYearDays(); if (tPick.year && n[tPick.year]) return tPick.year; return n[tBusId] || !Object.keys(n).length ? tBusId : Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; }
+function tSetBus(id) { if (!id || id === tBusId) return; tBusId = id; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); }
+// Days entered or loaded since the year was read: the bus on screen's own days for each month replace what was read for it.
+function tRouteMerge() {
+  if (!tRoute.map || tRoute.fy !== tFyStart || !tBusId) return; const [from, to] = tFyRange(), own = {};
+  trips.filter(t => t.vehicleId === tBusId && t.date >= from && t.date <= to).forEach(t => { const x = own[t.date.slice(0, 7)] ||= { id: tBusId, n: 0, from: t.date, to: t.date }; x.n++; if (t.date < x.from) x.from = t.date; if (t.date > x.to) x.to = t.date; });
+  Object.entries(own).forEach(([ym, x]) => { const l = (tRoute.map[ym] || []).filter(b => b.id !== tBusId); l.push(x); tRoute.map[ym] = l.sort((a, b) => b.n - a.n); });
+}
+function tRouteApply() { if (tRoute.map) tSetBus(tMonthIdx === 12 ? tYearBus() : tMonthBus(monthYM(tFyStart, tMonthIdx))); renderTrips(); }
+// Under the tabs: the buses of a month two buses ran, or of the year in Full year, each a button to show its days.
 function renderTNone() {
-  const el = $("tNone"); if (!el) return;
-  const key = `${tBusId}|${tFyStart}`, [from, to] = tFyRange();
-  if (!tBusId || (tripDb && tLoadedKey !== key) || trips.some(t => t.vehicleId === tBusId && t.date >= from && t.date <= to)) { el.hidden = true; return; }
-  tCheckOther();
-  const list = tOther.key === key ? tOther.list : null, bus = vehicles.find(v => v.id === tBusId);
-  el.hidden = false;
-  el.innerHTML = `<b>No trips for ${esc(plateOf(bus))} in FY ${fyLabel(tFyStart)}.</b> ` + (list == null ? `<span>Looking for other buses with trips in this year…</span>`
-    : list.length ? `<span>Buses with route trips in this year:</span> ${list.map(o => `<button type="button" class="btn" data-tgo="${o.v.id}">${esc(plateOf(o.v))}${tBusTag(o.v)} · ${nf(o.n)} day${o.n === 1 ? "" : "s"}</button>`).join(" ")}`
-    : `<span>No other bus has route trips in this year either.</span>`);
+  const el = $("tNone"); if (!el) return; const map = tRoute.fy === tFyStart ? tRoute.map : null;
+  if (!map) { el.hidden = true; return; }
+  const pl = id => { const v = vehicles.find(x => x.id === id); return esc(plateOf(v)) + (v ? tBusTag(v) : ""); }, dm = d => `${d.slice(8)}/${d.slice(5, 7)}`, btn = (id, txt) => `<button type="button" class="btn${id === tBusId ? " primary" : ""}" data-tgo="${id}">${txt}</button>`;
+  let html = "";
+  if (!Object.keys(map).length) html = tFyStart < fyOf(todayISO()) ? `<b>No route trips in FY ${fyLabel(tFyStart)}.</b>` : "";
+  else if (tMonthIdx === 12) { const n = tYearDays(), ids = Object.keys(n).sort((a, b) => n[b] - n[a]);
+    if (ids.length > 1) html = `<span>${ids.length} buses ran the route in FY ${fyLabel(tFyStart)}. The full year shows one bus at a time:</span> ${ids.map(id => btn(id, `${pl(id)} · ${nf(n[id])} days`)).join(" ")}`; }
+  else { const l = map[monthYM(tFyStart, tMonthIdx)] || [];
+    if (l.length > 1) html = `<span>${l.length} buses ran this month:</span> ${l.map(b => btn(b.id, `${pl(b.id)} · ${dm(b.from)}–${dm(b.to)} (${b.n} day${b.n === 1 ? "" : "s"})`)).join(" ")}`; }
+  el.hidden = !html; el.innerHTML = html;
 }
 function loadLocalTrips() {
   if (tripDb) return;
@@ -6472,11 +6486,10 @@ function buildTripSheet() {
   $("tFy").innerHTML = fyYears().map(y => `<option value="${y}">FY ${fyLabel(y)} (Apr ${y} – Mar ${y + 1})</option>`).join("");
   tFyStart = thisFy; $("tFy").value = String(thisFy);
   const ym = todayISO().slice(0, 7); tMonthIdx = (+ym.slice(5, 7) + 8) % 12;
-  $("tNone").addEventListener("click", e => { const b = e.target.closest("[data-tgo]"); if (b) tGoBus(b.dataset.tgo); });
-  $("tBus").addEventListener("change", () => { tBusId = $("tBus").value; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); renderTrips(); });
-  $("tFy").addEventListener("change", () => { tFyStart = +$("tFy").value; tAskKey = `${tBusId}|${tFyStart}`; tSubKey = ""; trips = []; subscribeTrips(); loadLocalTrips(); renderTrips(); });
-  $("tTabs").addEventListener("click", e => { const b = e.target.closest("button[data-m]"); if (!b) return; tMonthIdx = +b.dataset.m; renderTrips(); });
-  $("tYear").addEventListener("click", e => { const r = e.target.closest("tr[data-m]"); if (!r) return; tMonthIdx = +r.dataset.m; renderTrips(); });
+  $("tNone").addEventListener("click", e => { const b = e.target.closest("[data-tgo]"); if (!b) return; tPick[tMonthIdx === 12 ? "year" : monthYM(tFyStart, tMonthIdx)] = b.dataset.tgo; tRouteApply(); });
+  $("tFy").addEventListener("change", () => { tFyStart = +$("tFy").value; tPick = {}; tSubKey = ""; trips = []; subscribeTrips(); loadLocalTrips(); tRouteLoad(); });
+  $("tTabs").addEventListener("click", e => { const b = e.target.closest("button[data-m]"); if (!b) return; tMonthIdx = +b.dataset.m; tRouteApply(); });
+  $("tYear").addEventListener("click", e => { const r = e.target.closest("tr[data-m]"); if (!r) return; tMonthIdx = +r.dataset.m; tRouteApply(); });
   $("tRows").addEventListener("input", meInput);
   $("tRows").addEventListener("keydown", meKey);
   $("tRows").addEventListener("focusout", () => setTimeout(() => { if (meWaiting && !$("tRows").contains(document.activeElement)) { meWaiting = false; renderTrips(); } }, 0));
@@ -6681,22 +6694,20 @@ async function meOpenDay(date) {
 function renderTrips() {
   if (!$("tRows")) return;
   if (typeof renderOps === "function" && $("oCards") && (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") && view !== "trips") renderOps();
-  // Route buses, then the other buses (a bus moved to spare keeps its old route trip sheets), then the sold ones.
-  const rb = routeBuses(), byPlate = (a, b) => String(a.plateNo).localeCompare(String(b.plateNo)), rest = vehicles.filter(v => v.type === "Bus" && !rb.includes(v));
-  const buses = [...rb, ...rest.filter(v => v.status !== "Sold / Scrapped").sort(byPlate), ...rest.filter(v => v.status === "Sold / Scrapped").sort(byPlate)];
-  const keep = tBusId && buses.some(b => b.id === tBusId) ? tBusId : (buses[0]?.id || "");
-  $("tBus").innerHTML = buses.map(b => `<option value="${b.id}">${esc(b.plateNo || vName(b))} · ${esc(vName(b))}${tBusTag(b)}</option>`).join("");
-  $("tBus").value = keep;
+  // The bus comes from the month (tMonthBus); before the year's months are read, the bus on the route now.
+  const keep = tBusId && vehicles.some(v => v.id === tBusId && v.type === "Bus") ? tBusId : (routeBuses()[0]?.id || "");
   if (keep !== tBusId) { tBusId = keep; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); }
-  loadLocalTrips(); renderTNone();
-  $("tNoBus").hidden = !!buses.length; $("tBody").hidden = !buses.length; $("tBusF").hidden = buses.length === 1;
-  if (!buses.length) return;
+  loadLocalTrips(); if (tRoute.fy !== tFyStart) tRouteLoad(); tRouteMerge(); renderTNone();
+  $("tNoBus").hidden = !!keep; $("tBody").hidden = !keep;
+  const bv = vehicles.find(v => v.id === tBusId); $("tBusNow").textContent = bv ? [plateOf(bv) + tBusTag(bv), vName(bv)].filter(Boolean).join(" · ") : "";
+  if (!keep) return;
   // The Day sheet is for a computer; on a phone the days are entered from the Route trip sheet cards, so no button here.
   $("tDayLink").hidden = bwIsPhone();
 
-  const has = new Set(trips.map(t => t.date.slice(0, 7)));
-  $("tTabs").innerHTML = MONTHS.map((m, i) => { const ym = monthYM(tFyStart, i);
-    return `<button type="button" role="tab" data-m="${i}" aria-selected="${tMonthIdx === i}">${m.slice(0, 3)} ${ym.slice(2, 4)}${has.has(ym) ? '<span class="dot" aria-hidden="true"></span>' : ""}</button>`; }).join("") +
+  // Each month tab carries the bus that ran it (the last four of the number, "+1" when another bus ran part of it).
+  const rmap = tRoute.fy === tFyStart ? tRoute.map || {} : {}, four = id => String(plateKey(plateOf(vehicles.find(v => v.id === id)))).slice(-4);
+  $("tTabs").innerHTML = MONTHS.map((m, i) => { const ym = monthYM(tFyStart, i), l = rmap[ym] || [];
+    return `<button type="button" role="tab" data-m="${i}" aria-selected="${tMonthIdx === i}">${m.slice(0, 3)} ${ym.slice(2, 4)}${l.length ? '<span class="dot" aria-hidden="true"></span>' : ""}${l.length ? `<small class="tabbus">${esc(four(tPick[ym] && l.some(b => b.id === tPick[ym]) ? tPick[ym] : l[0].id))}${l.length > 1 ? ` +${l.length - 1}` : ""}</small>` : ""}</button>`; }).join("") +
     `<button type="button" role="tab" class="year" data-m="12" aria-selected="${tMonthIdx === 12}">Full year</button>`;
   $("tMonthView").hidden = tMonthIdx === 12; $("tYearView").hidden = tMonthIdx !== 12;
   if (tMonthIdx === 12) return renderTripYear();
@@ -11908,6 +11919,7 @@ document.addEventListener("click", e => {
   // The monthly screen opens on the bus and month being viewed.
   const mo = e.target.closest("[data-rsmonth]"); if (mo) { const ym = mo.dataset.ym || todayISO().slice(0, 7);
     if (tBusId !== mo.dataset.rsmonth || tFyStart !== fyOf(ym + "-01")) { tBusId = mo.dataset.rsmonth; tFyStart = fyOf(ym + "-01"); tSubKey = ""; trips = []; tripMonths = []; }
+    tPick[ym] = tBusId;
     if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+ym.slice(5, 7) + 8) % 12; subscribeTrips(); loadLocalTrips(); setTimeout(renderTrips); }
   const a = e.target.closest("[data-rsappr]"); if (a) { const x = ops.routeSheets.find(y => y.id === a.dataset.rsappr); if (!x) return;
     if (bwIsPhone()) rsOpen(x.vehicleId, x.date, true); else { dbBus = x.vehicleId; opDate = x.date; dbFilledKey = ""; dbDirty = false; location.hash = "#trips-day"; } }
@@ -12911,7 +12923,7 @@ addEventListener("hashchange", () => { if (dbFrom && location.hash !== "#trips-d
 $("dbClose").onclick = () => {
   const go = () => { dbDirty = false; $("dbDirty").hidden = true;
     const f = dbFrom; dbFrom = null; if (f) [60, 300, 900].forEach(ms => setTimeout(() => scrollTo(0, f.y), ms));
-    if (f && f.hash !== "#trips-route") { rsBus = dbBus; rsYm = opDate.slice(0, 7); location.hash = f.hash; return; } tBusId = dbBus; tFyStart = fyOf(opDate); if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
+    if (f && f.hash !== "#trips-route") { rsBus = dbBus; rsYm = opDate.slice(0, 7); location.hash = f.hash; return; } tBusId = dbBus; tFyStart = fyOf(opDate); tPick[opDate.slice(0, 7)] = dbBus; if ($("tFy")) $("tFy").value = String(tFyStart); tMonthIdx = (+opDate.slice(5, 7) + 8) % 12; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); location.hash = "#trips-route"; };
   if (dbDirty && dbCond() && dbCanEdit) { dbCondAuto().then(go); return; }
   if (dbDirty && canTrips) askYesNo("You have unsaved changes for this day. Close without saving?", { yes: "Close without saving", no: "Stay", danger: true }).then(ok => ok && go()); else go();
 };
@@ -18612,7 +18624,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12p";
+const APP_VER = "2026-11-12q";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
