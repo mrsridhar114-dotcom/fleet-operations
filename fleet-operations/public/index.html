@@ -1267,6 +1267,22 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .uptable tr.bad td { background: var(--danger-soft); } .uptable tr.chg td { background: var(--warn-soft); } .uptable tr.off td { opacity: .5; }
 .updiff { margin: 4px 0 0; padding-left: 16px; font-size: 12px; } .updiff s { color: var(--muted); } .upall { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
 .uptable td:first-child input { width: 16px; height: 16px; } .uptable tr.skip td { color: var(--muted); } .uptable td { vertical-align: top; }
+/* Dashboard › Year wise history */
+.ywpick { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; } .ywvehf { flex: 1 1 300px; min-width: 0; } .ywvehf select { width: 100%; min-height: 44px; } .ywmeasf { flex: 3 1 480px; min-width: 0; }
+#ywStats { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.ywgrid { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; } .ywmain { flex: 999 1 620px; min-width: 0; } .ywdetail { flex: 1 1 360px; min-width: 0; } .ywdetail[hidden] { display: none; }
+.ywkey { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 12px; color: var(--muted); margin: 0; } .ywkey span.hi, .ywkey span.lo { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: middle; margin-right: -6px; }
+.ywkey .hi, .ywcell.hi { background: color-mix(in srgb, #2563eb 16%, var(--surface)); } .ywkey .lo, .ywcell.lo { background: color-mix(in srgb, #f28c28 24%, var(--surface)); }
+.ywtable th, .ywtable td { white-space: nowrap; } .ywtable th[scope="row"], .ywdet th[scope="row"] { font: 600 14px var(--body); text-transform: none; letter-spacing: 0; color: var(--ink); background: none; }
+.ywcell { all: unset; box-sizing: border-box; display: block; min-width: 100%; min-height: 32px; line-height: 32px; padding: 0 8px; text-align: right; cursor: pointer; font-family: var(--mono); border-radius: 6px; }
+.ywcell.hi { font-weight: 700; } .ywcell:hover:not(:disabled) { outline: 1px solid var(--accent); } .ywcell.on { outline: 2px solid var(--accent); } .ywcell:disabled { cursor: default; color: var(--muted); }
+.ywtable tfoot td, .ywtable tfoot th { font-family: var(--mono); } .ywtable tfoot th { font-family: var(--body); } .ywtable tr.ywsub th, .ywtable tr.ywsub td { color: var(--muted); font-size: 13px; }
+.ywup { color: var(--ok); font-weight: 600; } .ywdn { color: var(--danger); font-weight: 600; } .ywtable tfoot .ywup, .ywtable tfoot .ywdn { color: revert; } .ywtable tfoot td.ywup { color: var(--ok); } .ywtable tfoot td.ywdn { color: var(--danger); }
+.ywdet td { font-family: var(--mono); } .ywdet td.ywprev { color: var(--muted); } .ywdet tr.ywstrong { background: var(--bg); font-weight: 700; } .ywdet th[scope="row"] { font-weight: 500; white-space: normal; }
+.ywbars { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; } .ywbar { display: grid; grid-template-columns: 96px minmax(0, 1fr) 120px; gap: 12px; align-items: center; font-size: 14px; }
+.ywbar span { font-weight: 600; } .ywbar div { height: 20px; background: var(--bg); border-radius: 6px; overflow: hidden; } .ywbar i { display: block; height: 100%; border-radius: 6px; background: color-mix(in srgb, var(--accent) 45%, var(--surface)); } .ywbar i.now { background: var(--accent); } .ywbar b { text-align: right; font-family: var(--mono); }
+.ywdetail .sechead { flex-wrap: nowrap; align-items: flex-start; justify-content: space-between; gap: 10px; }
+@media (max-width: 700px) { #ywStats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ywdetail { padding: 12px 8px; } .ywdet th, .ywdet td { padding: 6px 3px; font-size: 11.5px; } .ywdet th[scope="row"] { padding-left: 6px; } .ywdet thead th { letter-spacing: 0; font-size: 10px; } .ywdet th[scope="row"] { font-size: 13px; } .ywbar { grid-template-columns: 76px minmax(0, 1fr) 100px; font-size: 13px; } .ywtable th[scope="row"] { position: sticky; left: 0; background: var(--surface); z-index: 1; } }
 /* Reports › Expense forecast */
 .fcpick { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; }
 .fcvehf { flex: 1 1 420px; min-width: 0; } .fclab { display: block; margin-bottom: 6px; font-weight: 600; }
@@ -2413,6 +2429,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <div>
           <h1>Dashboard</h1>
         </div>
+        <div class="tcontrols"><a class="btn" href="#year-wise-history">Year wise history</a></div>
       </header>
 
       <section class="panel dtodo" id="dashTodo" hidden></section>
@@ -2857,6 +2874,29 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     </section>
 
     <!-- ================= Booking reports ================= -->
+    <section class="wrap twrap" id="view-tyw" hidden>
+      <header class="top">
+        <div>
+          <nav class="crumbs" aria-label="Breadcrumb"><a class="home" href="#home" aria-label="Home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><span class="slash">/</span><a href="#home">Dashboard</a><span class="slash">/</span><span>Year wise history</span></nav>
+          <h1>Year wise history</h1>
+          <p class="sync">Each month of the year side by side for every financial year. Tap a figure to see that month in detail.</p>
+        </div>
+        <div class="tcontrols"><button class="btn" type="button" id="ywXls">⬇ Excel</button><button class="btn" type="button" id="ywPrint">Print</button></div>
+      </header>
+      <section class="panel ywpick">
+        <label class="ywvehf"><span class="sub fclab">Vehicle</span><select id="ywVeh"></select></label>
+        <div class="ywmeasf"><span class="sub fclab">Show</span><div class="seg" role="radiogroup" aria-label="Show" id="ywMeas"></div></div>
+      </section>
+      <div class="empty panel" id="ywLoading" hidden><strong>Loading the history…</strong>Reading every year's records.</div>
+      <div class="empty panel" id="ywEmpty" hidden><strong>No records</strong>This vehicle has no trips recorded yet.</div>
+      <section class="summary tsum" id="ywStats" aria-label="Year wise summary"></section>
+      <div class="ywgrid">
+        <section class="panel ywmain"><div class="sechead"><h2 class="sec" id="ywHead">By month</h2><p class="ywkey"><span class="hi"></span>Best month of the year <span class="lo"></span>Lowest month <span>— no record</span></p></div>
+          <div class="tscroll"><table class="ctable ywtable" id="ywTable"></table></div></section>
+        <aside class="panel ywdetail" id="ywDetail" hidden></aside>
+      </div>
+      <section class="panel"><h2 class="sec">Year totals</h2><div class="ywbars" id="ywBars"></div></section>
+    </section>
     <section class="wrap twrap" id="view-tfcst" hidden>
       <header class="top">
         <div>
@@ -4385,9 +4425,9 @@ async function connect() {
 }
 
 /* ---------- routing & nav ---------- */
-const VIEW_MOD = { texp: "expenses", tfcst: "expenses", tmaint: "maintenance", tmsum: "maintenance", tmhist: "maintenance", tmplan: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
+const VIEW_MOD = { texp: "expenses", tfcst: "expenses", tyw: "dashboard", tmaint: "maintenance", tmsum: "maintenance", tmhist: "maintenance", tmplan: "maintenance", renewals: "dashboard", vehicles: "vehicles", drivers: "drivers", conductors: "conductors", trips: "trips", thub: "trips", tday: "trips", tspare: "bookings", ttruck: "trips", bookings: "bookings", tappr: "bookings", trep: "bookings", ttsheet: "tripsheets", trexp: "trips", tpadi: "trips", tkrep: "trips", tdrv: "trips", tutil: "users", trsheet: "trips", users: "users", storage: "users", audit: "users" };
 // Trip sheet pages: #trips is the home, then one page per operation type.
-const TRIP_PAGES = { "reminders": "trem", "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "maintenance-master": "tmplan", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "expense-forecast": "tfcst", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
+const TRIP_PAGES = { "reminders": "trem", "expenses": "texp", "maintenance": "tmaint", "maintenance-summary": "tmsum", "maintenance-history": "tmhist", "maintenance-master": "tmplan", "data-upload": "tutil", "route-expenses": "trexp", "padi": "tpadi", "trips": "thub", "trips-route": "trips", "trips-day": "tday", "bookings": "tspare", "approvals": "tappr", "booking-reports": "trep", "expense-forecast": "tfcst", "year-wise-history": "tyw", "trip-sheets": "ttsheet", "trips-spare": "tspare", "trips-truck": "ttruck", "truck-profit": "tkrep", "driver": "tdrv", "route-sheet": "trsheet", "training-guide": "tguide" };
 function showView() {
   const h = location.hash.replace("#", "");
   let want = TRIP_PAGES[h] || (["vehicles", "drivers", "conductors", "users", "storage"].includes(h) ? h : h === "admin-console" ? "audit" : "renewals");
@@ -4407,8 +4447,8 @@ function showView() {
   document.body.classList.toggle("navless", view === "tday" || view === "trips");
   if (view !== "tday") document.body.classList.remove("dsfull");
   document.documentElement.style.setProperty("--tbh", (document.querySelector(".topbar")?.offsetHeight || 0) + "px");
-  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "tmplan", "trem", "tfcst", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
-  const navKey = ["texp", "tmaint", "tmsum", "tmhist", "tmplan", "tfcst"].includes(want) ? want : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
+  ["renewals", "vehicles", "drivers", "conductors", "trips", "thub", "tday", "tspare", "ttruck", "tappr", "trep", "ttsheet", "trexp", "tpadi", "tkrep", "tdrv", "tutil", "trsheet", "tguide", "texp", "tmaint", "tmsum", "tmhist", "tmplan", "trem", "tfcst", "tyw", "users", "storage", "audit", "denied"].forEach(v => $("view-" + v).hidden = view !== v);
+  const navKey = ["texp", "tmaint", "tmsum", "tmhist", "tmplan", "tfcst"].includes(want) ? want : want === "tyw" ? "renewals" : want === "tguide" ? "guide" : want === "trsheet" || want === "ttsheet" ? "trips" : want === "audit" ? "audit" : want === "tappr" ? "approvals" : want === "trep" ? "breports" : want === "trexp" || want === "tpadi" || want === "tutil" || want === "tkrep" ? want : VIEW_MOD[want] === "trips" ? "trips" : VIEW_MOD[want] === "bookings" ? "bookings" : want;
   document.querySelectorAll(".nav[data-view]").forEach(a => a.dataset.view === navKey && view !== "denied" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   if (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") { if (view === "tday") dbFilledKey = ""; renderOps(); }
   if (view === "denied") renderDenied(want);
@@ -4416,6 +4456,7 @@ function showView() {
   if (view === "trem") renderRemind();
   if (view === "tutil") { dlFyOpts($("oDlFy"), undefined, true); dlNoBusRender(); renderUpload(); }
   if (view === "tfcst") renderFcst();
+  if (view === "tyw") { renderYw(); if (ywRecs) ywLoad(); }
   if (view === "texp") { xpScrollEnd = true; renderExp(); } if (view === "tmaint") renderMaint(); if (view === "tmsum") renderMsum(); if (view === "tmhist") renderMhist(); if (view === "tmplan") renderMplan();
   if (view !== auLastView && auditSess) { const was = auLastView; auLastView = view; if (view !== "denied") auditAction("open", AU_PAGE[view] || view, `Opened ${AU_PAGE[view] || view}`, ""); if (view === "audit" && was) { renderAudit(true); return; } }
   if (view === "audit") renderAudit();
@@ -10273,7 +10314,7 @@ function renderApprovals() {
 // deleted anywhere in the app is logged once in "auditLog" with who, when, which module and what. Change-history
 // collections are not logged again; they are the detail behind each change.
 let auditDb = null, auditSess = null, auditSys = "", auData = null, auBusy = false, auSelUser = "", auLastView = "";
-const AU_PAGE = { tfcst: "Expense forecast", trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Route bus day sheet", tspare: "Booking planner",
+const AU_PAGE = { tfcst: "Expense forecast", tyw: "Year wise history", trsheet: "Route trip sheet (phone)", renewals: "Dashboard", vehicles: "Vehicle master", drivers: "Driver master", conductors: "Conductor master", trips: "Route trip sheet", thub: "Trip sheets", tday: "Route bus day sheet", tspare: "Booking planner",
   ttruck: "Truck trips", tappr: "Approvals", trep: "Booking reports", ttsheet: "Spare bus trip sheets", trexp: "Route expenses", tpadi: "Padi calculation", tkrep: "Truck profit report", tdrv: "Truck driver (phone)", tutil: "Data upload & download", users: "User master", storage: "Storage & backup", audit: "Admin console" };
 // Things a user does that are not saved records: pages opened (once per visit each), files downloaded, messages sent.
 function auditAction(action, module, label, detail) {
@@ -11993,6 +12034,158 @@ $("view-tfcst").addEventListener("change", e => {
   if (t.name === "fcPer") { fcPer = t.value; fcCell = ""; renderFcst(); }
 });
 
+/* ---------- Year wise history (Dashboard) ----------
+   One vehicle, or every bus that ran the route, month by month: the months down the side, each financial year across (newest
+   first), as the office Year Wise sheet. A figure opens that month in full beside the same month a year before. The figures are
+   the ones Download all writes: route buses from the monthly sheets, spare buses from their bookings, trucks from their trip sheets. */
+const YW_MEAS = [["bal", "Balance"], ["col", "Collection"], ["exp", "Expense"], ["days", "Days run"], ["lit", "Diesel (litres)"], ["dsl", "Diesel (₹)"], ["sal", "Salary / padi"], ["km", "Kilometres"]];
+const YW_MON = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+let ywVeh = "route", ywMeas = "bal", ywSel = "", ywRecs = null, ywBusy = false, ywData = null, ywDataKey = "";
+try { ywVeh = localStorage.getItem("fleet-ywveh") || "route"; ywMeas = localStorage.getItem("fleet-ywmeas") || "bal"; } catch {}
+const ywIdx = ym => (+ym.slice(5, 7) + 8) % 12; // April 0 … March 11
+const ywCell = (w, ref) => { const m = /^([A-Z]+)(\d+)$/.exec(ref), c = w.rows[+m[2]]?.[XL.idx(m[1])]; return typeof c?.v === "number" && isFinite(c.v) ? c.v : 0; };
+const ywSlot = (out, fy, i) => { if (!out.has(fy)) out.set(fy, Array(12).fill(null)); const a = out.get(fy); return a[i] ||= { plates: new Set() }; };
+const ywAdd = (a, o) => Object.entries(o).forEach(([k, v]) => { a[k] = (a[k] || 0) + (v || 0); });
+async function ywLoad() {
+  if (ywBusy) return; ywBusy = true;
+  try { ywRecs = { ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds"])), vehicles, drivers }; ywDataKey = ""; }
+  finally { ywBusy = false; }
+  if (view === "tyw") renderYw();
+}
+// The choices: the route (every bus on it), then each route bus, spare bus and truck with records, sold ones too.
+function ywOptions() {
+  const R = ywRecs, pl = id => plateOf(vehicles.find(v => v.id === id)), sold = id => vehicles.find(v => v.id === id)?.status === "Sold / Scrapped" ? " (sold)" : "";
+  const ids = list => [...new Set(list.filter(Boolean))].filter(id => vehicles.some(v => v.id === id)).sort((a, b) => String(pl(a)).localeCompare(String(pl(b))));
+  const route = ids(R.trips.map(t => t.vehicleId)), spare = ids(R.bookings.filter(b => b.from && ["booked", "ontrip", "completed"].includes(b.status)).map(b => b.vehicleId)), truck = ids(R.truckTrips.filter(l => l.from).map(l => l.vehicleId));
+  return [["route", "Route bus — every bus that ran the route", "route"], ...route.map(id => ["r:" + id, `${pl(id)} · Route bus${sold(id)}`, "route"]),
+    ...spare.map(id => ["s:" + id, `${pl(id)} · Spare bus${sold(id)}`, "spare"]), ...truck.map(id => ["t:" + id, `${pl(id)} · Truck${sold(id)}`, "truck"])];
+}
+// fy → 12 months (April first), each null (no record) or the month's sums.
+function ywCompute(key) {
+  const R = ywRecs, out = new Map(), C = xlCtx(R), n = v => C.n(v) || 0, plate = id => plateOf(vehicles.find(v => v.id === id));
+  if (key === "route" || key.startsWith("r:")) {
+    const ids = key === "route" ? [...new Set(R.trips.map(t => t.vehicleId).filter(Boolean))] : [key.slice(2)];
+    for (const id of ids) for (const fy of [...new Set(R.trips.filter(t => t.vehicleId === id && t.date).map(t => fyOf(t.date)))])
+      for (const w of routeFySheets(id, fy, R)) {
+        const a = ywSlot(out, fy, ywIdx(w.ym)), g = c => ywCell(w, c), lo = g("H3"), hi = g("H4");
+        ywAdd(a, { days: g("B2"), col: g("N2"), exp: g("N3"), bal: g("N4"), drv: g("T2"), cond: g("T3"), chk: g("T4"), lit: g("H2"), dsl: g("E2"), km: g("N8") });
+        if (lo) a.plo = a.plo ? Math.min(a.plo, lo) : lo; if (hi) a.phi = Math.max(a.phi || 0, hi); a.plates.add(plate(id));
+      }
+    out.type = "route";
+  } else if (key.startsWith("s:")) {
+    const id = key.slice(2);
+    R.bookings.filter(b => b.vehicleId === id && b.from && ["booked", "ontrip", "completed"].includes(b.status)).forEach(b => {
+      const a = ywSlot(out, fyOf(b.from), ywIdx(b.from.slice(0, 7))), o = { trips: 1, days: n(b.days), rent: n(b.rent), toll: n(b.toll), drvp: n(b.padiPaid), clp: n(b.cleanerPadi), permit: n(b.permit), lit: n(b.litres), dsl: n(b.fuelCost), oth: n(b.otherExp) };
+      const sk = n(b.startKm), ek = n(b.endKm); o.km = sk > 0 && ek > sk ? ek - sk : 0; o.col = o.rent + o.toll; o.exp = o.drvp + o.clp + o.permit + o.toll + o.dsl + o.oth; o.bal = o.col - o.exp;
+      ywAdd(a, o); a.plates.add(plate(id));
+    });
+    out.type = "spare";
+  } else if (key.startsWith("t:")) {
+    const id = key.slice(2);
+    for (const fy of [...new Set(R.truckTrips.filter(l => l.vehicleId === id && l.from).map(l => fyOf(l.from)))]) {
+      const w = xlTruckSheets(R, fy).find(s => s.vid === id); if (!w) continue;
+      for (let r = 6; w.rows[r]; r++) { const d = w.rows[r][0]?.v?.d; if (!d) continue; const g = c => ywCell(w, c + r), a = ywSlot(out, fy, ywIdx(d.slice(0, 7)));
+        ywAdd(a, { trips: 1, days: g("C"), col: g("D"), comm: g("I"), lit: g("J"), dsl: g("K"), toll: g("L"), padi: g("M"), rto: g("N"), load: g("O"), exp: g("V"), bal: g("W"), km: g("AB") }); a.plates.add(plate(id)); }
+    }
+    out.type = "truck";
+  }
+  return out;
+}
+function ywVal(a, k, type) {
+  if (!a) return null;
+  if (k === "sal") return type === "route" ? (a.drv || 0) + (a.cond || 0) + (a.chk || 0) : type === "spare" ? (a.drvp || 0) + (a.clp || 0) : a.padi || 0;
+  return a[k] || 0;
+}
+const ywFmt = (v, k) => v == null ? "—" : k === "lit" || k === "days" ? nf(Math.round(v * 100) / 100, Number.isInteger(Math.round(v * 100) / 100) ? 0 : 2) : nf(Math.round(v));
+// The month in full: [label, value or text, kind] — kind "up" (more is better), "down" (less is better), "" (no colour), "t" (text).
+function ywDetailRows(a, type) {
+  const v = k => a ? a[k] || 0 : null, per = (x, d) => a && d ? x / d : null;
+  if (type === "route") return [["Days run", v("days"), "up"], ["Collection", v("col"), "up"], ["Expense", v("exp"), "down"], ["Balance", v("bal"), "up", 1],
+    ["Avg collection / day", per(v("col"), v("days")), "up"], ["Avg balance / day", per(v("bal"), v("days")), "up"],
+    ["Driver salary", v("drv"), ""], ["Conductor salary", v("cond"), ""], ["Checker salary", v("chk"), ""], ["Total salary", a ? v("drv") + v("cond") + v("chk") : null, ""],
+    ["Diesel (litres)", v("lit"), ""], ["Diesel (₹)", v("dsl"), ""], ["Avg diesel / day (L)", per(v("lit"), v("days")), ""],
+    ["Fuel price (₹/L)", a && a.plo ? (a.plo === a.phi ? nf(a.plo, 2) : `${nf(a.plo, 2)}–${nf(a.phi, 2)}`) : null, "t"], ["Kilometres", v("km"), "up"], ["Km per day", per(v("km"), v("days")), ""]];
+  if (type === "spare") return [["Trips", v("trips"), "up"], ["Days run", v("days"), "up"], ["Rent", v("rent"), "up"], ["Toll (paid by the party)", v("toll"), ""], ["Collection", v("col"), "up"],
+    ["Driver padi", v("drvp"), ""], ["Cleaner padi", v("clp"), ""], ["Permit", v("permit"), ""], ["Diesel (litres)", v("lit"), ""], ["Diesel (₹)", v("dsl"), ""], ["Other expense", v("oth"), ""],
+    ["Expense", v("exp"), "down"], ["Balance", v("bal"), "up", 1], ["Avg balance / day", per(v("bal"), v("days")), "up"], ["Kilometres", v("km"), "up"], ["Km per day", per(v("km"), v("days")), ""]];
+  return [["Trips", v("trips"), "up"], ["Days run", v("days"), "up"], ["Collection", v("col"), "up"], ["Commission", v("comm"), ""], ["Driver padi", v("padi"), ""], ["Toll", v("toll"), ""],
+    ["RTO", v("rto"), ""], ["Loading", v("load"), ""], ["Diesel (litres)", v("lit"), ""], ["Diesel (₹)", v("dsl"), ""], ["Expense", v("exp"), "down"], ["Balance", v("bal"), "up", 1],
+    ["Avg collection / day", per(v("col"), v("days")), "up"], ["Kilometres", v("km"), "up"], ["Km per day", per(v("km"), v("days")), ""]];
+}
+const ywMonLbl = (fy, i) => `${YW_MON[i]} ${i < 9 ? fy : fy + 1}`;
+function renderYw() {
+  if (!$("ywTable")) return;
+  if (!ywRecs) { $("ywVeh").innerHTML = `<option>Loading…</option>`; ["ywStats", "ywTable", "ywBars", "ywDetail"].forEach(id => $(id).innerHTML = ""); $("ywEmpty").hidden = true; $("ywLoading").hidden = false; ywLoad(); return; }
+  $("ywLoading").hidden = true;
+  const opts = ywOptions(); if (!opts.some(o => o[0] === ywVeh)) ywVeh = "route";
+  const grp = { route: "Route buses", spare: "Spare buses", truck: "Trucks" };
+  $("ywVeh").innerHTML = `<option value="route"${ywVeh === "route" ? " selected" : ""}>${esc(opts[0][1])}</option>` + ["route", "spare", "truck"].map(g => { const l = opts.slice(1).filter(o => o[2] === g); return l.length ? `<optgroup label="${grp[g]}">${l.map(o => `<option value="${o[0]}"${o[0] === ywVeh ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</optgroup>` : ""; }).join("");
+  $("ywMeas").innerHTML = YW_MEAS.map(([k, l]) => `<label><input type="radio" name="ywMeas" value="${k}"${k === ywMeas ? " checked" : ""}><span>${l}</span></label>`).join("");
+  if (ywDataKey !== ywVeh) { ywData = ywCompute(ywVeh); ywDataKey = ywVeh; }
+  const D = ywData, type = D.type, fys = [...D.keys()].sort((a, b) => b - a), mLbl = YW_MEAS.find(m => m[0] === ywMeas)[1], vLbl = opts.find(o => o[0] === ywVeh)[1].replace(/ — .*/, "").replace(/ · .*/, "");
+  $("ywHead").textContent = `${vLbl} · ${mLbl} by month${["lit", "days", "km"].includes(ywMeas) ? "" : " (₹)"}`;
+  $("ywEmpty").hidden = !!fys.length;
+  if (!fys.length) { ["ywStats", "ywTable", "ywBars", "ywDetail"].forEach(id => $(id).innerHTML = ""); $("ywDetail").hidden = true; return; }
+  const V = fys.map(fy => D.get(fy).map(a => ywVal(a, ywMeas, type))), tot = V.map(c => c.reduce((s, x) => s + (x || 0), 0)), cnt = V.map(c => c.filter(x => x != null).length);
+  const hi = V.map(c => { const l = c.filter(x => x != null); return l.length > 1 ? Math.max(...l) : null; }), lo = V.map(c => { const l = c.filter(x => x != null); return l.length > 1 ? Math.min(...l) : null; });
+  const money = !["lit", "days", "km"].includes(ywMeas), show = v => money ? rs(v) : ywFmt(v, ywMeas);
+  // Summary: this year, average month, best year, best month
+  let best = null; fys.forEach((fy, k) => V[k].forEach((x, i) => { if (x != null && (!best || x > best.v)) best = { v: x, fy, i }; }));
+  const bestY = tot.indexOf(Math.max(...tot)), ch = tot[1] ? Math.round((tot[0] - tot[1]) / Math.abs(tot[1]) * 100) : null;
+  $("ywStats").innerHTML = ostat(`FY ${fyLabel(fys[0])} ${mLbl.toLowerCase()}`, show(tot[0]), ch == null ? `${cnt[0]} month${cnt[0] === 1 ? "" : "s"} with records` : `${ch >= 0 ? "+" : "−"}${Math.abs(ch)}% on FY ${fyLabel(fys[1])}${cnt[0] < 12 ? ` · ${cnt[0]} month${cnt[0] === 1 ? "" : "s"} so far` : ""}`, ch == null ? "" : (ch < 0) === (ywMeas !== "exp") ? "var(--danger)" : "var(--ok)") +
+    ostat("Average month", show(cnt[0] ? tot[0] / cnt[0] : 0), `FY ${fyLabel(fys[0])}, ${cnt[0]} month${cnt[0] === 1 ? "" : "s"}`) +
+    ostat("Best year", show(tot[bestY]), `FY ${fyLabel(fys[bestY])}`) + (best ? ostat("Best month", show(best.v), ywMonLbl(best.fy, best.i)) : "");
+  const cell = (x, k, i) => { const id = `${fys[k]}|${i}`, cls = x == null ? "" : x === hi[k] ? " hi" : x === lo[k] ? " lo" : "";
+    return `<td class="n"><button type="button" class="ywcell${cls}${ywSel === id ? " on" : ""}" data-ywcell="${id}"${x == null ? " disabled" : ""}>${x == null ? "—" : ywFmt(x, ywMeas)}</button></td>`; };
+  $("ywTable").innerHTML = `<thead><tr><th>Month</th>${fys.map(fy => `<th class="n">FY ${fyLabel(fy)}</th>`).join("")}</tr></thead><tbody>` +
+    YW_MON.map((m, i) => `<tr><th scope="row">${m}</th>${V.map((c, k) => cell(c[i], k, i)).join("")}</tr>`).join("") + `</tbody><tfoot>` +
+    `<tr><th scope="row">Total</th>${tot.map(t => `<td class="n"><b>${ywFmt(t, ywMeas)}</b></td>`).join("")}</tr>` +
+    `<tr class="ywsub"><th scope="row">Average month</th>${tot.map((t, k) => `<td class="n">${cnt[k] ? ywFmt(t / cnt[k], ywMeas) : "—"}</td>`).join("")}</tr>` +
+    `<tr class="ywsub"><th scope="row">Change on year before</th>${tot.map((t, k) => { const p = tot[k + 1]; if (k + 1 >= tot.length || !p) return `<td class="n"></td>`; const c = Math.round((t - p) / Math.abs(p) * 100);
+      return `<td class="n ${(c < 0) === (ywMeas !== "exp") ? "ywdn" : "ywup"}">${c > 0 ? "+" : c < 0 ? "−" : ""}${Math.abs(c)}%</td>`; }).join("")}</tr></tfoot>`;
+  const part = cnt.some(c => c < 12) ? fys.filter((fy, k) => cnt[k] < 12).map(fy => `FY ${fyLabel(fy)}`) : [];
+  const max = Math.max(1, ...tot.map(Math.abs));
+  $("ywBars").innerHTML = fys.map((fy, k) => `<div class="ywbar"><span>FY ${fyLabel(fy)}</span><div><i style="width:${(Math.max(0, tot[k]) / max * 100).toFixed(1)}%"${k ? "" : ` class="now"`}></i></div><b>${show(tot[k])}</b></div>`).join("") +
+    (part.length ? `<p class="sub" style="margin:6px 0 0">${part.join(", ")} ${part.length === 1 ? "has" : "have"} months with no record (— in the table), so ${part.length === 1 ? "its total covers" : "their totals cover"} fewer months.</p>` : "");
+  ywDetailRender(type);
+}
+function ywDetailRender(type) {
+  const el = $("ywDetail"), [fy, i] = ywSel ? ywSel.split("|").map(Number) : [];
+  const a = ywSel && ywData.get(fy)?.[i]; if (!a) { el.hidden = true; el.innerHTML = ""; return; }
+  const b = ywData.get(fy - 1)?.[i] || null, rA = ywDetailRows(a, type), rB = ywDetailRows(b, type), lA = ywMonLbl(fy, i), lB = ywMonLbl(fy - 1, i);
+  const f = (v, kind) => v == null ? "—" : kind === "t" ? esc(v) : Math.abs(v) < 100 && !Number.isInteger(Math.round(v * 10) / 10) ? nf(v, 1) : nf(Math.round(v));
+  const rows = rA.map(([l, x, kind, strong], k) => { const y = rB[k][1]; let c = "", cls = "";
+    if (kind !== "t" && x != null && y) { const p = Math.round((x - y) / Math.abs(y) * 100); c = `${p > 0 ? "+" : p < 0 ? "−" : ""}${Math.abs(p)}%`; cls = !kind || !p ? "" : (p > 0) === (kind === "up") ? "ywup" : "ywdn"; }
+    return `<tr${strong ? ` class="ywstrong"` : ""}><th scope="row">${l}</th><td class="n">${f(x, kind)}</td><td class="n ywprev">${f(y, kind)}</td><td class="n ${cls}">${c}</td></tr>`; }).join("");
+  el.hidden = false;
+  el.innerHTML = `<div class="sechead"><div><h3 class="sec">${lA}</h3><p class="sub" style="margin:2px 0 0">${esc([...a.plates].join(", "))} · compared with ${lB}${b ? "" : " (no record)"}</p></div><button type="button" class="xclose" data-ywclose aria-label="Close">✕</button></div>` +
+    `<div class="tscroll"><table class="ctable ywdet"><thead><tr><th></th><th class="n">${YW_MON[i].slice(0, 3)} ${i < 9 ? fy : fy + 1}</th><th class="n">${YW_MON[i].slice(0, 3)} ${i < 9 ? fy - 1 : fy}</th><th class="n">Change</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+// Excel: one sheet per figure, months down the side and the years across (as the office Year Wise sheet), totals as formulas.
+async function ywExcel() {
+  if (!ywData || !ywData.size) { toast("Nothing to download."); return; }
+  const S = XL.S, type = ywData.type, fys = [...ywData.keys()].sort((a, b) => b - a), veh = $("ywVeh").selectedOptions[0]?.textContent || "";
+  const sheets = YW_MEAS.map(([k, l]) => { const ws = XL.sheet(l.replace(/[^\w ]+/g, "").trim() || l); XL.put(ws, "A1", `${veh} · ${l} · Year wise`, S.title);
+    ["Month", ...fys.map(fy => `FY ${fyLabel(fy)}`)].forEach((h, i) => { XL.put(ws, `${XL.col(i)}3`, h, S.head); ws.widths[XL.col(i)] = i ? 14 : 14; });
+    YW_MON.forEach((m, i) => { XL.put(ws, `A${i + 4}`, m, S.text); fys.forEach((fy, c) => { const v = ywVal(ywData.get(fy)[i], k, type); XL.put(ws, `${XL.col(c + 1)}${i + 4}`, v == null ? null : Math.round(v * 100) / 100, S.int); }); });
+    XL.put(ws, "A16", "Total", S.ttext); fys.forEach((fy, c) => { const A = XL.col(c + 1); XL.put(ws, `${A}16`, 0, S.tint, `SUM(${A}4:${A}15)`); }); ws.freeze = 3; return ws; });
+  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
+  if (!dl) { toast("Saving files isn't available in this view. Reload the page and try again."); return; }
+  try { await dl.save({ filename: `Year_Wise_${veh.replace(/ — .*| · .*/g, "").replace(/[^\w-]+/g, "_")}.xlsx`, data: XL.build(XL.names(sheets)) }); toast("Year wise history saved"); }
+  catch (er) { if (er?.code !== "declined") toast("Couldn't save the file."); }
+}
+$("view-tyw").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.ywcell) { ywSel = ywSel === b.dataset.ywcell ? "" : b.dataset.ywcell; renderYw(); if (ywSel) $("ywDetail").scrollIntoView({ block: "nearest" }); return; }
+  if (b.hasAttribute("data-ywclose")) { ywSel = ""; renderYw(); return; }
+  if (b.id === "ywXls") { ywExcel(); return; }
+  if (b.id === "ywPrint") { print(); return; }
+});
+$("view-tyw").addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "ywVeh") { ywVeh = t.value; ywSel = ""; try { localStorage.setItem("fleet-ywveh", ywVeh); } catch {} renderYw(); }
+  if (t.name === "ywMeas") { ywMeas = t.value; try { localStorage.setItem("fleet-ywmeas", ywMeas); } catch {} renderYw(); }
+});
 /* ---------- booking reports ---------- */
 // Confirmed bookings (booked, on trip, completed) counted in the month they start. Financial year April to March.
 let rFy = null, rMon = "";
@@ -12205,6 +12398,7 @@ function renderOps() {
   if (view === "tutil") { dlFyOpts($("oDlFy"), undefined, true); dlNoBusRender(); renderUpload(); return; }
   if (view === "texp") { renderExp(); return; }
   if (view === "tfcst") { renderFcst(); return; }
+  if (view === "tyw") { renderYw(); return; }
   if (view === "tmaint") { renderMaint(); return; }
   if (view === "tmsum") { renderMsum(); return; }
   if (view === "tmhist") { renderMhist(); return; }
@@ -18354,7 +18548,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12k";
+const APP_VER = "2026-11-12l";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
