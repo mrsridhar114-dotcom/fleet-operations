@@ -1267,6 +1267,8 @@ th.expth::before { content: "Expiry"; display: block; font-size: 10px; opacity: 
 .uptable tr.bad td { background: var(--danger-soft); } .uptable tr.chg td { background: var(--warn-soft); } .uptable tr.off td { opacity: .5; }
 .updiff { margin: 4px 0 0; padding-left: 16px; font-size: 12px; } .updiff s { color: var(--muted); } .upall { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
 .uptable td:first-child input { width: 16px; height: 16px; } .uptable tr.skip td { color: var(--muted); } .uptable td { vertical-align: top; }
+.tnone { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; padding: 12px 14px; border-radius: 8px; background: color-mix(in srgb, #f28c28 14%, var(--surface)); color: var(--ink); }
+.tnone[hidden] { display: none; }
 .upok { padding: 12px 14px; border-radius: 8px; background: var(--ok-soft); color: var(--ink); }
 @media (max-width: 700px) { .upform { grid-template-columns: minmax(0, 1fr); } .uptpl { flex-direction: column; align-items: stretch; } }
 /* Route expenses and padi calculation */
@@ -2530,6 +2532,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </header>
       <div class="ro-banner" id="tRoBanner" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>You have view-only access to the trip sheet.</span></div>
       <div class="empty panel" id="tNoBus" hidden><strong>No route buses yet</strong>Add a vehicle with class Bus and operation type Route under Masters › Vehicle. It will appear here.</div>
+      <div class="tnone" id="tNone" role="status" hidden></div>
       <div id="tBody">
         <nav class="ttabs" id="tTabs" role="tablist" aria-label="Month"></nav>
         <div id="tMonthView">
@@ -6275,12 +6278,43 @@ function subscribeTrips() {
   // This bus, this financial year, plus March before it so April can find its opening km.
   const from = `${tFyStart}-03-01`, to = `${tFyStart + 1}-03-31`;
   tripUnsub = tripsRef.where("vehicleId", "==", tBusId).where("date", ">=", from).where("date", "<=", to)
-    .onSnapshot(snap => { trips = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderTrips(); }, () => {});
+    .onSnapshot(snap => { trips = snap.docs.map(d => ({ id: d.id, ...d.data() })); tLoadedKey = key; renderTrips(); }, () => {});
   tripMonthUnsub = tripMonthsRef.where("vehicleId", "==", tBusId)
     .onSnapshot(snap => { tripMonths = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderTrips(); }, () => {});
   tripYearUnsub?.(); tripYearsRef = tripDb.collection("tripYears");
   tripYearUnsub = tripYearsRef.where("vehicleId", "==", tBusId)
     .onSnapshot(snap => { tripYears = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderTrips(); }, () => {});
+}
+// When the bus chosen has no trips in the year chosen: say so, and offer the route buses (sold ones too) that have trips that year.
+let tOther = { key: "", list: null }, tAskKey = "", tLoadedKey = "";
+const tFyRange = () => [`${tFyStart}-04-01`, `${tFyStart + 1}-03-31`];
+const tGoBus = id => { $("tBus").value = id; $("tBus").dispatchEvent(new Event("change")); };
+async function tCheckOther() {
+  const key = `${tBusId}|${tFyStart}`; if (!tBusId || tOther.key === key) return; tOther = { key, list: null };
+  const [from, to] = tFyRange(), list = [];
+  for (const v of vehicles.filter(v => v.type === "Bus" && v.opType === "Route" && v.id !== tBusId)) {
+    let n = 0;
+    if (!tripDb) n = tripsLocal.filter(t => t.vehicleId === v.id && t.date >= from && t.date <= to).length;
+    else try { n = (await tripDb.collection("trips").where("vehicleId", "==", v.id).where("date", ">=", from).where("date", "<=", to).get()).size; } catch {}
+    if (n) list.push({ v, n });
+  }
+  if (tOther.key !== key) return;
+  tOther.list = list.sort((a, b) => b.n - a.n); renderTNone();
+  if (!list.length || tAskKey !== key) return;
+  tAskKey = ""; const o = list[0], name = v => `${plateOf(v)}${v.status === "Sold / Scrapped" ? " (sold)" : ""}`;
+  if (await askYesNo(`${plateOf(vehicles.find(v => v.id === tBusId))} has no trips in FY ${fyLabel(tFyStart)}. ${list.map(x => `${name(x.v)} has ${nf(x.n)} day${x.n === 1 ? "" : "s"}`).join("; ")} in this year. Show ${name(o.v)}?`, { yes: `Show ${plateOf(o.v)}`, no: "Stay on this bus" })
+    && `${tBusId}|${tFyStart}` === key) tGoBus(o.v.id);
+}
+function renderTNone() {
+  const el = $("tNone"); if (!el) return;
+  const key = `${tBusId}|${tFyStart}`, [from, to] = tFyRange();
+  if (!tBusId || (tripDb && tLoadedKey !== key) || trips.some(t => t.vehicleId === tBusId && t.date >= from && t.date <= to)) { el.hidden = true; return; }
+  tCheckOther();
+  const list = tOther.key === key ? tOther.list : null, bus = vehicles.find(v => v.id === tBusId);
+  el.hidden = false;
+  el.innerHTML = `<b>No trips for ${esc(plateOf(bus))} in FY ${fyLabel(tFyStart)}.</b> ` + (list == null ? `<span>Looking for other buses with trips in this year…</span>`
+    : list.length ? `<span>Route buses with trips in this year:</span> ${list.map(o => `<button type="button" class="btn" data-tgo="${o.v.id}">${esc(plateOf(o.v))}${o.v.status === "Sold / Scrapped" ? " (sold)" : ""} · ${nf(o.n)} day${o.n === 1 ? "" : "s"}</button>`).join(" ")}`
+    : `<span>No other route bus has trips in this year either.</span>`);
 }
 function loadLocalTrips() {
   if (tripDb) return;
@@ -6334,8 +6368,9 @@ function buildTripSheet() {
   $("tFy").innerHTML = fyYears().map(y => `<option value="${y}">FY ${fyLabel(y)} (Apr ${y} – Mar ${y + 1})</option>`).join("");
   tFyStart = thisFy; $("tFy").value = String(thisFy);
   const ym = todayISO().slice(0, 7); tMonthIdx = (+ym.slice(5, 7) + 8) % 12;
+  $("tNone").addEventListener("click", e => { const b = e.target.closest("[data-tgo]"); if (b) tGoBus(b.dataset.tgo); });
   $("tBus").addEventListener("change", () => { tBusId = $("tBus").value; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); loadLocalTrips(); renderTrips(); });
-  $("tFy").addEventListener("change", () => { tFyStart = +$("tFy").value; tSubKey = ""; trips = []; subscribeTrips(); loadLocalTrips(); renderTrips(); });
+  $("tFy").addEventListener("change", () => { tFyStart = +$("tFy").value; tAskKey = `${tBusId}|${tFyStart}`; tSubKey = ""; trips = []; subscribeTrips(); loadLocalTrips(); renderTrips(); });
   $("tTabs").addEventListener("click", e => { const b = e.target.closest("button[data-m]"); if (!b) return; tMonthIdx = +b.dataset.m; renderTrips(); });
   $("tYear").addEventListener("click", e => { const r = e.target.closest("tr[data-m]"); if (!r) return; tMonthIdx = +r.dataset.m; renderTrips(); });
   $("tRows").addEventListener("input", meInput);
@@ -6548,7 +6583,7 @@ function renderTrips() {
   $("tBus").innerHTML = buses.map(b => `<option value="${b.id}">${esc(b.plateNo || vName(b))} · ${esc(vName(b))}${sold.includes(b) ? " (sold)" : ""}</option>`).join("");
   $("tBus").value = keep;
   if (keep !== tBusId) { tBusId = keep; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); }
-  loadLocalTrips();
+  loadLocalTrips(); renderTNone();
   $("tNoBus").hidden = !!buses.length; $("tBody").hidden = !buses.length; $("tBusF").hidden = buses.length === 1;
   if (!buses.length) return;
   // The Day sheet is for a computer; on a phone the days are entered from the Route trip sheet cards, so no button here.
@@ -18090,7 +18125,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12h";
+const APP_VER = "2026-11-12i";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
