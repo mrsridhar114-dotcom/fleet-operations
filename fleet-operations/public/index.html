@@ -9481,83 +9481,85 @@ const UP_ROUTE = {
   twice: { driver: "payD", conductor: "payC", checker: "payK" }
 };
 UP_KINDS.route = UP_ROUTE;
-/* ---- The upload templates, one per kind, for the current financial year: the same layouts the office workbooks used, so a
-   filled template and an old workbook are read the same way. Totals and the Collection / Balance columns are formulas. */
+/* ---- The upload templates, one per kind, for the current financial year: the same headings the office workbooks used, so a
+   filled template and an old workbook are read the same way. Every cell has a border; the title runs across the sheet, the
+   totals sit on row 2 and the headings on row 4; formula cells (totals, Collection, Balance…) are shaded. Sheets open at 40%. */
 const UP_TPL_DATE = "dd/mm/yyyy, e.g. 07/10/2026 (the date cells are text, so Excel cannot turn them round)";
-function upTplHelp(title, lines, cols) {
-  const S = XL.S, h = XL.sheet("How to fill"); XL.put(h, "A1", title, S.title);
-  lines.forEach((t, i) => XL.put(h, `A${3 + i}`, `${i + 1}. ${t}`, S.plain));
-  const r0 = lines.length + 4; XL.put(h, `A${r0}`, "Column", S.head); XL.put(h, `B${r0}`, "What to type", S.head);
-  cols.forEach(([c, t], i) => { XL.put(h, `A${r0 + 1 + i}`, c, S.label); XL.put(h, `B${r0 + 1 + i}`, t, S.text); });
-  h.widths.A = 22; h.widths.B = 96; return h;
+const UP_TPL_ZOOM = 40;
+// One template sheet: title (row 1, across all columns), totals (row 2: label over two columns, then the formula),
+// headings (row 4) and the input rows from row 5. cols: [heading, width, cell kind ("txt", "ctr", "int", "dec", "date"), help].
+function upTplSheet(name, title, cols, nRows, totals, calc, fill) {
+  const T = XL.S.tpl, ws = XL.sheet(name), last = XL.col(cols.length - 1), end = 4 + nRows;
+  XL.put(ws, "A1", title, T.title); for (let i = 1; i < cols.length; i++) XL.put(ws, `${XL.col(i)}1`, null, T.title); ws.merges.push(`A1:${last}1`);
+  totals.forEach(([lab, col], k) => { const c = 4 * k, f = col.includes("(") ? col : `SUM(${col}5:${col}${end})`;
+    XL.put(ws, `${XL.col(c)}2`, lab, T.lab); XL.put(ws, `${XL.col(c + 1)}2`, null, T.lab); ws.merges.push(`${XL.col(c)}2:${XL.col(c + 1)}2`);
+    XL.put(ws, `${XL.col(c + 2)}2`, 0, T.sum, f); });
+  cols.forEach(([h, w, kind], i) => { const c = XL.col(i); XL.put(ws, `${c}4`, h, T.head); ws.widths[c] = w;
+    for (let r = 5; r <= end; r++) { const f = calc(r)[c]; f ? XL.put(ws, `${c}${r}`, 0, T.calc, f) : XL.put(ws, `${c}${r}`, "", T[kind]); } });
+  fill?.(ws);
+  Object.assign(ws.heights, { 1: 30, 2: 22, 3: 8, 4: 34 }); ws.freeze = 4; ws.zoom = UP_TPL_ZOOM; return ws;
 }
-const UP_TPL_ROUTE = [["Date", 6, "Day of the month (filled in)"], ["Starting", 12, "Where the day started (filled in from the route plan; change it if needed)"], ["Day", 11, "Weekday (filled in)"],
-  ["Driver", 16, "Driver's name"], ["Conductor", 16, "Conductor's name"], ["Checker", 14, "Checker's name"], ["Diesel Rate", 10, "₹ a litre"], ["No. Litre", 9, "Litres filled"],
-  ["Fuel Price", 10, "Diesel amount in ₹ (worked out from rate × litres; type over it if the bill differs)"], ["Driver", 9, "Driver padi ₹"], ["Conductor", 10, "Conductor padi ₹"], ["Checker", 9, "Checker padi ₹"],
-  ["S1", 8, "Single 1 collection ₹"], ["S2", 8, "Single 2"], ["S3", 8, "Single 3"], ["S4", 8, "Single 4"], ["S5", 8, "Single 5"], ["Collection", 11, "S1–S5 added up (formula)"],
-  ["Expense", 10, "The day's whole expense ₹: diesel, padi and anything else"], ["Balance", 10, "Collection less Expense (formula)"], ["KMS", 10, "Odometer at the end of the day"], ["Remarks", 24, "Notes. A bus number with the word route (\"TN23CP3366 in route\") puts that day on that bus"]];
+const UP_TPL_ROUTE = [["Date", 7, "ctr", "Day of the month (filled in)"], ["Starting", 13, "ctr", "Where the day started (filled in from the route plan; change it if needed)"], ["Day", 12, "ctr", "Weekday (filled in)"],
+  ["Driver", 16, "txt", "Driver's name"], ["Conductor", 16, "txt", "Conductor's name"], ["Checker", 15, "txt", "Checker's name"], ["Diesel Rate", 10, "dec", "₹ a litre"], ["No. Litre", 9, "int", "Litres filled"],
+  ["Fuel Price", 11, "int", "Diesel amount ₹ (rate × litres; type over it if the bill differs)"], ["Driver", 9, "int", "Driver padi ₹"], ["Conductor", 10, "int", "Conductor padi ₹"], ["Checker", 9, "int", "Checker padi ₹"],
+  ["S1", 8, "int", "Single 1 collection ₹"], ["S2", 8, "int", "Single 2"], ["S3", 8, "int", "Single 3"], ["S4", 8, "int", "Single 4"], ["S5", 8, "int", "Single 5"], ["Collection", 11, "int", "S1–S5 added up (formula)"],
+  ["Expense", 11, "int", "The day's whole expense ₹: diesel, padi and anything else"], ["Balance", 11, "int", "Collection less Expense (formula)"], ["KMS", 11, "int", "Odometer at the end of the day"],
+  ["Remarks", 26, "txt", "Notes. A bus number with the word route (\"TN23CP3366 in route\") puts that day on that bus"]];
 function upTplRoute(fy) {
-  const S = XL.S, bus = routeBuses()[0], plate = bus ? plateOf(bus) : "TYPE THE BUS NUMBER", R0 = 7;
-  return MON_FY.map(m => { const ym = `${m >= 4 ? fy : fy + 1}-${pad2(m)}`, n = daysIn(ym), last = R0 + 30, d0 = new Date(ym + "-01T00:00:00");
-    const ws = XL.sheet(d0.toLocaleDateString("en-IN", { month: "long" }));
-    XL.put(ws, "A1", `${d0.toLocaleDateString("en-IN", { month: "long" })} - ${ym.slice(0, 4)} · ${plate}`, S.title);
-    [["A2", "Days Run", "B2", `COUNT(R${R0}:R${last})`], ["A3", "Total Balance", "B3", `SUM(T${R0}:T${last})`], ["J2", "Total Collection", "N2", `SUM(R${R0}:R${last})`],
-      ["J3", "Total Expense", "N3", `SUM(S${R0}:S${last})`], ["J4", "Total Balance", "N4", `SUM(T${R0}:T${last})`]].forEach(([l, t, v, f]) => { XL.put(ws, l, t, S.label); XL.put(ws, v, 0, S.tint, f); });
-    UP_TPL_ROUTE.forEach(([h, w], i) => { const c = XL.col(i); XL.put(ws, `${c}6`, h, S.head); ws.widths[c] = w; });
-    for (let d = 1; d <= n; d++) { const r = R0 + d - 1, date = `${ym}-${pad2(d)}`;
-      XL.put(ws, `A${r}`, d, S.int); XL.put(ws, `B${r}`, bus ? plannedFor(bus.id, date) : "", S.text); XL.put(ws, `C${r}`, DAYS[new Date(date + "T00:00:00").getDay()], S.text);
-      for (let c = 3; c < UP_TPL_ROUTE.length; c++) XL.put(ws, `${XL.col(c)}${r}`, "", c === 6 ? S.dec : c >= 7 && c <= 20 ? S.int : S.text);
-      XL.put(ws, `I${r}`, 0, S.int, `IF(OR(G${r}="",H${r}=""),"",ROUND(G${r}*H${r},0))`);
-      XL.put(ws, `R${r}`, 0, S.int, `IF(SUM(M${r}:Q${r})=0,"",SUM(M${r}:Q${r}))`); XL.put(ws, `T${r}`, 0, S.int, `IF(R${r}="","",R${r}-S${r})`); }
-    ws.freeze = 6; return ws; });
+  const bus = routeBuses()[0], plate = bus ? plateOf(bus) : "TYPE THE BUS NUMBER";
+  return MON_FY.map(m => { const ym = `${m >= 4 ? fy : fy + 1}-${pad2(m)}`, n = daysIn(ym), mon = new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long" });
+    return upTplSheet(mon, `${mon} - ${ym.slice(0, 4)} · ${plate}`, UP_TPL_ROUTE, 31,
+      [["Days Run", "COUNT(R5:R35)"], ["Total Collection", "R"], ["Total Expense", "S"], ["Total Balance", "T"]],
+      r => ({ I: `IF(OR(G${r}="",H${r}=""),"",ROUND(G${r}*H${r},0))`, R: `IF(SUM(M${r}:Q${r})=0,"",SUM(M${r}:Q${r}))`, T: `IF(R${r}="","",R${r}-S${r})` }),
+      ws => { for (let d = 1; d <= 31; d++) { const r = 4 + d, T = XL.S.tpl;
+        if (d > n) { UP_TPL_ROUTE.forEach((_, i) => XL.put(ws, `${XL.col(i)}${r}`, "", T.off)); continue; }
+        const date = `${ym}-${pad2(d)}`; XL.put(ws, `A${r}`, d, T.ctr); XL.put(ws, `B${r}`, bus ? plannedFor(bus.id, date) : "", T.ctr); XL.put(ws, `C${r}`, DAYS[new Date(date + "T00:00:00").getDay()], T.ctr); } }); });
 }
-const UP_TPL_SPARE = [["From Date", 12, "First day of the trip, " + UP_TPL_DATE], ["To Date", 12, "Last day of the trip (the same as From Date for one day)"], ["Days", 7, "Days (1, 2, 2.5…); used to check the dates"],
-  ["Total Rent", 11, "Rent for the whole trip ₹"], ["Driver", 14, "Driver's name"], ["Cleaner", 14, "Cleaner's name"], ["Driver", 9, "Driver padi ₹"], ["Cleaner", 9, "Cleaner padi ₹"],
-  ["Permit Exp.", 10, "Permit ₹"], ["Toll Gate", 10, "Toll ₹ (paid by the party, so it is also in the collection)"], ["Litres", 8, "Diesel litres"], ["Fuel Price", 10, "Diesel amount ₹"], ["Other Exp.", 10, "Anything else spent ₹"],
-  ["Total Expense", 11, "Padi, permit, toll, diesel and other added up (formula)"], ["Collection", 11, "Rent plus toll (formula)"], ["Balance", 10, "Collection less Total Expense (formula)"],
-  ["Start KMs", 10, "Odometer at the start"], ["End KMs", 10, "Odometer at the end"], ["Remarks", 22, "Notes, e.g. 19000 * 5"], ["Places", 30, "Where the trip went, e.g. Velam to Sabarimalai"]];
-const UP_TPL_TRUCK = [["From Date", 12, "First day of the trip, " + UP_TPL_DATE], ["To Date", 12, "Last day of the trip"], ["Days", 7, "Days of the trip"], ["Trip Rent", 11, "Rent for the trip ₹"],
-  ["Starting Place", 18, "Loading place, e.g. TN - Madurai"], ["Destination", 18, "Unloading place, e.g. GJ - Rajkot"], ["Driver 1", 14, "Driver's name"], ["Driver 2", 14, "Second driver, if any"],
-  ["Commission", 10, "Broker commission ₹"], ["Diesel Litres", 10, "Litres"], ["Diesel Amount", 11, "Diesel ₹"], ["Toll Gate", 10, "Toll ₹"], ["Driver Padi", 10, "Padi ₹"], ["RTO Exp", 9, "RTO / police ₹"],
-  ["Loading Exp", 10, "Loading and unloading ₹"], ["Bridge", 9, "Weighbridge ₹"], ["Oth.Exp", 9, "Other ₹"], ["Bill Exp 1", 9, "Bill ₹"], ["Bill Exp 2", 9, "Bill ₹"], ["Bill Exp 3", 9, "Bill ₹"], ["Bill Exp 4", 9, "Bill ₹"],
-  ["Total Expenses", 11, "Commission to Bill Exp 4 added up (formula)"], ["Balance", 10, "Trip Rent less Total Expenses (formula)"], ["Trip Balance", 11, "On the first trip of a round trip: the round trip's balance (starts a new round trip)"],
-  ["Trip Payment Status", 13, "Closed when the round trip is settled"], ["Start KM", 10, "Odometer at the start"], ["End KM", 10, "Odometer at the end"], ["Kms", 8, "End KM less Start KM (formula)"],
-  ["Remarks", 34, "Payments as \"Bank Input - Rs. 50000 on 08/04/2026\" are read as party payments"]];
-// A sheet per vehicle: the title with its number, totals on rows 2–4, headings on row 5, 200 trip rows.
-function upTplTrips(plate, cols, txt, sums, formulas) {
-  const S = XL.S, ws = XL.sheet(plateKey(plate) || "Vehicle"), rows = 200;
-  XL.put(ws, "A1", `${plate} - Income / Expense Details`, S.title);
-  sums.forEach(([lab, col], i) => { XL.put(ws, `A${2 + i}`, lab, S.label); XL.put(ws, `C${2 + i}`, 0, S.tint, `SUM(${col}6:${col}${5 + rows})`); });
-  cols.forEach(([h, w], i) => { const c = XL.col(i); XL.put(ws, `${c}5`, h, S.head); ws.widths[c] = w;
-    for (let r = 6; r < 6 + rows; r++) XL.put(ws, `${c}${r}`, "", i < 2 ? S.tx : txt.includes(i) ? S.text : /days|litre/i.test(h) ? S.dec : S.int); });
-  for (let r = 6; r < 6 + rows; r++) Object.entries(formulas(r)).forEach(([c, f]) => XL.put(ws, `${c}${r}`, 0, S.int, `IF(A${r}="","",${f})`));
-  ws.freeze = 5; return ws;
-}
-const upTplSpare = () => (spareBuses().length ? spareBuses() : [{ plateNo: "TN00AA0000" }]).map(v => upTplTrips(plateOf(v) || v.plateNo, UP_TPL_SPARE, [4, 5, 18, 19],
-  [["Total Collection", "O"], ["Total Expense", "N"], ["Gross", "P"]], r => ({ N: `SUM(G${r}:J${r},L${r}:M${r})`, O: `D${r}+J${r}`, P: `O${r}-N${r}` })));
+const UP_TPL_SPARE = [["From Date", 12, "date", "First day of the trip, " + UP_TPL_DATE], ["To Date", 12, "date", "Last day of the trip (the same as From Date for one day)"], ["Days", 7, "dec", "Days (1, 2, 2.5…); used to check the dates"],
+  ["Total Rent", 11, "int", "Rent for the whole trip ₹"], ["Driver", 15, "txt", "Driver's name"], ["Cleaner", 15, "txt", "Cleaner's name"], ["Driver", 9, "int", "Driver padi ₹"], ["Cleaner", 9, "int", "Cleaner padi ₹"],
+  ["Permit Exp.", 10, "int", "Permit ₹"], ["Toll Gate", 10, "int", "Toll ₹ (paid by the party, so it is also in the collection)"], ["Litres", 8, "int", "Diesel litres"], ["Fuel Price", 10, "int", "Diesel amount ₹"], ["Other Exp.", 10, "int", "Anything else spent ₹"],
+  ["Total Expense", 11, "int", "Padi, permit, toll, diesel and other added up (formula)"], ["Collection", 11, "int", "Rent plus toll (formula)"], ["Balance", 11, "int", "Collection less Total Expense (formula)"],
+  ["Start KMs", 10, "int", "Odometer at the start"], ["End KMs", 10, "int", "Odometer at the end"], ["Remarks", 24, "txt", "Notes, e.g. 19000 * 5"], ["Places", 32, "txt", "Where the trip went, e.g. Velam to Sabarimalai"]];
+const UP_TPL_TRUCK = [["From Date", 12, "date", "First day of the trip, " + UP_TPL_DATE], ["To Date", 12, "date", "Last day of the trip"], ["Days", 7, "dec", "Days of the trip"], ["Trip Rent", 11, "int", "Rent for the trip ₹"],
+  ["Starting Place", 19, "txt", "Loading place, e.g. TN - Madurai"], ["Destination", 19, "txt", "Unloading place, e.g. GJ - Rajkot"], ["Driver 1", 15, "txt", "Driver's name"], ["Driver 2", 15, "txt", "Second driver, if any"],
+  ["Commission", 10, "int", "Broker commission ₹"], ["Diesel Litres", 10, "int", "Litres"], ["Diesel Amount", 11, "int", "Diesel ₹"], ["Toll Gate", 10, "int", "Toll ₹"], ["Driver Padi", 10, "int", "Padi ₹"], ["RTO Exp", 9, "int", "RTO / police ₹"],
+  ["Loading Exp", 10, "int", "Loading and unloading ₹"], ["Bridge", 9, "int", "Weighbridge ₹"], ["Oth.Exp", 9, "int", "Other ₹"], ["Bill Exp 1", 9, "int", "Bill ₹"], ["Bill Exp 2", 9, "int", "Bill ₹"], ["Bill Exp 3", 9, "int", "Bill ₹"], ["Bill Exp 4", 9, "int", "Bill ₹"],
+  ["Total Expenses", 11, "int", "Commission to Bill Exp 4 added up (formula)"], ["Balance", 11, "int", "Trip Rent less Total Expenses (formula)"], ["Trip Balance", 11, "int", "On the first trip of a round trip: the round trip's balance (starts a new round trip)"],
+  ["Trip Payment Status", 13, "ctr", "Closed when the round trip is settled"], ["Start KM", 10, "int", "Odometer at the start"], ["End KM", 10, "int", "Odometer at the end"], ["Kms", 9, "int", "End KM less Start KM (formula)"],
+  ["Remarks", 36, "txt", "Payments as \"Bank Input - Rs. 50000 on 08/04/2026\" are read as party payments"]];
+const upTplSpare = () => (spareBuses().length ? spareBuses() : [{ plateNo: "TN00AA0000" }]).map(v => { const pl = plateOf(v) || v.plateNo;
+  return upTplSheet(plateKey(pl), `${pl} - Income / Expense Details`, UP_TPL_SPARE, 200, [["Total Collection", "O"], ["Total Expense", "N"], ["Gross", "P"], ["Days Run", "C"]],
+    r => ({ N: `IF(A${r}="","",SUM(G${r}:J${r},L${r}:M${r}))`, O: `IF(A${r}="","",D${r}+J${r})`, P: `IF(A${r}="","",O${r}-N${r})` })); });
 const upTplTruck = () => { const t = vehicles.filter(v => /truck/i.test(v.type || "") && v.status !== "Sold / Scrapped");
-  return (t.length ? t : [{ plateNo: "TN00AA0000" }]).map(v => upTplTrips(plateOf(v) || v.plateNo, UP_TPL_TRUCK, [4, 5, 6, 7, 24, 28],
-    [["Total Collection", "D"], ["Total Expense", "V"], ["Gross", "W"]], r => ({ V: `SUM(I${r},K${r}:U${r})`, W: `D${r}-V${r}`, AB: `IF(AND(Z${r}<>"",AA${r}<>""),AA${r}-Z${r},"")` }))); };
-const UP_TPL_XP = [["Date", 13, UP_TPL_DATE], ["Description", 44, "What was paid for"], ["Vehicle Number", 17, "The vehicle's number, e.g. TN23DK2277; leave empty for an office expense"],
-  ["Category", 18, "Pick from the list"], ["Payment Type", 16, "Pick from the list"], ["Amount", 12, "₹, without the ₹ sign"]];
-function upTplXp() {
-  const S = XL.S, ws = XL.sheet("Expenses"), rows = 1000;
-  UP_TPL_XP.forEach(([h, w], i) => { const c = XL.col(i); XL.put(ws, `${c}1`, h, S.head); ws.widths[c] = w; for (let r = 2; r <= rows; r++) XL.put(ws, `${c}${r}`, "", i === 0 ? S.tx : i === 5 ? S.int : S.text); });
-  ws.freeze = 1; ws.lists.push({ ref: `D2:D${rows}`, items: XP_CATS }, { ref: `E2:E${rows}`, items: XP_PAY }); return ws;
-}
+  return (t.length ? t : [{ plateNo: "TN00AA0000" }]).map(v => { const pl = plateOf(v) || v.plateNo;
+    return upTplSheet(plateKey(pl), `${pl} - Income / Expense Details`, UP_TPL_TRUCK, 200, [["Total Collection", "D"], ["Total Expense", "V"], ["Gross", "W"], ["Days Run", "C"], ["Total Kms", "AB"]],
+      r => ({ V: `IF(A${r}="","",SUM(I${r},K${r}:U${r}))`, W: `IF(A${r}="","",D${r}-V${r})`, AB: `IF(OR(Z${r}="",AA${r}=""),"",AA${r}-Z${r})` })); }); };
+const UP_TPL_XP = [["Date", 13, "date", UP_TPL_DATE], ["Description", 46, "txt", "What was paid for"], ["Vehicle Number", 17, "ctr", "The vehicle's number, e.g. TN23DK2277; leave empty for an office expense"],
+  ["Category", 18, "ctr", "Pick from the list"], ["Payment Type", 16, "ctr", "Pick from the list"], ["Amount", 13, "int", "₹, without the ₹ sign"]];
+const upTplXp = () => [upTplSheet("Expenses", "Expenses", UP_TPL_XP, 1000, [["Total Amount", "F"]], () => ({}),
+  ws => ws.lists.push({ ref: "D5:D1004", items: XP_CATS }, { ref: "E5:E1004", items: XP_PAY }))];
 const UP_TPL_HOW = {
-  route: ["Fill one sheet a month; one row is one day. Leave a day's row empty when the bus did not run.", "Keep row 1 (month, year and bus) and the headings on row 6 as they are; the bus in row 1 is the bus for the whole month."],
-  spare: ["Fill the sheet of the bus that did the trip; one row is one trip, from row 6.", "Keep the sheet name and row 1 (the bus number) and the headings on row 5 as they are."],
-  truck: ["Fill the sheet of the truck; one row is one trip, from row 6. The first trip of a round trip carries the round trip's Trip Balance and Payment Status.", "Keep the sheet name and row 1 (the truck number) and the headings on row 5 as they are."],
-  xp: ["One row is one payment, from row 2. Pick the Category and Payment Type from the lists.", "Keep the headings on row 1 as they are."]
+  route: ["Fill one sheet a month; one row is one day. Leave a day's row empty when the bus did not run.", "Keep row 1 (month, year and bus) and the headings on row 4 as they are; the bus in row 1 is the bus for the whole month."],
+  spare: ["Fill the sheet of the bus that did the trip; one row is one trip, from row 5.", "Keep the sheet name, row 1 (the bus number) and the headings on row 4 as they are."],
+  truck: ["Fill the sheet of the truck; one row is one trip, from row 5. The first trip of a round trip carries the round trip's Trip Balance and Payment Status.", "Keep the sheet name, row 1 (the truck number) and the headings on row 4 as they are."],
+  xp: ["One row is one payment, from row 5. Pick the Category and Payment Type from the lists.", "Keep the headings on row 4 as they are."]
 };
-const UP_TPL_END = ["Amounts are in rupees without the ₹ sign; leave a cell empty when there is nothing to enter.", "Save as .xlsx and upload it in Utility › Data upload with the same choice under What is in the file. Every row is checked and shown before anything is saved."];
+const UP_TPL_END = ["Shaded cells are worked out by the sheet: do not type in them. Amounts are in rupees without the ₹ sign; leave a cell empty when there is nothing to enter.",
+  "Save as .xlsx and upload it in Utility › Data upload with the same choice under What is in the file. Every row is checked and shown before anything is saved."];
+function upTplHelp(title, lines, rows) {
+  const T = XL.S.tpl, h = XL.sheet("How to fill");
+  XL.put(h, "A1", title, T.title); XL.put(h, "B1", null, T.title); h.merges.push("A1:B1");
+  lines.forEach((t, i) => { const r = 3 + i; XL.put(h, `A${r}`, `${i + 1}.`, T.ctr); XL.put(h, `B${r}`, t, T.help); h.heights[r] = 30; });
+  const r0 = lines.length + 4; XL.put(h, `A${r0}`, "Column", T.head); XL.put(h, `B${r0}`, "What to type", T.head);
+  rows.forEach(([c, t], i) => { const r = r0 + 1 + i; if (!t) { XL.put(h, `A${r}`, c, T.lab); XL.put(h, `B${r}`, null, T.lab); h.merges.push(`A${r}:B${r}`); } else { XL.put(h, `A${r}`, c, T.helpLab); XL.put(h, `B${r}`, t, T.help); } });
+  Object.assign(h.heights, { 1: 30, [r0]: 24 }); h.widths.A = 24; h.widths.B = 100; h.zoom = UP_TPL_ZOOM; return h;
+}
 function upTplBook(kind) {
-  const fy = fyOf(todayISO()), part = { route: () => upTplRoute(fy), spare: upTplSpare, truck: upTplTruck, xp: () => [upTplXp()] };
+  const fy = fyOf(todayISO()), part = { route: () => upTplRoute(fy), spare: upTplSpare, truck: upTplTruck, xp: upTplXp };
   const kinds = kind === "year" ? ["route", "spare", "truck", "xp"] : [kind], sheets = kinds.flatMap(k => part[k]());
-  const cols = { route: UP_TPL_ROUTE, spare: UP_TPL_SPARE, truck: UP_TPL_TRUCK, xp: UP_TPL_XP };
+  const cols = { route: UP_TPL_ROUTE, spare: UP_TPL_SPARE, truck: UP_TPL_TRUCK, xp: UP_TPL_XP }, nm = { route: "Route bus month sheets", spare: "Spare bus sheets", truck: "Truck sheets", xp: "Expenses sheet" };
   const help = upTplHelp(`${UP_KINDS[kind].label}: how to fill the template (FY ${fyLabel(fy)})`, [...kinds.flatMap(k => UP_TPL_HOW[k]), ...UP_TPL_END],
-    kinds.flatMap(k => [[`— ${({ route: "Route bus month sheets", spare: "Spare bus sheets", truck: "Truck sheets", xp: "Expenses sheet" })[k]} —`, ""], ...cols[k].map(([h, , t]) => [h, t])]));
+    kinds.flatMap(k => [[nm[k], ""], ...cols[k].map(([h, , , t]) => [h, t])]));
   return { name: `${({ route: "route-bus", spare: "spare-bus", truck: "truck-trips", xp: "expenses", year: "financial-year" })[kind]}-template-FY${fyLabel(fy)}.xlsx`, data: XL.build([...sheets, help]) };
 }
 const UP_MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
@@ -10432,7 +10434,8 @@ const XL = (() => {
     smTitle: 66, smHead: 67, smVeh: 68, smNum: 69, smDay: 70, smTotL: 71, smTotN: 72, smTotD: 73, smSign: 74, smGrandL: 75, smGrand: 76,
     mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84, sDateX: 85, sDateD: 86, sNote: 87, homeBtn: 88, hTitle: 89, hNote: 90, hLab: 91, btn: { sum: 92, route: 93, spare: 94, truck: 95, exp: 96, master: 97, off: 98 },
     mx: ["", "over", "soon"].reduce((a, k, i) => (a[k || "ok"] = { text: 99 + i * 3, int: 100 + i * 3, date: 101 + i * 3 }, a), {}),
-    mh: MH_SHADES.map((_, i) => [0, 1].map(b => { const n = 108 + (i * 2 + b) * 3; return { text: n, int: n + 1, date: n + 2 }; })) };
+    mh: MH_SHADES.map((_, i) => [0, 1].map(b => { const n = 108 + (i * 2 + b) * 3; return { text: n, int: n + 1, date: n + 2 }; })),
+    tpl: { title: 144, head: 145, lab: 146, sum: 147, txt: 148, ctr: 149, int: 150, dec: 151, date: 152, calc: 153, help: 154, helpLab: 155, off: 156 } };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -10465,7 +10468,13 @@ const XL = (() => {
     // 99–107: the maintenance summary download: text, number, date in green (OK), red (overdue) and orange (due soon)
     ...[9, 21, 22].flatMap(fl => [xf(0, 0, fl, 2, 'vertical="center" wrapText="1"'), xf(165, 0, fl, 2, 'vertical="center"'), xf(164, 0, fl, 2, 'horizontal="left" vertical="center"')]),
     // 108–143: the maintenance history colours (fills 23–28: each vehicle colour light and dark), plain and bold: text, number, date
-    ...MH_SHADES.flatMap((_, i) => [0, 1].flatMap(b => [xf(0, b, 23 + i, 2, 'vertical="center" wrapText="1"'), xf(165, b, 23 + i, 2, 'vertical="center"'), xf(164, b, 23 + i, 2, 'horizontal="left" vertical="center"')]))];
+    ...MH_SHADES.flatMap((_, i) => [0, 1].flatMap(b => [xf(0, b, 23 + i, 2, 'vertical="center" wrapText="1"'), xf(165, b, 23 + i, 2, 'vertical="center"'), xf(164, b, 23 + i, 2, 'horizontal="left" vertical="center"')])),
+    // 144–156: the upload templates (black borders): title, headings, total label and value, text, centred text, number, two decimals,
+    // date typed as text, worked-out cell (shaded), help text and help label, a day the month does not have (shaded)
+    xf(0, 2, 2, 2, 'horizontal="center" vertical="center"'), xf(0, 1, 2, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 1, 3, 2, 'horizontal="left" vertical="center"'),
+    xf(165, 1, 3, 2, 'horizontal="right" vertical="center"'), xf(0, 0, 0, 2, 'horizontal="left" vertical="center"'), xf(0, 0, 0, 2, 'horizontal="center" vertical="center"'),
+    xf(165, 0, 0, 2, 'horizontal="right" vertical="center"'), xf(166, 0, 0, 2, 'horizontal="right" vertical="center"'), xf(49, 0, 0, 2, 'horizontal="center" vertical="center"'),
+    xf(165, 0, 3, 2, 'horizontal="right" vertical="center"'), xf(0, 0, 0, 2, 'horizontal="left" vertical="center" wrapText="1"'), xf(0, 1, 3, 2, 'horizontal="left" vertical="center" wrapText="1"'), xf(0, 0, 3, 2)];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="16"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
@@ -18570,7 +18579,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12u";
+const APP_VER = "2026-11-12v";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
