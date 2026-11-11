@@ -12565,14 +12565,19 @@ function prevOdoFor(id, date) {
 }
 const DB_FIELDS = { dbRate: "dieselRate", dbLitres: "litres", dbFuel: "fuelCost", dbPayD: "driverPay", dbPayC: "conductorPay", dbPayK: "checkerPay",
   dbS1: "s1", dbS2: "s2", dbS3: "s3", dbS4: "s4", dbS5: "s5", dbOdo: "odo", dbRemarks: "remarks" };
+// The buses of the day sheet: the route buses now, and every bus with that day entered. A day run by a bus that is no longer
+// on the route (an old year loaded from Excel) shows only the buses that ran it, so its figures and its bus come up.
+function dayBuses() {
+  const rb = routeBuses(), on = [...new Set(winTrips().filter(t => t.date === opDate).map(t => t.vehicleId))], old = on.some(id => !rb.some(b => b.id === id));
+  return [...new Set([...(old ? [] : rb.map(b => b.id)), ...on])].map(id => vehicles.find(v => v.id === id)).filter(v => v && v.type === "Bus");
+}
 function renderDayBook() {
   subscribeDay();
   $("dbDate").value = opDate; $("dbDate").max = todayISO(); $("dbNextDay").disabled = opDate >= todayISO();
-  const rb = routeBuses();
+  const ready = dayReady(), rb = dayBuses();
   $("dbNone").hidden = !!rb.length; $("dbWrap").hidden = !rb.length; document.body.classList.toggle("dsfull", view === "tday" && !!rb.length);
   if (!rb.length) return;
-  const ready = dayReady();
-  if (!rb.some(b => b.id === dbBus)) dbBus = dbCond() ? rsMyBus() : (ready && rb.find(b => !entryOf(b.id)) || rb[0]).id;
+  if (ready && !rb.some(b => b.id === dbBus)) dbBus = dbCond() ? rsMyBus() : (rb.find(b => !entryOf(b.id)) || rb[0]).id;
   // With only one route bus there is nothing to choose: the bus list is left out (and a conductor has only his own bus).
   const one = rb.length === 1 || dbCond(); $("dbBody").classList.toggle("one", one); $("dbList").hidden = one;
   const done = rb.filter(b => entryOf(b.id)).length;
@@ -12663,10 +12668,10 @@ function syncDbMode() {
   $("dbIdleFields").hidden = !idle; $("dbRanFields").hidden = idle;
 }
 function nextPending() {
-  const rb = routeBuses(), i = rb.findIndex(b => b.id === dbBus);
+  const rb = dayBuses(), i = rb.findIndex(b => b.id === dbBus);
   return [...rb.slice(i + 1), ...rb.slice(0, Math.max(0, i))].find(b => !entryOf(b.id));
 }
-const dbOneBus = () => routeBuses().length === 1;
+const dbOneBus = () => dayBuses().length === 1;
 function syncDbSaveLabel() { if (dbCond()) { $("dbSave").textContent = "Send to office →"; return; } if (dbReviewSheet) { $("dbSave").textContent = "✓ Approve and add to trip sheet"; return; } $("dbSave").textContent = dbOneBus() ? (opDate < todayISO() ? "Save, next day →" : "Save") : nextPending() ? "Save, next bus →" : "Save"; }
 // What the save message says about singles: the singles actually typed, and any part of a typed total not split into singles.
 function dbSinglesText(t) {
@@ -18624,7 +18629,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12q";
+const APP_VER = "2026-11-12r";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
