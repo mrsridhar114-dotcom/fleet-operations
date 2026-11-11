@@ -6388,14 +6388,15 @@ function subscribeTrips() {
   tripYearUnsub = tripYearsRef.where("vehicleId", "==", tBusId)
     .onSnapshot(snap => { tripYears = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderTrips(); }, () => {});
 }
-// When the bus chosen has no trips in the year chosen: say so, and offer the route buses (sold ones too) that have trips that year.
+// When the bus chosen has no trips in the year chosen: say so, and offer the buses (spare and sold ones too) that have trips that year.
 let tOther = { key: "", list: null }, tAskKey = "", tLoadedKey = "";
 const tFyRange = () => [`${tFyStart}-04-01`, `${tFyStart + 1}-03-31`];
+const tBusTag = v => v.status === "Sold / Scrapped" ? " (sold)" : v.opType === "Route" ? "" : v.opType === "Spare" ? " (now spare)" : " (not on the route now)";
 const tGoBus = id => { $("tBus").value = id; $("tBus").dispatchEvent(new Event("change")); };
 async function tCheckOther() {
   const key = `${tBusId}|${tFyStart}`; if (!tBusId || tOther.key === key) return; tOther = { key, list: null };
   const [from, to] = tFyRange(), list = [];
-  for (const v of vehicles.filter(v => v.type === "Bus" && v.opType === "Route" && v.id !== tBusId)) {
+  for (const v of vehicles.filter(v => v.type === "Bus" && v.id !== tBusId)) {
     let n = 0;
     if (!tripDb) n = tripsLocal.filter(t => t.vehicleId === v.id && t.date >= from && t.date <= to).length;
     else try { n = (await tripDb.collection("trips").where("vehicleId", "==", v.id).where("date", ">=", from).where("date", "<=", to).get()).size; } catch {}
@@ -6404,7 +6405,7 @@ async function tCheckOther() {
   if (tOther.key !== key) return;
   tOther.list = list.sort((a, b) => b.n - a.n); renderTNone();
   if (!list.length || tAskKey !== key) return;
-  tAskKey = ""; const o = list[0], name = v => `${plateOf(v)}${v.status === "Sold / Scrapped" ? " (sold)" : ""}`;
+  tAskKey = ""; const o = list[0], name = v => `${plateOf(v)}${tBusTag(v)}`;
   if (await askYesNo(`${plateOf(vehicles.find(v => v.id === tBusId))} has no trips in FY ${fyLabel(tFyStart)}. ${list.map(x => `${name(x.v)} has ${nf(x.n)} day${x.n === 1 ? "" : "s"}`).join("; ")} in this year. Show ${name(o.v)}?`, { yes: `Show ${plateOf(o.v)}`, no: "Stay on this bus" })
     && `${tBusId}|${tFyStart}` === key) tGoBus(o.v.id);
 }
@@ -6416,8 +6417,8 @@ function renderTNone() {
   const list = tOther.key === key ? tOther.list : null, bus = vehicles.find(v => v.id === tBusId);
   el.hidden = false;
   el.innerHTML = `<b>No trips for ${esc(plateOf(bus))} in FY ${fyLabel(tFyStart)}.</b> ` + (list == null ? `<span>Looking for other buses with trips in this year…</span>`
-    : list.length ? `<span>Route buses with trips in this year:</span> ${list.map(o => `<button type="button" class="btn" data-tgo="${o.v.id}">${esc(plateOf(o.v))}${o.v.status === "Sold / Scrapped" ? " (sold)" : ""} · ${nf(o.n)} day${o.n === 1 ? "" : "s"}</button>`).join(" ")}`
-    : `<span>No other route bus has trips in this year either.</span>`);
+    : list.length ? `<span>Buses with route trips in this year:</span> ${list.map(o => `<button type="button" class="btn" data-tgo="${o.v.id}">${esc(plateOf(o.v))}${tBusTag(o.v)} · ${nf(o.n)} day${o.n === 1 ? "" : "s"}</button>`).join(" ")}`
+    : `<span>No other bus has route trips in this year either.</span>`);
 }
 function loadLocalTrips() {
   if (tripDb) return;
@@ -6680,10 +6681,11 @@ async function meOpenDay(date) {
 function renderTrips() {
   if (!$("tRows")) return;
   if (typeof renderOps === "function" && $("oCards") && (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") && view !== "trips") renderOps();
-  // Route buses, then the sold ones at the end so their old trip sheets can still be seen.
-  const sold = vehicles.filter(v => v.type === "Bus" && v.opType === "Route" && v.status === "Sold / Scrapped"), buses = [...routeBuses(), ...sold];
+  // Route buses, then the other buses (a bus moved to spare keeps its old route trip sheets), then the sold ones.
+  const rb = routeBuses(), byPlate = (a, b) => String(a.plateNo).localeCompare(String(b.plateNo)), rest = vehicles.filter(v => v.type === "Bus" && !rb.includes(v));
+  const buses = [...rb, ...rest.filter(v => v.status !== "Sold / Scrapped").sort(byPlate), ...rest.filter(v => v.status === "Sold / Scrapped").sort(byPlate)];
   const keep = tBusId && buses.some(b => b.id === tBusId) ? tBusId : (buses[0]?.id || "");
-  $("tBus").innerHTML = buses.map(b => `<option value="${b.id}">${esc(b.plateNo || vName(b))} · ${esc(vName(b))}${sold.includes(b) ? " (sold)" : ""}</option>`).join("");
+  $("tBus").innerHTML = buses.map(b => `<option value="${b.id}">${esc(b.plateNo || vName(b))} · ${esc(vName(b))}${tBusTag(b)}</option>`).join("");
   $("tBus").value = keep;
   if (keep !== tBusId) { tBusId = keep; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); }
   loadLocalTrips(); renderTNone();
@@ -18610,7 +18612,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12o";
+const APP_VER = "2026-11-12p";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
