@@ -6542,9 +6542,10 @@ async function meOpenDay(date) {
 function renderTrips() {
   if (!$("tRows")) return;
   if (typeof renderOps === "function" && $("oCards") && (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") && view !== "trips") renderOps();
-  const buses = routeBuses();
+  // Route buses, then the sold ones at the end so their old trip sheets can still be seen.
+  const sold = vehicles.filter(v => v.type === "Bus" && v.opType === "Route" && v.status === "Sold / Scrapped"), buses = [...routeBuses(), ...sold];
   const keep = tBusId && buses.some(b => b.id === tBusId) ? tBusId : (buses[0]?.id || "");
-  $("tBus").innerHTML = buses.map(b => `<option value="${b.id}">${esc(b.plateNo || vName(b))} · ${esc(vName(b))}</option>`).join("");
+  $("tBus").innerHTML = buses.map(b => `<option value="${b.id}">${esc(b.plateNo || vName(b))} · ${esc(vName(b))}${sold.includes(b) ? " (sold)" : ""}</option>`).join("");
   $("tBus").value = keep;
   if (keep !== tBusId) { tBusId = keep; tSubKey = ""; trips = []; tripMonths = []; subscribeTrips(); }
   loadLocalTrips();
@@ -18089,7 +18090,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12g";
+const APP_VER = "2026-11-12h";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
