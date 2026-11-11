@@ -1954,9 +1954,16 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mtfront { left: 100px; top: 33px; width: 120px; text-align: center; font: 700 11px var(--body); letter-spacing: .08em; color: var(--muted); }
 .mtaxle { left: 66px; width: 188px; height: 6px; border-radius: 3px; background: #8fa58a; } .mtaxle.w { left: 46px; width: 228px; }
 .mtvdraw span.mtaxn { left: 100px; width: 120px; display: flex; flex-direction: column; align-items: center; font: 600 12px/1.35 var(--body); color: var(--ink); text-align: center; }
-.mtaxn .over { color: var(--danger); } .mtaxn .soon { color: var(--warn); }
+.mtaxn .over { color: var(--danger); } .mtaxn .soon { color: var(--warn); } .mtaxn .ok { color: #2563eb; }
 .mtwhl { position: absolute; height: 62px; padding: 0; border: 2px dashed #b8c7b3; border-radius: 12px; background: transparent; display: flex; align-items: center; justify-content: center; gap: 3px; cursor: pointer; }
+.mtwhl.st-over { border: 2px solid var(--danger); background: color-mix(in srgb, var(--danger) 14%, var(--surface)); }
+.mtwhl.st-soon { border: 2px solid #e07b00; background: color-mix(in srgb, #f28c28 18%, var(--surface)); }
+.mtwhl.st-ok { border: 2px solid #2563eb; background: color-mix(in srgb, #2563eb 12%, var(--surface)); }
 .mtwhl.on { border: 2px solid var(--accent); background: var(--accent-soft); }
+.mtkey { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.mtkey span { display: inline-flex; align-items: center; gap: 6px; } .mtkey i { width: 14px; height: 14px; border-radius: 4px; box-sizing: border-box; border: 2px dashed #b8c7b3; }
+.mtkey i.st-over { border: 2px solid var(--danger); background: color-mix(in srgb, var(--danger) 14%, var(--surface)); } .mtkey i.st-soon { border: 2px solid #e07b00; background: color-mix(in srgb, #f28c28 18%, var(--surface)); }
+.mtkey i.st-ok { border: 2px solid #2563eb; background: color-mix(in srgb, #2563eb 12%, var(--surface)); } .mtkey i.st-on { border: 2px solid var(--accent); background: var(--accent); }
 .mtwhl .mtty { position: static; width: 20px; height: 50px; border-radius: 6px; background: repeating-linear-gradient(0deg, #2b332e 0 6px, #46524b 6px 9px); }
 .mtwhl .mtty.on { background: repeating-linear-gradient(0deg, #2f7d1e 0 6px, #46a032 6px 9px); }
 .mtwhl em { position: absolute; right: -8px; top: -8px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; } .mtwhl em .mttk { color: #fff; width: 12px; height: 12px; }
@@ -8321,6 +8328,9 @@ const MT_LAYOUT = {
   car: { h: 360, axles: [["Front axle", ["fl", "fr"], 1, 90], ["Back axle", ["bl", "br"], 1, 270]], quick: [["Front", ["fl", "fr"]], ["Back", ["bl", "br"]], ["All wheels", ["fl", "fr", "bl", "br"]]] }
 };
 const mtLayout = key => { const t = mtVehOf(key)?.type || ""; return /truck/i.test(t) ? MT_LAYOUT.truck : !t || /bus/i.test(t) ? MT_LAYOUT.bus : MT_LAYOUT.car; };
+// A wheel's state for this job: overdue, due within 5,000 km, up to date, or no record (never done here, or no service gap set).
+const MT_WST = { over: "Overdue", soon: "Due soon", ok: "Up to date", none: "No record" };
+const mtWst = d => d && (d.st === "over" || d.st === "soon" || d.st === "ok") ? d.st : "none";
 const mtPosLbl = (key, p) => (mtLayout(key) === MT_LAYOUT.truck && MP_TRUCK_POS[p]) || mtPosName(p);
 
 function renderMaint() {
@@ -8453,20 +8463,21 @@ function mtRender() {
 function mtSheet(plate, ro) {
   const k = mtw.wheel, t = mtType(k), L = mtLayout(mtw.key), truck = L === MT_LAYOUT.truck, S = mtw.wsel;
   const dueBy = new Map(mtDue(mtw.key).filter(d => d.it.k === k).map(d => [d.it.pos, d]));
-  const tyre = on => `<i class="mtty${on ? " on" : ""}"></i>`;
+  const tyre = on => `<i class="mtty${on ? " on" : ""}"></i>`, seen = new Set();
   const shape = truck ? `<i class="mtcab" style="height:${L.cab}px"></i><i class="mtwin"></i><span class="mtfront">FRONT</span><i class="mtbody" style="top:${L.cab + 8}px;height:${L.h - L.cab - 8}px"></i>`
     : `<i class="mtbody bus" style="top:0;height:${L.h}px"></i><i class="mtwin"></i><span class="mtfront">FRONT</span>`;
   const draw = L.axles.map(([name, ps, ty, y]) => {
     const d = ps.map(p => dueBy.get(p)).filter(x => x && (x.st === "over" || x.st === "soon")).sort((a, b) => a.left - b.left)[0];
-    return `<i class="mtaxle${ty > 1 ? " w" : ""}" style="top:${y - 3}px"></i><span class="mtaxn" style="top:${y + 8}px">${name}${d ? `<span class="${d.st}">${d.st === "over" ? "Overdue" : `Due in ${nf(d.left)} km`}</span>` : ""}</span>` +
-      ps.map((p, i) => { const on = S.includes(p), wd = ty > 1 ? 70 : 48;
-        return `<button type="button" class="mtwhl${on ? " on" : ""}" data-mtpos="${p}" aria-pressed="${on}" aria-label="${esc(mtPosLbl(mtw.key, p))}${ty > 1 ? ", 2 tyres" : ""}" style="top:${y - 31}px;left:${i ? 224 : 96 - wd}px;width:${wd}px"${ro}>${tyre(on).repeat(ty)}${on ? `<em>${MT_TICK}</em>` : ""}</button>`; }).join("");
+    return `<i class="mtaxle${ty > 1 ? " w" : ""}" style="top:${y - 3}px"></i><span class="mtaxn" style="top:${y + 8}px">${name}${d ? `<span class="${d.st}">${d.st === "over" ? "Overdue" : `Due in ${nf(d.left)} km`}</span>` : ps.some(p => mtWst(dueBy.get(p)) === "ok") ? `<span class="ok">Up to date</span>` : ""}</span>` +
+      ps.map((p, i) => { const on = S.includes(p), wd = ty > 1 ? 70 : 48, st = mtWst(dueBy.get(p)); seen.add(st);
+        return `<button type="button" class="mtwhl st-${st}${on ? " on" : ""}" data-mtpos="${p}" aria-pressed="${on}" aria-label="${esc(mtPosLbl(mtw.key, p))}${ty > 1 ? ", 2 tyres" : ""}, ${MT_WST[st]}" style="top:${y - 31}px;left:${i ? 224 : 96 - wd}px;width:${wd}px"${ro}>${tyre(on).repeat(ty)}${on ? `<em>${MT_TICK}</em>` : ""}</button>`; }).join("");
   }).join("");
   const inL = p => L.axles.some(a => a[1].includes(p)), nSel = S.filter(inL).length, tyres = L.axles.reduce((s, a) => s + a[1].filter(p => S.includes(p)).length * a[2], 0);
   return `<button type="button" class="mtshade" data-mt="wcancel" aria-label="Close" tabindex="-1"></button><section class="mtsheet" role="dialog" aria-modal="true" aria-label="${esc(t.name)} wheels">` +
     `<div class="mtsh"><div><b>${esc(t.name)}</b><span>${esc(plate)} · ${truck ? "12 wheeler. Each pair of back tyres is one wheel." : "Tap the wheels that were done."}</span></div>` +
     `<button type="button" class="xclose" data-mt="wcancel" aria-label="Close" title="Close without changing">${MT_X}</button></div>` +
     `<div class="mtlr"><span>LEFT</span><span>RIGHT</span></div><div class="mtvdraw" style="height:${L.h}px">${shape}${draw}</div>` +
+    `<div class="mtkey">${Object.keys(MT_WST).filter(st => seen.has(st)).map(st => `<span><i class="st-${st}"></i>${MT_WST[st]}</span>`).join("")}<span><i class="st-on"></i>Done now</span></div>` +
     `<div class="bwseg c3 mtquick">${L.quick.map(([l], i) => `<button type="button" data-mtq3="${i}"${ro}>${l}</button>`).join("")}</div>` +
     `<button type="button" class="bwgo" data-mt="wdone"${ro}>${nSel ? `Done · ${nSel} wheel${nSel === 1 ? "" : "s"}${tyres !== nSel ? ` (${tyres} tyres)` : ""}` : "Done · no wheels"}</button></section>`;
 }
@@ -17767,7 +17778,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12b";
+const APP_VER = "2026-11-12c";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
