@@ -49,9 +49,10 @@ html.fo-boot.fo-login body::before{content:none}`;
     return me;
   })();
 
-  /* ---------- offline: the last login and an offline copy of the records ----------
-     Only for logins whose records are small and needed on the road (truck drivers, read scope "driver"). The copy is kept in
-     IndexedDB on the phone and removed at sign-out. */
+  /* ---------- the last login and a copy of the records on this device ----------
+     Every login keeps a copy of its records in IndexedDB, so the app opens from it and downloads only what changed since.
+     The copy is removed at sign-out. Opening without signal (the last login and its copy) is only for truck drivers
+     (read scope "driver"), whose records are small and needed on the road. */
   const ME_KEY = "fo-me";
   function saveMe(m) { try { m ? localStorage.setItem(ME_KEY, JSON.stringify({ id: m.id, name: m.name, email: m.email, login: m.login || "", isOwner: !!m.isOwner, member: !!m.member, admin: !!m.admin })) : localStorage.removeItem(ME_KEY); } catch {} }
   function cachedMe() { try { return JSON.parse(localStorage.getItem(ME_KEY) || "null"); } catch { return null; } }
@@ -63,16 +64,21 @@ html.fo-boot.fo-login body::before{content:none}`;
     return new Promise((res, rej) => { const t = d.transaction("kv", op === "get" ? "readonly" : "readwrite"), s = t.objectStore("kv");
       const r = op === "get" ? s.get(key) : op === "del" ? s.delete(key) : s.put(val, key); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
   }
-  async function snapHas(uid) { try { const x = await kv("get", "snap"); return !!x && x.uid === uid; } catch { return false; } }
+  async function snapHas(uid) { try { const x = await kv("get", "snap"); return !!x && x.uid === uid && x.scope === "driver"; } catch { return false; } }
+  const SNAP_FRESH_MS = 7 * 864e5; // an older copy is not used to open: every record is downloaded again
   let snapTimer = null;
   function snapSoon() {
-    if (store.scope !== "driver" || !me) return;
+    if (!me) return;
     clearTimeout(snapTimer);
-    snapTimer = setTimeout(() => { kv("put", "snap", { uid: me.id, ver: store.ver, scope: store.scope, colls: [...store.colls].map(([c, m]) => [c, [...m]]) }).catch(() => {}); }, 2000);
+    snapTimer = setTimeout(() => {
+      if (store.pending.size) return snapSoon(); // a change still on its way to the server is not saved in the copy
+      kv("put", "snap", { uid: me.id, at: Date.now(), ver: store.ver, scope: store.scope, colls: [...store.colls].map(([c, m]) => [c, [...m]]) }).catch(() => {});
+    }, 3000);
   }
-  async function snapLoad() {
+  // maxAge: the oldest copy to use; scope: use only a copy of this read scope.
+  async function snapLoad(maxAge, scope) {
     let x = null; try { x = await kv("get", "snap"); } catch {}
-    if (!x || !me || x.uid !== me.id) return false;
+    if (!x || !me || x.uid !== me.id || Date.now() - (x.at || 0) > maxAge || (scope && x.scope !== scope)) return false;
     store.colls = new Map(x.colls.map(([c, rows]) => [c, new Map(rows)])); store.ver = x.ver; store.scope = x.scope;
     notify(new Set(["*"])); return true;
   }
@@ -617,10 +623,18 @@ html.fo-boot.fo-login body::before{content:none}`;
   // Installable as an Android app (Chrome "Install app", or packaged with PWABuilder).
   if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 
+  // Opening: a recent copy on this device shows at once, and only the changes since it are downloaded, in the background.
+  // Without one, every record is downloaded first; if that fails for lack of signal, a truck driver's phone uses any copy.
+  async function startDb() {
+    if (await snapLoad(SNAP_FRESH_MS)) sync();
+    else try { notify(await pull()); } catch (e) { if (e.status || !(await snapLoad(Infinity, "driver"))) throw e; }
+    schedule();
+  }
+
   window.claude = {
     async use(name) {
       await ready;
-      if (name === "db") { store.loaded ||= pull().then(notify, async e => { if (e.status || !(await snapLoad())) throw e; }).then(() => schedule()); await store.loaded; return db; }
+      if (name === "db") { store.loaded ||= startDb(); await store.loaded; return db; }
       if (name === "user") return user;
       if (name === "assets") return me.member || me.isOwner ? assets : null;
       if (name === "downloads") return downloads;

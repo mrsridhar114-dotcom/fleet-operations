@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
+<meta name="app-ver" content="2026-11-12w">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -18578,11 +18579,13 @@ route();
 connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
-   (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12v";
+   (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. The version is the app-ver
+   line at the top of the page (change it with each update), so only the first 1 KB of the site's copy is downloaded.
+   /index.html, not /, so the service worker leaves the request alone. */
+const APP_VER = document.querySelector('meta[name="app-ver"]').content;
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
-  try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
+  try { const t = await (await fetch("/index.html?v=" + Date.now(), { cache: "no-store", headers: { Range: "bytes=0-1023" } })).text(), m = t.match(/<meta name="app-ver" content="([^"]+)">/);
     if (m && m[1] !== APP_VER && !$("verBar")) { const d = document.createElement("div"); d.id = "verBar"; d.setAttribute("role", "status");
       d.innerHTML = `<span>A new version of the app is ready.</span><button type="button">Reload</button>`; d.querySelector("button").onclick = () => location.reload(); document.body.append(d); } } catch {}
 }
