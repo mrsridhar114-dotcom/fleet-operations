@@ -3032,6 +3032,12 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
         <button class="btn primary" type="button" id="oDl">⬇ Download all</button>
         <div id="oDlNoBus" class="nobus" hidden></div>
       </section>
+      <section class="panel upform updl" aria-labelledby="pfH">
+        <h2 id="pfH">Padi for route days loaded from Excel</h2>
+        <p class="sub">Route days loaded from Excel with no padi at all get it worked out: driver 5%, conductor and checker 4.5% of the day's collection, for whoever is named that day. It comes out of the day's Other expense, so each day's total expense stays the same. Nothing is changed until you press Add padi.</p>
+        <div><button class="btn" type="button" id="pfCheck">Check route days</button></div>
+        <div id="pfOut"></div>
+      </section>
       <h2 class="uph">Upload from Excel</h2>
       <section class="panel upform">
         <div class="hf"><label for="upKind">What is in the file</label><select id="upKind"></select></div>
@@ -9607,6 +9613,15 @@ function upMatchConductor(name) {
   return hit.length === 1 ? hit[0] : null;
 }
 // ctx (whole-year import): the days already in the app for the year, and the km reading the month starts from.
+// Padi for a route day kept without any (the 2018 workbooks have no pay columns): driver 5%, conductor and checker 4.5% of the
+// day's collection, for whoever is named that day. padiFix takes it out of the day's Other expense, so the total expense stays.
+const PADI_PCT = [["driver", 0.05], ["conductor", 0.045], ["checker", 0.045]];
+function padiWorkOut(t) { const c = num(t.collection) || tripCollection(t), o = {}; if (c > 0) PADI_PCT.forEach(([k, p]) => { if (t[k + "Name"] || t[k + "Id"]) o[k + "Pay"] = Math.round(c * p); }); return o; }
+function padiFix(h, pays = padiWorkOut(h)) {
+  const f = { ...h, ...pays }, misc = num(h.ex_misc) + (itemised(h) ? 0 : num(h.otherExp)); // a day saved before Other was itemised holds it in otherExp
+  f.ex_misc = Math.max(0, misc - tripPay(f)); if (!f.ex_misc) delete f.ex_misc; f.otherExp = itemised(f); if (!f.otherExp) delete f.otherExp;
+  f.expense = tripExpense(f); f.balance = num(f.collection) - f.expense; return f;
+}
 function upRouteRows(rows, bus, ym, file, ctx = {}) {
   const head = rows[0] || [], at = upColumns("route", head), out = [], cell = (r, k) => at[k] == null ? undefined : r[at[k]];
   if (at.day == null) return { error: "The first row must hold the column names, with Date in the first column (1 to 31)." };
@@ -9632,10 +9647,8 @@ function upRouteRows(rows, bus, ym, file, ctx = {}) {
     else if (t.litres && t.dieselRate) { t.fuelCost = Math.round(t.litres * t.dieselRate); row.notes.push(`no fuel price; worked out as ${t.litres} L × ₹${t.dieselRate}`); }
     if (v("payD")) t.driverPay = Math.round(v("payD")); if (v("payC")) t.conductorPay = Math.round(v("payC")); if (v("payK")) t.checkerPay = Math.round(v("payK"));
     [1, 2, 3, 4, 5].forEach(i => { if (v("s" + i)) t["s" + i] = Math.round(v("s" + i)); });
-    // Old workbooks (2018) have no pay columns: the padi is worked out from the collection — driver 5%, conductor and checker
-    // 4.5% each, for whoever is named that day — and comes out of the sheet's expense, so the day's total expense stays as typed.
-    if (ctx.padiPct && at.payD == null && at.payC == null && at.payK == null) { const c = tripCollection(t);
-      if (c > 0) { if (t.driverName) t.driverPay = Math.round(c * 0.05); if (t.conductorName) t.conductorPay = Math.round(c * 0.045); if (t.checkerName) t.checkerPay = Math.round(c * 0.045); row.padiPct = true; } }
+    // Old workbooks (2018) have no pay columns: the padi is worked out (padiWorkOut) and comes out of the sheet's expense, so the day's total expense stays as typed.
+    if (ctx.padiPct && at.payD == null && at.payC == null && at.payK == null) { const pays = padiWorkOut(t); if (tripPay(pays)) { Object.assign(t, pays); row.padiPct = true; } }
     const base = num(t.fuelCost) + tripPay(t), sheetExp = Math.round(v("expense"));
     if (sheetExp > base) { t.ex_misc = sheetExp - base; if (!t.fuelCost) row.notes.push(`no diesel amount; the expense ${rs(t.ex_misc)} goes in as Other`); }
     else if (sheetExp && sheetExp < base) row.notes.push(`the sheet's expense ${rs(sheetExp)} is less than diesel and pay (${rs(base)}); diesel and pay are kept`);
@@ -9850,9 +9863,7 @@ async function histRead(sheets, file) {
           if (x.t && m.bal >= 0) { const sb = upNum(src[m.bal]); if (sb != null && Math.round(sb) !== x.t.balance) issue("route", mon.sheet, x.line, `${fmtDate(x.date)}: the sheet's balance ${rs(Math.round(sb))} is not collection less expenses (${rs(x.t.balance)}).`); }
           // A day this import loaded before without padi: the padi goes in now, out of Other, so the day's expense stays the same.
           if (x.have && x.t && x.padiPct && !tripPay(x.have) && x.have.importedFrom && !x.problems.length) {
-            const h = x.have, f = { ...h, driverPay: x.t.driverPay, conductorPay: x.t.conductorPay, checkerPay: x.t.checkerPay }; ["driverPay", "conductorPay", "checkerPay"].forEach(k => { if (!f[k]) delete f[k]; });
-            const pay = tripPay(f), misc = num(h.ex_misc); f.ex_misc = Math.max(0, misc - pay); if (!f.ex_misc) delete f.ex_misc; f.otherExp = itemised(f); if (!f.otherExp) delete f.otherExp;
-            f.expense = tripExpense(f); f.balance = num(f.collection) - f.expense; x.fixPadi = f;
+            const h = x.have, f = x.fixPadi = padiFix(h, Object.fromEntries(["driverPay", "conductorPay", "checkerPay"].filter(k => x.t[k]).map(k => [k, x.t[k]]))), pay = tripPay(f);
             if (f.expense !== num(h.expense)) issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}): the padi worked out (${rs(pay)}) is more than the sheet's expense less diesel, so the day's expense goes from ${rs(num(h.expense))} to ${rs(f.expense)}.`);
           }
           if (x.have && !x.fixPadi) issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}) is already in the app${x.changes?.length ? ` with different values (${x.changes.map(c => `${c.label}: app ${c.from}, sheet ${c.to}`).join("; ")})` : ""}. The app's record is left as it is.`, true);
@@ -17322,6 +17333,40 @@ async function dlAllYears(btn) {
   catch (er) { if (er?.code !== "declined") toast(er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't make the file. Try again."); else if (n) toast(`Stopped after ${n} file${n > 1 ? "s" : ""}`); }
   finally { btn.disabled = false; btn.textContent = was; }
 }
+// Utility › Data upload: padi for route days already in the app that were loaded from Excel without any (no new upload needed).
+let pfList = null;
+async function pfCheck(btn) {
+  btn.disabled = true; btn.textContent = "Checking…";
+  try { const { trips: all } = await dlRead(["trips"]);
+    pfList = all.filter(t => t.vehicleId && t.date && t.importedFrom && !t.notRun && num(t.collection) > 0 && !tripPay(t)).sort((a, b) => a.date.localeCompare(b.date) || String(a.vehicleId).localeCompare(String(b.vehicleId)))
+      .map(t => { const pays = padiWorkOut(t); if (!tripPay(pays)) return null; const f = padiFix(t, pays); return { t, f, ok: f.expense === num(t.expense) }; }).filter(Boolean); }
+  catch { toast("Couldn't read the route days. Try again."); pfList = null; }
+  finally { btn.disabled = false; btn.textContent = "Check route days"; }
+  pfRender();
+}
+function pfRender() {
+  const el = $("pfOut"); if (!pfList) { el.innerHTML = ""; return; }
+  if (!pfList.length) { el.innerHTML = `<div class="upok">Every route day loaded from Excel already has padi. Nothing to add.</div>`; return; }
+  const ok = pfList.filter(x => x.ok), bad = pfList.filter(x => !x.ok), fys = [...new Set(pfList.map(x => fyOf(x.t.date)))].sort((a, b) => a - b), pl = id => esc(plateOf(vehicles.find(v => v.id === id)));
+  const row = x => `<tr><td>${fmtDate(x.t.date)}</td><td>${pl(x.t.vehicleId)}</td><td class="n">${nf(num(x.t.collection))}</td><td class="n">${nf(num(x.f.driverPay))}</td><td class="n">${nf(num(x.f.conductorPay))}</td><td class="n">${nf(num(x.f.checkerPay))}</td><td class="n">${nf(num(x.t.expense))}</td></tr>`;
+  const head = `<thead><tr><th>Date</th><th>Bus</th><th class="n">Collection</th><th class="n">Driver</th><th class="n">Conductor</th><th class="n">Checker</th><th class="n">Expense</th></tr></thead>`;
+  el.innerHTML = `<div class="tscroll" style="margin-top:12px"><table class="ctable"><thead><tr><th>Financial year</th><th class="n">Days</th><th class="n">Padi to add</th><th class="n">Left as they are</th></tr></thead><tbody>` +
+    fys.map(fy => { const a = ok.filter(x => fyOf(x.t.date) === fy), b = bad.filter(x => fyOf(x.t.date) === fy); return `<tr><td>FY ${fyLabel(fy)}</td><td class="n">${a.length}</td><td class="n">${rs(a.reduce((s, x) => s + tripPay(x.f), 0))}</td><td class="n">${b.length || ""}</td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><th scope="row">Total</th><td class="n">${ok.length}</td><td class="n">${rs(ok.reduce((s, x) => s + tripPay(x.f), 0))}</td><td class="n">${bad.length || ""}</td></tr></tfoot></table></div>` +
+    (bad.length ? `<p class="sub" style="margin:12px 0 4px"><b>${bad.length} day${bad.length === 1 ? "" : "s"} left as ${bad.length === 1 ? "it is" : "they are"}:</b> the padi worked out is more than the day's Other expense, so adding it would change the day's total expense. Enter ${bad.length === 1 ? "its" : "their"} padi in the trip sheet if needed.</p><div class="tscroll"><table class="ctable">${head}<tbody>${bad.map(row).join("")}</tbody></table></div>` : "") +
+    (ok.length ? `<details style="margin-top:12px"><summary>See the ${ok.length} day${ok.length === 1 ? "" : "s"}</summary><div class="tscroll"><table class="ctable">${head}<tbody>${ok.map(row).join("")}</tbody></table></div></details>
+      <div style="margin-top:12px"><button class="btn primary" type="button" id="pfGo">Add padi to ${ok.length} day${ok.length === 1 ? "" : "s"}</button></div>` : "");
+}
+async function pfApply(btn) {
+  const ok = (pfList || []).filter(x => x.ok); if (!ok.length) return;
+  if (!await askYesNo(`Add padi to ${nf(ok.length)} route day${ok.length === 1 ? "" : "s"}? Each day's total expense stays the same.`, { yes: "Add padi" })) return;
+  btn.disabled = true; let n = 0, failed = 0, i = 0;
+  await Promise.all(Array.from({ length: 6 }, async () => { while (i < ok.length) { const x = ok[i++]; try { await dayTripSave(x.f); n++; } catch { failed++; } if ((n + failed) % 25 === 0) btn.textContent = `Saving… ${nf(n + failed)} of ${nf(ok.length)}`; } }));
+  toast(`Padi added to ${nf(n)} day${n === 1 ? "" : "s"}${failed ? `; ${failed} could not be saved: press Check route days again` : ""}`);
+  await pfCheck($("pfCheck"));
+}
+$("pfOut").addEventListener("click", e => { const b = e.target.closest("#pfGo"); if (b) pfApply(b); });
+$("pfCheck").onclick = e => pfCheck(e.currentTarget);
 $("oDl").onclick = e => { if ($("oDlFy").value === "all") { dlAllYears(e.currentTarget); return; }
   const fy = +$("oDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => dlAllSheets(await dlAllRead(), fy)); };
@@ -18559,7 +18604,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12m";
+const APP_VER = "2026-11-12n";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
