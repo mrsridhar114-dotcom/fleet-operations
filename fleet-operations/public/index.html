@@ -1926,6 +1926,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mtjob small.over { color: var(--danger); } .mtjob small.soon { color: var(--warn); } .mtjob small.mtwh-t { color: var(--accent); }
 .mtjob[aria-pressed="true"] { border: 2px solid var(--accent); padding: 7px 9px; background: var(--accent-soft); } .mttk { flex: none; color: var(--accent); }
 .mtgrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.histgrp { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; } .histgrp summary { cursor: pointer; } .histlist { max-height: 420px; overflow: auto; margin-top: 8px; }
 .mtfind { display: flex; align-items: center; gap: 6px; width: 160px; height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); box-sizing: border-box; }
 .mtfind input { width: 100%; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font: 500 14px var(--body); }
 .mtchips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -9088,7 +9089,9 @@ const TK_PAY = /(?:bank\s*)?input\s*-?\s*rs\.*\s*([\d,]+(?:\.\d+)?)\s*on\s*(\d{1
 // Date candidates for a cell: an Excel day number may be the right day or month/day turned round; a typed date with a wrong year
 // (2036, 202) takes the year of the trips around it.
 function tkDateCands(v, refY) {
-  if (typeof v === "number") { const d = upDate(v); return [d.a && { iso: d.a, how: "" }, d.b && { iso: d.b, how: "swap" }].filter(Boolean); }
+  // An Excel date can also carry the year before (a trip ending in January typed without its year): the next year is a candidate too.
+  if (typeof v === "number") { const d = upDate(v), c = [d.a && { iso: d.a, how: "" }, d.b && { iso: d.b, how: "swap" }].filter(Boolean);
+    return [...c, ...c.map(x => ({ iso: upIso(+x.iso.slice(0, 4) + 1, +x.iso.slice(5, 7), +x.iso.slice(8, 10)), how: "year" })).filter(x => x.iso)]; }
   const t = upText(v), m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/.exec(t); if (!m) { const d = upDate(v); return d.a ? [{ iso: d.a, how: "" }] : []; }
   let y = +m[3]; if (y < 100) y += 2000;
   const ok = upIso(y, +m[2], +m[1]);
@@ -9121,7 +9124,7 @@ function tkParseBook(sheets) {
       let best = null;
       for (const f of fc) for (const t of tkDateCands(tc0, +f.iso.slice(0, 4))) {
         const span = t.iso >= f.iso ? dayDiff(f.iso, t.iso) + 1 : -99, back = prev && f.iso < shiftDay(prev.from, -2) ? 1 : 0;
-        const s = (span < 0 ? 1000 : 0) + (days ? Math.abs(span - days) * 10 : 0) + back * 50 + (prev ? Math.abs(dayDiff(prev.to, f.iso)) / 60 : 0) + (f.how ? .1 : 0) + (t.how ? .1 : 0);
+        const s = (span < 0 ? 1000 : 0) + (days ? Math.abs(span - days) * 10 : 0) + back * 50 + (prev ? Math.abs(dayDiff(prev.to, f.iso)) / 60 : 0) + (f.how === "year" ? 3 : f.how ? .1 : 0) + (t.how === "year" ? 3 : t.how ? .1 : 0);
         if (!best || s < best.s) best = { s, f, t };
       }
       const notes = [], probs = [];
@@ -9149,7 +9152,7 @@ function tkParseBook(sheets) {
       if (rb != null || st || !round) { round = { no: T.rounds.length + 1, sheetBal: rb, status: /clos|settl|complet/i.test(st) ? "Closed" : "Open", rows: [] }; T.rounds.push(round); }
       const x = { line: i + 1, leg, round, notes, probs, D1, D2, hash: mtHash(`${plateKey(T.plate)}|${leg.from}|${plateKey(leg.origin)}|${plateKey(leg.dest)}|${leg.rent}`) };
       round.rows.push(x); T.rows.push(x); out.rows++;
-      if (best) prev = { from: best.f.iso, to: best.t.iso, endKm };
+      if (best && best.t.iso >= best.f.iso) prev = { from: best.f.iso, to: best.t.iso, endKm };
     });
     T.rounds.forEach(R => { const ok = R.rows.filter(x => !x.probs.length); R.bal = ok.reduce((a, x) => a + legCalc(x.leg).bal, 0); R.paid = ok.reduce((a, x) => a + legCalc(x.leg).received, 0);
       R.lastPay = ok.flatMap(x => (x.leg.payments || []).map(p => p.date)).sort().pop() || ok.map(x => x.leg.to).sort().pop() || "";
@@ -9588,6 +9591,298 @@ async function upRouteYearRows(sheets, bus, fy, file) {
   months.sort((a, b) => a.ym.localeCompare(b.ym));
   return { rows, months, other, fy, label: `FY ${fyLabel(fy)}`, year: true };
 }
+/* ---- The office's old yearly workbooks ("Daily Format - 2018" … "Daily Format - 2025"), every sheet of one workbook in one upload ----
+   Month sheets → route bus days · the spare bus sheet → spare bus trips · truck sheets → truck trips · Expense sheets → expenses ·
+   Maintenance sheets → maintenance visits. Summary, attendance and the other sheets are only listed. Values go in as typed in the sheet.
+   Everything that does not add up, every date Excel turned round, every row left out and every record already in the app is listed
+   first; nothing is saved until the admin accepts. Records already in the app are never changed. */
+// Which bus ran the route, by date (from the sheets' remarks and km readings, confirmed by the office). A remark such as
+// "TN23BB7585 In Route" on a day also names the bus for that day.
+const HIST_ROUTE = [["", "TN23BB7585"], ["2019-06-09", "TN23CP3366"], ["2025-07-04", "TN23DK2277"]];
+const HIST_ROUTE_DAYS = { "2021-08-01": "TN23BB7585", "2021-08-02": "TN23BB7585", "2021-08-04": "TN23BB7585", "2021-08-05": "TN23BB7585", "2021-08-06": "TN23BB7585" };
+// A spare bus sheet named with two buses ("TN23BB7585 TN23CP3366"): the rows that start at this km or more are the second bus.
+const HIST_SPLIT_KM = 500000;
+const HIST_PLATE = /\b([A-Z]{2})\s*(\d{1,2})\s*([A-Z]{1,3})\s*(\d{4})\b/gi;
+const histPlates = s => [...upText(s).toUpperCase().matchAll(HIST_PLATE)].map(m => m.slice(1).join(""));
+const histRouteBus = (date, remark) => histPlates(/route/i.test(remark || "") ? remark : "")[0] || HIST_ROUTE_DAYS[date] || HIST_ROUTE.filter(([d]) => date >= d).pop()[1];
+UP_KINDS.hist = {
+  label: "Old office workbook (Daily Format, 2018 onward: all sheets at once)",
+  note: "One yearly workbook at a time (save it without the password first). Month sheets go to the route bus day sheets (the bus is chosen by date: TN23BB7585 until 8 June 2019, TN23CP3366 from 9 June 2019, TN23DK2277 from 4 July 2025, and the bus named in a remark such as \"TN23BB7585 In Route\"), the spare bus sheet to spare bus trips, the truck sheets to truck trips, the Expense sheets to expenses and the Maintenance sheets to maintenance. Values go in as typed. Every discrepancy is listed first and nothing is saved until you accept. Records already in the app are left as they are.",
+  hist: true
+};
+const HIST_AREAS = [["veh", "Vehicles"], ["route", "Route bus days"], ["spare", "Spare bus trips"], ["truck", "Truck trips"], ["xp", "Expenses"], ["mt", "Maintenance"], ["other", "Sheets not loaded"]];
+function histHead(rows, test, max = 25) { for (let i = 0; i < Math.min(max, rows.length); i++) { const h = (rows[i] || []).map(v => upText(v).toLowerCase()); if (test(h)) return i; } return -1; }
+// The number written after a label in the sheet's top block ("Total Collection | | 481030").
+function histTopVal(rows, upto, re) {
+  for (let i = 0; i < upto; i++) { const r = rows[i] || []; for (let j = 0; j < r.length; j++) if (re.test(upText(r[j]))) { for (let k = j + 1; k < Math.min(r.length, j + 6); k++) { const v = upNum(r[k]); if (v != null) return v; } } }
+  return null;
+}
+// The month of a month sheet. The title ("April - 2022") gives the year, but some titles were copied from the year before, so the
+// year is checked with the sheet's own day names (Monday, Tuesday…): the year whose calendar they match is used.
+function histYm(sh, head, data) {
+  const M = "(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*", t = upText((sh.rows[0] || []).find(v => upText(v)) || "");
+  const mt = new RegExp(M + "\\W*(\\d{4})", "i").exec(t), mn = new RegExp("^" + M + "\\W*'?(\\d{2,4})?", "i").exec(sh.name.trim());
+  const mon = UP_MONTHS.indexOf((mt?.[1] || mn?.[1] || "").slice(0, 3).toLowerCase()) + 1; if (!mon) return { ym: "" };
+  const ty = mt ? +mt[2] : 0, ny = mn?.[2] ? (+mn[2] < 100 ? 2000 + +mn[2] : +mn[2]) : 0, base = ty || ny; if (!base) return { ym: "" };
+  const at = upColumns("route", head), wd = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const score = y => data.reduce((a, r) => { const d = upNum(r?.[at.day]), w = upText(r?.[at.wday]).toLowerCase().slice(0, 3); if (!(d >= 1 && d <= 31) || !w) return a;
+    const iso = upIso(y, mon, Math.round(d)); return a + (iso && wd[new Date(iso + "T00:00:00").getDay()] === w ? 1 : 0); }, 0);
+  const cands = [...new Set([base, ny, base - 1, base + 1].filter(Boolean))], best = cands.reduce((b, y) => score(y) > score(b) ? y : b, base);
+  return { ym: `${best}-${pad2(mon)}`, title: t, fixed: best !== base ? base : 0 };
+}
+// A vehicle by its number: the one in the vehicle master, else a new one added as Sold / Scrapped (saved only on Accept).
+function histVeh(H, plate, kind) {
+  const k = plateKey(plate); if (k.length < 6) return null;
+  const v = vehicles.find(x => plateKey(x.plateNo) === k); if (v) return v;
+  if (H.newVeh.has(k)) return H.newVeh.get(k);
+  const p = /^([A-Z]{2})(\d{1,2})([A-Z]{1,3})(\d{4})$/.exec(k), truck = kind === "truck";
+  const nv = { id: "v" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), plateNo: p ? p.slice(1).join(" ") : normPlate(plate), status: "Sold / Scrapped",
+    type: truck ? "12 Wheeler Truck" : "Bus", ...(truck ? {} : { opType: kind === "spare" ? "Spare" : "Route" }), ownerName: "", make: "", model: "", fuel: "Diesel", importedFrom: H.file, importedOn: todayISO() };
+  H.newVeh.set(k, nv); return nv;
+}
+async function histRead(sheets, file) {
+  const H = { file, newVeh: new Map(), route: [], months: [], spare: [], truck: [], xp: [], mt: null, other: [], iss: [], routeDays: new Map() };
+  const issue = (area, sheet, line, text, left) => H.iss.push({ area, sheet, line, text, left: !!left });
+  const isMonth = sh => /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(sh.name.trim()) && histHead(sh.rows, h => h.includes("date") && h.some(x => x.startsWith("starting"))) >= 0;
+  const isTruck = sh => histHead(sh.rows, h => h.some(x => /^from\s*date/.test(x)) && h.some(x => /^trip\s*rent/.test(x))) >= 0;
+  const isSpare = sh => !isTruck(sh) && histHead(sh.rows, h => h.some(x => /^from\s*date/.test(x)) && h.some(x => /^collection/.test(x))) >= 0;
+  const isXp = sh => /expense/i.test(sh.name) && histHead(sh.rows, h => h.some(x => /^date/.test(x)) && h.some(x => /desc/.test(x)) && h.some(x => /amount/.test(x))) >= 0;
+  const isMt = sh => /maintenance/i.test(sh.name) && sh.rows.some(r => r?.some(c => /^maintenance type$/i.test(upText(c))));
+  const kinds = sheets.map(sh => ({ sh, k: isMonth(sh) ? "route" : isTruck(sh) ? "truck" : isSpare(sh) ? "spare" : isXp(sh) ? "xp" : isMt(sh) ? "mt" : "other" }));
+  kinds.filter(x => x.k === "other").forEach(x => H.other.push(x.sh.name.trim()));
+
+  // ---- route bus: the rows of each month sheet, split by the bus that ran that day
+  const months = kinds.filter(x => x.k === "route").map(x => {
+    const sh = x.sh, hi = histHead(sh.rows, h => h.includes("date") && h.some(c => c.startsWith("starting")));
+    const head = (sh.rows[hi] || []).map(v => /^total\s*amount$/i.test(upText(v)) ? "Fuel Price" : /^rema?k?r?k?s$/i.test(upText(v)) ? "Remarks" : v), at = upColumns("route", head), Y = histYm(sh, head, sh.rows.slice(hi + 1)), ym = Y.ym;
+    if (Y.fixed) issue("route", sh.name.trim(), 1, `The sheet's title "${Y.title}" says ${Y.fixed}, but its day names match ${new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })}. Read as ${new Date(ym + "-01T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" })}.`);
+    const bal = head.findIndex(v => /^balance$/i.test(upText(v)));
+    return { sh, ym, hi, head, at, bal, data: sh.rows.slice(hi + 1), top: { col: histTopVal(sh.rows, hi, /^total\s*collection/i), exp: histTopVal(sh.rows, hi, /^total\s*expense/i), days: histTopVal(sh.rows, hi, /^days\s*run/i) } };
+  }).filter(m => { if (!m.ym) { issue("route", m.sh.name, 0, "The month and year could not be read from the sheet's title, so this sheet is left out.", true); return false; } return true; })
+    .sort((a, b) => a.ym.localeCompare(b.ym));
+  months.forEach(m => m.data.forEach(r => { const d = upNum(r?.[m.at.day]); if (!(d >= 1 && d <= 31)) return; const date = `${m.ym}-${pad2(Math.round(d))}`;
+    r.__bus = histRouteBus(date, upText(m.at.remarks != null ? r[m.at.remarks] : "")); }));
+  const routePlates = [...new Set(months.flatMap(m => m.data.map(r => r?.__bus).filter(Boolean)))];
+  // ---- the plates of every other part, so a vehicle not in the master can be added before the rows are read
+  const sparePlates = kinds.filter(x => x.k === "spare").map(x => ({ sh: x.sh, plates: histPlates(x.sh.name).length ? histPlates(x.sh.name) : histPlates(upText((x.sh.rows[0] || []).find(v => upText(v)))) }));
+  const truckPlates = kinds.filter(x => x.k === "truck").map(x => ({ sh: x.sh, plate: histPlates(x.sh.name)[0] || histPlates(upText((x.sh.rows[0] || []).find(v => upText(v))))[0] || "" }));
+  routePlates.forEach(p => histVeh(H, p, "route")); sparePlates.forEach(s => s.plates.forEach(p => histVeh(H, p, "spare"))); truckPlates.forEach(t => t.plate && histVeh(H, t.plate, "truck"));
+  // Expense sheets: the Vehicle Number column, or the bus in the title ("EXPENSES - TN 23 BB 7585 - 2018") when there is no such column.
+  kinds.filter(x => x.k === "xp").forEach(x => { const logi = /logistic|truck|lorry/i.test(x.sh.name), hi = histHead(x.sh.rows, h => h.some(c => /^date/.test(c)) && h.some(c => /desc/.test(c)));
+    const cv = (x.sh.rows[hi] || []).findIndex(v => /vehicle|bus/i.test(upText(v)));
+    if (cv < 0) x.sh.rows.slice(0, hi).forEach(r => (r || []).forEach(c => { if (/^expenses?\s*-/i.test(upText(c))) histPlates(c).forEach(pl => histVeh(H, pl, "route")); }));
+    else x.sh.rows.slice(hi + 1).forEach(r => { const t = upText(r?.[cv]), ps = histPlates(t); if (ps.length === 1 && t.replace(/\s+/g, "").length <= 12) histVeh(H, ps[0], logi ? "truck" : "route"); }); });
+  kinds.filter(x => x.k === "mt").forEach(x => x.sh.rows.forEach(r => (r || []).forEach(c => { const t = upText(c); if (/^maintenance\s*-/i.test(t)) histPlates(t).forEach(p => histVeh(H, p, "route")); })));
+
+  // The days already in the app for each route bus over the file's dates.
+  const span = months.length ? [shiftDay(`${months[0].ym}-01`, -62), `${months.at(-1).ym}-${pad2(daysIn(months.at(-1).ym))}`] : null;
+  const have = new Map();
+  if (span) for (const p of routePlates) { const v = histVeh(H, p, "route"); have.set(v.id, H.newVeh.has(plateKey(p)) ? [] : await upHaveTrips(v.id, span[0], span[1])); }
+
+  // The parts are read with the new vehicles in the master for a moment, so every reader finds them.
+  const tmp = [...H.newVeh.values()]; vehicles.push(...tmp);
+  try {
+    // Route days. Km readings go in as typed; a reading lower than the day before (a new meter, or a typing slip) is only listed.
+    const odo = new Map(), lastKm = new Map();
+    months.forEach(m => {
+      const byBus = new Map(); m.data.forEach(r => { if (r?.__bus) byBus.set(r.__bus, true); });
+      const mon = { sheet: m.sh.name.trim(), ym: m.ym, rows: [], top: m.top };
+      for (const plate of byBus.keys()) {
+        const v = histVeh(H, plate, "route"), prev = odo.has(v.id) ? odo.get(v.id) : ((have.get(v.id) || []).filter(t => t.date < `${m.ym}-01` && t.odo).sort((a, b) => b.date.localeCompare(a.date))[0]?.odo ?? v.odoStart ?? null);
+        const rows = [m.head, ...m.data.map(r => r?.__bus === plate ? r : [])];
+        const res = upRouteRows(rows, v.id, m.ym, `${file} · ${m.sh.name.trim()}`, { have: have.get(v.id) || [], prevOdo: prev });
+        if (res.error) { issue("route", mon.sheet, 0, res.error, true); continue; }
+        odo.set(v.id, res.endOdo);
+        res.rows.forEach(x => {
+          x.line += m.hi; x.v = v; x.sheet = mon.sheet;
+          if (x.empty) return;
+          const src = m.data[x.line - m.hi - 2] || [];
+          // A template row for a day the month does not have (30 February), with nothing typed in it.
+          if (!x.date && ["driver", "conductor", "litres", "fuel", "s1", "s2", "s3", "s4", "s5", "collection", "expense", "odo"].every(k => m.at[k] == null || !upNum(src[m.at[k]]) && !/[a-z]/i.test(upText(src[m.at[k]])))) return;
+          x.notes = x.notes.filter(n => !/km reading|km in a day/.test(n));
+          const km = Math.round(upNum(src[m.at.odo]) || 0), pk = lastKm.get(v.id);
+          if (x.t && km > 0) { x.t.odo = km;
+            if (pk && km <= pk.km) issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}): km reading ${nf(km)} is lower than the reading before (${nf(pk.km)} on ${fmtDate(pk.date)}). Loaded as typed; that day counts 0 km. If the meter was changed, add the change in the vehicle's odometer details.`);
+            else if (pk && km - pk.km > 1500) issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}): ${nf(km - pk.km)} km since the reading before (${nf(pk.km)} on ${fmtDate(pk.date)}). Loaded as typed; please check.`);
+            lastKm.set(v.id, { km, date: x.date }); }
+          x.problems.forEach(p => issue("route", mon.sheet, x.line, `${x.date ? fmtDate(x.date) + ": " : ""}${p}. Left out.`, true));
+          x.notes.forEach(n => issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}): ${n}${/left out/.test(n) ? "" : "."}`, /left out/.test(n)));
+          if (x.t && m.bal >= 0) { const sb = upNum(src[m.bal]); if (sb != null && Math.round(sb) !== x.t.balance) issue("route", mon.sheet, x.line, `${fmtDate(x.date)}: the sheet's balance ${rs(Math.round(sb))} is not collection less expenses (${rs(x.t.balance)}).`); }
+          if (x.have) issue("route", mon.sheet, x.line, `${fmtDate(x.date)} (${plateOf(v)}) is already in the app${x.changes?.length ? ` with different values (${x.changes.map(c => `${c.label}: app ${c.from}, sheet ${c.to}`).join("; ")})` : ""}. The app's record is left as it is.`, true);
+          if (x.t && !x.problems.length) H.routeDays.set(x.date, plateOf(v));
+          mon.rows.push(x);
+        });
+      }
+      const ok = mon.rows.filter(x => x.t && !x.problems.length), sum = k => ok.reduce((a, x) => a + num((x.have || x.t)[k]), 0);
+      if (m.top.col != null && Math.round(m.top.col) !== sum("collection")) issue("route", mon.sheet, 0, `The sheet's Total Collection ${rs(Math.round(m.top.col))} is not the days added up (${rs(sum("collection"))}).`);
+      if (m.top.exp != null && Math.round(m.top.exp) !== sum("expense")) issue("route", mon.sheet, 0, `The sheet's Total Expense ${rs(Math.round(m.top.exp))} is not the days added up (${rs(sum("expense"))}).`);
+      H.months.push(mon); H.route.push(...mon.rows);
+    });
+
+    // Spare bus trips. The sheet's Collection is what the party paid (rent and toll), so the rent is Collection less Toll:
+    // the trip then adds up to the sheet's own Collection. The Rent column is kept as the rate.
+    sparePlates.forEach(({ sh, plates }) => {
+      const name = sh.name.trim(), hi = histHead(sh.rows, h => h.some(x => /^from\s*date/.test(x))), head = (sh.rows[hi] || []).map(upText), lc = head.map(x => x.toLowerCase());
+      const ix = re => lc.findIndex(x => re.test(x)), cRpd = ix(/^rent\s*\/\s*day/), cTot = ix(/^total\s*rent/), cCol = ix(/^collection/), cToll = ix(/^toll/), cDays = ix(/^days?$/),
+        cExp = ix(/^(total\s*)?expense$/), cStart = ix(/^start/);
+      const head2 = head.map((x, j) => j === cCol ? "Total Rent" : j === cRpd || j === cTot ? "Rate (sheet)" : x), data = sh.rows.slice(hi + 1);
+      if (!plates.length) { issue("spare", name, 0, "No bus number in the sheet's name or title, so this sheet is left out.", true); return; }
+      plates.forEach((plate, pi) => {
+        const v = histVeh(H, plate, "spare"), mineRow = r => plates.length < 2 || ((upNum(r?.[cStart]) || 0) >= HIST_SPLIT_KM) === (pi === 1);
+        const res = upSpareRows([head2, ...data.map(r => mineRow(r) ? r : [])], v.id, false, `${file} · ${name}`);
+        if (res.error) { issue("spare", name, 0, res.error, true); return; }
+        if (res.swap) issue("spare", name, 0, `${plateOf(v)}: Excel had read the dates in this sheet as month/day (e.g. 5 March for 3 May). They are read as day/month, checked against the Days column; please check the dates.`);
+        res.rows.forEach(x => {
+          x.line += hi; x.v = v; x.sheet = name; const src = data[x.line - hi - 2] || [], b = x.b;
+          if (b) {
+            const toll = num(b.toll), col = num(b.rent), days = num(b.days), rateCell = upNum(src[cTot]) || upNum(src[cRpd]) || 0, rent = col - toll, rateM = /(\d{3,6})\s*[*x×]\s*\d/i.exec(b.remarks || "");
+            b.rent = rent; b.rate = rateM ? +rateM[1] : rateCell || (days ? Math.round(rent / days) : rent);
+            const want = cTot >= 0 && upNum(src[cTot]) ? Math.round(upNum(src[cTot])) : cRpd >= 0 && upNum(src[cRpd]) ? Math.round(upNum(src[cRpd]) * (days || 1)) : null;
+            if (want != null && want !== rent) issue("spare", name, x.line, `${fmtDate(x.from)} (${plateOf(v)}): the rent column says ${rs(want)}${cTot < 0 || !upNum(src[cTot]) ? ` (${rs(Math.round(upNum(src[cRpd])))} a day × ${nf(days)})` : ""}, but Collection ${rs(col)} less Toll ${rs(toll)} is ${rs(rent)}. Loaded as ${rs(rent)}, so the trip adds up to the sheet's Collection.`);
+            let c = bkCalc(b); const done = ["completed"].includes(b.status);
+            if (done && c.due > 0) b.payments = [{ date: b.to || b.from, amount: c.due, mode: "Cash", note: "Imported from the office workbook: paid before the app", byName: whoAmI(), addedOn: todayISO() }];
+            c = bkCalc(b); Object.assign(b, { due: c.due, received: c.received, balance: c.balance, expense: c.exp, profit: c.profit }); x.c = c;
+            const se = cExp >= 0 ? upNum(src[cExp]) : null; if (se != null && Math.round(se) !== c.exp) issue("spare", name, x.line, `${fmtDate(x.from)} (${plateOf(v)}): the sheet's expense ${rs(Math.round(se))} is not the expenses added up (${rs(c.exp)}).`);
+            if (col > 0 && rent <= 0 && b.status !== "cancelled") x.problems.push("the toll is the whole collection, so there is no rent");
+          }
+          x.problems.forEach(p => issue("spare", name, x.line, `${x.from ? fmtDate(x.from) + ": " : ""}${p}. Left out.`, true));
+          x.notes.forEach(n => issue("spare", name, x.line, `${fmtDate(x.from)}: ${n}.`));
+          if (x.have) issue("spare", name, x.line, `${fmtDate(x.from)} (${plateOf(v)}) is already in the app. The app's booking is left as it is.`, true);
+          else if (x.skip) issue("spare", name, x.line, `${fmtDate(x.from)}: ${x.skip}. Left out.`, true);
+          H.spare.push(x);
+        });
+      });
+    });
+
+    // Truck trips. Older sheets: the second "Driver" column is the driver padi; with two "Diesel Rate" columns the second is the diesel cost.
+    truckPlates.forEach(({ sh }) => {
+      const name = sh.name.trim(), hi = histHead(sh.rows, h => h.some(x => /^from\s*date/.test(x)) && h.some(x => /^trip\s*rent/.test(x)));
+      const head = (sh.rows[hi] || []).map(upText), lc = head.map(x => x.toLowerCase()), seen = {};
+      const dr = lc.map((x, j) => x === "diesel rate" ? j : -1).filter(j => j >= 0);
+      const head2 = head.map((x, j) => { const k = lc[j]; seen[k] = (seen[k] || 0) + 1;
+        if (k === "driver" && lc.includes("driver 1")) return "Driver Padi";
+        if (k === "cleaner" && seen[k] === 2) return "Cleaner padi (sheet)";
+        if (k === "cleaner") return "Cleaner (sheet)";
+        if (dr.length > 1 && j === dr[0]) return "Diesel ₹ a L (sheet)";
+        return x; });
+      const cTot = lc.findIndex(x => /^total\s*expenses?$/.test(x)), cBal = lc.indexOf("balance"), cCln = lc.lastIndexOf("cleaner");
+      const R = tkParseBook([{ name: sh.name, rows: [...sh.rows.slice(0, hi), head2, ...sh.rows.slice(hi + 1)] }]);
+      if (R.error) { issue("truck", name, 0, R.error, true); return; }
+      tkIds(R);
+      R.trucks.forEach(T => {
+        if (!T.v) issue("truck", name, 0, `The truck number could not be read from the sheet's name or title. Its trips are left out.`, true);
+        else if (T.v.type !== "12 Wheeler Truck") issue("truck", name, 0, `${plateOf(T.v)} is in the vehicle master as ${T.v.type || "no class"}: set its class to 12 Wheeler Truck to see these trips under Trucks.`);
+        T.rounds.forEach(Rn => { if (Rn.mismatch) issue("truck", name, Rn.first?.line || 0, `Round trip from ${Rn.first ? fmtDate(Rn.first.leg.from) : "?"}: the sheet's Trip Balance ${rs(Math.round(Rn.sheetBal))} is not the trips added up (${rs(Rn.bal)}).`); });
+        T.rows.forEach(x => {
+          const src = sh.rows[x.line - 1] || [], L = x.leg; x.T = T; x.sheet = name;
+          if (L.from && L.to && L.to < L.from) { x.probs.push(`the To date ${xpDMY(L.to)} is before the From date ${xpDMY(L.from)} (a typing slip in the sheet); correct it in the sheet and load the workbook again`); x.notes = x.notes.filter(n => !/span/.test(n)); }
+          if (x.probs.length) { const note = !L.rent && !L.dest; issue("truck", name, x.line, note ? `"${upText(src[0]).slice(0, 60)}": a note in the sheet, not a trip. Left out.` : `${L.from ? fmtDate(L.from) + ": " : ""}${x.probs.join(", ")}. Left out.`, true); return; }
+          x.notes.forEach(n => issue("truck", name, x.line, `${fmtDate(L.from)}: ${n}.`));
+          const c = legCalc({ ...L, vehicleId: T.v?.id }), se = cTot >= 0 ? upNum(src[cTot]) : null, sb = cBal >= 0 ? upNum(src[cBal]) : null, cp = cCln >= 0 && lc[cCln] === "cleaner" && lc.indexOf("cleaner") !== cCln ? upNum(src[cCln]) : null;
+          if (se != null && Math.round(se) !== c.exp) issue("truck", name, x.line, `${fmtDate(L.from)}: the sheet's Total Expenses ${rs(Math.round(se))} is not the expenses added up (${rs(c.exp)})${cp ? `; the cleaner padi ${rs(cp)} has no place in the app's truck trip` : ""}.`);
+          else if (sb != null && Math.round(sb) !== c.bal) issue("truck", name, x.line, `${fmtDate(L.from)}: the sheet's Balance ${rs(Math.round(sb))} is not rent less expenses (${rs(c.bal)}).`);
+          if (x.have) issue("truck", name, x.line, `${fmtDate(L.from)} is already in the app. Left as it is.`, true);
+          H.truck.push(x);
+        });
+      });
+    });
+
+    // Expenses: categories and payment types kept as written in the sheet.
+    kinds.filter(x => x.k === "xp").forEach(({ sh }) => {
+      const name = sh.name.trim(), R = xpParseSheet([sh]); if (R.error) { issue("xp", name, 0, R.error, true); return; }
+      const hi = histHead(sh.rows, h => h.some(x => /^date/.test(x)) && h.some(x => /desc/.test(x))), lc = (sh.rows[hi] || []).map(v => upText(v).toLowerCase());
+      const cPay = lc.findIndex(x => /payment|paid|mode/.test(x)), cCat = lc.findIndex(x => /categ/.test(x)), noVeh = !lc.some(x => /vehicle|bus/.test(x));
+      const titleP = noVeh ? histPlates(sh.rows.slice(0, hi).flat().map(upText).join(" "))[0] : "", tv = titleP ? histVeh(H, titleP, "route") : null;
+      R.fixed.forEach(f => issue("xp", name, f.line, `"${f.desc}": Excel turned the date ${xpDMY(f.from)} round; read as ${xpDMY(f.to)}.`));
+      R.rows.forEach(x => {
+        const src = sh.rows[x.line - 1] || [];
+        if (tv && !x.plate) { x.vehicleId = tv.id; x.plate = plateOf(tv); x.hashPlate = x.plate; }
+        const cat = cCat >= 0 ? upText(src[cCat]) : ""; if (cat) { x.category = cat; delete x.catNote; } else issue("xp", name, x.line, `"${x.desc}": no category in the sheet; loaded as ${x.category}.`);
+        if (cPay >= 0) x.pay = upText(src[cPay]);
+        if (/^total$/i.test(x.desc) || /^total$/i.test(cat)) x.probs.push("a total line, not an expense");
+        if (x.probs.length) issue("xp", name, x.line, `${x.raw || "—"} "${x.desc || "—"}" ${x.amount ? rs(x.amount) : ""}: ${x.probs.join(", ")}. Left out.`, true);
+        else if (x.plate && !x.vehicleId) issue("xp", name, x.line, `"${x.desc}": vehicle "${x.plate}" is not one vehicle; kept as written.`);
+        x.sheet = name;
+      });
+      const seen = {}; R.rows.forEach(x => { const h = mtHash(`${x.date}|${x.desc}|${plateKey(x.hashPlate)}|${x.amount}`); seen[h] = (seen[h] || 0) + 1; x.id = `xp_${h}${seen[h] > 1 ? "_" + seen[h] : ""}`; });
+      const ids = new Set(H.xp.map(x => x.id)); R.rows.forEach(x => { if (ids.has(x.id)) x.id += "_" + name.replace(/\W+/g, "").toLowerCase(); });
+      const have = new Set(ops.expenses.map(x => x.id)); R.rows.forEach(x => { x.have = have.has(x.id); });
+      if (R.rows.some(x => x.have)) issue("xp", name, 0, `${R.rows.filter(x => x.have).length} expenses are already in the app (loaded before). Left as they are.`, true);
+      H.xp.push(...R.rows);
+    });
+
+    // Maintenance: the sheets with the history are read as details, "All Maintenance Summary" as the summary.
+    const mts = kinds.filter(x => x.k === "mt").map(x => x.sh);
+    if (mts.length) {
+      const det = mts.filter(s => !/summary/i.test(s.name)), sum = mts.filter(s => /summary/i.test(s.name));
+      const R = mtParseBook([{ name: "Maintenance Details", rows: det.flatMap(s => [[""], ...s.rows]) }, ...(sum.length ? [{ name: "Maintenance Summary", rows: sum.flatMap(s => [[""], ...s.rows]) }] : [])]);
+      const have = new Set(ops.maintLog.map(x => x.id)); R.entries.forEach(e => { e.have = have.has(e.id); });
+      const names = mts.map(s => s.name.trim()).join(", ");
+      if (R.skipped) issue("mt", names, 0, `${R.skipped} maintenance row${R.skipped === 1 ? " has" : "s have"} no date (planned or blank rows). Left out.`, true);
+      if (R.noPlate) issue("mt", names, 0, `${R.noPlate} row${R.noPlate === 1 ? " is" : "s are"} under a heading without a vehicle number. Left out.`, true);
+      [...R.plates.values()].filter(p => !p.v).forEach(p => issue("mt", names, 0, `Vehicle "${p.plate}" is not one vehicle in the master; its visits are kept under that number.`));
+      if (R.entries.some(e => e.have)) issue("mt", names, 0, `${R.entries.filter(e => e.have).length} visits are already in the app (loaded before). Left as they are.`, true);
+      H.mt = R;
+    }
+  } finally { tmp.forEach(v => { const i = vehicles.indexOf(v); if (i >= 0) vehicles.splice(i, 1); }); }
+  [...H.newVeh.values()].forEach(v => issue("veh", "", 0, `${v.plateNo} is not in the vehicle master. It will be added as ${v.type}${v.opType ? " · " + v.opType : ""}, status Sold / Scrapped (change it later in Vehicles).`));
+  H.other.forEach(n => issue("other", n, 0, /summary/i.test(n) ? "Totals worked out in the workbook: used only to check the other sheets." : "No screen in the app for this sheet. Not loaded.", true));
+  return H;
+}
+// What Accept will save.
+function histPlan(H) {
+  return { route: H.route.filter(x => x.t && !x.problems.length && !x.have && !x.empty), spare: H.spare.filter(x => x.b && !x.problems.length && !x.have && !x.skip),
+    truck: H.truck.filter(x => !x.probs.length && !x.have && x.T.v), xp: H.xp.filter(x => !x.probs.length && !x.have), mt: H.mt ? H.mt.entries.filter(e => !e.have) : [] };
+}
+function histPreview(H) {
+  const P = histPlan(H), areaRows = [
+    ["Route bus days", H.route.filter(x => !x.empty).length, P.route.length, H.route.filter(x => x.have).length, `Collection ${rs(P.route.reduce((a, x) => a + num(x.t.collection), 0))} · Expenses ${rs(P.route.reduce((a, x) => a + num(x.t.expense), 0))}`],
+    ["Spare bus trips", H.spare.filter(x => x.b).length, P.spare.length, H.spare.filter(x => x.have).length, `Collection ${rs(P.spare.reduce((a, x) => a + num(x.c.due), 0))} · Expenses ${rs(P.spare.reduce((a, x) => a + num(x.c.exp), 0))}`],
+    ["Truck trips", H.truck.length, P.truck.length, H.truck.filter(x => x.have).length, `Rent ${rs(P.truck.reduce((a, x) => a + num(x.leg.rent), 0))}`],
+    ["Expenses", H.xp.length, P.xp.length, H.xp.filter(x => x.have).length, rs(P.xp.reduce((a, x) => a + x.amount, 0))],
+    ["Maintenance visits", H.mt ? H.mt.entries.length : 0, P.mt.length, H.mt ? H.mt.entries.filter(e => e.have).length : 0, H.mt ? `${P.mt.reduce((a, e) => a + e.items.length, 0)} jobs` : ""]];
+  // Route bus by date, as read.
+  const spans = []; [...H.routeDays.entries()].sort((a, b) => a[0].localeCompare(b[0])).forEach(([d, p]) => { const l = spans.at(-1); if (l && l.p === p) l.to = d; else spans.push({ p, from: d, to: d }); });
+  const groups = HIST_AREAS.map(([k, l]) => [k, l, H.iss.filter(i => i.area === k)]).filter(g => g[2].length), nCheck = H.iss.filter(i => !i.left).length, nLeft = H.iss.filter(i => i.left).length;
+  const total = P.route.length + P.spare.length + P.truck.length + P.xp.length + P.mt.length + H.newVeh.size;
+  return `<div class="upsum"><span>File <b>${esc(H.file)}</b></span><span><b>${nCheck}</b> discrepanc${nCheck === 1 ? "y" : "ies"} to check</span><span><b>${nLeft}</b> left out or already in the app</span></div>` +
+    `<div class="tscroll"><table class="ctable"><thead><tr><th>In the workbook</th><th class="n">Rows read</th><th class="n">New to load</th><th class="n">Already in the app</th><th>Totals of the new rows</th></tr></thead><tbody>` +
+    areaRows.filter(r => r[1]).map(r => `<tr><td>${r[0]}</td><td class="n">${nf(r[1])}</td><td class="n"><b>${nf(r[2])}</b></td><td class="n">${nf(r[3])}</td><td>${r[4]}</td></tr>`).join("") + `</tbody></table></div>` +
+    (spans.length ? `<p class="sub" style="margin:0">Route bus by date: ${spans.map(s => `${xpDMY(s.from)} – ${xpDMY(s.to)} <b>${esc(s.p)}</b>`).join(" · ")}.</p>` : "") +
+    `<h3 class="sec" style="margin:6px 0 0">Discrepancies</h3><p class="sub" style="margin:0">Orange: loaded as in the sheet, please check. Grey: left out, or already in the app and left as it is. Nothing has been saved yet.</p>` +
+    groups.map(([k, l, list]) => `<details class="histgrp"${list.some(i => !i.left) && list.length <= 40 ? " open" : ""}><summary><b>${l}</b> · ${list.filter(i => !i.left).length} to check · ${list.filter(i => i.left).length} left out</summary>` +
+      `<div class="tscroll histlist"><table class="ctable"><thead><tr><th>Sheet</th><th class="n">Row</th><th>What</th></tr></thead><tbody>` +
+      list.map(i => `<tr class="${i.left ? "skip" : "chg"}"><td>${esc(i.sheet || "—")}</td><td class="n">${i.line || "—"}</td><td>${esc(i.text)}</td></tr>`).join("") + `</tbody></table></div></details>`).join("") +
+    `<label class="chk"><input type="checkbox" id="histOk"${upState.histOk ? " checked" : ""}> I have checked the discrepancies. Load the values as they are in the sheet.</label>` +
+    `<div class="upgo"><button class="btn primary" type="button" id="histGo"${!upState.emBusy && upState.histOk && total ? "" : " disabled"}>${upState.emBusy || `Accept and load ${nf(total)} record${total === 1 ? "" : "s"}`}</button><span class="sub">Loading the same workbook again adds nothing twice.</span></div>`;
+}
+async function histImport() {
+  const H = upState.rows?.hist; if (!H || upState.emBusy || !upState.histOk) return;
+  const P = histPlan(H), all = P.route.length + P.spare.length + P.truck.length + P.xp.length + P.mt.length + H.newVeh.size;
+  if (!await askYesNo(`Load ${nf(all)} records from ${H.file}?`, { yes: "Load" })) return;
+  const stamp = { createdOn: new Date().toISOString(), byName: whoAmI(), src: "excel" }; let n = 0, failed = 0, why = "";
+  const busy = () => { upState.emBusy = `Loading… ${nf(n + failed)} of ${nf(all)}`; renderUpload(); }; busy();
+  const run = async (list, save, conc = 6) => { let i = 0; await Promise.all(Array.from({ length: conc }, async () => { while (i < list.length) { const x = list[i++];
+    try { await save(x); n++; } catch (e) { failed++; why ||= e?.message || ""; } if ((n + failed) % 25 === 0) busy(); } })); };
+  await run([...H.newVeh.values()], v => saveVehicle(v), 1);
+  await run(P.route, x => dayTripSave(x.t));
+  await run(P.spare, async x => { const b = { ...x.b, no: nextBkNo() }; await opsSave("bookings", b); if (!ops.bookings.some(o => o.id === b.id)) ops.bookings.push(b);
+    await addBHistory(bookingChanges(null, b, `Imported from ${H.file} (${x.sheet}, row ${x.line})`)).catch(() => {}); }, 1);
+  const rounds = new Map();
+  await run(P.truck, async x => { const c = legCalc({ ...x.leg, vehicleId: x.T.v.id });
+    await opsSave("truckTrips", { id: x.id, vehicleId: x.T.v.id, roundId: x.roundId, ...x.leg, expense: c.exp, balance: c.bal, fy: fyOf(x.leg.from), ...stamp });
+    if (x.round.status === "Closed") rounds.set(x.roundId, { T: x.T, R: x.round }); });
+  for (const [id, { T, R }] of rounds) { if (ops.truckRounds.some(r => r.id === id)) continue;
+    try { await opsSave("truckRounds", { id, vehicleId: T.v.id, fy: fyOf(R.first?.leg.from || todayISO()), status: "Closed", closedOn: R.lastPay || todayISO() }); } catch { failed++; } }
+  await run(P.xp, x => { const { line, raw, probs, hashPlate, sheet, have, ...doc } = x; return opsSave("expenses", { ...doc, ...stamp }); });
+  await run(P.mt, e => { const { key, have, ...doc } = e; return opsSave("maintLog", { ...doc, by: "", ...stamp }); });
+  if (H.mt && Object.keys(H.mt.gaps).length) { const d = mtGapsDoc(), bus = JSON.parse(JSON.stringify(d.bus || {}));
+    Object.entries(H.mt.gaps).forEach(([k, g]) => { bus[k] = { ...g, ...(bus[k] || {}) }; });
+    try { await opsSave("maintTypes", { id: "gaps", gaps: d.gaps || {}, bus, ...rxStamp() }); } catch { failed++; } }
+  upState.emBusy = ""; upState.rows = null; upState.histOk = false; $("upFile").value = "";
+  upState.emDone = `<div class="upok"><b>${nf(n)} records loaded from ${esc(H.file)}</b>${failed ? `, ${failed} could not be saved${why ? ` (${esc(why)})` : ""}: load the workbook again to add them` : ""}. See them in the route trip sheets, the Booking planner, Trucks, <a href="#expenses">Expenses</a> and <a href="#maintenance">Maintenance</a>.</div>`;
+  renderUpload();
+}
 function upRouteYearSummary(res) {
   const line = m => { if (m.error) return `<tr class="bad"><td>${esc(m.name)}</td><td colspan="7">${esc(m.error)}</td></tr>`;
     const r = m.rows, C = upCounts(r), sel = upSelected(r), t = k => sel.reduce((a, x) => a + num((x.merged || x.t)[k]), 0);
@@ -9675,20 +9970,21 @@ function renderUpload() {
   const buses = K.route ? routeBuses() : spareBuses(), cur = $("upBus").value;
   $("upBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))}</option>`).join("");
   $("upBus").value = buses.some(v => v.id === cur) ? cur : "";
-  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route || !!K.em || !!K.xp || !!K.tk; $("upFyRow").hidden = !K.needsFy; $("upTpl").hidden = !!K.em || !!K.tk;
+  $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route || !!K.em || !!K.xp || !!K.tk || !!K.hist; $("upFyRow").hidden = !K.needsFy; $("upTpl").hidden = !!K.em || !!K.tk || !!K.hist;
   if (!$("upFy").options.length) { const ys = []; for (let y = fyOf(todayISO()); y >= UP_FY_FIRST; y--) ys.push(y); $("upFy").innerHTML = `<option value="">Choose</option>` + ys.map(y => `<option value="${y}">FY ${fyLabel(y)}</option>`).join(""); }
   $("upMonth").max = todayISO().slice(0, 7);
   const res = S.rows, list = res?.rows || [];
   if (S.done) { const d = S.done, u = K.route ? "day" : "trip";
     $("upOut").innerHTML = `<div class="upok"><b>${d.n} new ${u}${d.n === 1 ? "" : "s"} added, ${d.u} updated</b> in ${esc(d.bus)}${d.mon ? ` for ${esc(d.mon)}` : ""}${d.failed ? `, ${d.failed} could not be saved${d.why ? ` (${esc(d.why)})` : ""}. Upload the same file again: rows already saved show as No change` : ""}. ${K.route ? "They are in the route trip sheet (Day sheet and Monthly entry)." : "They are in the Booking planner and in Reports."}</div>`; return; }
-  if (!res) { $("upOut").innerHTML = (K.em || K.xp || K.tk) && S.emDone ? S.emDone : ""; return; }
+  if (!res) { $("upOut").innerHTML = (K.em || K.xp || K.tk || K.hist) && S.emDone ? S.emDone : ""; return; }
   if (res.error) { $("upOut").innerHTML = `<p class="err">${esc(res.error)}</p>`; return; }
-  if (res.loading) { $("upOut").innerHTML = `<p class="sub" style="margin:0">Loading the days already in the app for this month…</p>`; return; }
+  if (res.loading) { $("upOut").innerHTML = `<p class="sub" style="margin:0">${K.hist ? "Reading the workbook and checking every sheet…" : "Loading the days already in the app for this month…"}</p>`; return; }
   list.forEach((x, i) => x.i = i);
   if (K.route) { $("upOut").innerHTML = upRouteTable(res); return; }
   if (K.em) { $("upOut").innerHTML = res.em ? emPreview(res) : ""; return; }
   if (K.xp) { $("upOut").innerHTML = res.xp ? xpUpPreview(res.xp) : ""; return; }
   if (K.tk) { $("upOut").innerHTML = res.tk ? tkPreview(res.tk) : ""; return; }
+  if (K.hist) { $("upOut").innerHTML = res.hist ? histPreview(res.hist) : ""; return; }
   const C = upCounts(list), sel = upSelected(list);
   const tot = k => sel.filter(x => x.st !== "Cancelled").reduce((a, x) => a + num(x.c[k]), 0);
   $("upOut").innerHTML = `<div class="upsum"><span><b>${C.new}</b> new</span><span><b>${C.change}</b> with changes</span><span><b>${C.same}</b> no change</span><span><b>${C.skip}</b> clash with another booking</span><span><b>${C.bad}</b> with a problem</span>` +
@@ -9730,6 +10026,15 @@ async function upLoad() {
     } catch { upState.rows = { error: "This file could not be read. Open it in Excel, save it as .xlsx and try again." }; }
     renderUpload(); return;
   }
+  if (K.hist) {
+    upState.histOk = false; upState.emDone = "";
+    if (!/\.xlsx$/i.test(f.name)) { upState.rows = { error: "Choose the Excel workbook (.xlsx)." }; renderUpload(); return; }
+    upState.rows = { loading: true }; renderUpload();
+    let sheets = null;
+    try { sheets = await upReadXlsx(await f.arrayBuffer(), true); } catch { upState.rows = { error: "This file could not be read. If it has a password, open it in Excel, remove the password (File › Info › Protect Workbook › Encrypt with Password, clear it), save it and choose it again." }; renderUpload(); return; }
+    try { upState.rows = { hist: await histRead(sheets, f.name) }; } catch (e) { upState.rows = { error: `The workbook could not be checked: ${e?.message || e}` }; }
+    renderUpload(); return;
+  }
   if (K.year) {
     try {
       const buf = await f.arrayBuffer();
@@ -9764,7 +10069,8 @@ $("upFile").addEventListener("change", () => {
 });
 ["upBus", "upPaid", "upMonth", "upFy"].forEach(id => $(id).addEventListener("change", upLoad));
 $("upOut").addEventListener("change", e => { if (e.target.id === "emVeh") { upState.emVeh = e.target.value; upLoad(); } });
-$("upOut").addEventListener("click", e => { if (e.target.id === "emGo") emImport(); if (e.target.id === "xpUpGo") xpUpImport(); if (e.target.id === "tkGo") tkImport(); });
+$("upOut").addEventListener("click", e => { if (e.target.id === "emGo") emImport(); if (e.target.id === "xpUpGo") xpUpImport(); if (e.target.id === "tkGo") tkImport(); if (e.target.id === "histGo") histImport(); });
+$("upOut").addEventListener("change", e => { if (e.target.id !== "histOk") return; upState.histOk = e.target.checked; const y = scrollY; renderUpload(); scrollTo(0, y); });
 $("upKind").addEventListener("change", () => { upState.kind = $("upKind").value; $("upBus").value = ""; renderUpload(); upLoad(); });
 $("upOut").addEventListener("change", e => {
   const list = upState.rows?.rows; if (!list) return;
@@ -17780,7 +18086,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12d";
+const APP_VER = "2026-11-12f";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
