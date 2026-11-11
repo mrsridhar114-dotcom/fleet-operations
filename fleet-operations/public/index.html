@@ -9554,10 +9554,12 @@ UP_KINDS.routeYear = UP_ROUTE_YEAR;
 // April–December fall in the first year of the financial year, January–March in the next.
 const upSheetYm = (name, fy) => { const i = UP_MONTHS.findIndex(m => String(name).trim().toLowerCase().startsWith(m)); return i < 0 ? "" : `${i >= 3 ? fy : fy + 1}-${pad2(i + 1)}`; };
 // The financial year whose weekdays agree best with the Day column of the sheets.
+// Old sheets can be uploaded from FY 2016-17 on.
+const UP_FY_FIRST = 2016;
 function upGuessFy(sheets) {
   const wd = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"], now = fyOf(todayISO());
   let best = now, top = -1;
-  for (let fy = now; fy >= now - 6; fy--) {
+  for (let fy = now; fy >= UP_FY_FIRST; fy--) {
     let hit = 0;
     sheets.forEach(s => { const ym = upSheetYm(s.name, fy), at = upColumns("routeYear", s.rows[0] || []); if (!ym || at.day == null || at.wday == null) return;
       s.rows.slice(1).forEach(r => { const d = upNum(r?.[at.day]), w = upText(r?.[at.wday]).toLowerCase().slice(0, 3); if (d >= 1 && d <= daysIn(ym) && w) hit += wd[new Date(`${ym}-${pad2(d)}T00:00:00`).getDay()] === w ? 1 : 0; }); });
@@ -9674,7 +9676,7 @@ function renderUpload() {
   $("upBus").innerHTML = `<option value="">Choose the bus</option>` + buses.map(v => `<option value="${v.id}">${esc(plateOf(v))}</option>`).join("");
   $("upBus").value = buses.some(v => v.id === cur) ? cur : "";
   $("upBusRow").hidden = !K.needsBus; $("upMonRow").hidden = !K.needsMonth; $("upPaidRow").hidden = !!K.route || !!K.em || !!K.xp || !!K.tk; $("upFyRow").hidden = !K.needsFy; $("upTpl").hidden = !!K.em || !!K.tk;
-  if (!$("upFy").options.length) { const y = fyOf(todayISO()); $("upFy").innerHTML = `<option value="">Choose</option>` + [0, 1, 2, 3, 4, 5].map(i => `<option value="${y - i}">FY ${fyLabel(y - i)}</option>`).join(""); }
+  if (!$("upFy").options.length) { const ys = []; for (let y = fyOf(todayISO()); y >= UP_FY_FIRST; y--) ys.push(y); $("upFy").innerHTML = `<option value="">Choose</option>` + ys.map(y => `<option value="${y}">FY ${fyLabel(y)}</option>`).join(""); }
   $("upMonth").max = todayISO().slice(0, 7);
   const res = S.rows, list = res?.rows || [];
   if (S.done) { const d = S.done, u = K.route ? "day" : "trip";
@@ -17778,7 +17780,7 @@ connect();
 dmyInstall();
 /* A new version of the app: a phone keeps the app open in the background for days, so when it comes back to the screen
    (and every 15 minutes) it checks the site's copy. If that is newer, a bar offers to reload. Change APP_VER with each update. */
-const APP_VER = "2026-11-12c";
+const APP_VER = "2026-11-12d";
 async function verCheck() {
   if (!navigator.onLine || !/^https?:$/.test(location.protocol)) return;
   try { const t = await (await fetch("/?v=" + Date.now(), { cache: "no-store" })).text(), m = t.match(/const APP_VER = "([^"]+)"/);
