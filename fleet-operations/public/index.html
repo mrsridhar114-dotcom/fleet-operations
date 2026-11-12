@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-12x">
+<meta name="app-ver" content="2026-11-12y">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1992,7 +1992,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mtchip { display: inline-flex; align-items: center; gap: 5px; min-height: 40px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 500 14px var(--body); cursor: pointer; }
 .mtchip[hidden] { display: none; } .mtchip[aria-pressed="true"] { border: 2px solid var(--accent); padding: 0 12px; background: var(--accent-soft); font-weight: 600; }
 .mtaddnote { align-self: flex-start; min-height: 44px; padding: 0 2px; border: 0; background: none; color: var(--accent); font: 600 15px var(--body); cursor: pointer; }
-.mtnote textarea { font-size: 17px; } .mtoth { margin-top: 10px; } .mtoth input { height: 48px; font-size: 17px; }
+.mtnote textarea { font-size: 17px; } .mtoth { margin-top: 10px; } .mtoth textarea { font-size: 17px; }
 .mtfoot { display: flex; flex-direction: column; gap: 8px; } .mtfoot p { margin: 0; font-size: 13px; color: var(--muted); }
 .mtfb { display: grid; gap: 10px; } .mtfb.two { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); } .mtfb .bwgo { font-size: 18px; }
 .bwh .xclose { align-self: center; }
@@ -7273,6 +7273,7 @@ const MT_TYPES = [
 const MT_POS = [["fl", "Front left"], ["fr", "Front right"], ["bl", "Back left"], ["br", "Back right"], ["sl", "Second axle left"], ["sr", "Second axle right"], ["dl", "Dummy left"], ["dr", "Dummy right"]];
 const mtType = k => MT_TYPES.find(t => t.k === k) || { k, name: k };
 const mtPosName = p => MT_POS.find(x => x[0] === p)?.[1] || "";
+const mtCut = (t, n) => t.length > n ? t.slice(0, n - 1).trimEnd() + "…" : t;
 const mtOthName = it => it?.k === "other" && upText(it.note) ? `Other: ${upText(it.note)}` : "";
 const mtItemName = it => mtOthName(it) || `${mtType(it.k).name}${it.pos ? ` · ${mtPosName(it.pos)}` : ""}`;
 const mtGapsDoc = () => ops.maintTypes.find(x => x.id === "gaps") || {};
@@ -8587,7 +8588,7 @@ const mtWheelsTxt = k => { const ps = mtw.items.filter(it => it.k === k && it.po
 const mtDateTxt = () => mtw.date === todayISO() ? "Today" : mtw.date === shiftDay(todayISO(), -1) ? "Yesterday" : fmtDate(mtw.date);
 function mtSumTxt() {
   const ks = [...new Set(mtw.items.map(it => it.k))], wn = k => mtw.items.filter(it => it.k === k && it.pos).length;
-  return `${num(mtw.km) ? nf(num(mtw.km)) + " km" : "No km yet"} · ${mtDateTxt()} · ${ks.length ? ks.map(k => k === "other" ? mtOthName(mtOth()) || "Other: type what was done"
+  return `${num(mtw.km) ? nf(num(mtw.km)) + " km" : "No km yet"} · ${mtDateTxt()} · ${ks.length ? ks.map(k => k === "other" ? mtCut(mtOthName(mtOth()), 40) || "Other: type what was done"
     : mtType(k).name + (wn(k) ? ` (${wn(k)} wheel${wn(k) === 1 ? "" : "s"})` : "")).join(", ") : "no work chosen"}`;
 }
 // "Other work" needs what was done typed in.
@@ -8628,7 +8629,7 @@ function mtRender() {
     (dueJ.length ? `<section><h3 class="mtgh">Due on this vehicle</h3><div class="mtjobs">${dueJ.map(tile).join("")}</div></section>` : "") +
     `<section><div class="mtgrow"><h3 class="mtgh">${dueJ.length ? "Other work" : "Work done"}</h3><label class="mtfind">${MT_FIND}<input type="search" data-mtq value="${esc(mtw.q)}" placeholder="Find a job" aria-label="Find a job"></label></div>` +
       `<div class="mtchips">${MT_TYPES.filter(t => !dueK.has(t.k)).map(chip).join("")}</div>` +
-      (mtOth() ? `<label class="bwf1 mtoth"><span>Other work: what was done?</span><input type="text" data-mtoth maxlength="80" value="${esc(mtOth().note || "")}" placeholder="e.g. Radiator cleaning" autocomplete="off"${ro}></label>` : "") + `</section>` +
+      (mtOth() ? `<label class="bwf1 mtoth"><span>Other work: what was done?</span><textarea data-mtoth rows="4" maxlength="2000" placeholder="e.g. Radiator cleaning. Write as much as needed."${ro}>${esc(mtOth().note || "")}</textarea></label>` : "") + `</section>` +
     (mtw.noteOpen || mtw.notes ? `<label class="bwf1 mtnote"><span>Note</span><textarea data-k="notes" rows="3" maxlength="400" placeholder="e.g. battery numbers, mechanic, place, parts changed"${ro}>${esc(mtw.notes)}</textarea></label>`
       : mtw.edit ? `<button type="button" class="mtaddnote" data-mt="note">✎ Add a note (mechanic, parts, battery no.)</button>` : "") +
     (mtw.byName ? `<p class="bwnote">Entered by ${esc(mtw.byName)}${mtw.createdOn ? ` on ${fmtDate(mtw.createdOn.slice(0, 10))}` : ""}${mtw.src === "excel" ? " (from Excel)" : ""}</p>` : "") +
