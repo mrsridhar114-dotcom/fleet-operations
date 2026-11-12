@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-12y">
+<meta name="app-ver" content="2026-11-12z">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -515,7 +515,7 @@ img.fthumb { width: auto; max-width: 100px; background: none; }
 .tsum .stat { border-bottom: 1px solid var(--line); }
 @media (max-width: 1250px) { .tsum { grid-template-columns: repeat(5, minmax(0, 1fr)); } } @media (max-width: 1000px) { .tsum { grid-template-columns: repeat(3, minmax(0, 1fr)); } } @media (max-width: 720px) { .tsum { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .tsum .stat .v { font-size: 26px; }
-#tSummary .stat { padding: 8px 12px; } #tSummary .stat .k { font-size: 10px; letter-spacing: .08em; } #tSummary .stat .v { font-size: 21px; margin-top: 2px; } #tSummary .stat .sub { font-size: 11.5px; line-height: 1.3; }
+:is(#tSummary, #tsSummary) .stat { padding: 8px 12px; } :is(#tSummary, #tsSummary) .stat .k { font-size: 10px; letter-spacing: .08em; } :is(#tSummary, #tsSummary) .stat .v { font-size: 21px; margin-top: 2px; } :is(#tSummary, #tsSummary) .stat .sub { font-size: 11.5px; line-height: 1.3; }
 .tkm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 13px; color: var(--muted); }
 .tkm b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
 .tkm input { font: inherit; width: 9em; padding: 4px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--ink); }
@@ -2212,15 +2212,15 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .rsbus select { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 15px var(--body); padding: 0 8px; }
 .rsdays { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 #view-trsheet .rstop { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; } .rstop h1 { margin: 0; font-size: 20px; } .rsacts { display: flex; gap: 6px; flex: none; } .rsacts .btn { padding: 6px 10px; min-height: 0; font-size: 14px; }
-.rsmsum .sec { font-size: 17px; } #tRsDays { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.rsmsum .sec { font-size: 17px; } :is(#tRsDays, #tsDays) { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
 /* Month view on the computer: the day cards side by side like a calendar, newest first. */
-#tRsDays .rsdays { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 8px; }
-#tRsDays .rsday { padding: 7px 9px; border-radius: 8px; gap: 3px; justify-content: flex-start; }
-#tRsDays .rsdh { gap: 4px 6px; } #tRsDays .rsdh b { font-size: 13.5px; } #tRsDays .rsdh .bstage { font-size: 10.5px; padding: 1px 6px; }
-#tRsDays .rsdbal { font-size: 12.5px; padding: 1px 8px; gap: 4px; } #tRsDays .rsdbal i { font-size: 10px; }
-#tRsDays .rsdg { grid-template-columns: 1fr; gap: 0; } #tRsDays .rsdc { flex-direction: column; gap: 0; }
-#tRsDays .rsdg > span, #tRsDays .rsdc > span { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 11.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; }
-#tRsDays .rsdg i, #tRsDays .rsdc i { display: inline; font-size: 11px; flex: none; } #tRsDays .rsday small { font-size: 11px; } #tMonthView.mv > :not(#tSummary):not(#tRsDays) { display: none; }
+:is(#tRsDays, #tsDays) .rsdays { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 8px; }
+:is(#tRsDays, #tsDays) .rsday { padding: 7px 9px; border-radius: 8px; gap: 3px; justify-content: flex-start; }
+:is(#tRsDays, #tsDays) .rsdh { gap: 4px 6px; } :is(#tRsDays, #tsDays) .rsdh b { font-size: 13.5px; } :is(#tRsDays, #tsDays) .rsdh .bstage { font-size: 10.5px; padding: 1px 6px; }
+:is(#tRsDays, #tsDays) .rsdbal { font-size: 12.5px; padding: 1px 8px; gap: 4px; } :is(#tRsDays, #tsDays) .rsdbal i { font-size: 10px; }
+:is(#tRsDays, #tsDays) .rsdg { grid-template-columns: 1fr; gap: 0; } :is(#tRsDays, #tsDays) .rsdc { flex-direction: column; gap: 0; }
+:is(#tRsDays, #tsDays) .rsdg > span, :is(#tRsDays, #tsDays) .rsdc > span { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 11.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; }
+:is(#tRsDays, #tsDays) .rsdg i, :is(#tRsDays, #tsDays) .rsdc i { display: inline; font-size: 11px; flex: none; } :is(#tRsDays, #tsDays) .rsday small { font-size: 11px; } #tMonthView.mv > :not(#tSummary):not(#tRsDays) { display: none; }
 .rsmnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; } .rsmnav .sec { margin: 0; text-align: center; } .rsmnav .sec small { font: 500 12px var(--body); color: var(--muted); }
 .rsmnav .btn, #rsMonthBtn { padding: 6px 12px; min-height: 0; font-size: 14px; font-weight: 600; white-space: nowrap; background: var(--accent-soft); color: var(--accent); border: 1.5px solid var(--accent); }
 .rsmnav .btn:disabled { opacity: .3; } .rsmg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -2245,6 +2245,13 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .rshist { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; color: var(--muted); padding: 8px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 10px; }
 .rsday { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 58px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .rsday > span:first-child { display: flex; flex-direction: column; gap: 2px; } .rsday b { font-size: 16px; } .rsday small { color: var(--muted); font-size: 13px; }
+/* Spare bus trip sheets: a day card holds the bookings running that day; the first day of a trip carries its figures. */
+#view-ttsheet #tsMonth { display: flex; flex-direction: column; gap: 14px; } #view-ttsheet #tsMonth[hidden] { display: none; }
+#tsDays .rsdays { align-items: start; } .tsday { cursor: default; } .tsday.cont { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.tsbk { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.tsbk + .tsbk { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); } .tsbk:hover .tsbkh b { text-decoration: underline; }
+.tsbkh { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .tsbkh b { font-size: 12.5px; } .tsbkh .rsdbal { margin-left: auto; }
+.tsbkc { font-size: 12px; color: var(--muted); } .tsday small.tsfree { color: var(--muted); }
 .tpcheer { margin: 8px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ink); font: 600 15px var(--body); }
 .tpcheer.top { background: color-mix(in srgb, #f2b705 18%, transparent); } .tpcheer p { margin: 0; } .tpcheer p + p { margin-top: 6px; }
 .tpbadges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; } .tpbadges span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: #f2b705; color: #3a2a00; font: 700 13px var(--body); }
@@ -2887,10 +2894,16 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <h1>Spare bus · trip sheets</h1>
           <p class="sync" id="tsNote">Fill in the expenses once the trip is over, then submit the trip sheet for approval.</p>
         </div>
-        <div class="tcontrols"><button class="btn" type="button" id="tsPrint" title="Print or download the trip sheets listed, as Excel or as an image">🖨 Print</button>
+        <div class="tcontrols"><div class="hf" id="tsBusF" hidden><label for="tsBus">Bus</label><select id="tsBus"></select></div>
           <div class="hf"><label for="tsDlFy">Financial year</label><select id="tsDlFy"></select></div>
+          <button class="btn" type="button" id="tsPrint" title="Print or download the trip sheets listed, as Excel or as an image">🖨 Print</button>
           <button class="btn" type="button" id="tsDl" title="Download the spare bus trips of the financial year in the office template (Excel, one sheet per spare bus)">⬇ Download</button></div>
       </header>
+      <div id="tsMonth" hidden>
+        <nav class="ttabs" id="tsTabs" role="tablist" aria-label="Month"></nav>
+        <section class="tsumwrap" id="tsSummary" aria-label="Month summary"></section>
+        <div id="tsDays"></div>
+      </div>
       <section class="summary tsum" id="tsStats" aria-label="Trip sheet summary"></section>
       <div id="tsGroups" style="display:flex;flex-direction:column;gap:16px"></div>
     </section>
@@ -14907,6 +14920,8 @@ function tsLists() {
 }
 function updTsBadge() { try { const L = tsLists(), n = L.back.length + L.fill.length; $("tsBadge").hidden = !n || !canTsUpd || canBookings; $("tsBadge").textContent = n; } catch {} }
 function renderTsList() {
+  const mv = tsMoneyView(); $("tsMonth").hidden = !mv; $("tsBusF").hidden = !mv; $("tsStats").hidden = mv;
+  if (mv) tsMonthRender();
   const L = tsLists(), pl = id => id ? plateOf(vehicles.find(v => v.id === id)) : "No bus yet";
   const byDate = (a, c) => String(a.from).localeCompare(String(c.from));
   $("tsStats").innerHTML = ostat("To fill", L.fill.length, "Open, not yet sent", L.fill.length ? "var(--warn)" : "") + ostat("Sent back", L.back.length, "Need changes", L.back.length ? "var(--danger)" : "") +
@@ -14933,6 +14948,104 @@ function renderTsList() {
     : "The trip sheet opens on the trip's last day. Fill in the expenses and km, then submit it for approval.";
 }
 $("tsGroups").addEventListener("click", e => { const r = e.target.closest("[data-bk]"); if (r) openBooking(r.dataset.bk); });
+
+/* Month view (those who see the booking money): like the Route bus page. Month tabs of the financial year, the month's figures,
+   then a card for each day with the bookings running that day. A booking's money counts in the month it starts (as in the
+   Year wise history and the spare bus Excel); a trip of several days shows on each of its days. */
+let tsM = null, tsBusSel = "";
+const tsMoneyView = () => acc.bookings === "edit" || acc.bookings === "view";
+const tsFy = () => +$("tsDlFy").value || fyOf(todayISO());
+const tsTrips = () => ops.bookings.filter(b => YW_BOOKED(b) && (!tsBusSel || b.vehicleId === tsBusSel));
+const tsFour = id => String(plateKey(plateOf(vehicles.find(v => v.id === id)))).slice(-4);
+// The figures of a list of bookings.
+function tsSums(list) {
+  const T = { trips: list.length, days: 0, col: 0, exp: 0, dsl: 0, lit: 0, km: 0, drv: 0, cln: 0, rec: 0, due: 0 };
+  list.forEach(b => { const c = bkCalc(b), lit = bkLitres(b);
+    T.days += num(bkDaysOf(b)); T.col += c.due; T.exp += c.exp; T.dsl += num(b.fuelCost); T.lit += lit; T.km += c.km;
+    T.drv += num(b.padiPaid); T.cln += num(b.cleanerPadi); T.rec += c.received; T.due += Math.max(0, c.balance); });
+  T.bal = T.col - T.exp; return T;
+}
+// Buses counted for the utilisation: the one chosen, else the spare buses now plus any other bus with a trip in the period.
+const tsBusCount = list => tsBusSel ? 1 : new Set([...spareBuses().map(v => v.id), ...list.map(b => b.vehicleId)]).size || 1;
+function tsMonthRender() {
+  const fy = tsFy(), today = todayISO(), curIdx = fyOf(today) === fy ? MONTHS.findIndex((_, i) => monthYM(fy, i) === today.slice(0, 7)) : 0;
+  if (tsM == null || tsM.fy !== fy) tsM = { fy, i: curIdx };
+  const all = ops.bookings.filter(YW_BOOKED), inFy = all.filter(b => fyOf(b.from) === fy);
+  const ids = [...new Set([...spareBuses().map(v => v.id), ...inFy.map(b => b.vehicleId)])].filter(id => vehicles.some(v => v.id === id));
+  if (tsBusSel && !ids.includes(tsBusSel)) tsBusSel = "";
+  const sold = id => vehicles.find(v => v.id === id)?.status === "Sold / Scrapped" ? " (sold)" : "";
+  $("tsBus").innerHTML = `<option value="">All spare buses</option>` + ids.sort((a, b) => plateOf(vehicles.find(v => v.id === a)).localeCompare(plateOf(vehicles.find(v => v.id === b))))
+    .map(id => `<option value="${id}"${id === tsBusSel ? " selected" : ""}>${esc(plateOf(vehicles.find(v => v.id === id)) + sold(id))}</option>`).join("");
+  const list = tsTrips(), ofYm = ym => list.filter(b => b.from.slice(0, 7) === ym);
+  $("tsTabs").innerHTML = MONTHS.map((m, i) => { const ym = monthYM(fy, i), n = ofYm(ym).length;
+    return `<button type="button" role="tab" data-tsm="${i}" aria-selected="${tsM.i === i}">${m.slice(0, 3)} ${ym.slice(2, 4)}${ym === today.slice(0, 7) ? '<span class="dot" aria-hidden="true"></span>' : ""}${n ? `<small class="tabbus">${n} trip${n === 1 ? "" : "s"}</small>` : ""}</button>`; }).join("") +
+    `<button type="button" role="tab" class="year" data-tsm="12" aria-selected="${tsM.i === 12}">Full year</button>`;
+  const stat = (k, v, sub = "", color = "") => `<div class="stat"><div class="k">${k}</div><div class="v"${color ? ` style="color:${color}"` : ""}>${v}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</div>`;
+  const line = (k, v, cls = "") => `<div class="tsl${cls ? " " + cls : ""}"><span>${k}</span><b>${v}</b></div>`, small = t => `<span class="sub" style="font-size:13px;font-weight:400">${t}</span>`;
+  const period = tsM.i === 12 ? list.filter(b => fyOf(b.from) === fy) : ofYm(monthYM(fy, tsM.i));
+  const T = tsSums(period), per = v => T.days ? rs(v / T.days) : "—", pay = T.drv + T.cln, red = T.bal < 0 ? "var(--danger)" : "";
+  const cap = (tsM.i === 12 ? MONTHS.reduce((a, _, i) => a + daysIn(monthYM(fy, i)), 0) : daysIn(monthYM(fy, tsM.i))) * tsBusCount(period);
+  $("tsSummary").innerHTML = `<div class="summary tsum">` +
+      stat("Days run", `${fmtDays(T.days)}${small(` / ${nf(cap)}`)}`, `${nf(T.trips)} trip${T.trips === 1 ? "" : "s"}${tsBusSel ? "" : ` · ${tsBusCount(period)} bus${tsBusCount(period) === 1 ? "" : "es"}`}`) +
+      stat("Total balance", rs(T.bal), "", T.bal < 0 ? "var(--danger)" : "var(--ok)") +
+      stat("Avg col / day", per(T.col)) + stat("Avg bal / day", per(T.bal), "", red) +
+      stat("Total diesel (price)", rs(T.dsl)) + stat("Avg diesel / day", per(T.dsl)) +
+      stat("Avg salary / day", per(pay), "Driver and cleaner padi") +
+      stat("Total fuel (ltrs)", `${nf(T.lit, T.lit % 1 ? 1 : 0)}${small(" L")}`) +
+      stat("Total kms", T.km ? nf(T.km) : "—", T.km && T.days ? `${nf(T.km / T.days)} km a day` : "") +
+      stat("Mileage", T.km && T.lit ? `${nf(T.km / T.lit, 2)}${small(" km/L")}` : "—") +
+      stat("Utilisation", cap ? `${Math.round(Math.min(T.days, cap) / cap * 100)}%` : "—", `${fmtDays(T.days)} of ${nf(cap)} bus days`) +
+      stat("EPKM", perKm(T.col, T.km), "Earnings per km") + stat("CPKM", perKm(T.exp, T.km), "Cost per km") +
+      stat("Profit per km", perKm(T.bal, T.km), T.km && T.col ? `${nf(T.bal / T.col * 100, 1)}% of collection` : "", red) +
+    `</div><div class="tscards">` +
+      `<section class="tscard"><h3>Money</h3>${line("Total collection", rs(T.col))}${line("Total expense", rs(T.exp))}${line("Total balance", rs(T.bal), T.bal < 0 ? "neg" : "pos")}${line("Received from parties", rs(T.rec))}${line("Still to collect", rs(T.due), T.due ? "neg" : "")}</section>` +
+      `<section class="tscard"><h3>Kilometres</h3>${line("Total kilometers", T.km ? nf(T.km) : "—")}${line("Per day average kms", T.km && T.days ? nf(T.km / T.days) : "—")}${line("Diesel", `${nf(T.lit, T.lit % 1 ? 1 : 0)} L`)}${line("Mileage", T.km && T.lit ? `${nf(T.km / T.lit, 2)} km/L` : "—")}</section>` +
+      `<section class="tscard"><h3>Salary</h3>${line("Driver padi", rs(T.drv))}${line("Cleaner padi", rs(T.cln))}${line("Total", rs(pay), "pos")}</section>` +
+    `</div>` + tsDrvTable(period);
+  $("tsDays").innerHTML = tsM.i === 12 ? tsYearTable(fy, list) : tsDaysHtml(monthYM(fy, tsM.i), list);
+}
+// The month (or year) by driver.
+function tsDrvTable(list) {
+  if (!list.length) return "";
+  const by = new Map(); list.forEach(b => { const k = bkDrvName(b) || "Not recorded"; if (!by.has(k)) by.set(k, []); by.get(k).push(b); });
+  const rows = [...by].map(([n, l]) => [n, tsSums(l)]).sort((a, b) => b[1].days - a[1].days || a[0].localeCompare(b[0]));
+  return `<section class="tscrew"><h3>By driver</h3><div class="tscroll"><table class="ctable"><thead><tr><th>Name</th><th class="n">Trips</th><th class="n">No. of days</th><th class="n">Diesel</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Avg / day</th><th class="n">Avg col / day</th></tr></thead><tbody>` +
+    rows.map(([n, T]) => `<tr><td>${esc(n)}</td><td class="n">${nf(T.trips)}</td><td class="n">${fmtDays(T.days)}</td><td class="n">${nf(T.dsl)}</td><td class="n">${nf(T.col)}</td><td class="n">${nf(T.exp)}</td><td class="n${T.bal < 0 ? " neg" : ""}">${nf(T.bal)}</td>` +
+      `<td class="n">${T.days ? nf(Math.round(T.bal / T.days)) : "—"}</td><td class="n">${T.days ? nf(Math.round(T.col / T.days)) : "—"}</td></tr>`).join("") +
+    `</tbody></table></div><p class="hint" style="margin:8px 0 0">Avg / day is the balance per day.</p></section>`;
+}
+// Every day of the month, newest first, with the bookings running that day.
+function tsDaysHtml(ym, list) {
+  const f = (k, v) => `<span><i>${k}</i>${v}</span>`, last = `${ym}-${pad2(daysIn(ym))}`, one = !!tsBusSel;
+  const on = day => list.filter(b => b.from <= day && bkEnd(b) >= day).sort((a, b) => String(a.from).localeCompare(String(b.from)));
+  const cards = [...Array(daysIn(ym))].map((_, i) => shiftDay(last, -i)).map(day => {
+    const bs = on(day), first = bs.filter(b => b.from === day), net = first.reduce((a, b) => { const c = bkCalc(b); return a + c.due - c.exp; }, 0);
+    const tone = first.length ? (net < 0 ? "loss" : "good") : bs.length ? "cont" : "";
+    const blocks = bs.map(b => { const c = bkCalc(b), lit = bkLitres(b), n = num(bkDaysOf(b)) || 1, k = dayDiff(b.from, day) + 1, bus = one ? "" : `${esc(tsFour(b.vehicleId))} · `, bal = c.due - c.exp;
+      if (b.from !== day) return `<button type="button" class="tsbk" data-bk="${b.id}"><span class="tsbkh"><b>${bus}${esc(b.party || "Booking " + (b.no || ""))}</b></span><span class="tsbkc">Day ${k} of ${nf(n)}${b.places ? ` · ${esc(b.places)}` : ""}</span></button>`;
+      return `<button type="button" class="tsbk" data-bk="${b.id}"><span class="tsbkh"><b>${bus}${esc(b.party || "Booking " + (b.no || ""))}</b><span class="rsdbal${bal < 0 ? " neg" : ""}"><i>Balance</i>${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</span></span>` +
+        `<span class="rsdg">${f("Collection", rs(c.due))}${f("Expense", rs(c.exp))}${f("Days", `${nf(n)}${n > 1 ? ` · to ${fmtShort(bkEnd(b))}` : ""}`)}${f("Places", esc(b.places || "—"))}` +
+        `${f("Kms", c.km ? nf(c.km) : "—")}${f("Diesel", num(b.fuelCost) ? `${rs(num(b.fuelCost))}${lit ? ` · ${bkLitTxt(lit)}` : ""}` : "—")}${f("Mileage", bkMileTxt(c, lit))}</span>` +
+        `<span class="rsdc">${f("Driver", esc(bkDrvName(b) || "—"))}</span><span class="tsbkh">${tsTag(b)}</span></button>`; }).join("");
+    return `<div class="rsday tsday${tone ? " " + tone : ""}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b></span>${blocks || `<small class="tsfree">No trip</small>`}</div>`; });
+  return `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}</h2><div class="rsdays">${cards.join("")}</div></section>`;
+}
+// Full year: the months side by side; a month opens its tab.
+function tsYearTable(fy, list) {
+  const rows = MONTHS.map((m, i) => { const ym = monthYM(fy, i), l = list.filter(b => b.from.slice(0, 7) === ym), T = tsSums(l), cap = daysIn(ym) * tsBusCount(l);
+    return `<tr data-tsm="${i}" tabindex="0" style="cursor:pointer"><td>${m} ${ym.slice(0, 4)}</td><td class="n">${nf(T.trips)}</td><td class="n">${fmtDays(T.days)}</td><td class="n">${l.length ? Math.round(Math.min(T.days, cap) / cap * 100) + "%" : "—"}</td>` +
+      `<td class="n">${nf(T.col)}</td><td class="n">${nf(T.exp)}</td><td class="n${T.bal < 0 ? " neg" : ""}">${nf(T.bal)}</td><td class="n">${T.km ? nf(T.km) : "—"}</td><td class="n">${nf(T.dsl)}</td></tr>`; }).join("");
+  const Y = tsSums(list.filter(b => fyOf(b.from) === fy));
+  return `<section class="panel"><h2 class="sec">FY ${fyLabel(fy)} by month</h2><div class="tscroll" style="margin-top:10px"><table class="ctable ytable"><thead><tr><th>Month</th><th class="n">Trips</th><th class="n">Days run</th><th class="n">Utilisation</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Km</th><th class="n">Diesel (₹)</th></tr></thead><tbody>${rows}</tbody>` +
+    `<tfoot><tr><td>Total</td><td class="n">${nf(Y.trips)}</td><td class="n">${fmtDays(Y.days)}</td><td></td><td class="n">${nf(Y.col)}</td><td class="n">${nf(Y.exp)}</td><td class="n${Y.bal < 0 ? " neg" : ""}">${nf(Y.bal)}</td><td class="n">${Y.km ? nf(Y.km) : "—"}</td><td class="n">${nf(Y.dsl)}</td></tr></tfoot></table></div></section>`;
+}
+$("tsMonth").addEventListener("click", e => {
+  const m = e.target.closest("[data-tsm]"); if (m) { tsM.i = +m.dataset.tsm; tsMonthRender(); return; }
+  const b = e.target.closest("[data-bk]"); if (b) openBooking(b.dataset.bk);
+});
+$("tsMonth").addEventListener("keydown", e => { const m = e.target.closest("tr[data-tsm]"); if (m && e.key === "Enter") { tsM.i = +m.dataset.tsm; tsMonthRender(); } });
+$("tsBus").addEventListener("change", e => { tsBusSel = e.target.value; tsMonthRender(); });
+$("tsDlFy").addEventListener("change", () => { if (tsMoneyView()) tsMonthRender(); });
 // Print: every trip sheet listed on the page; rows hidden by a column filter start unticked.
 $("tsPrint").addEventListener("click", () => {
   const L = tsLists(), seen = new Set(), list = [...L.back, ...L.fill, ...L.sent, ...L.soon, ...L.done].filter(b => !seen.has(b.id) && seen.add(b.id));
