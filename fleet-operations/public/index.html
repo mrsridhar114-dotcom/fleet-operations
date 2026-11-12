@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-13a">
+<meta name="app-ver" content="2026-11-13b">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -2247,11 +2247,8 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .rsday > span:first-child { display: flex; flex-direction: column; gap: 2px; } .rsday b { font-size: 16px; } .rsday small { color: var(--muted); font-size: 13px; }
 /* Spare bus trip sheets: a day card holds the bookings running that day; the first day of a trip carries its figures. */
 #view-ttsheet #tsMonth { display: flex; flex-direction: column; gap: 14px; } #view-ttsheet #tsMonth[hidden] { display: none; }
-#tsDays .rsdays { align-items: start; } .tsday { cursor: default; } .tsday.cont { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
-.tsbk { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-.tsbk + .tsbk { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); } .tsbk:hover .tsbkh b { text-decoration: underline; }
-.tsbkh { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .tsbkh b { font-size: 12.5px; } .tsbkh .rsdbal { margin-left: auto; }
-.tsbkc { font-size: 12px; color: var(--muted); }
+#tsDays .rsdays { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); align-items: start; } .tsday:hover .tsbkh b { text-decoration: underline; }
+.tsbkh { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .tsbkh b { font-size: 12.5px; } .tsbkc { font-size: 12px; color: var(--muted); }
 .tpcheer { margin: 8px 0 4px; padding: 10px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ink); font: 600 15px var(--body); }
 .tpcheer.top { background: color-mix(in srgb, #f2b705 18%, transparent); } .tpcheer p { margin: 0; } .tpcheer p + p { margin-top: 6px; }
 .tpbadges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; } .tpbadges span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: #f2b705; color: #3a2a00; font: 700 13px var(--body); }
@@ -15014,21 +15011,19 @@ function tsDrvTable(list) {
       `<td class="n">${T.days ? nf(Math.round(T.bal / T.days)) : "—"}</td><td class="n">${T.days ? nf(Math.round(T.col / T.days)) : "—"}</td></tr>`).join("") +
     `</tbody></table></div><p class="hint" style="margin:8px 0 0">Avg / day is the balance per day.</p></section>`;
 }
-// The days of the month with a booking running, newest first; days without one are left out.
+// The trips running in the month, one card each (a trip of several days is one card), newest first. Days without a trip are not shown.
 function tsDaysHtml(ym, list) {
-  const f = (k, v) => `<span><i>${k}</i>${v}</span>`, last = `${ym}-${pad2(daysIn(ym))}`, one = !!tsBusSel;
-  const on = day => list.filter(b => b.from <= day && bkEnd(b) >= day).sort((a, b) => String(a.from).localeCompare(String(b.from)));
-  const cards = [...Array(daysIn(ym))].map((_, i) => shiftDay(last, -i)).filter(day => on(day).length).map(day => {
-    const bs = on(day), first = bs.filter(b => b.from === day), net = first.reduce((a, b) => { const c = bkCalc(b); return a + c.due - c.exp; }, 0);
-    const tone = first.length ? (net < 0 ? "loss" : "good") : bs.length ? "cont" : "";
-    const blocks = bs.map(b => { const c = bkCalc(b), lit = bkLitres(b), n = num(bkDaysOf(b)) || 1, k = dayDiff(b.from, day) + 1, bus = one ? "" : `${esc(tsFour(b.vehicleId))} · `, bal = c.due - c.exp;
-      if (b.from !== day) return `<button type="button" class="tsbk" data-bk="${b.id}"><span class="tsbkh"><b>${bus}${esc(b.party || "Booking " + (b.no || ""))}</b></span><span class="tsbkc">Day ${k} of ${nf(n)}${b.places ? ` · ${esc(b.places)}` : ""}</span></button>`;
-      return `<button type="button" class="tsbk" data-bk="${b.id}"><span class="tsbkh"><b>${bus}${esc(b.party || "Booking " + (b.no || ""))}</b><span class="rsdbal${bal < 0 ? " neg" : ""}"><i>Balance</i>${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</span></span>` +
-        `<span class="rsdg">${f("Collection", rs(c.due))}${f("Expense", rs(c.exp))}${f("Days", `${nf(n)}${n > 1 ? ` · to ${fmtShort(bkEnd(b))}` : ""}`)}${f("Places", esc(b.places || "—"))}` +
-        `${f("Kms", c.km ? nf(c.km) : "—")}${f("Diesel", num(b.fuelCost) ? `${rs(num(b.fuelCost))}${lit ? ` · ${bkLitTxt(lit)}` : ""}` : "—")}${f("Mileage", bkMileTxt(c, lit))}</span>` +
-        `<span class="rsdc">${f("Driver", esc(bkDrvName(b) || "—"))}</span><span class="tsbkh">${tsTag(b)}</span></button>`; }).join("");
-    return `<div class="rsday tsday ${tone}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b></span>${blocks}</div>`; });
-  return `<section class="panel"><h2 class="sec">Days of ${ymLabel(ym)}${cards.length ? ` · ${cards.length} day${cards.length === 1 ? "" : "s"} booked` : ""}</h2>` +
+  const f = (k, v) => `<span><i>${k}</i>${v}</span>`, first = ym + "-01", last = `${ym}-${pad2(daysIn(ym))}`, one = !!tsBusSel;
+  const dl = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  const trips = list.filter(b => b.from <= last && bkEnd(b) >= first).sort((a, b) => String(b.from).localeCompare(String(a.from)));
+  const booked = new Set(trips.flatMap(b => { const out = []; for (let d = b.from < first ? first : b.from; d <= bkEnd(b) && d <= last; d = shiftDay(d, 1)) out.push(d); return out; })).size;
+  const cards = trips.map(b => { const c = bkCalc(b), lit = bkLitres(b), n = num(bkDaysOf(b)) || 1, bal = c.due - c.exp, bus = one ? "" : `${esc(tsFour(b.vehicleId))} · `;
+    return `<button type="button" class="rsday tsday ${bal < 0 ? "loss" : "good"}" data-bk="${b.id}"><span class="rsdh"><b>${dl(b.from)}${bkEnd(b) !== b.from ? ` – ${dl(bkEnd(b))}` : ""}</b><span class="rsdbal${bal < 0 ? " neg" : ""}"><i>Balance</i>${bal < 0 ? "− " : ""}${rs(Math.abs(bal))}</span></span>` +
+      `<span class="tsbkh"><b>${bus}${esc(b.party || "Booking " + (b.no || ""))}</b></span>${b.from < first ? `<span class="tsbkc">Started in ${ymLabel(b.from.slice(0, 7))} and counted there</span>` : ""}` +
+      `<span class="rsdg">${f("Collection", rs(c.due))}${f("Expense", rs(c.exp))}${f("Days", nf(n))}${f("Places", esc(b.places || "—"))}` +
+      `${f("Kms", c.km ? nf(c.km) : "—")}${f("Diesel", num(b.fuelCost) ? `${rs(num(b.fuelCost))}${lit ? ` · ${bkLitTxt(lit)}` : ""}` : "—")}${f("Mileage", bkMileTxt(c, lit))}</span>` +
+      `<span class="rsdc">${f("Driver", esc(bkDrvName(b) || "—"))}</span><span class="tsbkh">${tsTag(b)}</span></button>`; });
+  return `<section class="panel"><h2 class="sec">Trips of ${ymLabel(ym)}${trips.length ? ` · ${trips.length} trip${trips.length === 1 ? "" : "s"}, ${booked} day${booked === 1 ? "" : "s"} booked` : ""}</h2>` +
     (cards.length ? `<div class="rsdays">${cards.join("")}</div>` : `<p class="sub" style="margin:8px 0 0">No bookings in this month.</p>`) + `</section>`;
 }
 // Full year: the months side by side; a month opens its tab.
