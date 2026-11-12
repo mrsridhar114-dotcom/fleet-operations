@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-12w">
+<meta name="app-ver" content="2026-11-12x">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1992,7 +1992,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mtchip { display: inline-flex; align-items: center; gap: 5px; min-height: 40px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 500 14px var(--body); cursor: pointer; }
 .mtchip[hidden] { display: none; } .mtchip[aria-pressed="true"] { border: 2px solid var(--accent); padding: 0 12px; background: var(--accent-soft); font-weight: 600; }
 .mtaddnote { align-self: flex-start; min-height: 44px; padding: 0 2px; border: 0; background: none; color: var(--accent); font: 600 15px var(--body); cursor: pointer; }
-.mtnote textarea { font-size: 17px; }
+.mtnote textarea { font-size: 17px; } .mtoth { margin-top: 10px; } .mtoth input { height: 48px; font-size: 17px; }
 .mtfoot { display: flex; flex-direction: column; gap: 8px; } .mtfoot p { margin: 0; font-size: 13px; color: var(--muted); }
 .mtfb { display: grid; gap: 10px; } .mtfb.two { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); } .mtfb .bwgo { font-size: 18px; }
 .bwh .xclose { align-self: center; }
@@ -7267,12 +7267,14 @@ const MT_TYPES = [
   { k: "air", name: "Air filter", gap: 100000 }, { k: "tappet", name: "Tappet adjustment", gap: 50000 }, { k: "battery", name: "Battery" },
   { k: "drum", name: "Brake drum", pos: true }, { k: "clutchkit", name: "Clutch kit service" }, { k: "kingpin", name: "King pin" },
   { k: "steer", name: "Steering ends" }, { k: "align", name: "Wheel alignment" }, { k: "nozzle", name: "Pump and nozzle service" },
-  { k: "ratchet", name: "Ratchets" }, { k: "dynamo", name: "Dynamo service" }, { k: "engine", name: "Engine work" }, { k: "other", name: "Other work" }
+  { k: "ratchet", name: "Ratchets" }, { k: "dynamo", name: "Dynamo service" }, { k: "cjb", name: "Center joint bearing" }, { k: "engine", name: "Engine work" },
+  { k: "other", name: "Other work" } // what the work was is typed in (the item's note)
 ];
 const MT_POS = [["fl", "Front left"], ["fr", "Front right"], ["bl", "Back left"], ["br", "Back right"], ["sl", "Second axle left"], ["sr", "Second axle right"], ["dl", "Dummy left"], ["dr", "Dummy right"]];
 const mtType = k => MT_TYPES.find(t => t.k === k) || { k, name: k };
 const mtPosName = p => MT_POS.find(x => x[0] === p)?.[1] || "";
-const mtItemName = it => `${mtType(it.k).name}${it.pos ? ` · ${mtPosName(it.pos)}` : ""}`;
+const mtOthName = it => it?.k === "other" && upText(it.note) ? `Other: ${upText(it.note)}` : "";
+const mtItemName = it => mtOthName(it) || `${mtType(it.k).name}${it.pos ? ` · ${mtPosName(it.pos)}` : ""}`;
 const mtGapsDoc = () => ops.maintTypes.find(x => x.id === "gaps") || {};
 // A km set in the master (for this vehicle, or for every vehicle).
 // Order: the vehicle's own figure, then its class (all buses / all trucks), then every vehicle, then the built-in gap.
@@ -8552,6 +8554,7 @@ function mtOpen(x, vid) {
     $("mtw").addEventListener("click", mtClick);
     $("mtw").addEventListener("input", e => { if (!mtw) return; const t = e.target;
       if (t.dataset.mtq != null) { mtw.q = t.value; mtJobFilter(); return; }
+      if (t.dataset.mtoth != null) { const o = mtOth(); if (o) o.note = t.value; mtSync(); return; }
       const k = t.dataset.k; if (!k || (k === "date" && !t.value)) return; mtw[k] = t.value; if (k === "notes") mtSync(); else mtKmNote(); });
     $("mtw").addEventListener("change", e => { if (!mtw || e.target.dataset.k !== "date" || !e.target.value) return; mtw.date = e.target.value; mtKmNote(); });
   }
@@ -8584,10 +8587,13 @@ const mtWheelsTxt = k => { const ps = mtw.items.filter(it => it.k === k && it.po
 const mtDateTxt = () => mtw.date === todayISO() ? "Today" : mtw.date === shiftDay(todayISO(), -1) ? "Yesterday" : fmtDate(mtw.date);
 function mtSumTxt() {
   const ks = [...new Set(mtw.items.map(it => it.k))], wn = k => mtw.items.filter(it => it.k === k && it.pos).length;
-  return `${num(mtw.km) ? nf(num(mtw.km)) + " km" : "No km yet"} · ${mtDateTxt()} · ${ks.length ? ks.map(k => mtType(k).name + (wn(k) ? ` (${wn(k)} wheel${wn(k) === 1 ? "" : "s"})` : "")).join(", ") : "no work chosen"}`;
+  return `${num(mtw.km) ? nf(num(mtw.km)) + " km" : "No km yet"} · ${mtDateTxt()} · ${ks.length ? ks.map(k => k === "other" ? mtOthName(mtOth()) || "Other: type what was done"
+    : mtType(k).name + (wn(k) ? ` (${wn(k)} wheel${wn(k) === 1 ? "" : "s"})` : "")).join(", ") : "no work chosen"}`;
 }
+// "Other work" needs what was done typed in.
+const mtOth = () => mtw.items.find(it => it.k === "other");
 const mtSaveTxt = () => { const n = mtJobCount(); return n ? `Save ${n} job${n === 1 ? "" : "s"}` : "Save"; };
-const mtCanSave = () => mtw.edit && !mtw.saving && num(mtw.km) > 0 && !!mtw.date && mtw.items.length > 0;
+const mtCanSave = () => mtw.edit && !mtw.saving && num(mtw.km) > 0 && !!mtw.date && mtw.items.length > 0 && !(mtOth() && !upText(mtOth().note));
 function mtSync() {
   if (!mtw || mtw.done) return;
   if ($("mtSumLn")) $("mtSumLn").textContent = mtSumTxt();
@@ -8621,7 +8627,8 @@ function mtRender() {
       (other ? `<label class="bwf1 mtod"><input type="date" data-k="date" value="${esc(mtw.date)}" max="${todayISO()}" aria-label="Date the work was done"${ro}></label>` : "") + `</section>` +
     (dueJ.length ? `<section><h3 class="mtgh">Due on this vehicle</h3><div class="mtjobs">${dueJ.map(tile).join("")}</div></section>` : "") +
     `<section><div class="mtgrow"><h3 class="mtgh">${dueJ.length ? "Other work" : "Work done"}</h3><label class="mtfind">${MT_FIND}<input type="search" data-mtq value="${esc(mtw.q)}" placeholder="Find a job" aria-label="Find a job"></label></div>` +
-      `<div class="mtchips">${MT_TYPES.filter(t => !dueK.has(t.k)).map(chip).join("")}</div></section>` +
+      `<div class="mtchips">${MT_TYPES.filter(t => !dueK.has(t.k)).map(chip).join("")}</div>` +
+      (mtOth() ? `<label class="bwf1 mtoth"><span>Other work: what was done?</span><input type="text" data-mtoth maxlength="80" value="${esc(mtOth().note || "")}" placeholder="e.g. Radiator cleaning" autocomplete="off"${ro}></label>` : "") + `</section>` +
     (mtw.noteOpen || mtw.notes ? `<label class="bwf1 mtnote"><span>Note</span><textarea data-k="notes" rows="3" maxlength="400" placeholder="e.g. battery numbers, mechanic, place, parts changed"${ro}>${esc(mtw.notes)}</textarea></label>`
       : mtw.edit ? `<button type="button" class="mtaddnote" data-mt="note">✎ Add a note (mechanic, parts, battery no.)</button>` : "") +
     (mtw.byName ? `<p class="bwnote">Entered by ${esc(mtw.byName)}${mtw.createdOn ? ` on ${fmtDate(mtw.createdOn.slice(0, 10))}` : ""}${mtw.src === "excel" ? " (from Excel)" : ""}</p>` : "") +
@@ -8670,7 +8677,7 @@ async function mtClick(e) {
     const k = b.dataset.mtk;
     if (mtType(k).pos) { mtw.wheel = k; mtw.wsel = mtw.items.filter(it => it.k === k && it.pos).map(it => it.pos); mtRender(); return; }
     if (mtw.items.some(it => it.k === k)) mtw.items = mtw.items.filter(it => it.k !== k); else mtw.items.push({ k });
-    mtSortItems(); mtRender(); return;
+    mtSortItems(); mtRender(); if (k === "other" && mtOth()) $("mtw").querySelector("[data-mtoth]")?.focus(); return;
   }
   if (b.dataset.mtpos) { const p = b.dataset.mtpos; mtw.wsel = mtw.wsel.includes(p) ? mtw.wsel.filter(x => x !== p) : [...mtw.wsel, p]; mtRender(); return; }
   if (b.dataset.mtq3 != null) { const ps = mtLayout(mtw.key).quick[+b.dataset.mtq3][1], on = ps.every(p => mtw.wsel.includes(p));
@@ -8686,7 +8693,7 @@ async function mtClick(e) {
     if (!km || !mtw.date || !mtw.items.length) return;
     if (mtKmWarn() && !await askYesNo(`${mtKmWarn()} Save with ${nf(km)} km?`, { yes: "Yes, it is right", no: "Change it" })) { $("mtKm")?.focus(); return; }
     const doc = { id: mtw.id || "mt_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), vehicleId: mtw.vehicleId || "", plate: mtw.vehicleId ? plateOf(mtVehOf(mtw.vehicleId)) : mtw.plate,
-      date: mtw.date, km, items: mtw.items, notes: upText(mtw.notes), by: mtw.by || myUserId || "", byName: mtw.byName || whoAmI(), createdOn: mtw.createdOn || new Date().toISOString(), ...rxStamp(),
+      date: mtw.date, km, items: mtw.items.map(it => it.k === "other" ? { ...it, note: upText(it.note) } : it), notes: upText(mtw.notes), by: mtw.by || myUserId || "", byName: mtw.byName || whoAmI(), createdOn: mtw.createdOn || new Date().toISOString(), ...rxStamp(),
       ...(mtw.src ? { src: mtw.src } : {}), ...(mtw.kmAct ? { kmAct: mtw.kmAct } : {}) };
     mtw.saving = true; mtSync();
     try {
@@ -8694,7 +8701,7 @@ async function mtClick(e) {
       // Next due, one line per job and next km (the wheels of a job with the same next km together).
       const lines = new Map();
       doc.items.forEach(it => { const g = mtGap(mtw.key, it.k, it.pos), next = g ? mtwAct() + g : null, id = it.k + "|" + next, l = lines.get(id) || { k: it.k, ps: [], next }; if (it.pos) l.ps.push(it.pos); lines.set(id, l); });
-      mtw.done = [...lines.values()].map(l => ({ name: mtType(l.k).name + (l.ps.length ? ` · ${l.ps.length > 2 ? `${l.ps.length} wheels` : l.ps.map(p => mtPosLbl(mtw.key, p)).join(", ")}` : ""), next: l.next }));
+      mtw.done = [...lines.values()].map(l => ({ name: (l.k === "other" && mtOthName(doc.items.find(it => it.k === "other"))) || mtType(l.k).name + (l.ps.length ? ` · ${l.ps.length > 2 ? `${l.ps.length} wheels` : l.ps.map(p => mtPosLbl(mtw.key, p)).join(", ")}` : ""), next: l.next }));
       mtRender(); toast("Maintenance saved");
     } catch { mtw.saving = false; mtSync(); toast("Couldn't save. Check your connection and try again."); }
   }
@@ -8733,7 +8740,7 @@ $("msList").addEventListener("click", e => { if (e.target.id === "msOldBtn") { m
    (for the drivers). */
 const MS_TA_TYPE = { oil: "ஆயில் சர்வீஸ்", gear: "கியர் பாக்ஸ் ஆயில்", housing: "ஹவுசிங் ஆயில்", hub: "ஹப் கிரீஸ்", lining: "பிரேக் லைனிங்", clutch: "கிளட்ச் பிளேட்",
   air: "ஏர் ஃபில்டர்", tappet: "டேப்பட் அட்ஜஸ்ட்மென்ட்", battery: "பேட்டரி", drum: "பிரேக் டிரம்", clutchkit: "கிளட்ச் கிட் சர்வீஸ்", kingpin: "கிங் பின்",
-  steer: "ஸ்டீயரிங் எண்ட்ஸ்", align: "வீல் அலைன்மென்ட்", nozzle: "பம்ப் & நாசில் சர்வீஸ்", ratchet: "ராட்செட்", dynamo: "டைனமோ சர்வீஸ்", engine: "என்ஜின் வேலை", other: "மற்ற வேலை" };
+  steer: "ஸ்டீயரிங் எண்ட்ஸ்", align: "வீல் அலைன்மென்ட்", nozzle: "பம்ப் & நாசில் சர்வீஸ்", ratchet: "ராட்செட்", dynamo: "டைனமோ சர்வீஸ்", cjb: "சென்டர் ஜாயின்ட் பேரிங்", engine: "என்ஜின் வேலை", other: "மற்ற வேலை" };
 const MS_TA_POS = { fl: "முன் இடது", fr: "முன் வலது", bl: "பின் இடது", br: "பின் வலது", sl: "2வது ஆக்சில் இடது", sr: "2வது ஆக்சில் வலது", dl: "டம்மி இடது", dr: "டம்மி வலது" };
 const MS_TA_TRUCK = { bl: "பின் ஹவுசிங் இடது", br: "பின் ஹவுசிங் வலது", dl: "பின் டம்மி இடது", dr: "பின் டம்மி வலது" };
 const MS_T = {
@@ -8744,7 +8751,7 @@ const MS_T = {
   ta: { title: "பராமரிப்பு விவரம்", cols: { plate: "வண்டி எண்", type: "பராமரிப்பு வேலை", date: "சென்ற பராமரிப்பு தேதி", km: "அப்போது கிலோமீட்டர்", next: "அடுத்து பராமரிப்பு செய்யவேண்டிய கிலோமீட்டர்", left: "மீதி கிலோமீட்டர்", when: "பராமரிப்பு செய்யவேண்டிய தேதி", status: "நிலை" },
     st: { over: "தாமதம்", soon: "விரைவில்", ok: "சர்வீஸ் செய்ய நேரம் உள்ளது", nogap: "கி.மீ இல்லை" }, now: "இப்போதே",
     left: d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} கி.மீ அதிகம்` : `${nf(d.left)} கி.மீ`,
-    item: r => (MS_TA_TYPE[r.it.k] || mtType(r.it.k).name) + (r.it.pos ? " · " + ((/truck/i.test(mtClsOf(r.key)) && MS_TA_TRUCK[r.it.pos]) || MS_TA_POS[r.it.pos] || mtPosName(r.it.pos)) : ""),
+    item: r => (MS_TA_TYPE[r.it.k] || mtType(r.it.k).name) + (r.it.k === "other" && r.it.note ? ": " + r.it.note : "") + (r.it.pos ? " · " + ((/truck/i.test(mtClsOf(r.key)) && MS_TA_TRUCK[r.it.pos]) || MS_TA_POS[r.it.pos] || mtPosName(r.it.pos)) : ""),
     sub: d => `${d} நிலவரப்படி · சிவப்பு: தாமதம் · ஆரஞ்சு: 5,000 கி.மீக்குள் செய்யவும் · பச்சை: சர்வீஸ் செய்ய நேரம் உள்ளது`, last: "கடைசி", km: "கி.மீ",
     cur: "வாகனத்தின் தற்போதைய கிலோமீட்டர் ரீடிங்", act: "ஓடிய மொத்த கிலோமீட்டர்", on: d => `${d} அன்று`, noCur: "பயண / டீசல் ரீடிங் இல்லை", lines: n => `${n} வரிகள்` }
 };
@@ -9019,7 +9026,7 @@ function mhRows() {
   const out = [];
   ops.maintLog.forEach(x => { const key = mtKeyOf(x), km = mtXAct(x);
     (x.items || []).forEach(it => { const g = mtGap(key, it.k, it.pos);
-      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: !mtGapSet(key, it.k, it.pos) && num(it.next) > km ? num(it.next) : g && km ? km + g : null, remarks: [it.note, x.notes].filter(Boolean).join(" · ") }); }); });
+      out.push({ e: x, key, it, plate: mtPlateOf(x), type: mtItemName(it), date: x.date, km, next: !mtGapSet(key, it.k, it.pos) && num(it.next) > km ? num(it.next) : g && km ? km + g : null, remarks: [it.k === "other" ? "" : it.note, x.notes].filter(Boolean).join(" · ") }); }); });
   // Order: vehicle class (bus, truck, car, auto, two wheeler, then the rest), vehicle number, maintenance type (with the wheel),
   // then the latest visit first (by date, then km).
   const CLS = ["Bus", "12 Wheeler Truck", "Car", "Auto", "Two Wheeler"], cls = r => { const i = CLS.indexOf(mtVehOf(r.key)?.type); return i < 0 ? CLS.length : i; };
@@ -9085,7 +9092,7 @@ function mtParseType(raw) {
   const s = upText(raw), t = s.toLowerCase();
   const k = /batter/.test(t) ? "battery" : /air ?filter/.test(t) ? "air" : /hub|grease/.test(t) ? "hub" : /lining/.test(t) ? "lining" : /drum/.test(t) ? "drum" : /oil service/.test(t) ? "oil"
     : /gear ?box/.test(t) ? "gear" : /housing oil/.test(t) ? "housing" : /clutch kit/.test(t) ? "clutchkit" : /clutch/.test(t) ? "clutch" : /tapit|tappet/.test(t) ? "tappet" : /king ?pin/.test(t) ? "kingpin"
-    : /st(e|ea)ring/.test(t) ? "steer" : /alignment/.test(t) ? "align" : /nozzle|pump/.test(t) ? "nozzle" : /rachet|ratchet/.test(t) ? "ratchet" : /dynamo/.test(t) ? "dynamo" : /engine/.test(t) ? "engine" : "other";
+    : /st(e|ea)ring/.test(t) ? "steer" : /alignment/.test(t) ? "align" : /nozzle|pump/.test(t) ? "nozzle" : /rachet|ratchet/.test(t) ? "ratchet" : /dynamo/.test(t) ? "dynamo" : /cent(er|re) ?joint/.test(t) ? "cjb" : /engine/.test(t) ? "engine" : "other";
   let pos = [];
   if (mtType(k).pos) {
     const L = /left/.test(t), R = /right/.test(t), sides = L && !R ? ["l"] : R && !L ? ["r"] : ["l", "r"];
