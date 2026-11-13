@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-13g">
+<meta name="app-ver" content="2026-11-13h">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1597,11 +1597,16 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 /* Yes / No confirmation */
 .askbox { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(0, 0, 0, .45); padding: 16px; }
 .askbox[hidden] { display: none; }
-.mxcard { display: flex; flex-direction: column; gap: 10px; width: min(460px, 100%); max-height: calc(100dvh - 32px); overflow: auto; } .mxcard p { margin: 0; font-size: 14px; }
+.mxcard { display: flex; flex-direction: column; gap: 10px; width: min(460px, 100%); max-height: calc(100dvh - 32px); overflow: auto; } .mxcard p { margin: 0; font-size: 14px; } .mxcard > * { flex-shrink: 0; }
 .mxcard .bwf1 { display: flex; flex-direction: column; gap: 4px; } .mxcard .bwf1 > span { font-size: 13px; color: var(--muted); }
 .mxcard :is(input, select) { height: 44px; font-size: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: var(--surface); color: var(--ink); }
 .mxinfo { color: var(--muted); } .mxnow { color: var(--ok) !important; } .mxnew { font-weight: 700; color: var(--accent); min-height: 1.2em; } .mxchips { margin-top: -2px; }
 .mxseg button { height: 42px; } .msext { display: block; font-size: 11.5px; color: var(--ok); margin-top: 2px; } .mtextb { padding: 4px 10px; font-size: 13px; white-space: nowrap; }
+.mxjobs { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow: auto; margin-top: 6px; } .mxjh { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); }
+.mxjob { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; } .mxjob.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.mxjob input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--accent); } .mxjob span { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .mxjob b { font-size: 14px; }
+.mxjob small { font-size: 12px; color: var(--muted); } .mxjob small i { font-style: normal; font-weight: 600; } .mxjob small i.over { color: var(--danger); } .mxjob small i.soon { color: var(--warn); } .mxjob small.mxnow { color: var(--ok); }
+.mxall { border: 0; background: none; color: var(--accent); font: 600 13px var(--body); cursor: pointer; padding: 4px; }
 .mscw { display: flex; flex-direction: column; gap: 6px; } .mscw > .mtextb { align-self: flex-end; }
 .askcard { background: var(--surface); color: var(--ink); border-radius: 14px; padding: 20px 22px 18px; width: min(420px, 100%); box-shadow: 0 20px 60px rgba(0, 0, 0, .3); }
 .askcard p { margin: 0 0 18px; font-size: 16px; line-height: 1.45; white-space: pre-line; } .askbtns { display: flex; justify-content: flex-end; gap: 10px; } .askbtns .btn { min-width: 90px; justify-content: center; }
@@ -7357,41 +7362,45 @@ const mtLeftTxt = d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} km
 /* Extend a job that is due: the mechanic looks at it and says it can go further. Either a new km (so many more km from the
    km now) or a date before which it is not shown as due. Kept on the job's last visit, so the next time the job is done the
    usual gap applies again. Those who can change maintenance (edit) do it. */
-const mtExtBtn = (key, d) => d.st === "over" || d.st === "soon" || d.ext ? `<button type="button" class="btn mtextb" data-mtext="${esc(key)}" data-job="${esc(d.e.id + "~" + mtJobId(d.it))}">${d.ext ? "Change" : "Extend"}</button>` : "";
+const mtExtBtn = (key, d) => d.st === "over" || d.st === "soon" || d.ext ? `<button type="button" class="btn mtextb" data-mtext="${esc(key)}" data-job="${esc(mxId(d))}">${d.ext ? "Change" : "Extend"}</button>` : "";
+const mxId = d => d.e.id + "~" + mtJobId(d.it);
+// Several jobs can be ticked and extended together, with the same checked date and km, extension and reason.
 let mx = null;
 function mtExtOpen(key, job) {
-  const due = mtDue(key), list = due.filter(d => d.st === "over" || d.st === "soon" || d.ext || (job && d.e.id + "~" + mtJobId(d.it) === job));
+  const list = mtDue(key).filter(d => d.st === "over" || d.st === "soon" || d.ext || mxId(d) === job);
   if (!list.length) return;
-  const d = list.find(d => d.e.id + "~" + mtJobId(d.it) === job) || list[0];
-  const fromEntry = mtw && mtw.key === key && $("mtw") && !$("mtw").hidden;
-  mx = { key, list, sel: d.e.id + "~" + mtJobId(d.it), mode: num(d.ext?.km) > 0 || !d.ext ? "km" : "date", more: "", until: d.ext?.until || "", why: d.ext?.why || "",
+  const d = list.find(d => mxId(d) === job), fromEntry = mtw && mtw.key === key && $("mtw") && !$("mtw").hidden;
+  mx = { key, list, sels: new Set(d ? [mxId(d)] : []), mode: num(d?.ext?.km) > 0 || !d?.ext ? "km" : "date", more: "", until: d?.ext?.until || "", why: d?.ext?.why || "",
     checked: fromEntry ? mtw.date : todayISO(), ckm: String(fromEntry && num(mtw.km) ? mtw.km : mtNow(key)?.meter || "") };
   if (!$("mxBox")) {
     document.body.insertAdjacentHTML("beforeend", '<div class="askbox" id="mxBox" role="dialog" aria-modal="true" aria-labelledby="mxTitle" hidden><div class="askcard mxcard" id="mxCard"></div></div>');
     $("mxBox").addEventListener("click", mxClick);
-    $("mxBox").addEventListener("input", e => { const t = e.target.dataset.mx; if (!t || !mx) return; mx[t] = e.target.value; if (t === "job") { mx.sel = e.target.value; const c = mxCur(); mx.mode = num(c.ext?.km) > 0 || !c.ext ? "km" : "date"; mx.more = ""; mx.until = c.ext?.until || ""; mx.why = c.ext?.why || ""; mxRender(); } else mxSync(); });
+    $("mxBox").addEventListener("input", e => { if (!mx) return; const t = e.target;
+      if (t.dataset.mxsel != null) { t.checked ? mx.sels.add(t.dataset.mxsel) : mx.sels.delete(t.dataset.mxsel); mxRender(); return; }
+      if (t.dataset.mx) { mx[t.dataset.mx] = t.value; mxSync(); } });
     document.addEventListener("keydown", e => { if (e.key === "Escape" && mx && !$("mxBox").hidden) { e.stopPropagation(); mxClose(); } }, true);
   }
-  mxRender(); $("mxBox").hidden = false; $("mxBox").querySelector("input[data-mx=more], input[data-mx=until]")?.focus();
+  mxRender(); $("mxBox").hidden = false; $("mxBox").querySelector(mx.sels.size ? "input[data-mx=more], input[data-mx=until]" : "input[data-mxsel]")?.focus();
 }
-const mxCur = () => mx.list.find(d => d.e.id + "~" + mtJobId(d.it) === mx.sel);
+const mxSel = () => mx.list.filter(d => mx.sels.has(mxId(d)));
 // The km meter when the mechanic checked it (as typed, like a maintenance entry) and in actual km; "More km" counts from it.
 const mxBase = () => num(mx.ckm) > 0 ? mtAct(mx.key, mx.checked, mx.ckm) : 0;
 const mxNewKm = () => num(mx.more) > 0 ? Math.round(mxBase() + num(mx.more)) : 0;
-const mxOk = () => /^\d{4}-\d{2}-\d{2}$/.test(mx.checked || "") && mx.checked <= todayISO() && num(mx.ckm) > 0 && (mx.mode === "km" ? mxNewKm() > 0 : !!mx.until && mx.until > todayISO());
+const mxOk = () => mx.sels.size > 0 && /^\d{4}-\d{2}-\d{2}$/.test(mx.checked || "") && mx.checked <= todayISO() && num(mx.ckm) > 0 && (mx.mode === "km" ? mxNewKm() > 0 : !!mx.until && mx.until > todayISO());
 function mxSync() {
   const a = $("mxAct"), act = mxBase(); if (a) a.textContent = act && Math.round(act) !== Math.round(num(mx.ckm)) ? `Actual ${nf(Math.round(act))} km` : "";
-  const n = $("mxNew"); if (n) n.textContent = mx.mode === "km" ? (mxNewKm() ? `New due at ${nf(mxNewKm())} km${mtMeterOf(mx.key, mxNewKm()) ? ` (meter ${nf(mtMeterOf(mx.key, mxNewKm()))})` : ""}` : "") : mx.until > todayISO() ? `Not shown as due until ${fmtDate(mx.until)}` : mx.until ? "Pick a date after today" : "";
-  $("mxSave").disabled = !mxOk();
+  const n = $("mxNew"), m = mtMeterOf(mx.key, mxNewKm());
+  if (n) n.textContent = mx.mode === "km" ? (mxNewKm() ? `New due at ${nf(mxNewKm())} km${m ? ` (meter ${nf(m)})` : ""}` : "") : mx.until > todayISO() ? `Not shown as due until ${fmtDate(mx.until)}` : mx.until ? "Pick a date after today" : "";
+  const k = mx.sels.size; $("mxSave").disabled = !mxOk(); $("mxSave").textContent = k > 1 ? `Extend ${k} jobs` : "Save";
 }
 function mxRender() {
-  const d = mxCur(), now = mtNow(mx.key), plate = mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === mx.key) || { vehicleId: mx.key });
-  const chip = (attr, v, label) => `<button type="button" class="mtchip" ${attr}="${v}">${label}</button>`;
-  $("mxCard").innerHTML = `<h3 id="mxTitle" style="margin:0 0 2px">Extend service</h3><p class="sub" style="margin:0 0 12px">${esc(plate)}</p>` +
-    (mx.list.length > 1 ? `<label class="bwf1"><span>Job</span><select data-mx="job">${mx.list.map(x => `<option value="${esc(x.e.id + "~" + mtJobId(x.it))}"${x === d ? " selected" : ""}>${esc(mtItemName(x.it))} · ${esc(x.ext && x.st === "ok" ? "Extended" : mtDueTxt(x))}</option>`).join("")}</select></label>`
-      : `<p style="margin:0 0 6px"><b>${esc(mtItemName(d.it))}</b></p>`) +
-    `<p class="mxinfo">Last done ${fmtDate(d.e.date)} at ${nf(d.ekm)} km${d.next ? ` · due at ${nf(d.next)} km${mtMeterOf(mx.key, d.next) ? ` (meter ${nf(mtMeterOf(mx.key, d.next))})` : ""}` : ""}${now ? ` · now about ${nf(now.km)} km${mtMeterOf(mx.key, now.km) ? ` (meter ${nf(mtMeterOf(mx.key, now.km))})` : ""}` : ""}${d.st === "over" || d.st === "soon" ? ` · ${esc(mtDueTxt(d))}` : ""}</p>` +
-    (d.ext ? `<p class="mxinfo mxnow">${esc(mtExtTxt(d.ext))}</p>` : "") +
+  const now = mtNow(mx.key), plate = mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === mx.key) || { vehicleId: mx.key }), mtr = km => mtMeterOf(mx.key, km) ? ` (meter ${nf(mtMeterOf(mx.key, km))})` : "";
+  const chip = (attr, v, label) => `<button type="button" class="mtchip" ${attr}="${v}">${label}</button>`, sel = mxSel(), all = sel.length === mx.list.length;
+  const row = d => `<label class="mxjob${mx.sels.has(mxId(d)) ? " on" : ""}"><input type="checkbox" data-mxsel="${esc(mxId(d))}"${mx.sels.has(mxId(d)) ? " checked" : ""}><span><b>${esc(mtItemName(d.it))}</b>` +
+    `<small>Last ${fmtDate(d.e.date)} at ${nf(d.ekm)} km${d.next ? ` · due at ${nf(d.next)} km${mtr(d.next)}` : ""} · <i class="${d.st}">${esc(d.ext && d.st === "ok" ? "Extended" : mtDueTxt(d))}</i></small>` +
+    (d.ext ? `<small class="mxnow">${esc(mtExtTxt(d.ext))}</small>` : "") + `</span></label>`;
+  $("mxCard").innerHTML = `<h3 id="mxTitle" style="margin:0 0 2px">Extend service</h3><p class="sub" style="margin:0">${esc(plate)}${now ? ` · now about ${nf(now.km)} km${mtr(now.km)}` : ""}</p>` +
+    `<div class="mxjobs"><div class="mxjh"><span>Jobs to extend${sel.length ? ` · ${sel.length} ticked` : ""}</span>${mx.list.length > 1 ? `<button type="button" class="mxall" data-mxall="${all ? "0" : "1"}">${all ? "Untick all" : "Tick all"}</button>` : ""}</div>${mx.list.map(row).join("")}</div>` +
     `<div class="bwf1"><span>Checked by the mechanic on</span><div class="bwseg c3 mxseg">${[["today", "Today", mx.checked === todayISO()], ["yday", "Yesterday", mx.checked === shiftDay(todayISO(), -1)], ["odate", "Other date", mx.odate || (mx.checked !== todayISO() && mx.checked !== shiftDay(todayISO(), -1))]]
       .map(([k, l, on]) => `<button type="button" data-mxday="${k}" aria-pressed="${on}">${l}</button>`).join("")}</div>` +
       (mx.odate || (mx.checked !== todayISO() && mx.checked !== shiftDay(todayISO(), -1)) ? `<input type="date" data-mx="checked" value="${esc(mx.checked)}" max="${todayISO()}" aria-label="Date the mechanic checked it">` : "") + `</div>` +
@@ -7404,27 +7413,35 @@ function mxRender() {
         `<div class="mtchips mxchips">${[[1, "1 month"], [3, "3 months"], [6, "6 months"]].map(([m, l]) => chip("data-mxmon", m, l)).join("")}</div>`) +
     `<p class="mxnew" id="mxNew"></p>` +
     `<label class="bwf1"><span>Reason (optional)</span><input type="text" data-mx="why" maxlength="200" value="${esc(mx.why)}" placeholder="e.g. Mechanic checked at hub greasing: good for 30,000 km more"></label>` +
-    `<p class="err" id="mxErr"></p><div class="askbtns">${d.ext ? `<button type="button" class="btn danger" data-mxa="del" style="margin-right:auto">Remove extension</button>` : ""}<button type="button" class="btn" data-mxa="close">Cancel</button><button type="button" class="btn primary" id="mxSave" data-mxa="save">Save</button></div>`;
+    `<p class="err" id="mxErr"></p><div class="askbtns">${sel.length && sel.every(d => d.ext) ? `<button type="button" class="btn danger" data-mxa="del" style="margin-right:auto">Remove extension${sel.length > 1 ? "s" : ""}</button>` : ""}` +
+    `<button type="button" class="btn" data-mxa="close">Cancel</button><button type="button" class="btn primary" id="mxSave" data-mxa="save">Save</button></div>`;
   mxSync();
 }
 const mxClose = () => { $("mxBox").hidden = true; mx = null; };
 async function mxClick(e) {
   if (e.target.id === "mxBox") { mxClose(); return; }
   const t = e.target.closest("button"); if (!t || !mx) return;
+  if (t.dataset.mxall) { mx.sels = new Set(t.dataset.mxall === "1" ? mx.list.map(mxId) : []); mxRender(); return; }
   if (t.dataset.mxmode) { mx.mode = t.dataset.mxmode; mxRender(); $("mxBox").querySelector("input[data-mx=more], input[data-mx=until]")?.focus(); return; }
   if (t.dataset.mxmore) { mx.more = t.dataset.mxmore; mxRender(); return; }
   if (t.dataset.mxday) { const k = t.dataset.mxday; mx.odate = k === "odate"; if (k !== "odate") mx.checked = k === "today" ? todayISO() : shiftDay(todayISO(), -1); mxRender(); if (k === "odate") $("mxBox").querySelector("input[data-mx=checked]")?.focus(); return; }
   if (t.dataset.mxmon) { const d = new Date(todayISO() + "T00:00:00"); d.setMonth(d.getMonth() + +t.dataset.mxmon); mx.until = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; mxRender(); return; }
   const a = t.dataset.mxa; if (!a) return;
   if (a === "close") { mxClose(); return; }
-  const d = mxCur(), e0 = ops.maintLog.find(x => x.id === d.e.id); if (!e0) { mxClose(); return; }
-  const ext = { ...(e0.ext || {}) }, j = mtJobId(d.it);
-  if (a === "del") delete ext[j];
-  else { if (!mxOk()) return; ext[j] = { ...(mx.mode === "km" ? { km: mxNewKm() } : { until: mx.until }), ...(upText(mx.why) ? { why: upText(mx.why) } : {}), checked: mx.checked, ckm: Math.round(num(mx.ckm)), ckmAct: Math.round(mxBase()), by: whoAmI(), on: todayISO() }; }
-  const doc = { ...e0, ...rxStamp() }; if (Object.keys(ext).length) doc.ext = ext; else delete doc.ext;
+  if (a === "save" && !mxOk()) return;
+  const sel = mxSel(); if (!sel.length) return;
+  const rec = a === "del" ? null : { ...(mx.mode === "km" ? { km: mxNewKm() } : { until: mx.until }), ...(upText(mx.why) ? { why: upText(mx.why) } : {}), checked: mx.checked, ckm: Math.round(num(mx.ckm)), ckmAct: Math.round(mxBase()), by: whoAmI(), on: todayISO() };
+  // One save per maintenance entry: the jobs ticked from the same visit go together.
+  const byEntry = new Map(); sel.forEach(d => { if (!byEntry.has(d.e.id)) byEntry.set(d.e.id, []); byEntry.get(d.e.id).push(mtJobId(d.it)); });
   t.disabled = true;
-  try { await opsSave("maintLog", doc); toast(a === "del" ? "Extension removed" : `${mtItemName(d.it)} extended`); mxClose(); if (mtw && !$("mtw").hidden) mtRender(); if (view === "tmsum") renderMsum(); }
-  catch { t.disabled = false; $("mxErr").textContent = "Couldn't save. Try again."; }
+  try {
+    for (const [id, jobs] of byEntry) { const e0 = ops.maintLog.find(x => x.id === id); if (!e0) continue;
+      const ext = { ...(e0.ext || {}) }; jobs.forEach(j => { if (rec) ext[j] = rec; else delete ext[j]; });
+      const doc = { ...e0, ...rxStamp() }; if (Object.keys(ext).length) doc.ext = ext; else delete doc.ext;
+      await opsSave("maintLog", doc); }
+    toast(a === "del" ? `Extension${sel.length > 1 ? "s" : ""} removed` : sel.length > 1 ? `${sel.length} jobs extended` : `${mtItemName(sel[0].it)} extended`);
+    mxClose(); if (mtw && !$("mtw").hidden) mtRender(); if (view === "tmsum") renderMsum();
+  } catch { t.disabled = false; $("mxErr").textContent = "Couldn't save all. Try again."; }
 }
 const canXp = () => platformWrite && acc.expenses === "edit";
 const canMt = () => platformWrite && acc.maintenance === "edit";
@@ -8825,7 +8842,8 @@ function renderMsum() {
   $("msSum").innerHTML = ostat("Overdue", nf(cnt("over")), "jobs past their km", cnt("over") ? "var(--danger)" : "") + ostat("Due soon", nf(cnt("soon")), "within 5,000 km", cnt("soon") ? "var(--warn)" : "") +
     ostat("Vehicles", nf(all.length), "with maintenance entered");
   $("msList").innerHTML = (all.length ? all.map(({ k, due, now }) => `<section class="panel msbus"><div class="msh"><h2 class="sec"><span class="plate psv">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</span></h2>` +
-    `<span class="sub">${now ? `Now about <b>${nf(now.km)} km</b> (${now.src}, ${fmtDate(now.date)})${now.perDay ? ` · about ${nf(Math.round(now.perDay))} km a day` : ""}` : "No km reading"}</span></div>` +
+    `<span class="sub">${now ? `Now about <b>${nf(now.km)} km</b> (${now.src}, ${fmtDate(now.date)})${now.perDay ? ` · about ${nf(Math.round(now.perDay))} km a day` : ""}` : "No km reading"}</span>` +
+    `${canMt() && due.filter(d => d.st === "over" || d.st === "soon" || d.ext).length > 1 ? `<button type="button" class="btn mtextb" data-mtext="${esc(k)}" data-job="">Extend several</button>` : ""}</div>` +
     `<div class="tscroll"><table class="ctable mstable"><thead><tr><th>Maintenance</th><th>Last done</th><th class="n">Kms</th><th class="n">Next service at</th><th class="n">Km left</th><th>Expected around</th><th>Status</th></tr></thead><tbody>` +
     due.map(d => `<tr class="ms-${d.st}" data-msentry="${d.e.id}" tabindex="0" style="cursor:pointer"><td class="msjob"><span title="${esc(mtItemName(d.it))}">${esc(mtItemName(d.it))}</span>${d.ext ? `<small class="msext">${esc(mtExtTxt(d.ext))}</small>` : ""}</td><td class="num">${fmtDate(d.e.date)}</td><td class="n">${nf(d.ekm)}</td><td class="n">${d.next ? nf(d.next) + mtMeterTag(k, d.next) : "—"}</td>` +
       `<td class="n">${esc(mtLeftTxt(d))}</td><td class="num">${d.st === "over" ? "Now" : d.when ? fmtDate(d.when) : "—"}</td><td><span class="msst">${mtStPill(d)}${canMt() ? mtExtBtn(k, d) : ""}</span></td></tr>`).join("") +
