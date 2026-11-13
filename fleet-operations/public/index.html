@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-13i">
+<meta name="app-ver" content="2026-11-13j">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -2061,6 +2061,9 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mhtable tr.mht0 td { background: color-mix(in srgb, var(--mhc) 9%, var(--surface)); } .mhtable tr.mht1 td { background: color-mix(in srgb, var(--mhc) 21%, var(--surface)); }
 .mhtable tr.mhvs td { border-top: 2px solid color-mix(in srgb, var(--mhc) 55%, var(--surface)); } .mhtable tr.mhtop td { font-weight: 700; }
 .mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
+/* The history fits the screen: the headings, the job (an "Other" description) and the remarks wrap instead of widening the table. */
+table.mhtable { width: 100%; } table.mhtable th { white-space: normal; vertical-align: bottom; } table.mhtable td { vertical-align: top; }
+table.mhtable td:nth-child(2) { white-space: normal; min-width: 110px; max-width: 300px; } table.mhtable td.mhrem { white-space: normal; overflow-wrap: anywhere; min-width: 120px; }
 @media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } }
 .msh { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-bottom: 8px; } .msh .sec { margin: 0; }
 /* A long job name (an "Other" description) wraps, at most two lines, so the status and Extend stay in view. */
