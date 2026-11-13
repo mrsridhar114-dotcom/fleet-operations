@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-13h">
+<meta name="app-ver" content="2026-11-13i">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -7376,7 +7376,8 @@ function mtExtOpen(key, job) {
     document.body.insertAdjacentHTML("beforeend", '<div class="askbox" id="mxBox" role="dialog" aria-modal="true" aria-labelledby="mxTitle" hidden><div class="askcard mxcard" id="mxCard"></div></div>');
     $("mxBox").addEventListener("click", mxClick);
     $("mxBox").addEventListener("input", e => { if (!mx) return; const t = e.target;
-      if (t.dataset.mxsel != null) { t.checked ? mx.sels.add(t.dataset.mxsel) : mx.sels.delete(t.dataset.mxsel); mxRender(); return; }
+      if (t.dataset.mxsel != null) { const id = t.dataset.mxsel; t.checked ? mx.sels.add(id) : mx.sels.delete(id); mxRender();
+        [...$("mxCard").querySelectorAll("[data-mxsel]")].find(x => x.dataset.mxsel === id)?.focus({ preventScroll: true }); return; }
       if (t.dataset.mx) { mx[t.dataset.mx] = t.value; mxSync(); } });
     document.addEventListener("keydown", e => { if (e.key === "Escape" && mx && !$("mxBox").hidden) { e.stopPropagation(); mxClose(); } }, true);
   }
@@ -7399,7 +7400,9 @@ function mxRender() {
   const row = d => `<label class="mxjob${mx.sels.has(mxId(d)) ? " on" : ""}"><input type="checkbox" data-mxsel="${esc(mxId(d))}"${mx.sels.has(mxId(d)) ? " checked" : ""}><span><b>${esc(mtItemName(d.it))}</b>` +
     `<small>Last ${fmtDate(d.e.date)} at ${nf(d.ekm)} km${d.next ? ` · due at ${nf(d.next)} km${mtr(d.next)}` : ""} · <i class="${d.st}">${esc(d.ext && d.st === "ok" ? "Extended" : mtDueTxt(d))}</i></small>` +
     (d.ext ? `<small class="mxnow">${esc(mtExtTxt(d.ext))}</small>` : "") + `</span></label>`;
-  $("mxCard").innerHTML = `<h3 id="mxTitle" style="margin:0 0 2px">Extend service</h3><p class="sub" style="margin:0">${esc(plate)}${now ? ` · now about ${nf(now.km)} km${mtr(now.km)}` : ""}</p>` +
+  // Ticking a job draws the window again: keep where the window and the job list were scrolled to.
+  const card = $("mxCard"), top = card.scrollTop, jtop = card.querySelector(".mxjobs")?.scrollTop || 0;
+  card.innerHTML = `<h3 id="mxTitle" style="margin:0 0 2px">Extend service</h3><p class="sub" style="margin:0">${esc(plate)}${now ? ` · now about ${nf(now.km)} km${mtr(now.km)}` : ""}</p>` +
     `<div class="mxjobs"><div class="mxjh"><span>Jobs to extend${sel.length ? ` · ${sel.length} ticked` : ""}</span>${mx.list.length > 1 ? `<button type="button" class="mxall" data-mxall="${all ? "0" : "1"}">${all ? "Untick all" : "Tick all"}</button>` : ""}</div>${mx.list.map(row).join("")}</div>` +
     `<div class="bwf1"><span>Checked by the mechanic on</span><div class="bwseg c3 mxseg">${[["today", "Today", mx.checked === todayISO()], ["yday", "Yesterday", mx.checked === shiftDay(todayISO(), -1)], ["odate", "Other date", mx.odate || (mx.checked !== todayISO() && mx.checked !== shiftDay(todayISO(), -1))]]
       .map(([k, l, on]) => `<button type="button" data-mxday="${k}" aria-pressed="${on}">${l}</button>`).join("")}</div>` +
@@ -7415,6 +7418,7 @@ function mxRender() {
     `<label class="bwf1"><span>Reason (optional)</span><input type="text" data-mx="why" maxlength="200" value="${esc(mx.why)}" placeholder="e.g. Mechanic checked at hub greasing: good for 30,000 km more"></label>` +
     `<p class="err" id="mxErr"></p><div class="askbtns">${sel.length && sel.every(d => d.ext) ? `<button type="button" class="btn danger" data-mxa="del" style="margin-right:auto">Remove extension${sel.length > 1 ? "s" : ""}</button>` : ""}` +
     `<button type="button" class="btn" data-mxa="close">Cancel</button><button type="button" class="btn primary" id="mxSave" data-mxa="save">Save</button></div>`;
+  card.scrollTop = top; const jl = card.querySelector(".mxjobs"); if (jl) jl.scrollTop = jtop;
   mxSync();
 }
 const mxClose = () => { $("mxBox").hidden = true; mx = null; };
