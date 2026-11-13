@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-13c">
+<meta name="app-ver" content="2026-11-13d">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -2058,6 +2058,9 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .mhtable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mhtable tr.ms-over td.mhnx { color: var(--danger); font-weight: 700; } .mhtable .mhrem { min-width: 180px; }
 @media (max-width: 700px) { #mhPanel .tscroll { display: none; } #mhPanel .mscards { display: flex; flex-direction: column; gap: 8px; } }
 .msh { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-bottom: 8px; } .msh .sec { margin: 0; }
+/* A long job name (an "Other" description) wraps, at most two lines, so the status and Extend stay in view. */
+.mstable td.msjob { white-space: normal; min-width: 170px; max-width: 300px; } .mstable td.msjob > span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.msst { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
 .mstable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mstable tr.ms-soon td { background: color-mix(in srgb, #f28c28 18%, var(--surface)); }
 .msgtable input { width: 120px; height: 36px; text-align: right; border: 1px solid var(--line); border-radius: 8px; padding: 0 8px; background: var(--surface); color: var(--ink); font: inherit; }
 /* Booking window: the booking at a glance (header) and the Booking slip in four groups. */
@@ -8811,9 +8814,9 @@ function renderMsum() {
     ostat("Vehicles", nf(all.length), "with maintenance entered");
   $("msList").innerHTML = (all.length ? all.map(({ k, due, now }) => `<section class="panel msbus"><div class="msh"><h2 class="sec"><span class="plate psv">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</span></h2>` +
     `<span class="sub">${now ? `Now about <b>${nf(now.km)} km</b> (${now.src}, ${fmtDate(now.date)})${now.perDay ? ` · about ${nf(Math.round(now.perDay))} km a day` : ""}` : "No km reading"}</span></div>` +
-    `<div class="tscroll"><table class="ctable mstable"><thead><tr><th>Maintenance</th><th>Last done</th><th class="n">Kms</th><th class="n">Next service at</th><th class="n">Km left</th><th>Expected around</th><th>Status</th>${canMt() ? "<th></th>" : ""}</tr></thead><tbody>` +
-    due.map(d => `<tr class="ms-${d.st}" data-msentry="${d.e.id}" tabindex="0" style="cursor:pointer"><td>${esc(mtItemName(d.it))}${d.ext ? `<small class="msext">${esc(mtExtTxt(d.ext))}</small>` : ""}</td><td class="num">${fmtDate(d.e.date)}</td><td class="n">${nf(d.ekm)}</td><td class="n">${d.next ? nf(d.next) : "—"}</td>` +
-      `<td class="n">${esc(mtLeftTxt(d))}</td><td class="num">${d.st === "over" ? "Now" : d.when ? fmtDate(d.when) : "—"}</td><td>${mtStPill(d)}</td>${canMt() ? `<td>${mtExtBtn(k, d)}</td>` : ""}</tr>`).join("") +
+    `<div class="tscroll"><table class="ctable mstable"><thead><tr><th>Maintenance</th><th>Last done</th><th class="n">Kms</th><th class="n">Next service at</th><th class="n">Km left</th><th>Expected around</th><th>Status</th></tr></thead><tbody>` +
+    due.map(d => `<tr class="ms-${d.st}" data-msentry="${d.e.id}" tabindex="0" style="cursor:pointer"><td class="msjob"><span title="${esc(mtItemName(d.it))}">${esc(mtItemName(d.it))}</span>${d.ext ? `<small class="msext">${esc(mtExtTxt(d.ext))}</small>` : ""}</td><td class="num">${fmtDate(d.e.date)}</td><td class="n">${nf(d.ekm)}</td><td class="n">${d.next ? nf(d.next) : "—"}</td>` +
+      `<td class="n">${esc(mtLeftTxt(d))}</td><td class="num">${d.st === "over" ? "Now" : d.when ? fmtDate(d.when) : "—"}</td><td><span class="msst">${mtStPill(d)}${canMt() ? mtExtBtn(k, d) : ""}</span></td></tr>`).join("") +
     `</tbody></table></div>` +
     // On a phone each job is a small card instead of a wide table.
     `<div class="mscards">${due.map(d => `<div class="mscw"><button type="button" class="mscard ms-${d.st}" data-msentry="${d.e.id}"><span class="mscn"><b>${esc(mtItemName(d.it))}</b>${mtStPill(d)}</span>` +
