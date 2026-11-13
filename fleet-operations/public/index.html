@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-13d">
+<meta name="app-ver" content="2026-11-13e">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -2060,7 +2060,7 @@ table.ctable.xrtab td.xract { width: 1%; } .xrtab .xract .xracts { flex-directio
 .msh { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-bottom: 8px; } .msh .sec { margin: 0; }
 /* A long job name (an "Other" description) wraps, at most two lines, so the status and Extend stay in view. */
 .mstable td.msjob { white-space: normal; min-width: 170px; max-width: 300px; } .mstable td.msjob > span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.msst { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.msmeter { display: block; font-size: 11.5px; color: var(--muted); } .msst { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
 .mstable tr.ms-over td { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); } .mstable tr.ms-soon td { background: color-mix(in srgb, #f28c28 18%, var(--surface)); }
 .msgtable input { width: 120px; height: 36px; text-align: right; border: 1px solid var(--line); border-radius: 8px; padding: 0 8px; background: var(--surface); color: var(--ink); font: inherit; }
 /* Booking window: the booking at a glance (header) and the Booking slip in four groups. */
@@ -7348,6 +7348,9 @@ function mtDue(key) {
 }
 const MT_ST = { over: ["Overdue", "mlow"], soon: ["Due soon", "d30"], ok: ["OK", "ok"], nogap: ["No gap set", "off"] };
 const mtJobId = it => it.k + "|" + (it.pos || "");
+// A vehicle with meter adjustments: a km as the meter shows it (for the driver), under the actual km.
+const mtMeterOf = (key, km) => odoMeterOf(mtVehOf(key), km);
+const mtMeterTag = (key, km) => { const m = mtMeterOf(key, km); return m ? `<small class="msmeter">meter ${nf(m)}</small>` : ""; };
 const mtStPill = d => d.ext && d.st === "ok" ? `<span class="pill ok">Extended</span>` : `<span class="pill ${MT_ST[d.st][1]}">${MT_ST[d.st][0]}</span>`;
 const mtExtTxt = x => x ? `Extended ${num(x.km) > 0 ? `to ${nf(num(x.km))} km` : `until ${fmtDate(x.until)}`}${x.why ? ` · ${x.why}` : ""} (${x.by || "—"}, ${fmtDate(x.on)})` : "";
 const mtLeftTxt = d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} km over` : `${nf(d.left)} km`;
@@ -7374,7 +7377,7 @@ const mxBase = () => { const d = mxCur(), now = mtNow(mx.key); return now?.km ||
 const mxNewKm = () => num(mx.more) > 0 ? Math.round(mxBase() + num(mx.more)) : 0;
 const mxOk = () => mx.mode === "km" ? mxNewKm() > 0 : !!mx.until && mx.until > todayISO();
 function mxSync() {
-  const n = $("mxNew"); if (n) n.textContent = mx.mode === "km" ? (mxNewKm() ? `New due at ${nf(mxNewKm())} km` : "") : mx.until > todayISO() ? `Not shown as due until ${fmtDate(mx.until)}` : mx.until ? "Pick a date after today" : "";
+  const n = $("mxNew"); if (n) n.textContent = mx.mode === "km" ? (mxNewKm() ? `New due at ${nf(mxNewKm())} km${mtMeterOf(mx.key, mxNewKm()) ? ` (meter ${nf(mtMeterOf(mx.key, mxNewKm()))})` : ""}` : "") : mx.until > todayISO() ? `Not shown as due until ${fmtDate(mx.until)}` : mx.until ? "Pick a date after today" : "";
   $("mxSave").disabled = !mxOk();
 }
 function mxRender() {
@@ -7383,7 +7386,7 @@ function mxRender() {
   $("mxCard").innerHTML = `<h3 id="mxTitle" style="margin:0 0 2px">Extend service</h3><p class="sub" style="margin:0 0 12px">${esc(plate)}</p>` +
     (mx.list.length > 1 ? `<label class="bwf1"><span>Job</span><select data-mx="job">${mx.list.map(x => `<option value="${esc(x.e.id + "~" + mtJobId(x.it))}"${x === d ? " selected" : ""}>${esc(mtItemName(x.it))} · ${esc(x.ext && x.st === "ok" ? "Extended" : mtDueTxt(x))}</option>`).join("")}</select></label>`
       : `<p style="margin:0 0 6px"><b>${esc(mtItemName(d.it))}</b></p>`) +
-    `<p class="mxinfo">Last done ${fmtDate(d.e.date)} at ${nf(d.ekm)} km${d.next ? ` · due at ${nf(d.next)} km` : ""}${now ? ` · now about ${nf(now.km)} km` : ""}${d.st === "over" || d.st === "soon" ? ` · ${esc(mtDueTxt(d))}` : ""}</p>` +
+    `<p class="mxinfo">Last done ${fmtDate(d.e.date)} at ${nf(d.ekm)} km${d.next ? ` · due at ${nf(d.next)} km${mtMeterOf(mx.key, d.next) ? ` (meter ${nf(mtMeterOf(mx.key, d.next))})` : ""}` : ""}${now ? ` · now about ${nf(now.km)} km${mtMeterOf(mx.key, now.km) ? ` (meter ${nf(mtMeterOf(mx.key, now.km))})` : ""}` : ""}${d.st === "over" || d.st === "soon" ? ` · ${esc(mtDueTxt(d))}` : ""}</p>` +
     (d.ext ? `<p class="mxinfo mxnow">${esc(mtExtTxt(d.ext))}</p>` : "") +
     `<div class="bwseg c2 mxseg"><button type="button" data-mxmode="km" aria-pressed="${mx.mode === "km"}">More km</button><button type="button" data-mxmode="date" aria-pressed="${mx.mode === "date"}">Until a date</button></div>` +
     (mx.mode === "km"
@@ -8815,12 +8818,12 @@ function renderMsum() {
   $("msList").innerHTML = (all.length ? all.map(({ k, due, now }) => `<section class="panel msbus"><div class="msh"><h2 class="sec"><span class="plate psv">${esc(mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k }))}</span></h2>` +
     `<span class="sub">${now ? `Now about <b>${nf(now.km)} km</b> (${now.src}, ${fmtDate(now.date)})${now.perDay ? ` · about ${nf(Math.round(now.perDay))} km a day` : ""}` : "No km reading"}</span></div>` +
     `<div class="tscroll"><table class="ctable mstable"><thead><tr><th>Maintenance</th><th>Last done</th><th class="n">Kms</th><th class="n">Next service at</th><th class="n">Km left</th><th>Expected around</th><th>Status</th></tr></thead><tbody>` +
-    due.map(d => `<tr class="ms-${d.st}" data-msentry="${d.e.id}" tabindex="0" style="cursor:pointer"><td class="msjob"><span title="${esc(mtItemName(d.it))}">${esc(mtItemName(d.it))}</span>${d.ext ? `<small class="msext">${esc(mtExtTxt(d.ext))}</small>` : ""}</td><td class="num">${fmtDate(d.e.date)}</td><td class="n">${nf(d.ekm)}</td><td class="n">${d.next ? nf(d.next) : "—"}</td>` +
+    due.map(d => `<tr class="ms-${d.st}" data-msentry="${d.e.id}" tabindex="0" style="cursor:pointer"><td class="msjob"><span title="${esc(mtItemName(d.it))}">${esc(mtItemName(d.it))}</span>${d.ext ? `<small class="msext">${esc(mtExtTxt(d.ext))}</small>` : ""}</td><td class="num">${fmtDate(d.e.date)}</td><td class="n">${nf(d.ekm)}</td><td class="n">${d.next ? nf(d.next) + mtMeterTag(k, d.next) : "—"}</td>` +
       `<td class="n">${esc(mtLeftTxt(d))}</td><td class="num">${d.st === "over" ? "Now" : d.when ? fmtDate(d.when) : "—"}</td><td><span class="msst">${mtStPill(d)}${canMt() ? mtExtBtn(k, d) : ""}</span></td></tr>`).join("") +
     `</tbody></table></div>` +
     // On a phone each job is a small card instead of a wide table.
     `<div class="mscards">${due.map(d => `<div class="mscw"><button type="button" class="mscard ms-${d.st}" data-msentry="${d.e.id}"><span class="mscn"><b>${esc(mtItemName(d.it))}</b>${mtStPill(d)}</span>` +
-      `<span>Last: ${fmtDate(d.e.date)} · ${nf(d.ekm)} km</span>${d.next ? `<span>Next at <b>${nf(d.next)} km</b> · ${esc(mtLeftTxt(d))}${d.st !== "over" && d.when ? ` · around ${fmtDate(d.when)}` : ""}</span>` : `<span>No service gap set</span>`}` +
+      `<span>Last: ${fmtDate(d.e.date)} · ${nf(d.ekm)} km</span>${d.next ? `<span>Next at <b>${nf(d.next)} km</b>${mtMeterOf(k, d.next) ? ` (meter <b>${nf(mtMeterOf(k, d.next))}</b>)` : ""} · ${esc(mtLeftTxt(d))}${d.st !== "over" && d.when ? ` · around ${fmtDate(d.when)}` : ""}</span>` : `<span>No service gap set</span>`}` +
       `${d.ext ? `<small class="msext">${esc(mtExtTxt(d.ext))}</small>` : ""}</button>${canMt() ? mtExtBtn(k, d) : ""}</div>`).join("")}</div>` +
     `</section>`).join("") : `<section class="panel"><p class="sub" style="margin:0">No maintenance entered yet. Use Maintenance entry, or load your Excel in Utility › Data upload.</p></section>`) +
     (!msBus && old.length ? `<button type="button" class="btn" id="msOldBtn" style="align-self:flex-start">${msOld ? "Hide" : "Show"} ${old.length} vehicle${old.length === 1 ? "" : "s"} not in the vehicle master</button>` : "");
@@ -8840,11 +8843,11 @@ const MS_TA_TYPE = { oil: "ஆயில் சர்வீஸ்", gear: "கி
 const MS_TA_POS = { fl: "முன் இடது", fr: "முன் வலது", bl: "பின் இடது", br: "பின் வலது", sl: "2வது ஆக்சில் இடது", sr: "2வது ஆக்சில் வலது", dl: "டம்மி இடது", dr: "டம்மி வலது" };
 const MS_TA_TRUCK = { bl: "பின் ஹவுசிங் இடது", br: "பின் ஹவுசிங் வலது", dl: "பின் டம்மி இடது", dr: "பின் டம்மி வலது" };
 const MS_T = {
-  en: { title: "Maintenance summary", cols: { plate: "Vehicle", type: "Maintenance work", date: "Last Service Date", km: "Last Service Kilometer", next: "Next Service Kilometer", left: "KM Left", when: "Next Service Date", status: "Status" },
+  en: { title: "Maintenance summary", cols: { plate: "Vehicle", type: "Maintenance work", date: "Last Service Date", km: "Last Service Kilometer", next: "Next Service Kilometer", nextm: "Next Service Meter Reading", left: "KM Left", when: "Next Service Date", status: "Status" },
     st: { over: "Overdue", soon: "Due soon", ok: "OK", nogap: "No gap set" }, ext: "Extended", now: "Now", left: mtLeftTxt, item: r => mtItemName(r.it),
     sub: d => `As on ${d} · Red: overdue · Orange: due within 5,000 km · Green: OK`, last: "Last", km: "km",
     cur: "VEHICLE'S CURRENT RUNNING KILOMETER READING", act: "ACTUAL KILOMETER", on: d => `on ${d}`, noCur: "no trip or diesel reading yet", lines: n => `${n} line${n === 1 ? "" : "s"}` },
-  ta: { title: "பராமரிப்பு விவரம்", cols: { plate: "வண்டி எண்", type: "பராமரிப்பு வேலை", date: "சென்ற பராமரிப்பு தேதி", km: "அப்போது கிலோமீட்டர்", next: "அடுத்து பராமரிப்பு செய்யவேண்டிய கிலோமீட்டர்", left: "மீதி கிலோமீட்டர்", when: "பராமரிப்பு செய்யவேண்டிய தேதி", status: "நிலை" },
+  ta: { title: "பராமரிப்பு விவரம்", cols: { plate: "வண்டி எண்", type: "பராமரிப்பு வேலை", date: "சென்ற பராமரிப்பு தேதி", km: "அப்போது கிலோமீட்டர்", next: "அடுத்து பராமரிப்பு செய்யவேண்டிய கிலோமீட்டர்", nextm: "அடுத்த சர்வீஸ் மீட்டர் ரீடிங்", left: "மீதி கிலோமீட்டர்", when: "பராமரிப்பு செய்யவேண்டிய தேதி", status: "நிலை" },
     st: { over: "தாமதம்", soon: "விரைவில்", ok: "சர்வீஸ் செய்ய நேரம் உள்ளது", nogap: "கி.மீ இல்லை" }, ext: "நீட்டிக்கப்பட்டது", now: "இப்போதே",
     left: d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} கி.மீ அதிகம்` : `${nf(d.left)} கி.மீ`,
     item: r => (MS_TA_TYPE[r.it.k] || mtType(r.it.k).name) + (r.it.k === "other" && r.it.note ? ": " + r.it.note : "") + (r.it.pos ? " · " + ((/truck/i.test(mtClsOf(r.key)) && MS_TA_TRUCK[r.it.pos]) || MS_TA_POS[r.it.pos] || mtPosName(r.it.pos)) : ""),
@@ -8858,9 +8861,10 @@ function msLines(keys, T) {
   const plateK = k => mtPlateOf(ops.maintLog.find(x => mtKeyOf(x) === k) || { vehicleId: k });
   const list = keys.flatMap(k => mtDue(k).map(d => ({ ...d, key: k, plate: plateK(k) })));
   const st = r => r.st === "over" || r.st === "soon" || r.st === "ok" ? r.st : "";
-  const V = (r, c) => c === "plate" ? r.plate : c === "type" ? T().item(r) : c === "date" ? (r.e.date ? xpDateTxt(r.e.date) : "") : c === "km" ? (r.ekm ? nf(r.ekm) : "") : c === "next" ? (r.next ? nf(r.next) : "")
+  const meter = r => r.next ? mtMeterOf(r.key, r.next) || r.next : null, hasM = keys.some(k => odoPairs(mtVehOf(k)).length);
+  const V = (r, c) => c === "plate" ? r.plate : c === "type" ? T().item(r) : c === "date" ? (r.e.date ? xpDateTxt(r.e.date) : "") : c === "km" ? (r.ekm ? nf(r.ekm) : "") : c === "next" ? (r.next ? nf(r.next) : "") : c === "nextm" ? (r.next ? nf(meter(r)) : "")
     : c === "left" ? (r.left == null ? "" : T().left(r)) : c === "when" ? (r.st === "over" ? T().now : r.when ? xpDateTxt(r.when) : "") : r.ext && r.st === "ok" ? T().ext : T().st[r.st];
-  const R = (r, c) => c === "date" ? r.e.date || null : c === "km" ? r.ekm || null : c === "next" ? r.next || null : c === "when" ? (r.st !== "over" && r.when ? r.when : null) : null;
+  const R = (r, c) => c === "date" ? r.e.date || null : c === "km" ? r.ekm || null : c === "next" ? r.next || null : c === "nextm" ? meter(r) : c === "when" ? (r.st !== "over" && r.when ? r.when : null) : null;
   // The vehicle's latest meter reading from its trip sheets, round trips and diesel fills, shown on top of the file (or on each vehicle's heading).
   const cur = new Map(keys.map(k => [k, mtNow(k, true)]));
   // A vehicle with meter adjustments in the vehicle master (meter and actual km) also shows the actual km.
@@ -8868,15 +8872,15 @@ function msLines(keys, T) {
     return `${T().cur}: ${c ? `${nf(c.meter)} ${T().km} (${T().on(xpDateTxt(c.date))})${adj ? ` · ${T().act}: ${nf(c.km)} ${T().km}` : ""}` : T().noCur}`; };
   const keyOfPlate = g => keys.find(k => plateK(k) === g);
   const cols = () => [{ k: "plate", xl: 16, px: 150, kind: "text", off: true }, { k: "type", xl: 30, px: 0, kind: "text" }, { k: "date", xl: 15, px: 150, kind: "date" },
-    { k: "km", xl: 13, px: 130, kind: "num" }, { k: "next", xl: 16, px: 150, kind: "num" }, { k: "left", xl: 17, px: 170, kind: "text" },
+    { k: "km", xl: 13, px: 130, kind: "num" }, { k: "next", xl: 16, px: 150, kind: "num" }, ...(hasM ? [{ k: "nextm", xl: 16, px: 150, kind: "num" }] : []), { k: "left", xl: 17, px: 170, kind: "text" },
     { k: "when", xl: 17, px: 170, kind: "date" }, { k: "status", xl: 12, px: 110, kind: "text" }].map(c => ({ ...c, h: T().cols[c.k] }));
-  return { plateK, list, st, V, R, curTxt, keyOfPlate, cols };
+  return { plateK, list, st, V, R, curTxt, keyOfPlate, cols, hasM };
 }
 $("msDl").onclick = () => {
   const keys = msBus ? [msBus] : msKeys(msOld);
   let lang = "en"; try { lang = localStorage.getItem("fleet-mslang") === "ta" ? "ta" : "en"; } catch {}
   const T = () => MS_T[lang];
-  const { plateK, list, st, V, R, curTxt, keyOfPlate, cols } = msLines(keys, T);
+  const { plateK, list, st, V, R, curTxt, keyOfPlate, cols, hasM } = msLines(keys, T);
   if (!list.length) { toast("No maintenance entered yet."); return; }
   const one = keys.length === 1;
   const boxes = one ? "" : `<div class="xosub">Vehicles</div><label class="dall"><input type="checkbox" data-msvall checked> All vehicles</label><div class="xomsv">${keys.map(k => `<label><input type="checkbox" data-msv="${esc(k)}" checked> ${esc(plateK(k))}</label>`).join("")}</div>`;
@@ -8886,7 +8890,7 @@ $("msDl").onclick = () => {
     groupBy: one ? null : r => r.plate, split: one ? null : { label: "One file per vehicle", title: g => `${T().title} - ${g}` },
     note: "Each vehicle's jobs: overdue (red), due soon (orange), then OK (green). Untick any column or line you don't want. Choose Tamil for the drivers.",
     cols: cols(),
-    lineCols: ["type", "next", "left", "status"], lineSub: r => `${T().last} ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " " + T().km : ""}`, val: V, raw: R,
+    lineCols: ["type", "next", ...(hasM ? ["nextm"] : []), "left", "status"], lineSub: r => `${T().last} ${r.e.date ? xpDateTxt(r.e.date) : "—"}${r.ekm ? " · " + nf(r.ekm) + " " + T().km : ""}`, val: V, raw: R,
     countTxt: n => T().lines(n),
     top: (rows, sp) => sp.groupBy || !rows.length ? "" : curTxt(rows[0].key),
     grpLabel: g => `${g} · ${curTxt(keyOfPlate(g))}`,
@@ -8896,7 +8900,7 @@ $("msDl").onclick = () => {
     // English or Tamil: headings, job names, km left and status follow; the vehicle numbers, dates and km stay as they are.
     setLang: l => { lang = spec.lang = l; try { localStorage.setItem("fleet-mslang", l); } catch {}
       spec.sheet = T().title; spec.sub = T().sub(xpDateTxt(todayISO())); spec.title0 = tAuto(keys); // Tamil headings are longer: wider Excel columns and a taller heading row.
-      const XW = { en: { date: 15, km: 13, next: 16, left: 17, when: 17, status: 12 }, ta: { date: 18, km: 18, next: 22, left: 18, when: 20, status: 28 } }[l];
+      const XW = { en: { date: 15, km: 13, next: 16, nextm: 16, left: 17, when: 17, status: 12 }, ta: { date: 18, km: 18, next: 22, nextm: 22, left: 18, when: 20, status: 28 } }[l];
       spec.cols.forEach(c => { c.h = T().cols[c.k]; if (XW[c.k]) c.xl = XW[c.k]; if (c.k === "status") c.px = l === "ta" ? 270 : 110; }); spec.headH = l === "ta" ? 50 : 32; },
     extra: { html: boxes,
       // A vehicle's box ticks or unticks all its jobs; it shows ticked, unticked or part-ticked from its jobs.
@@ -16644,6 +16648,9 @@ function odoExplain(K, sKm, eKm) {
     `Actual km = ${nf(K.eA)} − ${nf(K.sA)} = ${nf(K.act)}${K.split ? "" : ` (${nf(K.km)} meter km ÷ ${nf(num(K.pe.ratio), 5)})`}. Mileage uses the actual km.`;
 }
 function odoActual(v, date, reading, p = odoPairFor(v, date, reading)) { return p ? num(p.actual) + (num(reading) - num(p.meter)) / num(p.ratio) : null; }
+// The other way: actual km as a reading on the meter the vehicle has now (its latest pair), e.g. the next service km for the
+// driver, who sees the meter. Null without pairs (the meter then reads actual km), and for a km before that meter was noted.
+function odoMeterOf(v, actual) { const P = odoPairs(v), p = P[P.length - 1]; return p && num(actual) >= num(p.actual) ? Math.round(num(p.meter) + (num(actual) - num(p.actual)) * num(p.ratio)) : null; }
 // Meter km and actual km between two readings. Without pairs the actual km is the meter km. Across two pairs
 // (a new meter) the meter km is not end − start, so it is shown from the actual km.
 function odoKm(v, sDate, sKm, eDate, eKm) {
