@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-13f">
+<meta name="app-ver" content="2026-11-13g">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -7352,7 +7352,7 @@ const mtJobId = it => it.k + "|" + (it.pos || "");
 const mtMeterOf = (key, km) => odoMeterOf(mtVehOf(key), km);
 const mtMeterTag = (key, km) => { const m = mtMeterOf(key, km); return m ? `<small class="msmeter">meter ${nf(m)}</small>` : ""; };
 const mtStPill = d => d.ext && d.st === "ok" ? `<span class="pill ok">Extended</span>` : `<span class="pill ${MT_ST[d.st][1]}">${MT_ST[d.st][0]}</span>`;
-const mtExtTxt = x => x ? `Extended ${num(x.km) > 0 ? `to ${nf(num(x.km))} km` : `until ${fmtDate(x.until)}`}${x.why ? ` · ${x.why}` : ""} (checked ${fmtDate(x.checked || x.on)}, ${x.by || "—"})` : "";
+const mtExtTxt = x => x ? `Extended ${num(x.km) > 0 ? `to ${nf(num(x.km))} km` : `until ${fmtDate(x.until)}`}${x.why ? ` · ${x.why}` : ""} (checked ${fmtDate(x.checked || x.on)}${num(x.ckm) ? ` at ${nf(num(x.ckm))} km` : ""}, ${x.by || "—"})` : "";
 const mtLeftTxt = d => d.left == null ? "—" : d.left <= 0 ? `${nf(-d.left)} km over` : `${nf(d.left)} km`;
 /* Extend a job that is due: the mechanic looks at it and says it can go further. Either a new km (so many more km from the
    km now) or a date before which it is not shown as due. Kept on the job's last visit, so the next time the job is done the
@@ -7365,7 +7365,7 @@ function mtExtOpen(key, job) {
   const d = list.find(d => d.e.id + "~" + mtJobId(d.it) === job) || list[0];
   const fromEntry = mtw && mtw.key === key && $("mtw") && !$("mtw").hidden;
   mx = { key, list, sel: d.e.id + "~" + mtJobId(d.it), mode: num(d.ext?.km) > 0 || !d.ext ? "km" : "date", more: "", until: d.ext?.until || "", why: d.ext?.why || "",
-    checked: fromEntry ? mtw.date : todayISO(), entryKm: fromEntry && num(mtw.km) ? mtwAct() : 0 };
+    checked: fromEntry ? mtw.date : todayISO(), ckm: String(fromEntry && num(mtw.km) ? mtw.km : mtNow(key)?.meter || "") };
   if (!$("mxBox")) {
     document.body.insertAdjacentHTML("beforeend", '<div class="askbox" id="mxBox" role="dialog" aria-modal="true" aria-labelledby="mxTitle" hidden><div class="askcard mxcard" id="mxCard"></div></div>');
     $("mxBox").addEventListener("click", mxClick);
@@ -7375,11 +7375,12 @@ function mtExtOpen(key, job) {
   mxRender(); $("mxBox").hidden = false; $("mxBox").querySelector("input[data-mx=more], input[data-mx=until]")?.focus();
 }
 const mxCur = () => mx.list.find(d => d.e.id + "~" + mtJobId(d.it) === mx.sel);
-// "More km" counts from the km of the maintenance entry it is opened from, else the km now.
-const mxBase = () => { const d = mxCur(), now = mtNow(mx.key); return mx.entryKm || now?.km || d.next || d.ekm; };
+// The km meter when the mechanic checked it (as typed, like a maintenance entry) and in actual km; "More km" counts from it.
+const mxBase = () => num(mx.ckm) > 0 ? mtAct(mx.key, mx.checked, mx.ckm) : 0;
 const mxNewKm = () => num(mx.more) > 0 ? Math.round(mxBase() + num(mx.more)) : 0;
-const mxOk = () => /^\d{4}-\d{2}-\d{2}$/.test(mx.checked || "") && mx.checked <= todayISO() && (mx.mode === "km" ? mxNewKm() > 0 : !!mx.until && mx.until > todayISO());
+const mxOk = () => /^\d{4}-\d{2}-\d{2}$/.test(mx.checked || "") && mx.checked <= todayISO() && num(mx.ckm) > 0 && (mx.mode === "km" ? mxNewKm() > 0 : !!mx.until && mx.until > todayISO());
 function mxSync() {
+  const a = $("mxAct"), act = mxBase(); if (a) a.textContent = act && Math.round(act) !== Math.round(num(mx.ckm)) ? `Actual ${nf(Math.round(act))} km` : "";
   const n = $("mxNew"); if (n) n.textContent = mx.mode === "km" ? (mxNewKm() ? `New due at ${nf(mxNewKm())} km${mtMeterOf(mx.key, mxNewKm()) ? ` (meter ${nf(mtMeterOf(mx.key, mxNewKm()))})` : ""}` : "") : mx.until > todayISO() ? `Not shown as due until ${fmtDate(mx.until)}` : mx.until ? "Pick a date after today" : "";
   $("mxSave").disabled = !mxOk();
 }
@@ -7394,9 +7395,10 @@ function mxRender() {
     `<div class="bwf1"><span>Checked by the mechanic on</span><div class="bwseg c3 mxseg">${[["today", "Today", mx.checked === todayISO()], ["yday", "Yesterday", mx.checked === shiftDay(todayISO(), -1)], ["odate", "Other date", mx.odate || (mx.checked !== todayISO() && mx.checked !== shiftDay(todayISO(), -1))]]
       .map(([k, l, on]) => `<button type="button" data-mxday="${k}" aria-pressed="${on}">${l}</button>`).join("")}</div>` +
       (mx.odate || (mx.checked !== todayISO() && mx.checked !== shiftDay(todayISO(), -1)) ? `<input type="date" data-mx="checked" value="${esc(mx.checked)}" max="${todayISO()}" aria-label="Date the mechanic checked it">` : "") + `</div>` +
+    `<label class="bwf1"><span>Km meter when checked</span><input type="number" inputmode="numeric" min="1" data-mx="ckm" value="${esc(mx.ckm)}" placeholder="e.g. 188502"></label><p class="mxinfo" id="mxAct"></p>` +
     `<div class="bwseg c2 mxseg"><button type="button" data-mxmode="km" aria-pressed="${mx.mode === "km"}">More km</button><button type="button" data-mxmode="date" aria-pressed="${mx.mode === "date"}">Until a date</button></div>` +
     (mx.mode === "km"
-      ? `<label class="bwf1"><span>Good for how many more km${mx.entryKm ? ` from ${nf(mx.entryKm)} km` : now ? " from now" : ""}?</span><input type="number" inputmode="numeric" min="1" data-mx="more" value="${esc(mx.more)}" placeholder="e.g. 30000"></label>` +
+      ? `<label class="bwf1"><span>Good for how many more km from the km checked?</span><input type="number" inputmode="numeric" min="1" data-mx="more" value="${esc(mx.more)}" placeholder="e.g. 30000"></label>` +
         `<div class="mtchips mxchips">${[5000, 10000, 20000, 30000].map(v => chip("data-mxmore", v, "+" + nf(v))).join("")}</div>`
       : `<label class="bwf1"><span>Don't show as due until</span><input type="date" data-mx="until" min="${shiftDay(todayISO(), 1)}" value="${esc(mx.until)}"></label>` +
         `<div class="mtchips mxchips">${[[1, "1 month"], [3, "3 months"], [6, "6 months"]].map(([m, l]) => chip("data-mxmon", m, l)).join("")}</div>`) +
@@ -7418,7 +7420,7 @@ async function mxClick(e) {
   const d = mxCur(), e0 = ops.maintLog.find(x => x.id === d.e.id); if (!e0) { mxClose(); return; }
   const ext = { ...(e0.ext || {}) }, j = mtJobId(d.it);
   if (a === "del") delete ext[j];
-  else { if (!mxOk()) return; ext[j] = { ...(mx.mode === "km" ? { km: mxNewKm() } : { until: mx.until }), ...(upText(mx.why) ? { why: upText(mx.why) } : {}), checked: mx.checked, by: whoAmI(), on: todayISO() }; }
+  else { if (!mxOk()) return; ext[j] = { ...(mx.mode === "km" ? { km: mxNewKm() } : { until: mx.until }), ...(upText(mx.why) ? { why: upText(mx.why) } : {}), checked: mx.checked, ckm: Math.round(num(mx.ckm)), ckmAct: Math.round(mxBase()), by: whoAmI(), on: todayISO() }; }
   const doc = { ...e0, ...rxStamp() }; if (Object.keys(ext).length) doc.ext = ext; else delete doc.ext;
   t.disabled = true;
   try { await opsSave("maintLog", doc); toast(a === "del" ? "Extension removed" : `${mtItemName(d.it)} extended`); mxClose(); if (mtw && !$("mtw").hidden) mtRender(); if (view === "tmsum") renderMsum(); }
