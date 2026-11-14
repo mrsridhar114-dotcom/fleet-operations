@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14h">
+<meta name="app-ver" content="2026-11-14i">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1001,6 +1001,15 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 .ocard .oc-big small { font-size: 17px; color: var(--muted); font-weight: 600; margin-left: 3px; }
 .ocard .oc-cap { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
 .kpold { color: var(--danger); font-weight: 600; }
+/* Trip sheet › Summary */
+.osum { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; } .osumctl { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.osumh { margin: 4px 0 0; font: 700 18px var(--display); } .osum h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.osumtop { display: grid; grid-template-columns: minmax(0, 7fr) auto minmax(0, 8fr) auto minmax(150px, 2fr); gap: 10px; align-items: center; }
+.osumsign { font: 700 28px var(--display); color: var(--muted); text-align: center; }
+.osumgross { background: var(--side-bg); color: var(--side-ink); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 4px; } .osumgross span { font-size: 13px; color: var(--side-muted); } .osumgross b { font: 700 28px var(--display); color: #8ccf5e; }
+table.osumt { font-size: 13px; } table.osumt th, table.osumt td { white-space: nowrap; } table.osumt tfoot td { font-weight: 700; background: var(--accent-soft); }
+.osummt { margin: 10px 0 0 !important; font-size: 15px !important; color: var(--ink) !important; text-transform: none !important; letter-spacing: 0 !important; }
+@media (max-width: 1700px) { .osumtop { grid-template-columns: minmax(0, 1fr); } .osumsign { display: none; } .osumgross { flex-direction: row; justify-content: space-between; align-items: baseline; } }
 .otodo .orow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .otodo .orow:last-child { border-bottom: 0; }
 .otodo .orow[data-go] { cursor: pointer; } .otodo .orow[data-go]:hover { background: var(--bg); } .otodo .orow .what .sub { color: var(--muted); font-size: 13px; }
@@ -2695,6 +2704,11 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <section class="panel">
         <div class="sechead"><h2 class="sec" id="oTodoTitle">To do</h2><p>Route buses still to enter, spare bus trip sheets to fill, truck drivers' entries to check, and truck round trips not yet settled. Click a line to open it.</p></div>
         <div class="otodo" id="oTodo"></div>
+      </section>
+      <section class="panel osum" id="oSum" hidden>
+        <div class="sechead"><h2 class="sec">Summary</h2><p>The same figures as the Summary sheet of Download all: buses, trucks, office expenses and gross, then each bus month by month.</p></div>
+        <div class="osumctl"><div class="hf"><label for="oSumFy">Financial year</label><select id="oSumFy"></select></div><button class="btn" type="button" id="oSumRe">↻ Refresh</button><span class="sub" id="oSumAt"></span></div>
+        <div id="oSumBody"></div>
       </section>
     </section>
 
@@ -12747,7 +12761,7 @@ function kPendCard() {
 }
 $("oCards").addEventListener("click", e => { if (e.target.closest("[data-kpend]")) { e.preventDefault(); kPendOpen(); } });
 function renderHub() {
-  subscribeDay();
+  subscribeDay(); if (view === "thub") osShow();
   $("oDate").value = opDate; $("oDate").max = todayISO();
   const rb = routeBuses(), on = winTrips().filter(t => t.date === opDate);
   const pend = rb.filter(b => !on.some(t => t.vehicleId === b.id)), ready = dayReady();
@@ -17844,12 +17858,61 @@ $("tsDl").onclick = e => { const fy = +$("tsDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Spare_Bus_FY${fyLabel(fy)}.xlsx`, async () => xlSpareSheets({ ...(await dlRead(["bookings"])), vehicles, drivers }, fy)); };
 // Utility › Data upload & download (admin): the route buses month by month, the spare buses, the trucks, then Bus and Truck Expenses, for the year chosen.
 const dlAllRead = async () => ({ ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers });
-function dlAllSheets(recs, fy) {
+// The route bus, spare bus, truck and expense sheets of a year, and the Summary made from them (Download all and the Summary screen).
+function dlSumParts(recs, fy) {
   const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.vehicleId && t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
   const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets(recs, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
-  const all = XL.names([xlSummarySheet(recs, fy, sheets, busIds), ...sheets, ...xlMaintSheets(), xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]);
+  return { sheets, summary: xlSummarySheet(recs, fy, sheets, busIds) };
+}
+function dlAllSheets(recs, fy) {
+  const { sheets, summary } = dlSumParts(recs, fy);
+  const all = XL.names([summary, ...sheets, ...xlMaintSheets(), xlEmployeeSheet({ drivers, conductors }), xlVehicleSheet({ vehicles })]);
   return [xlHomeSheet(fy, all), ...all];
 }
+/* Trip sheet › Summary (admin): the Summary sheet of Download all on the screen, cell for cell. It reads every record of the
+   year once, so it is kept until Refresh or another year is chosen. */
+const oSum = { fy: null, ws: null, at: null, busy: false };
+const osCell = (ws, r, c) => ws.rows[r]?.[c];
+const osTxt = v => v == null || v === "" ? "" : typeof v === "number" ? (Number.isInteger(v) ? nf(v) : nf(v, 2)) : esc(String(v));
+function osTable(ws, r1, r2, c1, c2, totRow) {
+  const row = (r, tag) => `<tr>${Array.from({ length: c2 - c1 + 1 }, (_, i) => { const x = osCell(ws, r, c1 + i), v = x?.v, num_ = typeof v === "number";
+    return `<${tag}${num_ || (tag === "th" && i) ? ' class="n"' : ""}>${osTxt(v)}</${tag}>`; }).join("")}</tr>`;
+  let h = `<thead>${row(r1, "th")}</thead><tbody>`;
+  // The sheet's spare blank lines (it keeps at least 5 rows a side) are left out on the screen.
+  const blank = r => Array.from({ length: c2 - c1 + 1 }, (_, i) => osCell(ws, r, c1 + i)?.v).every(v => v == null || v === "");
+  for (let r = r1 + 1; r <= r2; r++) if (!blank(r)) h += r === totRow ? `</tbody><tfoot>${row(r, "td")}</tfoot>` : row(r, "td");
+  return `<div class="tscroll"><table class="ctable osumt">${h}${totRow ? "" : "</tbody>"}</table></div>`;
+}
+function osRender() {
+  const el = $("oSumBody"), ws = oSum.ws; if (!el) return;
+  if (oSum.busy) { el.innerHTML = `<p class="sub">Working out the summary for FY ${fyLabel(oSum.fy)}…</p>`; return; }
+  if (!ws) { el.innerHTML = oSum.err ? `<p class="err">${esc(oSum.err)}</p>` : ""; return; }
+  const S = XL.S, rows = Object.keys(ws.rows).map(Number).sort((a, b) => a - b), RT = rows.find(r => osCell(ws, r, 0)?.s === S.smTotL);
+  let h = `<h3 class="osumh">${osTxt(osCell(ws, 1, 0)?.v)}</h3>` +
+    `<div class="osumtop"><div><h4>Buses</h4>${osTable(ws, 3, RT, 0, 6, RT)}</div><span class="osumsign">+</span>` +
+    `<div><h4>Trucks</h4>${osTable(ws, 3, RT, 8, 15, RT)}</div><span class="osumsign">=</span>` +
+    `<div class="osumgross"><span>Overall Gross</span><b>${rs(Math.round(num(osCell(ws, 4, 17)?.v)))}</b></div></div>`;
+  for (let i = rows.indexOf(RT) + 1; i < rows.length; i++) {
+    const r = rows[i]; if (osCell(ws, r, 0)?.s !== S.mTitle) continue;
+    const head = r + 1, end = rows.find(x => x > head && osCell(ws, x, 0)?.s === S.mTotL), c2 = Math.max(...Object.keys(ws.rows[head]).map(Number));
+    h += `<h4 class="osummt">${osTxt(osCell(ws, r, 0).v)}</h4>${osTable(ws, head, end, 0, c2, end)}`;
+  }
+  el.innerHTML = h;
+}
+async function osLoad(force) {
+  const fy = +$("oSumFy").value || fyOf(todayISO());
+  if (!force && oSum.fy === fy && (oSum.ws || oSum.busy)) { osRender(); return; }
+  Object.assign(oSum, { fy, ws: null, busy: true, err: "" }); osRender(); $("oSumRe").disabled = true;
+  try { const ws = dlSumParts(await dlAllRead(), fy).summary; if (oSum.fy === fy) Object.assign(oSum, { ws, at: new Date() }); }
+  catch { if (oSum.fy === fy) oSum.err = "Couldn't work out the summary. Check the connection and tap Refresh."; }
+  finally { if (oSum.fy === fy) { oSum.busy = false; $("oSumRe").disabled = false; $("oSumAt").textContent = oSum.at ? `As of ${oSum.at.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}` : ""; osRender(); } }
+}
+function osShow() {
+  const on = acc.users === "edit"; $("oSum").hidden = !on; if (!on) return;
+  dlFyOpts($("oSumFy"), oSum.fy ?? fyOf(todayISO())); osLoad(false);
+}
+$("oSumFy").addEventListener("change", () => osLoad(false));
+$("oSumRe").onclick = () => osLoad(true);
 // A year with no trips, bookings, truck trips or expenses (All financial years leaves it out).
 const dlFyHasData = (recs, fy) => recs.trips.some(t => t.date && fyOf(t.date) === fy) || recs.bookings.some(b => b.from && fyOf(b.from) === fy)
   || recs.truckTrips.some(l => l.from && fyOf(l.from) === fy) || recs.expenses.some(x => x.date && fyOf(x.date) === fy);
