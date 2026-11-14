@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14q">
+<meta name="app-ver" content="2026-11-14r">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1010,7 +1010,7 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 .osg td { border: 1px solid #000; padding: 6px 10px; white-space: nowrap; } .osg td.n { text-align: right; } .osg td.e { border: 0; background: transparent; min-width: 18px; }
 .osg td.h { background: #C55A11; text-align: center; } .osg td.v { background: #DBDBDB; } .osg td.t { background: #FFC000; }
 .osg td.sg { border: 0; text-align: center; font-size: 40px; padding: 0 14px; } .osg td.gl { background: #00B050; text-align: center; } .osg td.gv { background: #00B050; text-align: center; font-size: 40px; padding: 0 28px; }
-.osg.top td { height: 36px; box-sizing: border-box; } .osg.mon td { padding: 6px 10px; } .osg td.m { font-weight: 400; } .osg td.mh { background: #F4B183; text-align: center; white-space: normal; min-width: 70px; } .osg.mon td.t { font-weight: 700; }
+.osg.top td { height: 36px; box-sizing: border-box; } .osg.mon td { padding: 6px 10px; } .osg td.neg { background: #FFC7CE; color: #9C0006; font-weight: 700; } .osg td.pos { background: #E2EFDA; color: #1E6B30; } .osg td.m { font-weight: 400; } .osg td.mh { background: #F4B183; text-align: center; white-space: normal; min-width: 70px; } .osg.mon td.t { font-weight: 700; }
 .otodo .orow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .otodo .orow:last-child { border-bottom: 0; }
 .otodo .orow[data-go] { cursor: pointer; } .otodo .orow[data-go]:hover { background: var(--bg); } .otodo .orow .what .sub { color: var(--muted); font-size: 13px; }
@@ -10623,7 +10623,8 @@ const XL = (() => {
     mTitle: 77, mHead: 78, mTxt: 79, mInt: 80, mDay: 81, mTotL: 82, mTotN: 83, mTotD: 84, sDateX: 85, sDateD: 86, sNote: 87, homeBtn: 88, hTitle: 89, hNote: 90, hLab: 91, btn: { sum: 92, route: 93, spare: 94, truck: 95, exp: 96, master: 97, off: 98 },
     mx: ["", "over", "soon"].reduce((a, k, i) => (a[k || "ok"] = { text: 99 + i * 3, int: 100 + i * 3, date: 101 + i * 3 }, a), {}),
     mh: MH_SHADES.map((_, i) => [0, 1].map(b => { const n = 108 + (i * 2 + b) * 3; return { text: n, int: n + 1, date: n + 2 }; })),
-    tpl: { title: 144, head: 145, lab: 146, sum: 147, txt: 148, ctr: 149, int: 150, dec: 151, date: 152, calc: 153, help: 154, helpLab: 155, off: 156 } };
+    tpl: { title: 144, head: 145, lab: 146, sum: 147, txt: 148, ctr: 149, int: 150, dec: 151, date: 152, calc: 153, help: 154, helpLab: 155, off: 156 },
+    mNeg: 157, mPos: 158 };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -10662,7 +10663,9 @@ const XL = (() => {
     xf(0, 2, 2, 2, 'horizontal="center" vertical="center"'), xf(0, 1, 2, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 1, 3, 2, 'horizontal="left" vertical="center"'),
     xf(165, 1, 3, 2, 'horizontal="right" vertical="center"'), xf(0, 0, 0, 2, 'horizontal="left" vertical="center"'), xf(0, 0, 0, 2, 'horizontal="center" vertical="center"'),
     xf(165, 0, 0, 2, 'horizontal="right" vertical="center"'), xf(166, 0, 0, 2, 'horizontal="right" vertical="center"'), xf(49, 0, 0, 2, 'horizontal="center" vertical="center"'),
-    xf(165, 0, 3, 2, 'horizontal="right" vertical="center"'), xf(0, 0, 0, 2, 'horizontal="left" vertical="center" wrapText="1"'), xf(0, 1, 3, 2, 'horizontal="left" vertical="center" wrapText="1"'), xf(0, 0, 3, 2)];
+    xf(165, 0, 3, 2, 'horizontal="right" vertical="center"'), xf(0, 0, 0, 2, 'horizontal="left" vertical="center" wrapText="1"'), xf(0, 1, 3, 2, 'horizontal="left" vertical="center" wrapText="1"'), xf(0, 0, 3, 2),
+    // 157–158: the Summary's month tables, balance after office expenses: below zero (light red), above zero (light green)
+    xf(165, 8, 21, 2, 'vertical="center"'), xf(165, 8, 9, 2, 'vertical="center"')];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
     `<fonts count="16"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
@@ -10958,18 +10961,22 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
   const offAmt = (X, lab, i) => { let t = 0; if (X.w) for (let rr = 6; rr <= X.w.last; rr++) { const c = X.w.rows[rr]; if (c?.[0]?.v?.d?.slice(0, 7) === monthYM(fy, i) && String(c?.[2]?.v ?? "") === lab) t += gv(X.w, "F" + rr); } return t; };
   const offSum = (X, lab, i) => { if (!X.w) return "0"; const [y, mo] = monthYM(fy, i).split("-").map(Number), g = c => `${q(X.w)}!$${c}$6:$${c}$${X.w.last}`;
     return `SUMIFS(${g("F")},${g("C")},"${lab.replace(/"/g, '""')}",${g("A")},">="&DATE(${y},${mo},1),${g("A")},"<"&DATE(${y},${mo + 1},1))`; };
+  // Moves this table's own cell references from column p on two places to the right (text in quotes and other sheets' cells stay).
+  const shift2 = (f, p) => f && String(f).split(/('(?:[^']|'')*'|"(?:[^"]|"")*")/).map((x, i) => i % 2 ? x :
+    x.replace(/(?<![!$A-Za-z0-9])([A-Z]{1,2})(\d+)/g, (m, c, n) => XL.idx(c) >= p ? col(XL.idx(c) + 2) + n : m)).join("");
   const table = (title, heads, rowFor, totals, off) => {
-    if (off) heads = [...heads, "Office Exp", "Bal after Off.Exp"];
-    const oc = col(heads.length - 2);
+    const p = off ? XL.idx(off.balC) + 1 : 0, oc = off ? col(p) : "", mv = cells => off ? cells.map(([v, f, st]) => [v, shift2(f, p), st]) : cells;
+    if (off) heads = [...heads.slice(0, p), "Office Exp", "Bal after Off.Exp", ...heads.slice(p)];
     put(ws, "A" + r, title, S.mTitle); ws.heights[r] = 33; r++;
     heads.forEach((h, i) => put(ws, col(i) + r, h, S.mHead)); ws.heights[r] = 48; r++;
     const a = r; let tO = 0, tB = 0;
     for (let i = 0; i < 12; i++, r++) {
-      const cells = rowFor(i);
-      if (off) { const o = offAmt(off.X, off.lab, i), bal = off.bal(i); tO += o; tB += bal; cells.push([o, offSum(off.X, off.lab, i)], [bal - o, `${off.balC}${r}-${oc}${r}`]); }
+      const cells = mv(rowFor(i));
+      if (off) { const o = offAmt(off.X, off.lab, i), bal = off.bal(i), w = Math.round((bal - o) * 100) / 100; tO += o; tB += bal;
+        cells.splice(p - 1, 0, [o, offSum(off.X, off.lab, i)], [w, `${off.balC}${r}-${oc}${r}`, w < 0 ? S.mNeg : w > 0 ? S.mPos : S.mInt]); }
       put(ws, "A" + r, MONTH(i), S.mTxt); cells.forEach(([v, f, st], k) => put(ws, col(k + 1) + r, Math.round((v || 0) * 100) / 100, st || S.mInt, f)); ws.heights[r] = 23;
     }
-    const T = totals(a, r - 1); if (off) T.push([tO, `SUM(${oc}${a}:${oc}${r - 1})`], [tB - tO, `${off.balC}${r}-${oc}${r}`]);
+    const T = mv(totals(a, r - 1)); if (off) T.splice(p - 1, 0, [tO, `SUM(${oc}${a}:${oc}${r - 1})`], [tB - tO, `${off.balC}${r}-${oc}${r}`]);
     put(ws, "A" + r, "Total", S.mTotL); T.forEach(([v, f, st], k) => put(ws, col(k + 1) + r, Math.round((v || 0) * 100) / 100, st || S.mTotN, f)); ws.heights[r] = 28;
     r += 3;
   };
@@ -17929,8 +17936,8 @@ function dlAllSheets(recs, fy) {
    another year is chosen. */
 const oSum = { fy: null, ws: null, at: null, busy: false, err: "" };
 // Excel style → screen class, and the styles written as #,##0 (the others as Excel's General).
-const OS_CLS = { 66: "ttl", 67: "h", 68: "v", 69: "v n", 70: "v n", 71: "t", 72: "t n", 73: "t n", 74: "sg", 75: "gl", 76: "gv", 77: "mt", 78: "mh", 79: "m", 80: "m n", 81: "m n", 82: "t", 83: "t n", 84: "t n" };
-const OS_INT = new Set([69, 72, 76, 80, 83]);
+const OS_CLS = { 66: "ttl", 67: "h", 68: "v", 69: "v n", 70: "v n", 71: "t", 72: "t n", 73: "t n", 74: "sg", 75: "gl", 76: "gv", 77: "mt", 78: "mh", 79: "m", 80: "m n", 81: "m n", 82: "t", 83: "t n", 84: "t n", 157: "m n neg", 158: "m n pos" };
+const OS_INT = new Set([69, 72, 76, 80, 83, 157, 158]);
 const osTxt = (v, st) => v == null || v === "" ? "" : typeof v !== "number" ? esc(String(v)) : OS_INT.has(st) ? Math.round(v).toLocaleString("en-US") : String(Math.round(v * 100) / 100);
 // Cells r1–r2, c1–c2 as a table, with the sheet's merged cells.
 function osGrid(ws, r1, r2, c1, c2, cls) {
