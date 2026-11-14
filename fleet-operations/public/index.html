@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14f">
+<meta name="app-ver" content="2026-11-14g">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1000,6 +1000,7 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 .ocard .oc-big { font-family: var(--display); font-size: 36px; font-weight: 700; line-height: 1; margin-top: 12px; font-variant-numeric: tabular-nums; }
 .ocard .oc-big small { font-size: 17px; color: var(--muted); font-weight: 600; margin-left: 3px; }
 .ocard .oc-cap { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+.kpold { color: var(--danger); font-weight: 600; }
 .otodo .orow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .otodo .orow:last-child { border-bottom: 0; }
 .otodo .orow[data-go] { cursor: pointer; } .otodo .orow[data-go]:hover { background: var(--bg); } .otodo .orow .what .sub { color: var(--muted); font-size: 13px; }
@@ -12612,8 +12613,19 @@ $("dashTodo").addEventListener("click", e => {
 const ICONS = {
   route: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16M8 21v-4M16 21v-4"/><circle cx="8" cy="14" r=".6"/><circle cx="16" cy="14" r=".6"/></svg>',
   spare: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16M8 21v-4M16 21v-4"/><path d="M9 7h6"/></svg>',
-  truck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>'
+  truck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>',
+  pend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
 };
+// Hub card: the truck payments still not settled (all trucks, all years), how many are over 30 days; it opens the download.
+function kPendCard() {
+  if (!acc.trips || acc.trips === "none") return "";
+  const P = kPendRows(); if (!P.length) return "";
+  const old = P.filter(x => kPendAge(x) > K_PEND_OLD), trucks = new Set(P.map(x => x.plate)).size;
+  return `<a class="ocard oclink" href="#trips-truck" data-kpend aria-label="Open the truck pending payments"><div class="oc-top">${ICONS.pend}<div><h3>Pending payments</h3><div class="oc-kind">Trucks · not settled</div></div></div>
+      <div class="oc-big">${rs(P.reduce((a, x) => a + x.amt, 0))}</div><p class="oc-cap">${P.length} payment${P.length === 1 ? "" : "s"} · ${trucks} truck${trucks === 1 ? "" : "s"}</p>
+      <div>${old.length ? `<span class="pill expired">${old.length} over ${K_PEND_OLD} days · ${rs(old.reduce((a, x) => a + x.amt, 0))}</span>` : `<span class="pill d30">All within ${K_PEND_OLD} days</span>`}</div></a>`;
+}
+$("oCards").addEventListener("click", e => { if (e.target.closest("[data-kpend]")) { e.preventDefault(); kPendOpen(); } });
 function renderHub() {
   subscribeDay();
   $("oDate").value = opDate; $("oDate").max = todayISO();
@@ -12632,7 +12644,7 @@ function renderHub() {
       <div>${L.back.length ? `<span class="pill d30">${L.back.length} sent back</span>` : todo ? `<span class="pill d30">${todo} trip sheet${todo === 1 ? "" : "s"} to fill</span>` : '<span class="pill ok">Nothing to fill</span>'}</div></a>`; })() : ""}
     <a class="ocard oclink" href="#trips-truck" aria-label="Open Trucks"><div class="oc-top">${ICONS.truck}<div><h3>Trucks</h3><div class="oc-kind">Per load, grouped into round trips</div></div></div>
       <div class="oc-big">${tl.length}<small>trip${tl.length === 1 ? "" : "s"}</small></div><p class="oc-cap">in ${mLabel} · ${rs(tl.reduce((a, l) => a + num(l.rent), 0))} freight</p>
-      <div>${openR.length ? `<span class="pill d30">${openR.length} round trip${openR.length === 1 ? "" : "s"} not settled</span>` : `<span class="pill off">${tk.length} truck${tk.length === 1 ? "" : "s"}</span>`}</div></a>`;
+      <div>${openR.length ? `<span class="pill d30">${openR.length} round trip${openR.length === 1 ? "" : "s"} not settled</span>` : `<span class="pill off">${tk.length} truck${tk.length === 1 ? "" : "s"}</span>`}</div></a>` + kPendCard();
   $("oTodoTitle").textContent = `To do · ${fmtDate(opDate)}`;
   // Each line opens its own entry: the route bus day sheet, the spare bus booking, or the truck round trip. Close comes back here.
   const rows = [], line = (go, id, what, btn, pri) => `<div class="orow" data-go="${go}" data-id="${id}" tabindex="0"><div class="what">${what}</div><button class="btn${pri ? " primary" : ""}" type="button" data-go="${go}" data-id="${id}">${btn}</button></div>`;
@@ -17566,6 +17578,8 @@ function kPendRows() {
   });
   return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(a.date).localeCompare(String(b.date)));
 }
+// How long a not-settled payment has been waiting (from its date); over 30 days is shown in red.
+const kPendAge = x => Math.max(0, -daysUntil(x.date)), K_PEND_OLD = 30;
 // One not-settled payment as the trip sheet writes it under "② Came to the owner": its note or the trip, and how it is paid.
 const kPendWhat = (x, t) => `${x.p.desc || (x.l ? rtLegName(x.l) : x.r.path)}${x.p.pay ? ` · ${t.pay[x.p.pay] || x.p.pay}` : ""}`;
 // Not-settled payments, in the trip sheet's look ("② Came to the owner"): a picture for each truck, or Excel with a sheet
@@ -17574,26 +17588,31 @@ function kPendPage(plate, list, t) {
   return rtPaint(K => {
     const { P, IN, z } = K; let y = K.header(`${t.veh}: ${plate}`, t.pendT, t.asOn(fmtDate(todayISO())));
     y = K.sect(`${t.pendSect} (${list.length})`, P, y);
-    const cols = [{ w: 160 }, { w: IN - 160 - 220 - 140 - 170 }, { w: 220 }, { w: 140 }, { w: 170, r: 1 }];
-    y = K.table(P, y, cols, [{ cells: t.pendCols, bold: true, bg: K.head, right: [4] },
-      ...list.map(x => ({ cells: [fmtShort(x.date), kPendWhat(x, t), x.drv || "—", t.notSet, nf(x.amt)], bg: "#FDF1DC", color: "#8A4B00" })),
-      { cells: ["", "", "", t.total, nf(list.reduce((a, x) => a + x.amt, 0))], bold: true, right: [3] }], 17);
+    const cols = [{ w: 150 }, { w: IN - 150 - 200 - 130 - 100 - 160 }, { w: 200 }, { w: 130 }, { w: 100, r: 1 }, { w: 160, r: 1 }];
+    y = K.table(P, y, cols, [{ cells: t.pendCols, bold: true, bg: K.head, right: [4, 5] },
+      ...list.map(x => { const d = kPendAge(x), old = d > K_PEND_OLD;
+        return { cells: [fmtShort(x.date), kPendWhat(x, t), x.drv || "—", t.notSet, String(d), nf(x.amt)], ...(old ? { bg: "#FBE4E2", color: K.red, bold: true } : { bg: "#FDF1DC", color: "#8A4B00" }) }; }),
+      { cells: ["", "", "", "", t.total, nf(list.reduce((a, x) => a + x.amt, 0))], bold: true, right: [4] }], 17);
+    if (list.some(x => kPendAge(x) > K_PEND_OLD)) { K.txt(t.pendOld, P, y + z(24), { size: 14, color: K.red, bold: true }); y += z(30); }
     return y + z(10);
   }, t);
 }
 function kPendXlsx(groups, t) {
-  const st = XL.S, sheets = [], co = (ws, put, veh) => { put("A1", RT_CO.name, st.title); ws.merges.push("A1:E1"); put("A2", RT_CO.addr, st.note); ws.merges.push("A2:E2");
-    put("A3", veh, st.ttext); put("B3", t.pendT, st.ttext); put("C3", t.asOn(fmtDate(todayISO())), st.ttext); ws.merges.push("C3:E3"); };
+  const st = XL.S, sheets = [], co = (ws, put, veh) => { put("A1", RT_CO.name, st.title); ws.merges.push("A1:F1"); put("A2", RT_CO.addr, st.note); ws.merges.push("A2:F2");
+    put("A3", veh, st.ttext); put("B3", t.pendT, st.ttext); put("C3", t.asOn(fmtDate(todayISO())), st.ttext); ws.merges.push("C3:F3"); };
   const sum = XL.sheet(t.pendSum), ps = (r, v, x) => XL.put(sum, r, v, x); sheets.push(sum); Object.assign(sum.widths, { A: 22, B: 40, C: 26, D: 16 }); co(sum, ps, "");
-  [t.pendTruck, "", "", t.pendCols[4]].forEach((h, i) => ps(`${"ABCD"[i]}5`, h, st.head));
-  let n = 6; groups.forEach(([plate, list]) => { ps(`A${n}`, plate, st.text); ps(`B${n}`, `${t.notSet}: ${list.length}`, st.text); ps(`D${n}`, list.reduce((a, x) => a + x.amt, 0), st.int); n++; });
+  [t.pendTruck, "", t.pendOldH, t.pendCols[5]].forEach((h, i) => ps(`${"ABCD"[i]}5`, h, st.head));
+  let n = 6; groups.forEach(([plate, list]) => { ps(`A${n}`, plate, st.text); ps(`B${n}`, `${t.notSet}: ${list.length}`, st.text); ps(`C${n}`, list.filter(x => kPendAge(x) > K_PEND_OLD).length, st.int); ps(`D${n}`, list.reduce((a, x) => a + x.amt, 0), st.int); n++; });
   ps(`C${n}`, t.pendAll, st.ttext); ps(`D${n}`, groups.reduce((a, [, l]) => a + l.reduce((b, x) => b + x.amt, 0), 0), st.tint);
   groups.forEach(([plate, list]) => {
     const ws = XL.sheet(plate.replace(/[\\/?*[\]:]/g, " ").slice(0, 31)), put = (r, v, x) => XL.put(ws, r, v, x); sheets.push(ws);
-    Object.assign(ws.widths, { A: 22, B: 46, C: 24, D: 16, E: 16 }); co(ws, put, `${t.veh}: ${plate}`);
-    t.pendCols.forEach((h, i) => put(`${"ABCDE"[i]}5`, h, st.head)); let m = 6;
-    list.forEach(x => { put(`A${m}`, { d: x.date }, st.date); put(`B${m}`, kPendWhat(x, t), st.text); put(`C${m}`, x.drv || "—", st.text); put(`D${m}`, t.notSet, st.text); put(`E${m}`, x.amt, st.int); m++; });
-    put(`D${m}`, t.total, st.ttext); put(`E${m}`, list.reduce((a, x) => a + x.amt, 0), st.tint);
+    Object.assign(ws.widths, { A: 22, B: 46, C: 24, D: 16, E: 10, F: 16 }); co(ws, put, `${t.veh}: ${plate}`);
+    t.pendCols.forEach((h, i) => put(`${"ABCDEF"[i]}5`, h, st.head)); let m = 6;
+    list.forEach(x => { const d = kPendAge(x), o = d > K_PEND_OLD ? st.mx.over : null;
+      put(`A${m}`, { d: x.date }, o ? o.date : st.date); put(`B${m}`, kPendWhat(x, t), o ? o.text : st.text); put(`C${m}`, x.drv || "—", o ? o.text : st.text);
+      put(`D${m}`, t.notSet, o ? o.text : st.text); put(`E${m}`, d, o ? o.int : st.int); put(`F${m}`, x.amt, o ? o.int : st.int); m++; });
+    put(`E${m}`, t.total, st.ttext); put(`F${m}`, list.reduce((a, x) => a + x.amt, 0), st.tint);
+    if (list.some(x => kPendAge(x) > K_PEND_OLD)) put(`A${m + 2}`, t.pendOld, st.note);
   });
   return XL.build(sheets);
 }
@@ -17607,7 +17626,7 @@ function kPendOpen() {
     `<div class="xobody"><div class="xoleft"><label class="xotl">File name<input type="text" data-title maxlength="80" value="${esc(name0)}"></label>` +
     `<div class="xosub">Language</div><div class="xofmt" role="radiogroup"><button type="button" data-lang="en">English</button><button type="button" data-lang="ta" lang="ta">தமிழ்</button></div>` +
     `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
-    `<div class="xosub">Trucks</div><div class="rtsecs">${groups.map(([p, l]) => `<label class="dall"><input type="checkbox" data-trk="${esc(p)}" checked> <b>${esc(p)}</b> · ${rs(l.reduce((a, x) => a + x.amt, 0))}</label>`).join("")}</div>` +
+    `<div class="xosub">Trucks</div><div class="rtsecs">${groups.map(([p, l]) => `<label class="dall"><input type="checkbox" data-trk="${esc(p)}" checked> <b>${esc(p)}</b> · ${rs(l.reduce((a, x) => a + x.amt, 0))}${(n => n ? ` · <span class="kpold">${n} over ${K_PEND_OLD} days</span>` : "")(l.filter(x => kPendAge(x) > K_PEND_OLD).length)}</label>`).join("")}</div>` +
     `<p class="dnote">Every payment entered as not settled in the truck trip sheets (all trips, all years), as shown under ② Came to the owner. Received payments are left out. One picture for each truck, or one Excel file with a summary and a sheet for each truck.</p></div>` +
     `<div class="xoright rtpv"></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
@@ -18495,7 +18514,7 @@ const RT_T = {
     sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
     fast: "FASTag", L: "L", gCash: "Diesel paid in cash (by the driver) · not added to ①", dslCols: ["Date", "Place", "Litres", "Rate / L", "Amount"], advPrev: "Advance from the previous trip", given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {},
     details: "TRIP DETAILS", sFast: "FASTag", sRec: "Payments received", sDsl: "Diesel fill-ups", sGiv: "Money given to the driver", dCols: ["Date", "Details", "Amount"], whole: "Whole round trip",
-    pendT: "NOT SETTLED PAYMENTS", pendSect: "Pending amount to owner", pendCols: ["Date", "Place", "Driver", "Status", "Amount"], pendAll: "Total for all trucks", asOn: d => `As on ${d}`, pendSum: "Summary", pendTruck: "Truck" },
+    pendT: "NOT SETTLED PAYMENTS", pendSect: "Pending amount to owner", pendCols: ["Date", "Place", "Driver", "Status", "Days", "Amount"], pendOld: "Red: pending for more than 30 days.", pendOldH: "Over 30 days", pendAll: "Total for all trucks", asOn: d => `As on ${d}`, pendSum: "Summary", pendTruck: "Truck" },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
     cols: ["தேதி", "பயணம்", "வாடகை", "செலவு", "மீதம்"], total: "மொத்தம்", owner: "① முதலாளி பணம்", came: "② முதலாளிக்கு வந்தது", gFast: "ஃபாஸ்டேக்", gCard: "கார்டு மூலம் டீசல்",
     gGiv: "ஓட்டுநரிடம் கொடுத்தது", gBal: "வண்டி மீதம்", none: "இல்லை", nopay: "இன்னும் பணம் வரவில்லை", tot1: "மொத்தம் ①", tot2: "மொத்தம் ②", notSet: "நிலுவை", adv: "③ முன்பணம்",
@@ -18506,7 +18525,7 @@ const RT_T = {
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
     giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" },
     details: "பயண விவரம்", sFast: "ஃபாஸ்டேக்", sRec: "வந்த பணம்", sDsl: "டீசல் நிரப்பியது", sGiv: "ஓட்டுநரிடம் கொடுத்தது", dCols: ["தேதி", "விவரம்", "தொகை"], whole: "முழு சுற்றுப் பயணம்",
-    pendT: "நிலுவைத் தொகை", pendSect: "முதலாளிக்கு வர வேண்டிய பணம்", pendCols: ["தேதி", "இடம்", "ஓட்டுநர்", "நிலை", "தொகை"], pendAll: "எல்லா லாரிகளுக்கும் மொத்தம்", asOn: d => `${d} நிலவரப்படி`, pendSum: "சுருக்கம்", pendTruck: "லாரி" }
+    pendT: "நிலுவைத் தொகை", pendSect: "முதலாளிக்கு வர வேண்டிய பணம்", pendCols: ["தேதி", "இடம்", "ஓட்டுநர்", "நிலை", "நாட்கள்", "தொகை"], pendOld: "சிவப்பு: 30 நாட்களுக்கு மேல் நிலுவை.", pendOldH: "30 நாட்களுக்கு மேல்", pendAll: "எல்லா லாரிகளுக்கும் மொத்தம்", asOn: d => `${d} நிலவரப்படி`, pendSum: "சுருக்கம்", pendTruck: "லாரி" }
 };
 // Tamil letters for the pictures: the Noto Sans Tamil font, loaded the first time it is needed.
 function rtTamilFont() {
