@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14o">
+<meta name="app-ver" content="2026-11-14p">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -17342,7 +17342,8 @@ function qkForm() {
   let b = "";
   if (k === "load") {
     const lastAny = ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, c) => (c.to || c.from).localeCompare(a.to || a.from))[0], dn = lastAny ? (lastAny.driver1Id ? drivers.find(d => d.id === lastAny.driver1Id)?.name || lastAny.driver1Name : lastAny.driver1Name) || "" : "";
-    b = f("Add to", `<select id="qkR"><option value="new">A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}"${x.id === r?.id ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`) + qkLoadFields(lgPlace(lastAny?.dest || "")) +
+    // A new load starts a new round trip unless an open one is chosen here.
+    b = f("Add to", `<select id="qkR"><option value="new" selected>A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}">Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`) + qkLoadFields(lgPlace(lastAny?.dest || "")) +
       f("Driver", ip("qkDrv", dn, 'list="lgDrvList"')) + f("Start km (meter)", ip("qkKm", lastAny?.endKm || "", 'type="number" inputmode="numeric"'));
   }
   if (k === "dsl") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, qk.leg || qkLastLeg(r), true)}</select>`)}</div>` +
@@ -18020,8 +18021,9 @@ $("oDl").onclick = e => { if ($("oDlFy").value === "all") { dlAllYears(e.current
   const fy = +$("oDlFy").value || fyOf(todayISO());
   dlSave(e.currentTarget, `Trip_Sheets_FY${fyLabel(fy)}.xlsx`, async () => dlAllSheets(await dlAllRead(), fy)); };
 $("kFy").addEventListener("change", () => { kFy = +$("kFy").value; renderTruck(); });
-// + Add trip: the next load of the last round trip while it is open; otherwise a new round trip.
-$("kAdd").onclick = () => { const last = roundsOf(kBusId).filter(r => r.status !== "Closed").sort((a, b) => b.to.localeCompare(a.to))[0]; openRound(last ? last.id : null, "leg", null); };
+// + Add trip: always a new round trip (an open one may only be waiting for its rent). A load for an open round trip is
+// added from that round trip's own + button.
+$("kAdd").onclick = () => openRound(null, "leg", null);
 try { $("kLegs").checked = localStorage.getItem("fleet-klegs") !== "0"; } catch {}
 $("kLegs").addEventListener("change", () => { try { localStorage.setItem("fleet-klegs", $("kLegs").checked ? "1" : "0"); } catch {} $("kTable").classList.toggle("ronly", !$("kLegs").checked); });
 $("kTable").addEventListener("click", async e => {
