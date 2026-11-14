@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-13j">
+<meta name="app-ver" content="2026-11-14a">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1597,7 +1597,18 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 /* Yes / No confirmation */
 .askbox { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(0, 0, 0, .45); padding: 16px; }
 .askbox[hidden] { display: none; }
-.mxcard { display: flex; flex-direction: column; gap: 10px; width: min(460px, 100%); max-height: calc(100dvh - 32px); overflow: auto; } .mxcard p { margin: 0; font-size: 14px; } .mxcard > * { flex-shrink: 0; }
+.mxcard { display: flex; flex-direction: column; gap: 10px; width: min(460px, 100%); max-height: calc(100dvh - 32px); overflow: auto; } /* Driver settlement in parts */
+.dpbox { display: flex; flex-direction: column; gap: 8px; } .dpbox .dph { margin: 0; font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--ink); } .dph small { display: block; font-weight: 400; font-size: 12.5px; color: var(--muted); }
+.dprow { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 4px 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.dprow .dpd { font: 600 12.5px var(--mono); } .dprow .dpm { font-weight: 600; } .dprow .dpa { text-align: right; grid-column: 4; font-size: 15px; }
+.dprow .dpn { grid-column: 1 / 4; color: var(--muted); font-size: 12px; } .dprow .dpb { grid-column: 4; display: flex; gap: 4px; justify-content: flex-end; }
+.dpx { border: 0; background: none; color: var(--accent); font: 600 12.5px var(--body); cursor: pointer; padding: 4px; } .dpx[data-dp="del"] { color: var(--danger); }
+.dpform { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--accent); border-radius: 12px; background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+.dpf { display: flex; flex-direction: column; gap: 4px; } .dpf > :is(label, span) { font-size: 13px; color: var(--muted); }
+.dpf input { height: 44px; font-size: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: var(--surface); color: var(--ink); } .dpseg button { height: 42px; }
+.dpbtns { display: flex; justify-content: flex-end; gap: 8px; } .dpadd { align-self: flex-start; }
+.dpsum { margin: 0; padding: 10px 12px; border-radius: 10px; font-size: 14px; } .dpsum.ok { background: var(--ok-soft); color: var(--ok); } .dpsum.due { background: var(--warn-soft); color: var(--ink); } .dpsum.bad { background: var(--danger-soft); color: var(--danger); }
+.mxcard p { margin: 0; font-size: 14px; } .mxcard > * { flex-shrink: 0; }
 .mxcard .bwf1 { display: flex; flex-direction: column; gap: 4px; } .mxcard .bwf1 > span { font-size: 13px; color: var(--muted); }
 .mxcard :is(input, select) { height: 44px; font-size: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: var(--surface); color: var(--ink); }
 .mxinfo { color: var(--muted); } .mxnow { color: var(--ok) !important; } .mxnew { font-weight: 700; color: var(--accent); min-height: 1.2em; } .mxchips { margin-top: -2px; }
@@ -13040,14 +13051,14 @@ const B_TRACKED = [
   ["payments", "Payments"],
   ["driverName", "Driver"], ["cleanerName", "Cleaner"], ["padiPaid", "Driver padi (trip sheet)", "inr"], ["cleanerPadi", "Cleaner padi", "inr"], ["permit", "Permit expense", "inr"],
   ["toll", "Toll gate", "inr"], ["litres", "Litres"], ["fuelCost", "Fuel price", "inr"], ["otherExp", "Other exp.", "inr"], ["startKm", "Start km", "km"], ["endKm", "End km", "km"], ["tripNote", "Trip remarks"],
-  ["attachments", "Files"], ["_sent", "Message sent"], ["tsStatus", "Trip sheet status"], ["bookedByName", "Booked by"], ["closedOn", "Trip closed", "date"], ["drvAdvance", "Driver advance", "inr"], ["drvSettle", "Driver settlement"]
+  ["attachments", "Files"], ["_sent", "Message sent"], ["tsStatus", "Trip sheet status"], ["bookedByName", "Booked by"], ["closedOn", "Trip closed", "date"], ["drvAdvance", "Driver advance", "inr"], ["drvSettle", "Driver settlement"], ["drvParts", "Driver settlement parts"]
 ];
 const B_FIELD_INFO = Object.fromEntries(B_TRACKED.map(([k, label, fmt]) => [k, { label, fmt }]));
 const B_KEYS = B_TRACKED.map(t => t[0]);
 const B_HIST_OPTS = () => {
   const ks = B_TRACKED.map(t => t[0]), g = (label, keys) => `<optgroup label="${label}">${keys.map(k => `<option value="${k}">${B_FIELD_INFO[k].label}</option>`).join("")}</optgroup>`;
   return `<option value="">All fields</option>` + g("Stage", ["status"]) + g("Booking slip", [...ks.slice(1, 17), "bookedByName"]) + g("Payments", ["payments"]) +
-    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn"]) + g("Driver advance", ["drvAdvance", "drvSettle"]);
+    g("Trip sheet", ks.slice(18, 30)) + g("Trip sheet approval", ["tsStatus"]) + g("Files and messages", ["attachments", "_sent"]) + g("Trip closing", ["closedOn"]) + g("Driver advance", ["drvAdvance", "drvSettle", "drvParts"]);
 };
 const BHLS = "fleet-bkhistory.v1";
 let bHistory = loadLS(BHLS), bHistRef = null;
@@ -13059,6 +13070,7 @@ function bHistVal(k, b) {
   if (k === "payments") return (b.payments || []).map(p => `${p.date ? fmtShort(p.date) : "No date"} ${rs(p.amount)} ${p.mode || ""}${p.note ? ` (${p.note})` : ""}`).join("; ");
   if (k === "attachments") return (b.attachments || []).map(f => `${f.kind}: ${f.name}`).join("; ");
   if (k === "_sent") return "";
+  if (k === "drvParts") return drvParts(b).map(p => `${fmtDate(p.date)} ${dpModeLbl(p.mode)} ${rs(num(p.amt))}${p.note ? ` (${p.note})` : ""}`).join("; ");
   if (k === "drvSettle") { const st = b.drvSettle; return st ? `${st.dir === "pay" ? "Office paid the driver" : "Driver gave the office"} ${rs(num(st.amount))} (${st.mode})` : ""; }
   if (k === "tsStatus") return TS_STAGES[b.tsStatus] || "";
   if (k === "driverName") return b.driverId ? (drivers.find(d => d.id === b.driverId)?.name || b.driverName || "") : (b.driverName || "");
@@ -13111,7 +13123,7 @@ let bMonth = todayISO().slice(0, 7), bSelA = "", bSelB = "", bkEditId = null, bk
 const blocks = b => b.status === "draft" || b.status === "pending" || b.status === "booked" || b.status === "ontrip" || b.status === "completed";
 const META = ["tsStatus", "tsBy", "tsByName", "tsDraftOn", "tsSubmittedBy", "tsSubmittedByName", "tsSubmittedOn", "tsSubmitCount", "tsApprovedByName", "tsApprovedOn", "tsRejectedByName", "tsRejectedOn", "tsRejectReason", "tsRejections",
   "reminderFor", "reminderOn", "reminderBy", "reminderHow", "autoOnTripOn", "rejections", "submitCount", "createdBy", "createdByName", "draftSavedOn", "submittedBy", "submittedByName", "submittedOn", "approvedByName", "approvedOn", "rejectedByName", "rejectedOn", "rejectReason",
-  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle", "balAdj"];
+  "closedOn", "closedByName", "reopens", "drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle", "drvParts", "balAdj"];
 const whoAmI = () => myRecord()?.name || me?.name || (store ? "Someone" : "This browser");
 const bkEnd = b => b.to || b.from;
 const bkCalc = b => {
@@ -13145,6 +13157,75 @@ function drvCalc(b, st) {
   const ext = bkExtraSum(b);
   return { exp, off, adv, toll, ext, total: adv + toll, spent, net: adv + toll + ext - spent };
 }
+/* Settling the driver's advance in parts: each part has a date, how it was paid (Cash, UPI, Bank, or carried to the next
+   trip), the amount and a short note or reference. The office and the driver both add parts; a driver changes only his
+   own. Settled once the parts reach what is due (an older one-line settlement counts as settled). */
+const DP_MODES = ["Cash", "UPI", "Bank transfer", "Next trip"];
+const dpModeLbl = m => m === "Bank transfer" ? "Bank" : m;
+const drvParts = b => b?.drvParts || [];
+function drvState(b, d = drvCalc(b)) {
+  const due = Math.abs(d.net), paid = drvParts(b).reduce((a, p) => a + num(p.amt), 0) + (b.drvSettle ? num(b.drvSettle.amount) : 0);
+  const settled = !!b.drvSettle || (due > 0 && paid >= due);
+  return { due, dir: d.net < 0 ? "pay" : "back", paid, left: Math.max(0, due - paid), over: !b.drvSettle && paid > due ? paid - due : 0, settled, part: !settled && paid > 0 };
+}
+// The parts in one line, e.g. "Cash ₹3,000 + UPI ₹4,500".
+const drvPartsTxt = (b, money = rs) => [...(b.drvSettle ? [{ mode: b.drvSettle.mode, amt: b.drvSettle.amount }] : []), ...drvParts(b)].map(p => `${dpModeLbl(p.mode)} ${money(num(p.amt))}`).join(" + ");
+// The settlement in a few words, for the tiles and the tab.
+function drvStTxt(b, d = drvCalc(b)) {
+  const s = drvState(b, d);
+  return s.settled ? "Settled" : s.part ? `${rs(s.left)} still to settle` : !d.total && !d.ext ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle";
+}
+const dpCanAdd = b => platformWrite && !tripClosed(b) && (canBookings || canTsUpd) && ["booked", "ontrip", "completed"].includes(b.status);
+const dpCanEdit = (b, p) => dpCanAdd(b) && (canBookings || (p.byAcct && p.byAcct === myId()));
+let dpForm = null, dpBusy = false;
+function drvPartsHtml(b, d) {
+  const s = drvState(b, d), can = dpCanAdd(b), f = dpForm?.bid === b.id ? dpForm : null;
+  const who = s.dir === "pay" ? "Office paid the driver" : "Driver gave the office";
+  const row = (p, i) => `<div class="dprow"><span class="dpd">${fmtDate(p.date)}</span><span class="dpm">${esc(dpModeLbl(p.mode))}</span><b class="dpa">${rs(num(p.amt))}</b>` +
+    `<small class="dpn">${p.note ? esc(p.note) + " · " : ""}${esc(p.by || "")}</small>` +
+    (dpCanEdit(b, p) && !f ? `<span class="dpb"><button type="button" class="dpx" data-dp="edit" data-i="${i}">Edit</button><button type="button" class="dpx" data-dp="del" data-i="${i}" aria-label="Remove this part">Remove</button></span>` : "") + `</div>`;
+  const old = b.drvSettle ? `<div class="dprow"><span class="dpd">${fmtDate(b.drvSettle.on)}</span><span class="dpm">${esc(dpModeLbl(b.drvSettle.mode))}</span><b class="dpa">${rs(num(b.drvSettle.amount))}</b><small class="dpn">Settled in one go${b.drvSettle.by ? " · " + esc(b.drvSettle.by) : ""}</small></div>` : "";
+  const form = f ? `<div class="dpform">` +
+      `<div class="dpf"><label for="dpDate">Date</label><input id="dpDate" type="date" data-dpk="date" value="${esc(f.date)}" max="${todayISO()}"></div>` +
+      `<div class="dpf"><span>Paid by</span><div class="bwseg c4 dpseg" role="group" aria-label="Paid by">${DP_MODES.map(m => `<button type="button" data-dpmode="${esc(m)}" aria-pressed="${f.mode === m}">${esc(dpModeLbl(m))}</button>`).join("")}</div></div>` +
+      `<div class="dpf"><label for="dpAmt">Amount ₹</label><input id="dpAmt" type="number" inputmode="numeric" min="1" data-dpk="amt" value="${esc(f.amt)}"></div>` +
+      `<div class="dpf"><label for="dpNote">Note / reference (optional)</label><input id="dpNote" type="text" maxlength="80" data-dpk="note" value="${esc(f.note)}" placeholder="e.g. UPI ref 4321 or SBI transfer"></div>` +
+      `<p class="err" id="dpErr"></p><div class="dpbtns"><button type="button" class="btn" data-dp="cancel">Cancel</button><button type="button" class="btn primary" data-dp="save"${dpBusy ? " disabled" : ""}>${dpBusy ? "Saving…" : f.i != null ? "Save part" : "Add part"}</button></div></div>` : "";
+  const sum = !s.due && !s.paid ? `<p class="dpsum">Nothing to settle.</p>`
+    : `<p class="dpsum ${s.settled ? "ok" : s.over ? "bad" : "due"}">${who}: <b>${rs(s.paid)}</b> of ${rs(s.due)} · ${s.settled ? (s.over ? `✓ Settled, ${rs(s.over)} more than due` : "✓ Fully settled") : `${rs(s.left)} still to come`}</p>`;
+  return `<div class="dpbox"><h4 class="dph">Settlement <small>Cash, UPI, bank or next trip: add each part as it comes</small></h4>${old}${drvParts(b).map(row).join("")}${form}` +
+    (can && !f && s.left > 0 && !b.drvSettle ? `<button type="button" class="btn dpadd" data-dp="add">+ Add part</button>` : "") + sum + `</div>`;
+}
+function dpRefresh() { if (bw && $("bw") && !$("bw").hidden && bw.sub === "money") bwRender(); if (!$("bkDrawer").hidden && $("bkAdv")) { bkAdvRender(); syncBk(); } }
+async function dpClick(e) {
+  const t = e.target.closest("[data-dp], [data-dpmode]"); if (!t || dpBusy) return;
+  const bid = t.closest("[data-dpbid]")?.dataset.dpbid, b = ops.bookings.find(x => x.id === bid); if (!b) return;
+  if (t.dataset.dpmode) { dpForm.mode = t.dataset.dpmode; dpRefresh(); return; }
+  const a = t.dataset.dp, i = t.dataset.i != null ? +t.dataset.i : null;
+  if (a === "add") { const s = drvState(b); dpForm = { bid, date: todayISO(), mode: "Cash", amt: s.left ? String(s.left) : "", note: "" }; dpRefresh(); document.getElementById("dpAmt")?.focus(); return; }
+  if (a === "edit") { const p = drvParts(b)[i]; dpForm = { bid, i, date: p.date, mode: p.mode, amt: String(num(p.amt)), note: p.note || "" }; dpRefresh(); return; }
+  if (a === "cancel") { dpForm = null; dpRefresh(); return; }
+  let parts = drvParts(b).slice(), act;
+  if (a === "del") { const p = parts[i]; if (!p || !await askYesNo(`Remove this part: ${dpModeLbl(p.mode)} ${rs(num(p.amt))}?`, "Remove")) return; parts.splice(i, 1); act = `Settlement part removed · ${dpModeLbl(p.mode)} ${rs(num(p.amt))}`; }
+  else if (a === "save") {
+    const f = dpForm, amt = Math.round(num(f.amt)), err = m => { const x = document.getElementById("dpErr"); if (x) x.textContent = m; };
+    if (!(amt > 0)) return err("Type the amount.");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date || "") || f.date > todayISO()) return err("Pick the date it was paid.");
+    const p = { ...(f.i != null ? parts[f.i] : { id: genId("dp"), by: whoAmI(), byAcct: myId() || "", on: new Date().toISOString() }), date: f.date, mode: f.mode, amt, note: upText(f.note) };
+    if (!p.note) delete p.note;
+    if (f.i != null) parts[f.i] = p; else parts.push(p);
+    parts.sort((x, y) => String(x.date).localeCompare(String(y.date)));
+    act = `Settlement part ${f.i != null ? "changed" : "added"} · ${dpModeLbl(p.mode)} ${rs(amt)}`;
+  } else return;
+  const next = { ...b }; if (parts.length) next.drvParts = parts; else delete next.drvParts;
+  dpBusy = true; dpRefresh();
+  try { await bkQuickSave(b, next, act); dpForm = null; toast(drvState(next).settled ? "Driver settled" : a === "del" ? "Part removed" : "Part saved"); }
+  catch { toast("Couldn't save. Check your connection and try again."); }
+  dpBusy = false; dpRefresh();
+}
+document.addEventListener("click", e => { if (e.target.closest(".dpbox")) dpClick(e); });
+document.addEventListener("input", e => { const k = e.target.dataset?.dpk; if (k && dpForm) { dpForm[k] = e.target.value; e.stopPropagation(); } }, true);
+
 // One party = one phone number (or the name when there is no number), in the party list of the booking screens.
 const partyKey = b => { const name = String(b?.party || "").trim(), ph = String(b?.phone || "").replace(/\D/g, "").slice(-10); return ph.length === 10 ? ph : name ? "n:" + name.toUpperCase() : ""; };
 const stageName = b => tripClosed(b) ? "Closed" : BK_STAGES[b?.status] || "";
@@ -13652,8 +13733,7 @@ function bwClick(e) {
   if (a === "apprts") { bwDeskAct(() => $("tsApprove").click()); return; }
   if (a === "tsprint") { const b = bwBkNow(); if (b) tsPrint(b); return; }
   if (a === "slipprint") { const b = bwBkNow(); if (b) slipPrint(b); return; }
-  if (a === "settle" || a === "unsettle") { bwSettle(a === "unsettle"); return; }
-  if (t.dataset.mmode) { bw.da.mode = t.dataset.mmode; bwRender(); return; }
+  if (a === "unsettle") { bwSettleUndo(); return; }
   if (a === "advtoll") { bw.da.toll = !bw.da.toll; bwRender(); bwAdvSoon(50); return; }
   if (t.dataset.exp) { const k = t.dataset.exp, o = bw.da.off; bw.da.off = o.includes(k) ? o.filter(x => x !== k) : [...o, k]; bwRender(); bwAdvSoon(50); return; }
 
@@ -14186,7 +14266,7 @@ function bwHomeHtml(b) {
       (bw.driver ? "" : tile('data-bw="details"', "📋", "Booking details", bw.readOnly ? "View the booking" : "Dates, bus, party, rent")) +
       (bw.driver ? "" : tile('data-bw="sub" data-sub="pay"', "₹", "Payments", c.due ? (c.balance > 0 ? `${rs(c.balance)} to collect` : "Fully paid") : `${rs(c.received)} received`, c.due && c.balance > 0 ? "due" : "ok")) +
       (tripOk ? tile('data-bw="trip"', "🧾", "Trip sheet", !tsOpen ? `Opens ${fmtShort(tsOpenDate(b))}` : tsStageTxt(b), b.tsStatus === "approved" ? "ok" : b.tsStatus === "rejected" ? "due" : "", !tsOpen, fpBadge) : "") +
-      (canBookings && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", "Driver advance", b.drvSettle ? "Settled" : !d.total && !d.ext ? "No advance given" : d.net > 0 ? `Driver gives ${rs(d.net)}` : d.net < 0 ? `Office pays driver ${rs(-d.net)}` : "Nothing to settle", b.drvSettle ? "ok" : (d.total || d.ext) && d.net ? "due" : ""))(drvCalc(b)) : "") +
+      ((canBookings || canTsUpd) && confirmed ? (d => tile('data-bw="sub" data-sub="money"', "💵", bw.driver ? "Settlement" : "Driver advance", drvStTxt(b, d), drvState(b, d).settled ? "ok" : (d.total || d.ext) && d.net ? "due" : ""))(drvCalc(b)) : "") +
       (bw.driver ? "" : tile('data-bw="slipprint"', "🖨️", "Booking slip", "Image or PDF to print or share")) +
       tile('data-bw="sub" data-sub="files"', "📎", "Files", byKind.length ? byKind.map(([k, c]) => `${k} ${c}`).join(" · ") : "None yet", "", false, fileBadge) +
       (tripOk && confirmed ? tile('data-bw="tsprint" aria-label="Print trip sheet" title="Print trip sheet"', "🖨️", "") : "") +
@@ -14229,7 +14309,7 @@ function bwSubHtml() {
 // driver gives back to the office. Saves by itself; Mark settled records the handover.
 function bwDrvMoneyHtml(b) {
   const st = b.drvSettle, ed = canBookings && platformWrite && !tripClosed(b) && !st;
-  const v = bw.da ||= { amt: num(b.drvAdvance) ? String(num(b.drvAdvance)) : "", toll: !!b.drvAdvToll, off: drvCalc(b).off.slice(), mode: "Cash" };
+  const v = bw.da ||= { amt: num(b.drvAdvance) ? String(num(b.drvAdvance)) : "", toll: !!b.drvAdvToll, off: drvCalc(b).off.slice() };
   const d = drvCalc(b, v), dis = ed ? "" : " disabled";
   const chk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
   const exp = x => `<button type="button" class="daexp" data-exp="${esc(x.key)}" aria-pressed="${!d.off.includes(x.key)}"${dis}><i>${chk}</i><span>${esc(x.label)}</span><b>${rs(x.amt)}</b></button>`;
@@ -14242,10 +14322,9 @@ function bwDrvMoneyHtml(b) {
     `<section class="tpsec"><h3>Expenses from the trip sheet</h3>` + (d.exp.length ? d.exp.map(exp).join("") : `<p class="bwnote">No expenses in the trip sheet yet.</p>`) +
       `<div class="darow"><span>Total expenses</span><b id="daExp">${rs(d.spent)}</b></div></section>` +
     `<div class="danet${d.net < 0 ? " neg" : ""}" id="daNetBox"><span>Driver gives to office<small id="daHint">${d.net < 0 ? "Minus: the office pays the driver." : d.ext ? "Total advance + extra from party − total expenses" : "Total advance − total expenses"}</small></span><b id="daNet">${d.net < 0 ? "− " : ""}${rs(Math.abs(d.net))}</b></div>` +
-    (st ? `<div class="bhlock"><b>✓ Settled</b><span>${st.dir === "pay" ? "Office paid the driver" : "Driver gave the office"} ${rs(num(st.amount))} · ${esc(st.mode)}</span><span>On ${fmtDate(st.on)}${st.by ? ` by ${esc(st.by)}` : ""}</span></div>` +
-      (canBookings && platformWrite && !tripClosed(b) ? `<button type="button" class="bwlink" data-bw="unsettle"${bw.advBusy ? " disabled" : ""}>Undo settlement</button>` : "")
-    : ed ? `<span class="tpst ok" id="daSt">${bw.advSaved || ""}</span>` + (d.total || d.ext || d.spent ? `<div class="bwbox"><span style="font-weight:600;font-size:17px">How is it settled?</span><div class="bwseg c3">${["Cash", "UPI", "Next trip"].map(x => `<button type="button" data-mmode="${x}" aria-pressed="${v.mode === x}">${x}</button>`).join("")}</div></div>` : "") : "") +
-    `</div>` + (ed && (d.total || d.ext || d.spent) ? `<footer class="bwf"><button type="button" class="bwgo" data-bw="settle"${bw.advBusy ? " disabled" : ""}>${bw.advBusy ? "Saving…" : "Mark settled"}</button></footer>` : "") + navBar("bw", true);
+    (ed ? `<span class="tpst ok" id="daSt">${bw.advSaved || ""}</span>` : "") + `<section class="tpsec" data-dpbid="${esc(b.id)}">${drvPartsHtml(b, d)}</section>` +
+    (st && canBookings && platformWrite && !tripClosed(b) ? `<button type="button" class="bwlink" data-bw="unsettle"${bw.advBusy ? " disabled" : ""}>Undo settlement (to enter it in parts)</button>` : "") +
+    `</div>` + navBar("bw", true);
 }
 // Typing the advance updates the totals in place (no redraw, so the keyboard stays) and saves a moment later.
 function bwAdvRefresh() {
@@ -14265,23 +14344,12 @@ async function bwAdvSave() {
   try { await bwBkSave(next, "Driver advance"); if (bw) { bw.advSaved = "✓ Saved"; if ($("daSt")) $("daSt").textContent = bw.advSaved; } }
   catch { if (bw) { bw.advSaved = "Not saved. Check the signal."; if ($("daSt")) $("daSt").textContent = bw.advSaved; } }
 }
-async function bwSettle(undo) {
+// An older one-line settlement: undo it to enter the settlement in parts.
+async function bwSettleUndo() {
   const cur = bwBkNow(); if (!cur || bw.advBusy || !canBookings || tripClosed(cur)) return;
-  clearTimeout(bw.advTimer);
-  // One save with exactly what is on the screen (advance, Toll gate, ticked expenses) plus the settlement, so an
-  // earlier save arriving late from the server can't undo the ticks.
-  const next = { ...cur };
-  if (undo) delete next.drvSettle;
-  else {
-    const v = bw.da || { amt: cur.drvAdvance, toll: !!cur.drvAdvToll, off: drvCalc(cur).off }, d = drvCalc(cur, v), amt = Math.round(num(v.amt));
-    if (amt > 0) next.drvAdvance = amt; else delete next.drvAdvance;
-    if (v.toll) next.drvAdvToll = true; else delete next.drvAdvToll;
-    next.drvExpOff = v.off.slice();
-    if (num(next.drvAdvance) !== num(cur.drvAdvance)) { next.drvAdvanceOn = todayISO(); next.drvAdvanceBy = whoAmI(); }
-    next.drvSettle = { on: todayISO(), by: whoAmI(), amount: Math.abs(d.net), mode: v.mode || "Cash", dir: d.net < 0 ? "pay" : "back" };
-  }
+  const next = { ...cur }; delete next.drvSettle;
   bw.advBusy = true; bwRender();
-  try { await bwBkSave(next, undo ? "Driver settlement undone" : "Driver settled"); toast(undo ? "Settlement undone" : "Driver settled"); }
+  try { await bwBkSave(next, "Driver settlement undone"); toast("Settlement undone"); }
   catch { toast("Couldn't save. Check your connection and try again."); }
   finally { if (bw) { bw.advBusy = false; bw.da = null; bw.advSaved = ""; bwRender(); } }
 }
@@ -14332,17 +14400,15 @@ const bkDaCur = () => ops.bookings.find(x => x.id === bkEditId);
 function bkAdvRender() {
   const b = bkDaCur(); if (!b) { $("bkAdv").innerHTML = ""; return; }
   const st = b.drvSettle, ed = canBookings && platformWrite && !tripClosed(b) && !st, dis = ed ? "" : " disabled";
-  const v = bkDa ||= { amt: num(b.drvAdvance) ? String(num(b.drvAdvance)) : "", toll: !!b.drvAdvToll, off: drvCalc(b).off.slice(), mode: "Cash" };
+  const v = bkDa ||= { amt: num(b.drvAdvance) ? String(num(b.drvAdvance)) : "", toll: !!b.drvAdvToll, off: drvCalc(b).off.slice() };
   const d = drvCalc(b, v), r = (l, val, cls = "", id = "") => `<div class="bkacr${cls}"><span>${l}</span><b${id ? ` id="${id}"` : ""}>${val}</b></div>`;
   $("bkAdv").innerHTML = `<div class="bkadv"><div class="bkadvc">` +
     `<div class="tsc"><h4>Advance given${b.driverName ? " to " + esc(b.driverName) : ""}</h4><div class="bkadvin"><div class="field"><label for="bkDaAmt">Advance (₹)</label><input id="bkDaAmt" type="number" inputmode="numeric" min="0" value="${esc(v.amt)}"${dis}></div>` +
       `<label class="chk"><input type="checkbox" id="bkDaToll"${v.toll ? " checked" : ""}${dis}> Add toll money ${rs(num(b.toll))}</label></div>` + r("Total advance", rs(d.total), " tot", "bkDaTot") + `</div>` +
     (d.ext ? `<div class="tsc"><h4>Extra from party (collected by the driver)</h4>` + bkExtras(b).map(x => r(esc(x.kind) + (x.note ? ` · ${esc(x.note)}` : ""), rs(Math.round(num(x.amt))))).join("") + `</div>` : "") +
     `<div class="bkdanet${d.net < 0 ? " neg" : ""}" id="bkDaNetBox"><span><b id="bkDaWho">${d.net < 0 ? "Office pays the driver" : "Driver gives to office"}</b><small>${d.ext ? "Advance + extra from party − expenses he paid" : "Advance − expenses he paid"}</small></span><b id="bkDaNet">${rs(Math.abs(d.net))}</b></div>` +
-    (st ? `<div class="bkadvst"><b>✓ Settled</b> · ${st.dir === "pay" ? "Office paid the driver" : "Driver gave the office"} ${rs(num(st.amount))} · ${esc(st.mode)} · ${fmtDate(st.on)}${st.by ? ` · ${esc(st.by)}` : ""}` +
-        (canBookings && platformWrite && !tripClosed(b) ? ` <button class="btn" type="button" id="bkDaUndo"${bkDaBusy ? " disabled" : ""}>Undo settlement</button>` : "") + `</div>`
-      : ed && (d.total || d.ext || d.spent) ? `<div class="bkadvst"><label for="bkDaMode">Settled by</label><select id="bkDaMode">${["Cash", "UPI", "Next trip"].map(m => `<option${v.mode === m ? " selected" : ""}>${m}</option>`).join("")}</select>` +
-        `<span class="sub" id="bkDaSt"></span><button class="btn primary" type="button" id="bkDaSettle"${bkDaBusy ? " disabled" : ""}>${bkDaBusy ? "Saving…" : "Mark settled"}</button></div>` : "") +
+    (ed ? `<span class="sub" id="bkDaSt"></span>` : "") + `<div data-dpbid="${esc(b.id)}">${drvPartsHtml(b, d)}</div>` +
+    (st && canBookings && platformWrite && !tripClosed(b) ? `<button class="btn" type="button" id="bkDaUndo"${bkDaBusy ? " disabled" : ""}>Undo settlement (to enter it in parts)</button>` : "") +
     `</div><div class="tsc"><h4>Expenses from the trip sheet <span class="sub" style="text-transform:none;letter-spacing:0;font-weight:400">· untick what he did not pay</span></h4>` +
     (d.exp.length ? d.exp.map(x => `<label class="bkdaexp"><input type="checkbox" data-daexp="${esc(x.key)}"${d.off.includes(x.key) ? "" : " checked"}${dis}><span>${esc(x.label)}</span><b>${rs(x.amt)}</b></label>`).join("") : `<p class="hint" style="margin:0">No expenses in the trip sheet yet.</p>`) +
     r("Total expenses", rs(d.spent), " tot", "bkDaSpent") + `</div></div>`;
@@ -14373,14 +14439,12 @@ async function bkDaSave() {
   try { await bkQuickSave(cur, next, "Driver advance"); st("✓ Saved"); } catch { st("Not saved. Check the connection."); }
 }
 function bkDaSoon(ms) { clearTimeout(bkDaTimer); if ($("bkDaSt")) $("bkDaSt").textContent = "Saving…"; bkDaTimer = setTimeout(bkDaSave, ms); }
-async function bkDaSettle(undo) {
+// An older one-line settlement: undo it to enter the settlement in parts.
+async function bkDaUndo() {
   const cur = bkDaCur(); if (!cur || bkDaBusy || !canBookings || tripClosed(cur)) return;
-  clearTimeout(bkDaTimer);
-  const next = { ...cur };
-  if (undo) delete next.drvSettle;
-  else { bkDaApply(cur, next); const d = drvCalc(cur, bkDa); next.drvSettle = { on: todayISO(), by: whoAmI(), amount: Math.abs(d.net), mode: bkDa.mode || "Cash", dir: d.net < 0 ? "pay" : "back" }; }
+  const next = { ...cur }; delete next.drvSettle;
   bkDaBusy = true; bkAdvRender();
-  try { await bkQuickSave(cur, next, undo ? "Driver settlement undone" : "Driver settled"); toast(undo ? "Settlement undone" : "Driver settled"); }
+  try { await bkQuickSave(cur, next, "Driver settlement undone"); toast("Settlement undone"); }
   catch { toast("Couldn't save. Check your connection and try again."); }
   bkDaBusy = false; bkDa = null; if (!$("bkDrawer").hidden && bkEditId === cur.id) { bkAdvRender(); syncBk(); }
 }
@@ -14392,9 +14456,8 @@ $("bkAdv").addEventListener("change", e => {
   e.stopPropagation(); if (!bkDa) return; const t = e.target;
   if (t.id === "bkDaToll") { bkDa.toll = t.checked; bkAdvNums(); bkDaSoon(50); }
   else if (t.dataset.daexp) { const k = t.dataset.daexp; bkDa.off = t.checked ? bkDa.off.filter(x => x !== k) : [...bkDa.off, k]; bkAdvNums(); bkDaSoon(50); }
-  else if (t.id === "bkDaMode") bkDa.mode = t.value;
 });
-$("bkAdv").addEventListener("click", e => { const t = e.target.closest("button"); if (!t) return; if (t.id === "bkDaSettle") bkDaSettle(false); if (t.id === "bkDaUndo") bkDaSettle(true); });
+$("bkAdv").addEventListener("click", e => { const t = e.target.closest("button"); if (!t) return; if (t.id === "bkDaUndo") bkDaUndo(); });
 function bkPayRow(p = {}) {
   return `<div class="payrow bk"><label class="pf"><span>Date</span><input type="date" data-pd value="${esc(p.date || "")}" aria-label="Payment date"></label><label class="pf"><span>Amount (₹)</span><input type="number" inputmode="numeric" min="0" data-pa value="${p.amount ?? ""}" placeholder="Amount ₹" aria-label="Amount"></label>
     <label class="pf"><span>Paid by</span><select data-pm aria-label="Paid by">${PAY_MODES.map(m => `<option${m === (p.mode || "Cash") ? " selected" : ""}>${m}</option>`).join("")}</select></label><label class="pf"><span>Note</span><input data-pn value="${esc(p.note || "")}" placeholder="Advance, balance…" maxlength="60" aria-label="Note"></label><button class="icon prm" type="button" data-prm>Remove</button></div>`;
@@ -14420,7 +14483,7 @@ function bkTabBadges(b, c) {
   tb("bkTb-slip", num(b.rent) ? rs(num(b.rent)) : "");
   tb("bkTb-pay", !c.due ? "" : c.balance <= 0 ? "Paid" : `${rs(c.balance)} due`, !c.due ? "" : c.balance <= 0 ? "ok" : "warn");
   const cur = bkEditId ? ops.bookings.find(x => x.id === bkEditId) : null;
-  if (cur) { const d = drvCalc(cur, bkDa); tb("bkTb-adv", cur.drvSettle ? "Settled" : !d.total && !d.ext && !d.spent ? "" : d.net < 0 ? `Pay ${rs(-d.net)}` : d.net > 0 ? `Gets ${rs(d.net)}` : "Nil", cur.drvSettle ? "ok" : d.net ? "warn" : ""); }
+  if (cur) { const d = drvCalc(cur, bkDa), s = drvState(cur, d); tb("bkTb-adv", s.settled ? "Settled" : s.part ? `${rs(s.left)} left` : !d.total && !d.ext && !d.spent ? "" : d.net < 0 ? `Pay ${rs(-d.net)}` : d.net > 0 ? `Gets ${rs(d.net)}` : "Nil", s.settled ? "ok" : d.net ? "warn" : ""); }
   if (cur?.tsStatus || bkMode === "trip") { const op = cur && tsIsOpen(cur);
     tb("bkTb-trip", tripClosed(cur) ? "Closed" : bkMode === "trip" && !op ? `Opens ${fmtShort(tsOpenDate(cur))}` : TS_STAGES[cur?.tsStatus] || "To fill", tripClosed(cur) || cur?.tsStatus === "approved" ? "ok" : cur?.tsStatus === "rejected" ? "warn" : bkMode === "trip" && !op ? "" : "warn"); return; }
   tb("bkTb-trip", b.status === "draft" || b.status === "pending" || b.status === "rejected" || b.status === "enquiry" || b.status === "booked" || b.status === "cancelled" ? "" : b.endKm ? "Filled" : "To fill", b.endKm ? "ok" : "warn");
@@ -14444,7 +14507,8 @@ function openBooking(id, preset, full) {
   // Trip update fills in the trip sheet of a confirmed booking; the rest of the booking stays as it is.
   const confirmed = !!b && (b.status === "booked" || b.status === "ontrip" || b.status === "completed");
   if (bkMode === "view" && confirmed && canTsUpd) bkMode = "trip";
-  if (bkMode === "trip" && tsWorkerOnly() && acc.bookings === "none" && b.status === "completed" && !["draft", "rejected", "submitted"].includes(b.tsStatus)) { bkEditId = null; toast("This trip is closed."); return; }
+  // A driver's finished trip stays open to him until his advance is settled, so he can add what he paid.
+  if (bkMode === "trip" && tsWorkerOnly() && acc.bookings === "none" && b.status === "completed" && !["draft", "rejected", "submitted"].includes(b.tsStatus) && drvState(b).settled) { bkEditId = null; toast("This trip is closed."); return; }
   const closed = tripClosed(b); if (closed) bkMode = "view";  // a closed trip is view only, admin too
   const tsOpen = !!b && tsIsOpen(b), tsLocked = b?.tsStatus === "submitted" || b?.tsStatus === "approved";
   const tsMine = !b?.tsBy || b.tsBy === (myUserId || "");
@@ -14507,7 +14571,7 @@ function openBooking(id, preset, full) {
   $("bkPrint").hidden = tsOnly;
   $("bkTsPrint").hidden = !confirmed;
   // Driver advance: the admin's, once the booking is confirmed.
-  $("bkTab-adv").hidden = !(canBookings && confirmed);
+  $("bkTab-adv").hidden = !((canBookings || canTsUpd) && confirmed);
   syncTsAppr(b); syncBkLock(b);
   $("bkAppr").hidden = !(pending || b?.status === "rejected" || b?.status === "draft");
   $("bkApprAct").hidden = !(pending && canBookings);
@@ -15673,7 +15737,8 @@ async function tsLayout(L, pdf, b) {
     text(d.net < 0 ? "Office pays the driver" : "Driver gives to office", X0 + 10, y - 18, { size: 11.5, bold: true });
     text(`Rs. ${d.net < 0 ? "- " : ""}${nf(Math.abs(d.net))}`, X1 - 10, y - 18.5, { size: 13, bold: true, align: "right" });
     // Once settled, the box says when and how instead of how the amount is worked out.
-    text(b.drvSettle ? `Settled ${fd(b.drvSettle.on)} · ${b.drvSettle.mode}` : d.ext ? "Advance + extra - expenses" : "Total advance - total expenses", W / 2 + 10, y - 17.5, { size: 7.5, color: grey, align: "center" });
+    const ss = drvState(b, d), pt = drvPartsTxt(b, v => nf(v));
+    text(ss.settled ? `Settled · ${pt}` : ss.part ? `Received ${nf(ss.paid)} (${pt}) · ${nf(ss.left)} to come` : d.ext ? "Advance + extra - expenses" : "Total advance - total expenses", W / 2 + 10, y - 17.5, { size: 7.5, color: grey, align: "center" });
     y -= 40;
   }
 }
