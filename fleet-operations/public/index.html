@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14c">
+<meta name="app-ver" content="2026-11-14d">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -3204,7 +3204,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf"><label for="kFy">Financial year</label><select id="kFy"></select></div>
           <button class="btn" type="button" id="kPrint" title="Print or download the trips and expenses of this truck, as Excel or as an image">Print</button>
           <button class="btn" type="button" id="kFast" title="Download the FASTag amounts of this truck">FASTag</button>
-          <button class="btn" type="button" id="kPend" title="Download the money still to come for every trip of every truck">Pending payments</button>
+          <button class="btn" type="button" id="kPend" title="Download every payment entered as not settled, for every truck">Pending payments</button>
           <button class="btn" type="button" id="kDl" title="Download every truck trip in the office Trip Download template (Excel, one sheet per truck with its summary)">⬇ Download</button>
           <a class="btn" href="#truck-profit" title="Rent, expenses, profit and mileage of every truck, month by month">Profit report</a>
           <button class="btn primary" type="button" id="kAdd">+ Add trip</button>
@@ -17553,64 +17553,61 @@ $("kPrint").onclick = () => {
       N("other", "Other exp.", true), N("exp", "Expenses"), N("bal", "Balance"), N("rec", "Received", true), N("km", "Km", true), { k: "remarks", h: "Remarks", xl: 30, px: 0, kind: "wrap", off: true }],
     lineCols: ["from", "origin", "dest", "rent", "exp", "bal"], val: kVal, raw: kRaw, lineSub: x => `Round trip ${x.n}` });
 };
-/* Pending payments: every trip of every truck (all years) whose round trip is not closed and that still has money to come.
-   Pending = trip rent − payments received for the trip (settled ones). A round trip's payment not tied to a trip is taken
-   off its trips oldest first. Payments entered but not settled yet are shown on their own and still count as pending. */
+/* Not-settled payments: every payment of every truck trip (all years) entered as not settled yet, as the trip sheet
+   shows them under "② Came to the owner". Received (settled) payments are left out. */
 function kPendRows() {
   const out = [];
-  roundsOf(null, null).filter(r => r.status !== "Closed").forEach(r => {
-    let free = (r.doc?.payments || []).filter(p => p.settled !== false && !p.leg).reduce((a, p) => a + num(p.amount), 0);
-    const v = vehicles.find(x => x.id === r.vehicleId), plate = v ? plateOf(v) : "Removed truck", no = rtNo(r);
-    r.legs.forEach(l => {
-      const c = legCalc(l), notSet = (l.payments || []).filter(p => p.settled === false).reduce((a, p) => a + num(p.amount), 0);
-      let pend = num(l.rent) - c.received; const take = Math.min(Math.max(pend, 0), free); pend -= take; free -= take;
-      if (pend > 0) out.push({ l, plate, no, fy: fyOf(r.from), rec: c.received + take, notSet, pend });
-    });
+  roundsOf(null, null).forEach(r => {
+    const v = vehicles.find(x => x.id === r.vehicleId), plate = v ? plateOf(v) : "Removed truck";
+    [...r.legs.flatMap(l => (l.payments || []).map(p => ({ p, l }))), ...(r.doc?.payments || []).map(p => ({ p, l: r.legs.find(l => l.id === p.leg) }))]
+      .filter(({ p }) => p.settled === false && num(p.amount) > 0)
+      .forEach(({ p, l }) => out.push({ p, l, r, plate, date: p.date || l?.from || r.from, amt: num(p.amount) }));
   });
-  return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(a.l.from).localeCompare(String(b.l.from)));
+  return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(a.date).localeCompare(String(b.date)));
 }
-// Pending payments, in the trip sheet's look ("② Came to the owner"): a picture for each truck, or Excel with a sheet for
-// each truck after a summary. English or Tamil (places stay as typed).
+// One not-settled payment as the trip sheet writes it under "② Came to the owner": its note or the trip, and how it is paid.
+const kPendWhat = (x, t) => `${x.p.desc || (x.l ? rtLegName(x.l) : x.r.path)}${x.p.pay ? ` · ${t.pay[x.p.pay] || x.p.pay}` : ""}`;
+// Not-settled payments, in the trip sheet's look ("② Came to the owner"): a picture for each truck, or Excel with a sheet
+// for each truck after a summary. English or Tamil (places stay as typed).
 function kPendPage(plate, list, t) {
   return rtPaint(K => {
     const { P, IN, z } = K; let y = K.header(`${t.veh}: ${plate}`, t.pendT, t.asOn(fmtDate(todayISO())));
-    y = K.sect(`${t.pendT} · ${t.pendTrips(list.length)}`, P, y);
-    const cols = [{ w: 200 }, { w: IN - 200 - 200 }, { w: 200, r: 1 }];
-    y = K.table(P, y, cols, [{ cells: t.pendCols, bold: true, bg: K.head, right: [2] },
-      ...list.map(x => ({ cells: [fmtShort(x.l.from), rtLegName(x.l), nf(x.pend)], ...(x.notSet ? { bg: "#FDF1DC", color: "#8A4B00" } : {}) })),
-      { cells: ["", t.total, nf(list.reduce((a, x) => a + x.pend, 0))], bold: true, right: [1] }], 17);
-    if (list.some(x => x.notSet)) { K.txt(t.pendNote, P, y + z(24), { size: 14, color: "#8A4B00" }); y += z(30); }
+    y = K.sect(`${t.came} · ${t.notSet} (${list.length})`, P, y);
+    const cols = [{ w: 170 }, { w: IN - 170 - 160 - 190 }, { w: 160 }, { w: 190, r: 1 }];
+    y = K.table(P, y, cols, [{ cells: t.pendCols, bold: true, bg: K.head, right: [3] },
+      ...list.map(x => ({ cells: [fmtShort(x.date), kPendWhat(x, t), t.notSet, nf(x.amt)], bg: "#FDF1DC", color: "#8A4B00" })),
+      { cells: ["", "", t.total, nf(list.reduce((a, x) => a + x.amt, 0))], bold: true, right: [2] }], 17);
     return y + z(10);
   }, t);
 }
 function kPendXlsx(groups, t) {
-  const st = XL.S, sheets = [], co = (ws, put, veh) => { put("A1", RT_CO.name, st.title); ws.merges.push("A1:C1"); put("A2", RT_CO.addr, st.note); ws.merges.push("A2:C2");
-    put("A3", veh, st.ttext); put("B3", t.pendT, st.ttext); put("C3", t.asOn(fmtDate(todayISO())), st.ttext); };
-  const sum = XL.sheet(t.pendSum), ps = (r, v, x) => XL.put(sum, r, v, x); sheets.push(sum); Object.assign(sum.widths, { A: 22, B: 44, C: 16 }); co(sum, ps, "");
-  [t.pendTruck, "", t.pendCols[2]].forEach((h, i) => ps(`${"ABC"[i]}5`, h, st.head));
-  let n = 6; groups.forEach(([plate, list]) => { ps(`A${n}`, plate, st.text); ps(`B${n}`, t.pendTrips(list.length), st.text); ps(`C${n}`, list.reduce((a, x) => a + x.pend, 0), st.int); n++; });
-  ps(`B${n}`, t.pendAll, st.ttext); ps(`C${n}`, groups.reduce((a, [, l]) => a + l.reduce((b, x) => b + x.pend, 0), 0), st.tint);
+  const st = XL.S, sheets = [], co = (ws, put, veh) => { put("A1", RT_CO.name, st.title); ws.merges.push("A1:D1"); put("A2", RT_CO.addr, st.note); ws.merges.push("A2:D2");
+    put("A3", veh, st.ttext); put("B3", t.pendT, st.ttext); put("C3", t.asOn(fmtDate(todayISO())), st.ttext); ws.merges.push("C3:D3"); };
+  const sum = XL.sheet(t.pendSum), ps = (r, v, x) => XL.put(sum, r, v, x); sheets.push(sum); Object.assign(sum.widths, { A: 22, B: 40, C: 26, D: 16 }); co(sum, ps, "");
+  [t.pendTruck, "", "", t.pendCols[3]].forEach((h, i) => ps(`${"ABCD"[i]}5`, h, st.head));
+  let n = 6; groups.forEach(([plate, list]) => { ps(`A${n}`, plate, st.text); ps(`B${n}`, `${t.notSet}: ${list.length}`, st.text); ps(`D${n}`, list.reduce((a, x) => a + x.amt, 0), st.int); n++; });
+  ps(`C${n}`, t.pendAll, st.ttext); ps(`D${n}`, groups.reduce((a, [, l]) => a + l.reduce((b, x) => b + x.amt, 0), 0), st.tint);
   groups.forEach(([plate, list]) => {
     const ws = XL.sheet(plate.replace(/[\\/?*[\]:]/g, " ").slice(0, 31)), put = (r, v, x) => XL.put(ws, r, v, x); sheets.push(ws);
-    Object.assign(ws.widths, { A: 16, B: 50, C: 16 }); co(ws, put, `${t.veh}: ${plate}`);
-    t.pendCols.forEach((h, i) => put(`${"ABC"[i]}5`, h, st.head)); let m = 6;
-    list.forEach(x => { put(`A${m}`, { d: x.l.from }, st.date); put(`B${m}`, rtLegName(x.l), st.text); put(`C${m}`, x.pend, st.int); m++; });
-    put(`B${m}`, t.total, st.ttext); put(`C${m}`, list.reduce((a, x) => a + x.pend, 0), st.tint);
+    Object.assign(ws.widths, { A: 22, B: 50, C: 16, D: 16 }); co(ws, put, `${t.veh}: ${plate}`);
+    t.pendCols.forEach((h, i) => put(`${"ABCD"[i]}5`, h, st.head)); let m = 6;
+    list.forEach(x => { put(`A${m}`, { d: x.date }, st.date); put(`B${m}`, kPendWhat(x, t), st.text); put(`C${m}`, t.notSet, st.text); put(`D${m}`, x.amt, st.int); m++; });
+    put(`C${m}`, t.total, st.ttext); put(`D${m}`, list.reduce((a, x) => a + x.amt, 0), st.tint);
   });
   return XL.build(sheets);
 }
 function kPendOpen() {
-  const all = kPendRows(); if (!all.length) { toast("No pending payments: every open trip is fully paid."); return; }
+  const all = kPendRows(); if (!all.length) { toast("No not-settled payments in the truck trip sheets."); return; }
   pbClose();
   const groups = [...all.reduce((m, x) => m.set(x.plate, [...(m.get(x.plate) || []), x]), new Map())];
   let lang = "en", fmt = "jpg", urls = [], seq = 0; try { lang = localStorage.getItem("fleet-rtlang") === "ta" ? "ta" : "en"; fmt = localStorage.getItem("fleet-rtout") === "xlsx" ? "xlsx" : "jpg"; } catch {}
   const name0 = "Truck pending payments", box = document.createElement("div"); box.id = "xpOutBox"; box.className = "askbox";
-  box.innerHTML = `<div class="xodlg rtpdlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Pending payments · preview</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
+  box.innerHTML = `<div class="xodlg rtpdlg" role="dialog" aria-modal="true" aria-labelledby="xoHead"><header class="xohd"><h2 id="xoHead">🖨 Not settled payments · preview</h2><button type="button" class="btn mclose" data-xoclose>Close ✕</button></header>` +
     `<div class="xobody"><div class="xoleft"><label class="xotl">File name<input type="text" data-title maxlength="80" value="${esc(name0)}"></label>` +
     `<div class="xosub">Language</div><div class="xofmt" role="radiogroup"><button type="button" data-lang="en">English</button><button type="button" data-lang="ta" lang="ta">தமிழ்</button></div>` +
     `<div class="xosub">Save as</div><div class="xofmt" role="radiogroup"><button type="button" data-fmt="xlsx">📊 Excel</button><button type="button" data-fmt="jpg">🖼 Image</button></div>` +
-    `<div class="xosub">Trucks</div><div class="rtsecs">${groups.map(([p, l]) => `<label class="dall"><input type="checkbox" data-trk="${esc(p)}" checked> <b>${esc(p)}</b> · ${rs(l.reduce((a, x) => a + x.pend, 0))}</label>`).join("")}</div>` +
-    `<p class="dnote">Every truck trip with money still to come (round trips not closed, all years): trip rent − payments received for it. One picture for each truck, or one Excel file with a summary and a sheet for each truck.</p></div>` +
+    `<div class="xosub">Trucks</div><div class="rtsecs">${groups.map(([p, l]) => `<label class="dall"><input type="checkbox" data-trk="${esc(p)}" checked> <b>${esc(p)}</b> · ${rs(l.reduce((a, x) => a + x.amt, 0))}</label>`).join("")}</div>` +
+    `<p class="dnote">Every payment entered as not settled in the truck trip sheets (all trips, all years), as shown under ② Came to the owner. Received payments are left out. One picture for each truck, or one Excel file with a summary and a sheet for each truck.</p></div>` +
     `<div class="xoright rtpv"></div></div>` +
     `<footer class="xoft"><p class="err" data-xoerr></p><button type="button" class="btn dshare" aria-label="Share">${ICON_SHARE}<span>Share</span></button><button type="button" class="btn primary duesave">${ICON_DL}<span></span></button></footer></div>`;
   const fname = () => (box.querySelector("[data-title]").value.trim() || name0) + (lang === "ta" ? " Tamil" : "");
@@ -17627,7 +17624,7 @@ function kPendOpen() {
     const G = chosen(), blobs = []; for (const [p, l] of G) blobs.push(await toBlob(kPendPage(p, l, T())));
     if (k !== seq || !box.isConnected) return;
     urls.forEach(u => URL.revokeObjectURL(u)); urls = blobs.map(b => URL.createObjectURL(b)); pv.classList.remove("busy");
-    pv.innerHTML = urls.map((u, i) => `<figure><figcaption>${esc(G[i][0])}</figcaption><img src="${u}" alt="Pending payments of ${esc(G[i][0])}"></figure>`).join("") || `<p class="sub">Tick a truck.</p>`;
+    pv.innerHTML = urls.map((u, i) => `<figure><figcaption>${esc(G[i][0])}</figcaption><img src="${u}" alt="Not settled payments of ${esc(G[i][0])}"></figure>`).join("") || `<p class="sub">Tick a truck.</p>`;
   };
   const sync = () => {
     box.querySelectorAll("[data-fmt]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fmt === fmt));
@@ -18497,8 +18494,7 @@ const RT_T = {
     sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
     fast: "FASTag", L: "L", gCash: "Diesel paid in cash (by the driver) · not added to ①", dslCols: ["Date", "Place", "Litres", "Rate / L", "Amount"], advPrev: "Advance from the previous trip", given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {},
     details: "TRIP DETAILS", sFast: "FASTag", sRec: "Payments received", sDsl: "Diesel fill-ups", sGiv: "Money given to the driver", dCols: ["Date", "Details", "Amount"], whole: "Whole round trip",
-    pendT: "PENDING PAYMENTS", pendCols: ["Date", "Place", "Amount"], pendAll: "Total for all trucks", asOn: d => `As on ${d}`, pendTrips: n => `${n} trip${n === 1 ? "" : "s"}`,
-    pendNote: "Orange lines: a payment was entered but is not settled yet.", pendSum: "Summary", pendTruck: "Truck" },
+    pendT: "NOT SETTLED PAYMENTS", pendCols: ["Date", "Place", "Status", "Amount"], pendAll: "Total for all trucks", asOn: d => `As on ${d}`, pendSum: "Summary", pendTruck: "Truck" },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
     cols: ["தேதி", "பயணம்", "வாடகை", "செலவு", "மீதம்"], total: "மொத்தம்", owner: "① முதலாளி பணம்", came: "② முதலாளிக்கு வந்தது", gFast: "ஃபாஸ்டேக்", gCard: "கார்டு மூலம் டீசல்",
     gGiv: "ஓட்டுநரிடம் கொடுத்தது", gBal: "வண்டி மீதம்", none: "இல்லை", nopay: "இன்னும் பணம் வரவில்லை", tot1: "மொத்தம் ①", tot2: "மொத்தம் ②", notSet: "நிலுவை", adv: "③ முன்பணம்",
@@ -18509,8 +18505,7 @@ const RT_T = {
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
     giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" },
     details: "பயண விவரம்", sFast: "ஃபாஸ்டேக்", sRec: "வந்த பணம்", sDsl: "டீசல் நிரப்பியது", sGiv: "ஓட்டுநரிடம் கொடுத்தது", dCols: ["தேதி", "விவரம்", "தொகை"], whole: "முழு சுற்றுப் பயணம்",
-    pendT: "வர வேண்டிய பணம்", pendCols: ["தேதி", "இடம்", "தொகை"], pendAll: "எல்லா லாரிகளுக்கும் மொத்தம்", asOn: d => `${d} நிலவரப்படி`, pendTrips: n => `${n} பயணம்`,
-    pendNote: "ஆரஞ்சு வரிகள்: பணம் பதிவு செய்யப்பட்டது, ஆனால் இன்னும் உறுதி செய்யப்படவில்லை.", pendSum: "சுருக்கம்", pendTruck: "லாரி" }
+    pendT: "நிலுவைத் தொகை", pendCols: ["தேதி", "இடம்", "நிலை", "தொகை"], pendAll: "எல்லா லாரிகளுக்கும் மொத்தம்", asOn: d => `${d} நிலவரப்படி`, pendSum: "சுருக்கம்", pendTruck: "லாரி" }
 };
 // Tamil letters for the pictures: the Noto Sans Tamil font, loaded the first time it is needed.
 function rtTamilFont() {
