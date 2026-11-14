@@ -108,7 +108,7 @@ export function canWrite(a, me, op, coll, id, prev, next, linkedClosed) {
     const m = MOD_OF[coll];
     return m && a[m] === "edit" && op !== "delete" && !prev ? "" : no;
   }
-  if (coll === "bookings") return bookingRule(a, op, prev, next) ? "" : no;
+  if (coll === "bookings") return bookingRule(a, me, op, prev, next) ? "" : no;
   // Conductor (route trip sheet: fill & submit): his day sheets while they are not sent yet or were sent back, which he
   // may save or send to the office. Approving, and everything in the route trip sheet itself, stays with the office.
   if (coll === "routeSheets" && a.trips === "update") {
@@ -150,7 +150,7 @@ export function canWrite(a, me, op, coll, id, prev, next, linkedClosed) {
   return a[m] === "edit" ? "" : no;
 }
 
-function bookingRule(a, op, prev, next) {
+function bookingRule(a, me, op, prev, next) {
   if (a.bookings === "edit") return true;
   if (op === "delete") return a.bookings === "request" && !!prev && ["draft", "rejected"].includes(prev.status);
   // Booking planner: add payments to any booking that isn't cancelled (parties pay in parts). Earlier payments and
@@ -165,6 +165,8 @@ function bookingRule(a, op, prev, next) {
   if ((a.tripsheets === "update" || a.tripsheets === "edit") && prev && next.status === prev.status) {
     if (!sameExcept(pick(prev, DRV_MONEY), pick(next, DRV_MONEY), [])) return false;
     if (a.tripsheets === "edit") return true;
+    // The driver adds the parts he paid (or was paid) when settling his advance; the office's parts stay as they are.
+    if (!othersPartsSame(prev, next, me)) return false;
     const ts = next.tsStatus || "";
     return ts === (prev.tsStatus || "") || ["", "draft", "submitted"].includes(ts);
   }
@@ -174,6 +176,7 @@ function bookingRule(a, op, prev, next) {
   return false;
 }
 
+const othersPartsSame = (prev, next, me) => { const others = d => (d?.drvParts || []).filter(p => p.byAcct !== me.id).map(p => JSON.stringify(p)).sort().join("|"); return others(prev) === others(next); };
 const DRV_MONEY = ["drvAdvance", "drvAdvanceOn", "drvAdvanceBy", "drvAdvToll", "drvExpOff", "drvSettle"];
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o?.[k] != null).map(k => [k, o[k]]));
 function paymentsAdded(prev, next) {
