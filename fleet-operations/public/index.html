@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14p">
+<meta name="app-ver" content="2026-11-14q">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -10953,12 +10953,24 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
   // Month-wise tables
   let r = RT + 3;
   const MONTH = i => new Date(monthYM(fy, i) + "-01T00:00:00").toLocaleDateString("en-GB", { month: "long" });
-  const table = (title, heads, rowFor, totals) => {
+  // off: the vehicle's office expenses month by month (from the Bus or Truck Expenses sheet) and the balance after them,
+  // as the last two columns. off = { X, lab, bal: month → balance, balC: the Balance column }.
+  const offAmt = (X, lab, i) => { let t = 0; if (X.w) for (let rr = 6; rr <= X.w.last; rr++) { const c = X.w.rows[rr]; if (c?.[0]?.v?.d?.slice(0, 7) === monthYM(fy, i) && String(c?.[2]?.v ?? "") === lab) t += gv(X.w, "F" + rr); } return t; };
+  const offSum = (X, lab, i) => { if (!X.w) return "0"; const [y, mo] = monthYM(fy, i).split("-").map(Number), g = c => `${q(X.w)}!$${c}$6:$${c}$${X.w.last}`;
+    return `SUMIFS(${g("F")},${g("C")},"${lab.replace(/"/g, '""')}",${g("A")},">="&DATE(${y},${mo},1),${g("A")},"<"&DATE(${y},${mo + 1},1))`; };
+  const table = (title, heads, rowFor, totals, off) => {
+    if (off) heads = [...heads, "Office Exp", "Bal after Off.Exp"];
+    const oc = col(heads.length - 2);
     put(ws, "A" + r, title, S.mTitle); ws.heights[r] = 33; r++;
     heads.forEach((h, i) => put(ws, col(i) + r, h, S.mHead)); ws.heights[r] = 48; r++;
-    const a = r;
-    for (let i = 0; i < 12; i++, r++) { put(ws, "A" + r, MONTH(i), S.mTxt); rowFor(i).forEach(([v, f, st], k) => put(ws, col(k + 1) + r, Math.round((v || 0) * 100) / 100, st || S.mInt, f)); ws.heights[r] = 23; }
-    put(ws, "A" + r, "Total", S.mTotL); totals(a, r - 1).forEach(([v, f, st], k) => put(ws, col(k + 1) + r, Math.round((v || 0) * 100) / 100, st || S.mTotN, f)); ws.heights[r] = 28;
+    const a = r; let tO = 0, tB = 0;
+    for (let i = 0; i < 12; i++, r++) {
+      const cells = rowFor(i);
+      if (off) { const o = offAmt(off.X, off.lab, i), bal = off.bal(i); tO += o; tB += bal; cells.push([o, offSum(off.X, off.lab, i)], [bal - o, `${off.balC}${r}-${oc}${r}`]); }
+      put(ws, "A" + r, MONTH(i), S.mTxt); cells.forEach(([v, f, st], k) => put(ws, col(k + 1) + r, Math.round((v || 0) * 100) / 100, st || S.mInt, f)); ws.heights[r] = 23;
+    }
+    const T = totals(a, r - 1); if (off) T.push([tO, `SUM(${oc}${a}:${oc}${r - 1})`], [tB - tO, `${off.balC}${r}-${oc}${r}`]);
+    put(ws, "A" + r, "Total", S.mTotL); T.forEach(([v, f, st], k) => put(ws, col(k + 1) + r, Math.round((v || 0) * 100) / 100, st || S.mTotN, f)); ws.heights[r] = 28;
     r += 3;
   };
   const ratio = (num_, den) => den ? Math.round(num_ / den) : 0;
@@ -10972,7 +10984,7 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
         const nz = k => V.map(x => x[k]).filter(Boolean), minNz = (k, c) => [nz(k).length ? Math.min(...nz(k)) : 0, `IFERROR(SMALL(${rg(c)},COUNTIF(${rg(c)},0)+1),0)`];
         const per = (k, c) => [ratio(tot(k), d), `IF(B${b + 1}>0,ROUND(${c}${b + 1}/B${b + 1},0),0)`];
         return [[d, `SUM(${rg("B")})`, S.mTotD], sm(1, "C"), sm(2, "D"), sm(3, "E"), per(1, "C"), per(3, "E"), sm(6, "H"), sm(7, "I"), sm(8, "J"), sm(9, "K"), per(9, "K"),
-          [tot(11), `SUM(${rg("M")})`, S.mTotD], per(13, "O"), sm(13, "O"), [...minNz(14, "P"), S.mTotD], [Math.max(0, ...V.map(x => x[15])), `MAX(${rg("Q")})`, S.mTotD], minNz(16, "R"), [Math.max(0, ...V.map(x => x[17])), `MAX(${rg("S")})`], sm(18, "T"), per(18, "T")]; });
+          [tot(11), `SUM(${rg("M")})`, S.mTotD], per(13, "O"), sm(13, "O"), [...minNz(14, "P"), S.mTotD], [Math.max(0, ...V.map(x => x[15])), `MAX(${rg("Q")})`, S.mTotD], minNz(16, "R"), [Math.max(0, ...V.map(x => x[17])), `MAX(${rg("S")})`], sm(18, "T"), per(18, "T")]; }, { X: XB, lab: C.plate(id), bal: i => V[i][3], balC: "E" });
   });
   spare.forEach(w => {
     const ym = i => monthYM(fy, i), rows = [];
@@ -10986,7 +10998,7 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
           [ratio(v[2], v[1]), `IF(C${R}>0,ROUND(D${R}/C${R},0),0)`], ...K.slice(4).map((c, k) => [v[k + 5], `SUMIFS(${src(c)},${crit(i)})`, c === "K" ? S.mDay : S.mInt]), [ratio(v[10], v[1]), `IF(C${R}>0,ROUND(M${R}/C${R},0),0)`]]; },
       (a, b) => { const tot = k => V.reduce((s, x) => s + x[k], 0), rg = c => `SUM(${c}${a}:${c}${b})`, T = b + 1;
         return [[tot(0), rg("B")], [tot(1), rg("C"), S.mTotD], [tot(2), rg("D")], [tot(3), rg("E")], [tot(4), rg("F")], [ratio(tot(2), tot(1)), `IF(C${T}>0,ROUND(D${T}/C${T},0),0)`],
-          [tot(5), rg("H")], [tot(6), rg("I")], [tot(7), rg("J"), S.mTotD], [tot(8), rg("K")], [tot(9), rg("L")], [tot(10), rg("M")], [ratio(tot(10), tot(1)), `IF(C${T}>0,ROUND(M${T}/C${T},0),0)`]]; });
+          [tot(5), rg("H")], [tot(6), rg("I")], [tot(7), rg("J"), S.mTotD], [tot(8), rg("K")], [tot(9), rg("L")], [tot(10), rg("M")], [ratio(tot(10), tot(1)), `IF(C${T}>0,ROUND(M${T}/C${T},0),0)`]]; }, { X: XB, lab: C.plate(w.vid), bal: i => V[i][4], balC: "F" });
   });
   // Each truck month by month, from its sheet (trip rows from row 6: A from date, C days, D trip rent, I commission, J litres,
   // K diesel, L toll, M driver padi, V total expenses, W balance, AB kms), each trip in the month it starts.
@@ -11003,7 +11015,7 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
           [v[5], sf(i, "M")], [v[6], sf(i, "J"), S.mDay], [v[7], sf(i, "K")], [v[8], sf(i, "L")], [v[9], sf(i, "I")], [v[10], sf(i, "AB")], [ratio(v[10], v[1]), `IF(C${R}>0,ROUND(M${R}/C${R},0),0)`]]; },
       (a, b) => { const tot = k => V.reduce((s, x) => s + x[k], 0), rg = c => `SUM(${c}${a}:${c}${b})`, T = b + 1;
         return [[tot(0), rg("B")], [tot(1), rg("C"), S.mTotD], [tot(2), rg("D")], [tot(3), rg("E")], [tot(4), rg("F")], [ratio(tot(2), tot(1)), `IF(C${T}>0,ROUND(D${T}/C${T},0),0)`],
-          [tot(5), rg("H")], [tot(6), rg("I"), S.mTotD], [tot(7), rg("J")], [tot(8), rg("K")], [tot(9), rg("L")], [tot(10), rg("M")], [ratio(tot(10), tot(1)), `IF(C${T}>0,ROUND(M${T}/C${T},0),0)`]]; });
+          [tot(5), rg("H")], [tot(6), rg("I"), S.mTotD], [tot(7), rg("J")], [tot(8), rg("K")], [tot(9), rg("L")], [tot(10), rg("M")], [ratio(tot(10), tot(1)), `IF(C${T}>0,ROUND(M${T}/C${T},0),0)`]]; }, { X: XT, lab: C.plate(w.vid), bal: i => V[i][4], balC: "F" });
   });
   Object.assign(ws.widths, { A: 36, B: 17.6, C: 21.3, D: 18, E: 18, F: 25.5, G: 24.4, H: 20.6, I: 30.9, J: 17, K: 18, L: 20.7, M: 25.5, N: 28.5, O: 31.3, P: 28.9, Q: 20.5, R: 28.3, S: 21, T: 19.8, U: 25.5 });
   Object.assign(ws.heights, { 1: 46, 2: 20, 3: 46 }); for (let k = R0; k <= RT; k++) ws.heights[k] = 31;
