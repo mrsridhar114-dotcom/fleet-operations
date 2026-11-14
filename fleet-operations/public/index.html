@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14l">
+<meta name="app-ver" content="2026-11-14m">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -10900,7 +10900,7 @@ function xlExpenseSheet(recs, fy, kind) {
    spare buses), top right the trucks: Days, Collection, Expense and Balance from each vehicle's own sheet, Office Expense from the
    app's expense entries (the Bus and Truck Expenses sheets; entries with no vehicle get their own row), Gross = Balance − Office
    Expense. "+" and "=" lead to the overall gross. Below, each route bus month by month (April to March, the template's columns,
-   from its month sheets) and each spare bus month by month (from its sheet). Figures are formulas over those sheets. */
+   from its month sheets), each spare bus month by month (from its sheet) and each truck month by month (from its sheet). Figures are formulas over those sheets. */
 function xlSummarySheet(recs, fy, sheets, routeIds) {
   const { put, S, sheet, col } = XL, C = xlCtx(recs), ws = sheet("Summary");
   const q = w => `'${w.name.replace(/'/g, "''")}'`, gv = (w, ref) => { const m = /^([A-Z]+)(\d+)$/.exec(ref), c = w.rows[+m[2]]?.[XL.idx(m[1])]; return typeof c?.v === "number" && isFinite(c.v) ? c.v : 0; };
@@ -10984,6 +10984,23 @@ function xlSummarySheet(recs, fy, sheets, routeIds) {
       (a, b) => { const tot = k => V.reduce((s, x) => s + x[k], 0), rg = c => `SUM(${c}${a}:${c}${b})`, T = b + 1;
         return [[tot(0), rg("B")], [tot(1), rg("C"), S.mTotD], [tot(2), rg("D")], [tot(3), rg("E")], [tot(4), rg("F")], [ratio(tot(2), tot(1)), `IF(C${T}>0,ROUND(D${T}/C${T},0),0)`],
           [tot(5), rg("H")], [tot(6), rg("I")], [tot(7), rg("J"), S.mTotD], [tot(8), rg("K")], [tot(9), rg("L")], [tot(10), rg("M")], [ratio(tot(10), tot(1)), `IF(C${T}>0,ROUND(M${T}/C${T},0),0)`]]; });
+  });
+  // Each truck month by month, from its sheet (trip rows from row 6: A from date, C days, D trip rent, I commission, J litres,
+  // K diesel, L toll, M driver padi, V total expenses, W balance, AB kms), each trip in the month it starts.
+  trucks.forEach(w => {
+    const ym = i => monthYM(fy, i), rows = [], last = Math.max(6, ...Object.keys(w.rows).map(Number));
+    for (let rr = 6; rr <= last; rr++) { const d = w.rows[rr]?.[0]?.v?.d; if (d) rows.push({ ym: d.slice(0, 7), g: c => gv(w, c + rr) }); }
+    const K = ["C", "D", "V", "W", "M", "J", "K", "L", "I", "AB"], V = Array.from({ length: 12 }, (_, i) => { const m = rows.filter(x => x.ym === ym(i)); return [m.length, ...K.map(c => m.reduce((s, x) => s + x.g(c), 0))]; });
+    const src = c => `${q(w)}!$${c}$6:$${c}$${last}`, crit = i => { const [y, mo] = ym(i).split("-").map(Number); return `${src("A")},">="&DATE(${y},${mo},1),${src("A")},"<"&DATE(${y},${mo + 1},1)`; };
+    const sf = (i, c) => `SUMIFS(${src(c)},${crit(i)})`;
+    table(`${C.plate(w.vid)} - Truck Month-wise`,
+      ["Month", "Trips", "Days Run", "Collection", "Expense", "Balance", "Avg Col / Day", "Driver Padi", "Diesel (Litres)", "Diesel (Price)", "Toll Gate", "Commission", "Total KMs", "Avg KMs / Day"],
+      i => { const v = V[i], R = r;
+        return [[v[0], `COUNTIFS(${crit(i)})`], [v[1], sf(i, "C"), S.mDay], [v[2], sf(i, "D")], [v[3], sf(i, "V")], [v[4], sf(i, "W")], [ratio(v[2], v[1]), `IF(C${R}>0,ROUND(D${R}/C${R},0),0)`],
+          [v[5], sf(i, "M")], [v[6], sf(i, "J"), S.mDay], [v[7], sf(i, "K")], [v[8], sf(i, "L")], [v[9], sf(i, "I")], [v[10], sf(i, "AB")], [ratio(v[10], v[1]), `IF(C${R}>0,ROUND(M${R}/C${R},0),0)`]]; },
+      (a, b) => { const tot = k => V.reduce((s, x) => s + x[k], 0), rg = c => `SUM(${c}${a}:${c}${b})`, T = b + 1;
+        return [[tot(0), rg("B")], [tot(1), rg("C"), S.mTotD], [tot(2), rg("D")], [tot(3), rg("E")], [tot(4), rg("F")], [ratio(tot(2), tot(1)), `IF(C${T}>0,ROUND(D${T}/C${T},0),0)`],
+          [tot(5), rg("H")], [tot(6), rg("I"), S.mTotD], [tot(7), rg("J")], [tot(8), rg("K")], [tot(9), rg("L")], [tot(10), rg("M")], [ratio(tot(10), tot(1)), `IF(C${T}>0,ROUND(M${T}/C${T},0),0)`]]; });
   });
   Object.assign(ws.widths, { A: 36, B: 17.6, C: 21.3, D: 18, E: 18, F: 25.5, G: 24.4, H: 20.6, I: 30.9, J: 17, K: 18, L: 20.7, M: 25.5, N: 28.5, O: 31.3, P: 28.9, Q: 20.5, R: 28.3, S: 21, T: 19.8, U: 25.5 });
   Object.assign(ws.heights, { 1: 46, 2: 20, 3: 46 }); for (let k = R0; k <= RT; k++) ws.heights[k] = 31;
