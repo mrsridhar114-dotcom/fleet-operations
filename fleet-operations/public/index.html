@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14n">
+<meta name="app-ver" content="2026-11-14o">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1064,7 +1064,7 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 .dbreview .rvbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; background: var(--warn-soft); border-radius: 8px; padding: 10px 12px; font-size: 14px; }
 .dbreview .rvbar input { font: inherit; font-size: 14px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; min-width: 240px; flex: 1; }
 .hint.warn { color: var(--warn); font-weight: 600; }
-.dbxhead { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; } .dbxhead .seg span { padding: 4px 10px; font-size: 12px; }
+.dbxhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: nowrap; } .dbxhead .dsh { min-width: 0; display: flex; align-items: center; gap: 6px; } .dbxhead .dsh small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; } .dbxhead .dsh .padibtn, #dbXList { flex: none; } .dbxhead .seg span { padding: 4px 10px; font-size: 12px; }
 .dbx { display: grid; gap: 6px; }
 .dbxrow { display: grid; grid-template-columns: minmax(0, 1fr) 104px 28px; gap: 6px; align-items: center; }
 .dbxrow input { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; min-width: 0; box-sizing: border-box; }
@@ -11454,8 +11454,9 @@ function rsLoad() {
   rsh.expMode = rsh.expDef ? "list" : "other";
   // The quick sheet (conductor): which step is open, each trip or only the total, and the diesel rate (from the last fill).
   rsh.step = 0; rsh.colMode = num(rsh.colTot) && !rsSum() ? "total" : "trips";
-  rsh.dsl.rate = d?.dsl?.rate ? String(d.dsl.rate) : num(rsh.dsl.litres) && num(rsh.dsl.amount) ? String(Math.round(num(rsh.dsl.amount) / num(rsh.dsl.litres) * 100) / 100) : String(rsLastRate(rsh.bus, rsh.date) || "");
+  rsh.dsl.rate = d?.dsl?.rate ? String(d.dsl.rate) : num(rsh.dsl.litres) && num(rsh.dsl.amount) ? String(Math.round(num(rsh.dsl.amount) / num(rsh.dsl.litres) * 100) / 100) : String(routeRate(rsh.bus, rsh.date, rsh.start) || "");
   rsh.dsl.amtEd = !!(num(rsh.dsl.amount) && Math.round(num(rsh.dsl.litres) * num(rsh.dsl.rate)) !== num(rsh.dsl.amount));
+  rsh.dsl.rateAuto = d ? null : rsh.dsl.rate; // a new sheet's rate follows the starting place until it is typed
   rsh.ends = ends; rsh.ready = true;
 }
 function rsSel(k) {
@@ -11605,12 +11606,16 @@ function rsRender(top) {
    It is the same sheet underneath: it saves by itself and the office sees it exactly as before. */
 const QS_STEPS = ["Start", "Collection", "Diesel and km", "Check and send"];
 const qsOn = () => rsh?.ready && rsh.edit && !rsh.admin && !canTrips;
-// The diesel rate of the bus's last fill (an approved day, or a sheet not approved yet).
-function rsLastRate(bus, date) {
-  const t = busWin(bus).filter(x => x.date < date && num(x.dieselRate) > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const s = ops.routeSheets.filter(x => x.vehicleId === bus && x.date < date && num(x.dsl?.litres) > 0 && num(x.dsl?.amount) > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const sr = s ? num(s.dsl.rate) || num(s.dsl.amount) / num(s.dsl.litres) : 0;
-  return Math.round((s && (!t || s.date > t.date) ? sr : num(t?.dieselRate)) * 100) / 100 || 0;
+// Diesel rate for a new day: the rate of the last day that started from the same place. The bus starts from Vellore one day
+// and Thiruthani the next and fills diesel at the far end, so that is the day before yesterday (or the last day if unknown).
+function routeRate(bus, date, start) {
+  const p = placeName(start || "").toLowerCase(), seen = new Set(), list = [];
+  busWin(bus).filter(t => t.date < date && !t.notRun && num(t.dieselRate) > 0).forEach(t => { seen.add(t.date); list.push({ date: t.date, start: t.start, rate: num(t.dieselRate) }); });
+  ops.routeSheets.filter(x => x.vehicleId === bus && x.date < date && !seen.has(x.date) && !x.notRun && (num(x.dsl?.rate) > 0 || num(x.dsl?.litres) > 0 && num(x.dsl?.amount) > 0))
+    .forEach(x => list.push({ date: x.date, start: x.start, rate: num(x.dsl.rate) || num(x.dsl.amount) / num(x.dsl.litres) }));
+  list.sort((a, b) => b.date.localeCompare(a.date));
+  const hit = (p && list.find(x => placeName(x.start || "").toLowerCase() === p)) || list[1] || list[0];
+  return hit ? Math.round(hit.rate * 100) / 100 : 0;
 }
 // A usual collection for this weekday: the lowest and highest of the bus's last same weekdays (at least 3 of them).
 function qsUsual() {
@@ -11741,6 +11746,8 @@ function rsClick(e) {
     const was = rsh.start, def = rsList(was); rsh.start = b.dataset.v;
     if (rsh.expMode === "list" && JSON.stringify(rsh.exp.map(x => [x.name, x.amt])) === JSON.stringify(def.map(x => [x.name, x.amt]))) { rsh.exp = rsList(rsh.start); rsh.expDef = rsDefOf(rsh.exp); }
     if (!rsh.dsl.place || rsh.dsl.place === rsOpposite(was, rsh.ends)) rsh.dsl.place = rsOpposite(rsh.start, rsh.ends);
+    if (rsh.dsl.rateAuto != null && rsh.dsl.rate === rsh.dsl.rateAuto) { rsh.dsl.rate = rsh.dsl.rateAuto = String(routeRate(rsh.bus, rsh.date, rsh.start) || "");
+      if (!rsh.dsl.amtEd) { const a = Math.round(num(rsh.dsl.litres) * num(rsh.dsl.rate)); rsh.dsl.amount = a ? String(a) : ""; } }
     rsRender(); rsSoon(); return;
   }
   if (a === "padireset") { RS_ROLES.forEach(([k]) => { rsh.padiEd[k] = false; rsh.padi[k] = ""; }); rsRender(); rsSoon(); return; }
@@ -12872,7 +12879,7 @@ function renderDayBook() {
 }
 // Route expenses on the computer entry: the same default list from the Route expenses master as the phone trip sheet.
 // dbExp rows are { name, amt, own?, def? }; dbExpDef is the default list it started from (null for older entries).
-let dbExp = [], dbExpDef = null;
+let dbExp = [], dbExpDef = null, dbRateAuto = null;
 function dbExpFrom(t) {
   if (t?.expList) return { list: t.expList.filter(x => !x.off).map(x => ({ name: x.name, amt: String(blank0(x.amt)), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: num(x.def) } : {}) })), def: t.expDef || null };
   if (t) return { list: EXP_CATS.filter(([k]) => num(t["ex_" + k])).map(([k, l]) => ({ name: l, amt: String(num(t["ex_" + k])), own: true })).concat(unItemised(t) && !t.expTotal ? [{ name: "Other", amt: String(unItemised(t)), own: true }] : []), def: null };
@@ -12921,7 +12928,6 @@ function fillDayForm() {
   $("dbDriver").value = crewValue("driver", src); $("dbConductor").value = crewValue("conductor", src); $("dbChecker").value = crewValue("checker", src);
   Object.entries(DB_FIELDS).forEach(([id, k]) => $(id).value = blank0(t?.[k]));
   dbExpTold = num(t?.expTotal) ? String(t.expTotal) : "";
-  if (!t && last) $("dbRate").value = blank0(last.dieselRate);
   // Padi comes from the padi rules on the day's collection; a saved amount that differs counts as typed by hand.
   dbColTold = t?.colTotal != null ? String(t.colTotal) : "";
   const sys = t ? dbPadiSys(tripCollection(t), !!crewValue("checker", t)) : null;
@@ -12930,6 +12936,8 @@ function fillDayForm() {
   $("dbStart").value = t ? (t.startFixed ? t.start : planned || t.start || "") : planned;
   // A new entry starts with the starting place's route expenses.
   const was = dbExpFrom(t); if (was) { dbExp = was.list; dbExpDef = was.def; } else dbExpDefault($("dbStart").value); renderDbExp();
+  // A new day's diesel rate: the last day that started from the same place (it follows the starting place until typed).
+  dbRateAuto = t ? null : String(blank0(routeRate(dbBus, opDate, $("dbStart").value))); if (!t) $("dbRate").value = dbRateAuto;
   renderDbReview(t0);
   $("dbNote").className = cond ? `dbnote dbcond ${dbCondSt}` : "dbnote";
   if (cond) $("dbNote").innerHTML = dbCondNote(sheet); else $("dbNote").textContent = dbReviewSheet || t ? "" : last ? `Driver, conductor and diesel rate are copied from ${fmtDate(last.date)}${planned ? `; starting point ${planned} comes from the route` : ""}.` : planned ? `Starting point ${planned} comes from the route.` : "";
@@ -13033,7 +13041,9 @@ $("dbChips").addEventListener("input", e => {
 // Clicking the box empties it for a moment so the whole list of places shows; leaving it empty puts the place back.
 $("dbStart").addEventListener("focus", e => { const i = e.target; if (i.readOnly || i.disabled || !i.value) return; i.dataset.prev = i.value; i.placeholder = i.value; i.value = ""; });
 $("dbStart").addEventListener("blur", e => { const i = e.target; if (i.dataset.prev != null) { if (!i.value.trim()) i.value = i.dataset.prev; delete i.dataset.prev; i.placeholder = ""; } });
-$("dbStart").addEventListener("change", () => { if (dbExpDef && !rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length) dbExpDefault($("dbStart").value); renderDbExp(); dbCalc(); });
+$("dbStart").addEventListener("change", () => { if (dbExpDef && !rsExpChanges({ exp: dbExp, expDef: dbExpDef }).length) dbExpDefault($("dbStart").value);
+  if (dbRateAuto != null && $("dbRate").value === dbRateAuto) $("dbRate").value = dbRateAuto = String(blank0(routeRate(dbBus, opDate, $("dbStart").value)));
+  renderDbExp(); dbCalc(); });
 // The list button brings the starting place's list in, and the same button takes it out again.
 $("dbXList").addEventListener("click", () => {
   if (!dbCanEdit) return;
