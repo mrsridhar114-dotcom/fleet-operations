@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14a">
+<meta name="app-ver" content="2026-11-14b">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -3204,6 +3204,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="hf"><label for="kFy">Financial year</label><select id="kFy"></select></div>
           <button class="btn" type="button" id="kPrint" title="Print or download the trips and expenses of this truck, as Excel or as an image">Print</button>
           <button class="btn" type="button" id="kFast" title="Download the FASTag amounts of this truck">FASTag</button>
+          <button class="btn" type="button" id="kPend" title="Download the money still to come for every trip of every truck">Pending payments</button>
           <button class="btn" type="button" id="kDl" title="Download every truck trip in the office Trip Download template (Excel, one sheet per truck with its summary)">⬇ Download</button>
           <a class="btn" href="#truck-profit" title="Rent, expenses, profit and mileage of every truck, month by month">Profit report</a>
           <button class="btn primary" type="button" id="kAdd">+ Add trip</button>
@@ -17552,6 +17553,40 @@ $("kPrint").onclick = () => {
       N("other", "Other exp.", true), N("exp", "Expenses"), N("bal", "Balance"), N("rec", "Received", true), N("km", "Km", true), { k: "remarks", h: "Remarks", xl: 30, px: 0, kind: "wrap", off: true }],
     lineCols: ["from", "origin", "dest", "rent", "exp", "bal"], val: kVal, raw: kRaw, lineSub: x => `Round trip ${x.n}` });
 };
+/* Pending payments: every trip of every truck (all years) whose round trip is not closed and that still has money to come.
+   Pending = trip rent − payments received for the trip (settled ones). A round trip's payment not tied to a trip is taken
+   off its trips oldest first. Payments entered but not settled yet are shown on their own and still count as pending. */
+function kPendRows() {
+  const out = [];
+  roundsOf(null, null).filter(r => r.status !== "Closed").forEach(r => {
+    let free = (r.doc?.payments || []).filter(p => p.settled !== false && !p.leg).reduce((a, p) => a + num(p.amount), 0);
+    const v = vehicles.find(x => x.id === r.vehicleId), plate = v ? plateOf(v) : "Removed truck", no = rtNo(r);
+    r.legs.forEach(l => {
+      const c = legCalc(l), notSet = (l.payments || []).filter(p => p.settled === false).reduce((a, p) => a + num(p.amount), 0);
+      let pend = num(l.rent) - c.received; const take = Math.min(Math.max(pend, 0), free); pend -= take; free -= take;
+      if (pend > 0) out.push({ l, plate, no, fy: fyOf(r.from), rec: c.received + take, notSet, pend });
+    });
+  });
+  return out.sort((a, b) => a.plate.localeCompare(b.plate) || String(a.l.from).localeCompare(String(b.l.from)));
+}
+const kPendRaw = (x, k) => k === "from" ? x.l.from : k === "to" ? x.l.to || x.l.from : k === "rent" ? num(x.l.rent) : k === "rec" ? x.rec : k === "notset" ? x.notSet : k === "pend" ? x.pend : null;
+function kPendVal(x, k) {
+  if (k === "from" || k === "to") return fmtShort(kPendRaw(x, k)); if (k === "plate") return x.plate; if (k === "round") return `Round trip ${x.no} (FY ${fyLabel(x.fy)})`;
+  if (k === "place") return rtLegName(x.l); if (k === "load") return legLoadTxt(x.l); if (k === "driver") return kDrv(x.l);
+  const v = kPendRaw(x, k); return v ? nf(v) : "";
+}
+$("kPend").onclick = () => {
+  const rows = kPendRows(); if (!rows.length) { toast("No pending payments: every open trip is fully paid."); return; }
+  const N = (k, h, off) => ({ k, h, xl: 13, px: 130, kind: "num", total: true, off });
+  pbOpen({ sheet: "Pending payments", title0: `Truck trips · pending payments · ${fmtDate(todayISO())}`, rows, sumKey: "pend", sub: `As on ${fmtDate(todayISO())}`,
+    note: `Every truck trip with money still to come, round trips not closed yet, all years. <b>Pending</b> = trip rent − payments received for it. Untick the columns and lines you don't want.`,
+    cols: [{ k: "from", h: "Date", xl: 12, px: 120, kind: "date" }, { k: "to", h: "To date", xl: 12, px: 120, kind: "date", off: true }, { k: "plate", h: "Truck", xl: 16, px: 150, kind: "text" },
+      { k: "round", h: "Round trip", xl: 20, px: 170, kind: "text", off: true }, { k: "place", h: "Place", xl: 34, px: 0, kind: "text" }, { k: "load", h: "Load", xl: 22, px: 0, kind: "text", off: true },
+      { k: "driver", h: "Driver", xl: 18, px: 0, kind: "text", off: true }, N("rent", "Trip rent", true), N("rec", "Received", true), N("notset", "Received, not settled", true), N("pend", "Pending amount")],
+    lineCols: ["from", "place", "pend"], val: kPendVal, raw: kPendRaw, lineSub: x => `${x.plate} · Round trip ${x.no}`,
+    groupBy: x => x.plate, split: { label: "One file per truck", title: g => `Pending payments - ${g}` } });
+};
+$("kPend").insertAdjacentHTML("afterbegin", ICON_PRINT);
 $("kFast").onclick = () => {
   const bus = vehicles.find(v => v.id === kBusId), plate = bus ? plateOf(bus) : "", rows = kLegRows().filter(x => num(x.l.toll) > 0);
   if (!rows.length) { toast(`No FASTag amounts entered for ${plate} in FY ${fyLabel(kFy)}.`); return; }
