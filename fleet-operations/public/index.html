@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14e">
+<meta name="app-ver" content="2026-11-14f">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -17573,7 +17573,7 @@ const kPendWhat = (x, t) => `${x.p.desc || (x.l ? rtLegName(x.l) : x.r.path)}${x
 function kPendPage(plate, list, t) {
   return rtPaint(K => {
     const { P, IN, z } = K; let y = K.header(`${t.veh}: ${plate}`, t.pendT, t.asOn(fmtDate(todayISO())));
-    y = K.sect(`${t.came} · ${t.notSet} (${list.length})`, P, y);
+    y = K.sect(`${t.pendSect} (${list.length})`, P, y);
     const cols = [{ w: 160 }, { w: IN - 160 - 220 - 140 - 170 }, { w: 220 }, { w: 140 }, { w: 170, r: 1 }];
     y = K.table(P, y, cols, [{ cells: t.pendCols, bold: true, bg: K.head, right: [4] },
       ...list.map(x => ({ cells: [fmtShort(x.date), kPendWhat(x, t), x.drv || "—", t.notSet, nf(x.amt)], bg: "#FDF1DC", color: "#8A4B00" })),
@@ -18495,7 +18495,7 @@ const RT_T = {
     sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
     fast: "FASTag", L: "L", gCash: "Diesel paid in cash (by the driver) · not added to ①", dslCols: ["Date", "Place", "Litres", "Rate / L", "Amount"], advPrev: "Advance from the previous trip", given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {},
     details: "TRIP DETAILS", sFast: "FASTag", sRec: "Payments received", sDsl: "Diesel fill-ups", sGiv: "Money given to the driver", dCols: ["Date", "Details", "Amount"], whole: "Whole round trip",
-    pendT: "NOT SETTLED PAYMENTS", pendCols: ["Date", "Place", "Driver", "Status", "Amount"], pendAll: "Total for all trucks", asOn: d => `As on ${d}`, pendSum: "Summary", pendTruck: "Truck" },
+    pendT: "NOT SETTLED PAYMENTS", pendSect: "Pending amount to owner", pendCols: ["Date", "Place", "Driver", "Status", "Amount"], pendAll: "Total for all trucks", asOn: d => `As on ${d}`, pendSum: "Summary", pendTruck: "Truck" },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
     cols: ["தேதி", "பயணம்", "வாடகை", "செலவு", "மீதம்"], total: "மொத்தம்", owner: "① முதலாளி பணம்", came: "② முதலாளிக்கு வந்தது", gFast: "ஃபாஸ்டேக்", gCard: "கார்டு மூலம் டீசல்",
     gGiv: "ஓட்டுநரிடம் கொடுத்தது", gBal: "வண்டி மீதம்", none: "இல்லை", nopay: "இன்னும் பணம் வரவில்லை", tot1: "மொத்தம் ①", tot2: "மொத்தம் ②", notSet: "நிலுவை", adv: "③ முன்பணம்",
@@ -18506,7 +18506,7 @@ const RT_T = {
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
     giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" },
     details: "பயண விவரம்", sFast: "ஃபாஸ்டேக்", sRec: "வந்த பணம்", sDsl: "டீசல் நிரப்பியது", sGiv: "ஓட்டுநரிடம் கொடுத்தது", dCols: ["தேதி", "விவரம்", "தொகை"], whole: "முழு சுற்றுப் பயணம்",
-    pendT: "நிலுவைத் தொகை", pendCols: ["தேதி", "இடம்", "ஓட்டுநர்", "நிலை", "தொகை"], pendAll: "எல்லா லாரிகளுக்கும் மொத்தம்", asOn: d => `${d} நிலவரப்படி`, pendSum: "சுருக்கம்", pendTruck: "லாரி" }
+    pendT: "நிலுவைத் தொகை", pendSect: "முதலாளிக்கு வர வேண்டிய பணம்", pendCols: ["தேதி", "இடம்", "ஓட்டுநர்", "நிலை", "தொகை"], pendAll: "எல்லா லாரிகளுக்கும் மொத்தம்", asOn: d => `${d} நிலவரப்படி`, pendSum: "சுருக்கம்", pendTruck: "லாரி" }
 };
 // Tamil letters for the pictures: the Noto Sans Tamil font, loaded the first time it is needed.
 function rtTamilFont() {
