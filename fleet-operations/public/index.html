@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14g">
+<meta name="app-ver" content="2026-11-14h">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1822,6 +1822,25 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .bwwa { background: #1f8f4e; color: #fff; margin-top: 14px; }
 .tpage { gap: 12px; padding: 14px 14px 18px; }
 .tptip { background: var(--accent-soft); border-radius: 14px; padding: 10px 14px; font-size: 16px; line-height: 1.35; }
+/* Quick day sheet (conductor): 4 steps. */
+.qsbar { padding-bottom: 6px; } .qsstep { margin: 0; background: var(--side-bg); color: var(--side-muted); font-size: 14px; padding: 0 16px 12px; display: flex; justify-content: space-between; gap: 8px; } .qsstep .tpst { color: #8ccf5e; }
+.bwb.qs { gap: 12px; padding: 16px; } .qsh { margin: 0; font: 700 28px/1.1 var(--display); } .qshrow { display: flex; align-items: center; gap: 10px; } .qshrow .qsh { flex: 1; }
+.qsran button { min-height: 64px; font-size: 20px; } .qsmode { flex: none; width: 210px; } .qsmode button { min-height: 42px; font-size: 15px; } .qspay { flex: none; width: 180px; } .qspay button { min-height: 44px; }
+.qscard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; } .qscard h3 { margin: 0; font-size: 16px; color: var(--ok); } .qssub { margin: 0; font-size: 14px; color: var(--muted); }
+.qscard .rsq { margin: 8px 0 0; } .qscard .rsq small { font-weight: 400; color: var(--muted); }
+.tpl.qsl { font-size: 18px; font-weight: 600; }
+.qstot { background: color-mix(in srgb, var(--ok) 12%, var(--surface)); border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; } .qstot > div { flex: 1; display: flex; flex-direction: column; font-size: 15px; } .qstot small { font-size: 13px; color: var(--muted); } .qstot > b { font: 700 32px var(--display); color: var(--ok); }
+.qswarn { color: var(--warn) !important; font-weight: 600; }
+.qstiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qstile { background: color-mix(in srgb, var(--ok) 12%, var(--surface)); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; } .qstile span { font-size: 14px; color: var(--muted); } .qstile b { font: 700 28px var(--display); color: var(--ok); }
+.qshero { background: var(--side-bg); color: var(--side-ink); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; } .qshero span, .qshero small { font-size: 14px; color: var(--side-muted); } .qsbig { font: 700 40px/1.1 var(--display); color: #8ccf5e; } .qsbig.neg { color: #ff8a80; }
+.qslist { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 2px 14px; }
+.qsrow { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); } .qslist .qsrow:last-child { border-bottom: 0; } .qsrow > div { flex: 1; min-width: 0; display: flex; flex-direction: column; } .qsrow span, .qsrow small { font-size: 13px; color: var(--muted); } .qsrow b { font-size: 17px; }
+.qsedit { border: 0; background: none; color: var(--accent); font: 700 16px var(--body); padding: 10px 6px; cursor: pointer; }
+.qsmore { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 0 14px; } .qsmore > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 12px 0; cursor: pointer; } .qsmore > summary::-webkit-details-marker { display: none; }
+.qsmore > summary > span { flex: 1; min-width: 0; display: flex; flex-direction: column; } .qsmore > summary small { font-size: 13px; color: var(--muted); } .qsmore > summary::after { content: "Change"; color: var(--accent); font-weight: 700; } .qsmore[open] > summary::after { content: "Done"; }
+.qsmore[open] { padding-bottom: 8px; }
+.qsx { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--side-line); background: none; color: var(--side-ink); display: grid; place-items: center; cursor: pointer; } .qsx svg { width: 22px; height: 22px; }
+.qsfoot { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; } .qsfoot.one { grid-template-columns: 1fr; }
 .tpsec { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 4px 12px 8px; }
 .tpmoney .bwm { padding: 8px 0; border-top: 1px solid var(--line); } .tpmoney .bwm:first-of-type { border-top: 0; } .tpmoney .bwm.net b { font-size: 20px; } .tpmoney .bwm.net.neg b { color: var(--danger); } .tpmoney .bwm.net:not(.neg) b { color: var(--accent); }
 .tpsec h3 { margin: 8px 0 2px; font: 700 14px var(--body); color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
@@ -11401,6 +11420,10 @@ function rsLoad() {
   }
   // Route expenses: "other" (default) puts whatever the total expenses don't cover under Other; "list" uses the starting place's list.
   rsh.expMode = rsh.expDef ? "list" : "other";
+  // The quick sheet (conductor): which step is open, each trip or only the total, and the diesel rate (from the last fill).
+  rsh.step = 0; rsh.colMode = num(rsh.colTot) && !rsSum() ? "total" : "trips";
+  rsh.dsl.rate = d?.dsl?.rate ? String(d.dsl.rate) : num(rsh.dsl.litres) && num(rsh.dsl.amount) ? String(Math.round(num(rsh.dsl.amount) / num(rsh.dsl.litres) * 100) / 100) : String(rsLastRate(rsh.bus, rsh.date) || "");
+  rsh.dsl.amtEd = !!(num(rsh.dsl.amount) && Math.round(num(rsh.dsl.litres) * num(rsh.dsl.rate)) !== num(rsh.dsl.amount));
   rsh.ends = ends; rsh.ready = true;
 }
 function rsSel(k) {
@@ -11497,8 +11520,8 @@ function rsExpHtml() {
   const changed = rsh.edit && rsh.start && rsExpChanges({ exp: rsh.exp, expDef: rsh.expDef }).length;
   const has = rsList(rsh.start).length, list = rsh.expMode === "list";
   const seg = `<div class="bwseg c2 rsxmode"><button type="button" data-rs="exmode" data-v="other" aria-pressed="${!list}"${rsh.edit ? "" : " disabled"}>Rest as Other</button><button type="button" data-rs="exmode" data-v="list" aria-pressed="${list}"${rsh.edit && has ? "" : " disabled"}>${rsh.start ? `${esc(placeName(rsh.start))} list` : "Route list"}</button></div>`;
-  if (!list) return seg + `<p class="bwnote" style="margin:4px 0">What the Total expenses (in section 6) don't cover after diesel and padi goes here as Other expenses.${has ? ` Or use the ${esc(placeName(rsh.start))} list.` : ""}</p>` +
-    `<div class="tprow"><span class="tpl">Other expenses<small class="rshow" id="rsOthNote">${num(rsh.expTot) ? "The rest of the total expenses" : "Type the Total expenses in section 6"}</small></span><span class="bwin tpin rsoth"><b>₹</b><input type="text" id="rsOthAmt" value="${rs(rsUnsplit()).slice(1)}" readonly tabindex="-1" aria-label="Other expenses"></span></div>` +
+  if (!list) return seg + `<p class="bwnote" style="margin:4px 0">What the Total expenses (${qsOn() ? "below" : "in section 6"}) don't cover after diesel and padi goes here as Other expenses.${has ? ` Or use the ${esc(placeName(rsh.start))} list.` : ""}</p>` +
+    `<div class="tprow"><span class="tpl">Other expenses<small class="rshow" id="rsOthNote">${num(rsh.expTot) ? "The rest of the total expenses" : `Type the Total expenses ${qsOn() ? "below" : "in section 6"}`}</small></span><span class="bwin tpin rsoth"><b>₹</b><input type="text" id="rsOthAmt" value="${rs(rsUnsplit()).slice(1)}" readonly tabindex="-1" aria-label="Other expenses"></span></div>` +
     rsh.exp.map((x, i) => `<div class="tprow rsex"><span class="tpl"><input class="rsname" type="text" maxlength="40" data-k="en:${i}" value="${esc(x.name)}" placeholder="What was it?" aria-label="Expense name"${ro}></span>${rsMoneyIn("ex:" + i, x.amt, x.name || "Expense")}${rsh.edit ? `<button type="button" class="tpbin" data-rs="exdel" data-i="${i}" aria-label="Remove ${esc(x.name || "expense")}">${TW_BIN}</button>` : ""}</div>`).join("") +
     (rsh.edit ? `<button type="button" class="tpadd" data-rs="exadd">${TW_PLUS} Add expense</button>` : "");
   return seg + (rsh.exp.length ? (rsh.edit ? `<p class="bwnote" style="margin:0 0 4px">Change an amount, remove an expense not spent today, or add one. The office will see the changes.</p>` : "")
@@ -11534,6 +11557,7 @@ function rsRender(top) {
   const el = $("rsw"), keep = !top && $("rsBody") ? $("rsBody").scrollTop : 0, v = vehicles.find(x => x.id === rsh.bus), d = rsDoc(rsh.bus, rsh.date);
   const day = new Date(rsh.date + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
   const bal = rsCol() - rsExpTot(), miss = rsh.ready ? rsMissing() : ["…"];
+  if (qsOn()) { el.innerHTML = qsShell(v, day); if (top) $("rsBody").scrollTop = 0; else if (keep) $("rsBody").scrollTop = keep; return; }
   el.innerHTML = `<header class="bwh"><div style="flex:1;min-width:0"><b id="rsTitle">${rsh.admin ? "Office view" : "Trip sheet"} · ${esc(plateOf(v))}</b><span>${day}${rsh.start && !rsh.notRun ? ` · Starts from ${esc(placeName(rsh.start))}` : ""}${rsh.admin && d?.byName ? ` · sent by ${esc(d.byName)}` : ""}</span></div></header>` +
     `<div class="bwb tws tpage" id="rsBody">${rsHistHtml()}${rsPageHtml()}</div>` +
     (rsh.admin && rsh.askWhy ? `<footer class="bwf"><label class="bwf1"><span>Why is it sent back? The conductor will see this.</span><textarea id="rsWhy" rows="2" maxlength="200"></textarea></label><span class="bwerr" id="rsWhyErr"></span><div class="bw2" style="margin-top:8px"><button type="button" class="bwalt" data-rs="rejectno">Cancel</button><button type="button" class="bwgo" data-rs="rejectgo">Send back</button></div></footer>` :
@@ -11545,13 +11569,102 @@ function rsRender(top) {
     navBar("rs", false);
   if (top) $("rsBody").scrollTop = 0; else if (keep) $("rsBody").scrollTop = keep;
 }
+/* The quick day sheet: the conductor fills the day in 4 short steps (Start, Collection, Diesel and km, Check and send).
+   It is the same sheet underneath: it saves by itself and the office sees it exactly as before. */
+const QS_STEPS = ["Start", "Collection", "Diesel and km", "Check and send"];
+const qsOn = () => rsh?.ready && rsh.edit && !rsh.admin && !canTrips;
+// The diesel rate of the bus's last fill (an approved day, or a sheet not approved yet).
+function rsLastRate(bus, date) {
+  const t = busWin(bus).filter(x => x.date < date && num(x.dieselRate) > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const s = ops.routeSheets.filter(x => x.vehicleId === bus && x.date < date && num(x.dsl?.litres) > 0 && num(x.dsl?.amount) > 0).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const sr = s ? num(s.dsl.rate) || num(s.dsl.amount) / num(s.dsl.litres) : 0;
+  return Math.round((s && (!t || s.date > t.date) ? sr : num(t?.dieselRate)) * 100) / 100 || 0;
+}
+// A usual collection for this weekday: the lowest and highest of the bus's last same weekdays (at least 3 of them).
+function qsUsual() {
+  const wd = new Date(rsh.date + "T00:00:00").getDay();
+  const c = busWin(rsh.bus).filter(t => t.date < rsh.date && !t.notRun && new Date(t.date + "T00:00:00").getDay() === wd && tripCollection(t) > 0)
+    .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6).map(tripCollection);
+  return c.length >= 3 ? { lo: Math.min(...c), hi: Math.max(...c), day: new Date(rsh.date + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long" }) } : null;
+}
+function qsColTotHtml() {
+  const c = rsCol(), u = qsUsual(), off = u && c && (c < u.lo * 0.85 || c > u.hi * 1.15);
+  return `<div><span>Total collection</span>${u ? `<small>A usual ${u.day}: ${rs(u.lo)} – ${rs(u.hi)}</small>` : ""}${off ? `<small class="qswarn">${c < u.lo ? "Lower" : "Higher"} than usual. Check the amounts.</small>` : ""}</div><b>${rs(c)}</b>`;
+}
+function qsKmTiles() {
+  const s = num(rsh.startKm), e = num(rsh.endKm), lit = num(rsh.dsl.litres), K = s && e > s ? odoKm(vehicles.find(v => v.id === rsh.bus), "", s, rsh.date, e) : null;
+  const km = K?.km > 0 ? K.km : 0, avg = km && lit ? K.act / lit : 0;
+  return `<div class="qstile"><span>Km today</span><b>${km ? `${nf(km)} km` : "—"}</b></div><div class="qstile"><span>Mileage</span><b>${avg ? `${nf(avg, 1)} km/L` : "—"}</b></div>`;
+}
+function qsHeroHtml() {
+  const c = rsCol(), e = rsExpTot(), b = c - e;
+  return rsh.notRun ? `<span>Today</span><b class="qsbig">Did not run</b><small>${esc(rsh.idle || "Reason not chosen")}</small>`
+    : `<span>Today's balance</span><b class="qsbig${b < 0 ? " neg" : ""}">${b < 0 ? "− " : ""}${rs(Math.abs(b))}</b><small>Collection ${rs(c)} − Expenses ${rs(e)}</small>`;
+}
+const qsRow = (label, value, sub, go) => `<div class="qsrow"><div><span>${label}</span><b>${value}</b>${sub ? `<small>${sub}</small>` : ""}</div>${go != null ? `<button type="button" class="qsedit" data-rs="step" data-v="${go}">Edit</button>` : ""}</div>`;
+function qsStepHtml() {
+  const ro = rsh.edit ? "" : " readonly", st = rsh.step, ends = rsh.ends.length === 2 ? rsh.ends : [];
+  const sent = rsh.status === "rejected" && rsDoc(rsh.bus, rsh.date)?.rejectReason ? `<div class="bhappr"><b>Sent back by the office</b><span>${esc(rsDoc(rsh.bus, rsh.date).rejectReason)}</span><span class="rshow">Correct it and send again.</span></div>` : "";
+  if (st === 0) return sent + `<h2 class="qsh">Did the bus run today?</h2><div class="bwseg c2 qsran"><button type="button" data-rs="ran" aria-pressed="${!rsh.notRun}">Bus ran</button><button type="button" data-rs="idle" aria-pressed="${rsh.notRun}">Did not run</button></div>` +
+    (rsh.notRun ? `<p class="rsq">Why did it not run?</p><div class="bwchips">${IDLE_REASONS.map(r => `<button type="button" data-rs="why" data-v="${esc(r)}" aria-pressed="${rsh.idle === r}">${esc(r)}</button>`).join("")}</div>`
+      : `<section class="qscard"><h3>✓ Already filled for you</h3><p class="qssub">Only change what is different today.</p>` +
+        (ends.length ? `<p class="rsq">Started from</p><div class="bwseg c2">${ends.map(p => `<button type="button" data-rs="start" data-v="${esc(p)}" aria-pressed="${placeName(rsh.start).toLowerCase() === placeName(p).toLowerCase()}">${esc(p)}</button>`).join("")}</div>`
+          : ops.routeExpenses.some(x => x.place) ? `<p class="rsq">Started from</p><div class="bwchips">${ops.routeExpenses.filter(x => x.place).map(x => placeName(x.place)).map(p => `<button type="button" data-rs="start" data-v="${esc(p)}" aria-pressed="${placeName(rsh.start).toLowerCase() === p.toLowerCase()}">${esc(p)}</button>`).join("")}</div>`
+          : `<label class="bwf1"><span>Started from</span><input type="text" data-k="start" value="${esc(rsh.start)}" maxlength="40"></label>`) +
+        `<p class="rsq">Crew <small>· same as the last day</small></p>${RS_ROLES.map(([k, l]) => `<div class="tprow"><span class="tpl"><span class="rsrole">${l}</span></span>${rsSel(k)}</div>`).join("")}` +
+        `<div class="tprow"><span class="tpl">Start km<small class="rshow">The last day's end</small></span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="startKm" value="${esc(rsh.startKm)}" aria-label="Start km"${ro}><b>km</b></span></div></section>`) +
+    `<p class="bwnote">Everything saves by itself, so the sheet can be finished later.</p>`;
+  if (st === 1) return sent + `<div class="qshrow"><h2 class="qsh">Collection</h2><div class="bwseg c2 qsmode"><button type="button" data-rs="colmode" data-v="trips" aria-pressed="${rsh.colMode === "trips"}">Each trip</button><button type="button" data-rs="colmode" data-v="total" aria-pressed="${rsh.colMode === "total"}">Only total</button></div></div>` +
+    `<section class="tpsec">${rsh.colMode === "trips" ? rsh.s.map((v, i) => `<div class="tprow"><span class="tpl qsl">${RS_TRIPS[i]}</span>${rsMoneyIn("s:" + i, v, RS_TRIPS[i] + " collection")}</div>`).join("")
+      : `<div class="tprow"><span class="tpl qsl">Total collection<small class="rshow">Trips can be added later</small></span>${rsMoneyIn("coltot", rsh.colTot, "Total collection")}</div>`}</section>` +
+    `<div class="qstot" id="qsColTot">${qsColTotHtml()}</div>${rsh.colMode === "trips" && num(rsh.colTot) ? `<p class="bwnote" id="rsColNote">${rsColNote()}</p>` : ""}`;
+  if (st === 2) return sent + `<h2 class="qsh">Diesel</h2><section class="tpsec qsdsl">` +
+    `<div class="tprow"><span class="tpl qsl">Litres filled</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="dsl:litres" value="${esc(rsh.dsl.litres)}" aria-label="Diesel litres"><b>L</b></span></div>` +
+    `<div class="tprow"><span class="tpl">Rate a litre<small class="rshow">From the last fill</small></span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="decimal" min="0" step="0.01" data-k="dsl:rate" value="${esc(rsh.dsl.rate)}" aria-label="Diesel rate a litre"></span></div>` +
+    `<div class="tprow"><span class="tpl">Amount<small class="rshow">Litres × rate · change it if the bill is different</small></span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="dsl:amount" value="${esc(rsh.dsl.amount)}" aria-label="Diesel amount"></span></div>` +
+    `<div class="tprow"><span class="tpl">Paid by</span><div class="bwseg c2 qspay">${[["Cash", "Cash"], ["Fuel card", "Card"]].map(([v, l]) => `<button type="button" data-rs="dslpay" data-v="${v}" aria-pressed="${rsh.dsl.pay === v}">${l}</button>`).join("")}</div></div>` +
+    `<div class="tprow"><span class="tpl">Place</span><span class="bwin tpin pl"><input type="text" maxlength="40" data-k="dsl:place" value="${esc(rsh.dsl.place)}" placeholder="Where" aria-label="Diesel place"></span></div></section>` +
+    `<h2 class="qsh">Km meter</h2><section class="tpsec">` +
+    `<div class="tprow"><span class="tpl">Start km<small class="rshow">The last day's end</small></span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="startKm" value="${esc(rsh.startKm)}" aria-label="Start km"><b>km</b></span></div>` +
+    `<div class="tprow"><span class="tpl qsl">End km</span><span class="bwin tpin km"><input type="number" inputmode="numeric" min="0" data-k="endKm" value="${esc(rsh.endKm)}" placeholder="At night" aria-label="End km"><b>km</b></span></div></section>` +
+    `<div class="qstiles" id="qsKm">${qsKmTiles()}</div><div class="bwnote tprun" id="rsRun">${rsKmHtml()}</div>`;
+  // Check and send: the day at a glance; padi and route expenses can be changed here.
+  const lit = num(rsh.dsl.litres), names = RS_ROLES.filter(([k]) => rsPadi(k)).map(([k, l]) => `${rsCrewName(k) || l} ${rs(rsPadi(k))}`).join(" · ");
+  const crew = RS_ROLES.map(([k]) => rsCrewName(k)).filter(Boolean).join(", ");
+  const sK = num(rsh.startKm), eK = num(rsh.endKm), K = sK && eK > sK ? odoKm(vehicles.find(v => v.id === rsh.bus), "", sK, rsh.date, eK) : null;
+  return sent + `<section class="qshero" id="qsHero">${qsHeroHtml()}</section>` +
+    (rsh.notRun ? qsRow("Did not run", esc(rsh.idle || "Reason not chosen"), "", 0) :
+      `<section class="qslist">${qsRow("Collection", rs(rsCol()), rsh.colMode === "trips" && rsTrips() ? `${rsTrips()} of 5 trips` : "", 1)}` +
+      qsRow("Diesel", rs(num(rsh.dsl.amount)), lit ? `${nf(lit, lit % 1 ? 2 : 0)} L${num(rsh.dsl.rate) ? ` × ₹${nf(num(rsh.dsl.rate), 2)}` : ""} · ${rsh.dsl.pay === "Cash" ? "Cash" : "Card"}` : "Not entered", 2) +
+      qsRow("Started from · Crew", `${esc(placeName(rsh.start) || "—")}`, esc(crew || "Crew not chosen"), 0) +
+      qsRow("Km", K?.km > 0 ? `${nf(K.km)} km` : "—", K?.km > 0 && lit ? `${nf(K.act / lit, 1)} km per litre` : eK ? "" : "End km not entered", 2) + `</section>` +
+      `<details class="qsmore"><summary><span><b>Padi</b><small>${esc(names || "Worked out from the collection")}</small></span><b>${rs(rsPadiTot())}</b></summary><div id="rsCrew">${rsCrewHtml()}</div></details>` +
+      `<details class="qsmore"${rsh.exp.length || num(rsh.expTot) ? "" : " open"}><summary><span><b>Route and other expenses</b><small>${rsh.expMode === "list" ? `${esc(placeName(rsh.start))} list` : "Rest of the total as Other"}</small></span><b>${rs(rsOther() + rsUnsplit())}</b></summary>${rsExpHtml()}` +
+      `<div class="tprow rstot"><span class="tpl"><b>Total expenses</b><small class="rshow">Only if just the total is known</small></span>${rsMoneyIn("exptot", rsh.expTot, "Total expenses")}</div></details>`) +
+    `<label class="bwf1"><span>Remarks <small>(if any)</small></span><input type="text" data-k="remarks" value="${esc(rsh.remarks)}" maxlength="200" placeholder="e.g. late start, puncture"></label>`;
+}
+function qsShell(v, day) {
+  if (rsh.notRun) rsh.step = 0;
+  const steps = rsh.notRun ? ["Start"] : QS_STEPS;
+  return `<header class="bwh"><div style="flex:1;min-width:0"><b id="rsTitle">${esc(plateOf(v))}</b><span>${day}</span></div><button type="button" class="qsx" data-rs="close" aria-label="Close the trip sheet">${BW_ICON.x}</button></header>` +
+    `<div class="bwbar qsbar" style="grid-template-columns:repeat(${steps.length},minmax(0,1fr))">${steps.map((n, i) => `<button type="button" class="bwseg-i${i <= rsh.step ? " on" : ""}${i === rsh.step ? " cur" : ""}" data-rs="step" data-v="${i}" aria-label="Step ${i + 1}: ${n}"></button>`).join("")}</div>` +
+    `<p class="qsstep">${rsh.notRun ? "Did not run" : `Step ${rsh.step + 1} of 4 · ${QS_STEPS[rsh.step]}`}<span class="tpst ok" id="rsSt">${rsh.saved ? "✓ Saved" : ""}</span></p>` +
+    `<div class="bwb tws tpage qs" id="rsBody">${rsDoc(rsh.bus, rsh.date) && rsh.status !== "draft" ? rsHistHtml() : ""}${qsStepHtml()}</div>` +
+    `<footer class="bwf"><div class="qsfoot${rsh.step ? "" : " one"}">${rsh.step ? `<button type="button" class="bwalt" data-rs="step" data-v="${rsh.step - 1}">Back</button>` : ""}` +
+    (rsh.notRun || rsh.step === 3 ? `<button type="button" class="bwgo" data-rs="send"${rsh.saving ? " disabled" : ""}>${BW_ICON.ok} ${rsh.saving ? "Sending…" : "Send to office"}</button>`
+      : `<button type="button" class="bwgo" data-rs="step" data-v="${rsh.step + 1}">Next: ${["collection", "diesel and km", "check"][rsh.step]} ${BW_ICON.next}</button>`) + `</div></footer>`;
+}
 // Light refresh while typing, so the box being typed in keeps its focus.
 function rsRefresh() {
   const tot = $("rsw").querySelector('[data-k="coltot"]');
-  if (tot) { tot.placeholder = rsSum() || 0; $("rsTrips").textContent = rsTripsText(); $("rsColNote").innerHTML = rsColNote(); }
+  if (tot) tot.placeholder = rsSum() || 0;
+  if ($("rsTrips")) $("rsTrips").textContent = rsTripsText(); if ($("rsColNote")) $("rsColNote").innerHTML = rsColNote();
   if ($("rsMoney")) $("rsMoney").innerHTML = rsMoneyHtml();
-  if ($("rsOthAmt")) { $("rsOthAmt").value = rs(rsUnsplit()).slice(1); $("rsOthNote").textContent = num(rsh.expTot) ? "The rest of the total expenses" : "Type the Total expenses in section 6"; }
+  if ($("rsOthAmt")) { $("rsOthAmt").value = rs(rsUnsplit()).slice(1); $("rsOthNote").textContent = num(rsh.expTot) ? "The rest of the total expenses" : `Type the Total expenses ${qsOn() ? "below" : "in section 6"}`; }
   if ($("rsRun")) { const h = rsKmHtml(); if ($("rsRun").innerHTML !== h) $("rsRun").innerHTML = h; }
+  if ($("qsColTot")) $("qsColTot").innerHTML = qsColTotHtml();
+  if ($("qsKm")) $("qsKm").innerHTML = qsKmTiles();
+  if ($("qsHero")) $("qsHero").innerHTML = qsHeroHtml();
   // The crew rows show the system padi as the collection changes; redraw them unless a padi box is being typed in.
   const ck = JSON.stringify([rsSys(), rsh.crew]);
   if ($("rsCrew") && rsh.crewKey !== ck && !document.activeElement?.closest?.("#rsCrew")) { rsh.crewKey = ck; $("rsCrew").innerHTML = rsCrewHtml(); }
@@ -11568,7 +11681,11 @@ function rsInput(e) {
   else if (k === "exptot") rsh.expTot = v;
   else if (k.startsWith("padi:")) { const r = k.slice(5); rsh.padi[r] = v; rsh.padiEd[r] = true; }
   else if (k.startsWith("crew:")) { rsh.crew[k.slice(5)] = v; rsRefresh(); if ($("rsCrew")) $("rsCrew").innerHTML = rsCrewHtml(); }
-  else if (k.startsWith("dsl:")) rsh.dsl[k.slice(4)] = v;
+  else if (k.startsWith("dsl:")) {
+    const f = k.slice(4); rsh.dsl[f] = v;
+    if (f === "amount") rsh.dsl.amtEd = v !== "";
+    if ((f === "litres" || f === "rate") && !rsh.dsl.amtEd) { const a = Math.round(num(rsh.dsl.litres) * num(rsh.dsl.rate)); rsh.dsl.amount = a ? String(a) : ""; const box = $("rsw").querySelector('[data-k="dsl:amount"]'); if (box) box.value = rsh.dsl.amount; }
+  }
   else if (k.startsWith("ex:")) rsh.exp[+k.slice(3)].amt = v;
   else if (k.startsWith("en:")) rsh.exp[+k.slice(3)].name = v;
   else rsh[k] = v;
@@ -11582,6 +11699,9 @@ function rsClick(e) {
     rsClose(); return;
   }
   if (!rsh.edit) return;
+  if (a === "step") { rsh.step = Math.max(0, Math.min(3, +b.dataset.v)); rsRender(true); return; }
+  if (a === "colmode") { rsh.colMode = b.dataset.v; rsRender(); return; }
+  if (a === "dslpay") { rsh.dsl.pay = b.dataset.v; rsRender(); rsSoon(); return; }
   if (a === "ran" || a === "idle") { rsh.notRun = a === "idle"; rsRender(); rsSoon(); return; }
   if (a === "why") { rsh.idle = b.dataset.v; rsRender(); rsSoon(); return; }
   if (a === "start") {
@@ -11627,7 +11747,7 @@ function rsBuild(status) {
     if (num(rsh.expTot)) out.expTotal = Math.round(num(rsh.expTot));
     RS_ROLES.forEach(([k]) => { const v = rsh.crew[k]; if (v.startsWith("id:")) { out[k + "Id"] = v.slice(3); out[k + "Name"] = nm(k); } else if (v) out[k + "Name"] = nm(k); });
     const sys = rsSys(); out.padiSys = sys; out.padi = Object.fromEntries(RS_ROLES.map(([k]) => [k, rsPadi(k)])); out.padiEd = { ...rsh.padiEd };
-    out.dsl = { litres: Math.round(num(rsh.dsl.litres) * 100) / 100, amount: Math.round(num(rsh.dsl.amount)), pay: rsh.dsl.pay, place: rsh.dsl.place.trim() };
+    out.dsl = { litres: Math.round(num(rsh.dsl.litres) * 100) / 100, amount: Math.round(num(rsh.dsl.amount)), pay: rsh.dsl.pay, place: rsh.dsl.place.trim(), ...(num(rsh.dsl.rate) ? { rate: Math.round(num(rsh.dsl.rate) * 100) / 100 } : {}) };
     out.exp = rsh.exp.filter(x => x.name.trim() || num(x.amt)).map(x => ({ name: x.name.trim() || "Other", amt: Math.round(num(x.amt)), ...(x.own ? { own: true } : {}), ...(x.def != null ? { def: x.def } : {}) }));
     if (rsh.expDef) out.expDef = rsh.expDef;
     if (num(rsh.startKm)) out.startKm = Math.round(num(rsh.startKm)); if (num(rsh.endKm)) out.endKm = Math.round(num(rsh.endKm));
