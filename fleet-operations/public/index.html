@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-14s">
+<meta name="app-ver" content="2026-11-15a">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1013,7 +1013,8 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 /* Dashboard: less room above the title and the tabs. */
 #view-renewals { padding-block-start: 10px; gap: 10px; } #view-renewals > header.top h1 { margin: 0; } #view-renewals .dstabs { margin: 0 0 4px; } #view-renewals .tcontrols { align-items: flex-end; }
 .ostitle { margin: 0; font: 700 22px Calibri, Carlito, Arial, sans-serif; color: #000; } .osmt { margin: 14px 0 0; font: 700 17px Calibri, Carlito, Arial, sans-serif; color: #000; }
-.osx { overflow: hidden; } table.osg { border-collapse: collapse; font: 700 15px Calibri, Carlito, Arial, sans-serif; color: #000; background: #fff; }
+.osx { overflow: hidden; padding: 1px 2px 3px 1px; } /* room so the shrunk tables keep their outer border lines */
+table.osg { width: auto; } table.osg tbody tr:last-child td:not(.e) { border-bottom: 1px solid #000; } /* the app's tables drop the last line; the Summary keeps it */ table.osg { border-collapse: collapse; font: 700 15px Calibri, Carlito, Arial, sans-serif; color: #000; background: #fff; }
 .osg td { border: 1px solid #000; padding: 6px 10px; white-space: nowrap; } .osg td.n { text-align: right; } .osg td.e { border: 0; background: transparent; min-width: 18px; }
 .osg td.h { background: #C55A11; text-align: center; } .osg td.v { background: #DBDBDB; } .osg td.t { background: #FFC000; }
 .osg td.sg { border: 0; text-align: center; font-size: 40px; padding: 0 14px; } .osg td.gl { background: #00B050; text-align: center; } .osg td.gv { background: #00B050; text-align: center; font-size: 40px; padding: 0 28px; }
@@ -18024,7 +18025,7 @@ function osRender() {
 }
 // Each table is shrunk to fit the page's width, so nothing scrolls sideways.
 function osFit() {
-  document.querySelectorAll("#oSumBody .osx").forEach(b => { const t = b.firstElementChild; t.style.zoom = 1; const w = b.clientWidth, sw = t.scrollWidth; t.style.zoom = sw > w && w > 0 ? Math.floor(w / sw * 1000) / 1000 : 1; });
+  document.querySelectorAll("#oSumBody .osx").forEach(b => { const t = b.firstElementChild; t.style.zoom = 1; const w = b.clientWidth - 4, sw = Math.ceil(t.getBoundingClientRect().width) + 2; t.style.zoom = sw > w && w > 0 ? Math.floor(w / sw * 1000) / 1000 : 1; });
 }
 window.addEventListener("resize", () => { if (view === "renewals" && dsTab === "details") osFit(); });
 async function osLoad(fy, force) {
