@@ -1,6 +1,6 @@
 // Daily reminders for the office: renewals due within 30 days (drivers, conductors, vehicles) and maintenance overdue or
-// due within 5,000 km. Worked out here the same way as the app's Renewals and Maintenance summary pages: keep in step with
-// the app (DOCS, DOC_RULES, MT_TYPES, mtNow, mtDue).
+// due within 5,000 km (extended jobs count from their new km, or wait until their date). Worked out here the same way as
+// the app's Renewals and Maintenance summary pages: keep in step with the app (DOCS, DOC_RULES, MT_TYPES, mtNow, mtDue).
 import { q } from "./db.js";
 
 const num = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
@@ -79,12 +79,14 @@ export function computeReminders(D, today = todayIST()) {
       const first = pts.filter(p => p[0] >= since && p[0] <= best[0]).reduce((a, p) => p[0] < a[0] ? p : a, best), days = dayDiff(first[0], best[0]);
       now = { km: best[1], date: best[0], perDay: days >= 14 && best[1] > first[1] ? (best[1] - first[1]) / days : 0 }; }
     const last = new Map();
-    log.forEach(x => (x.items || []).forEach(it => { const id = it.k + "|" + (it.pos || ""), cur = last.get(id), a = xAct(x); if (!cur || x.date > cur.date || (x.date === cur.date && a > cur.a)) last.set(id, { it, date: x.date, a }); }));
+    log.forEach(x => (x.items || []).forEach(it => { const id = it.k + "|" + (it.pos || ""), cur = last.get(id), a = xAct(x); if (!cur || x.date > cur.date || (x.date === cur.date && a > cur.a)) last.set(id, { it, date: x.date, a, ext: x.ext?.[id] || null }); }));
     const jobs = [];
-    for (const { it, date, a } of last.values()) {
+    for (const { it, date, a, ext } of last.values()) {
+      // An extension on the job's last visit (the mechanic said it can wait): a new km to count to, or not due until a date.
+      if (ext?.until && today < ext.until) continue;
       const set = gapAt(gapsDoc.bus?.[v.id], it.k, it.pos) || gapAt(gapsDoc.cls?.[v.type], it.k, it.pos) || gapAt(gapsDoc.gaps, it.k, it.pos);
       const gap = set || (gapsDoc.gaps?.[it.k] === 0 ? 0 : mtType(it.k).gap || 0);
-      const next = !set && num(it.next) > a ? num(it.next) : gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
+      const next = num(ext?.km) > 0 ? num(ext.km) : !set && num(it.next) > a ? num(it.next) : gap && a ? a + gap : null, left = next != null && now ? next - now.km : null;
       if (left == null || left > 5000) continue;
       jobs.push({ job: itemName(it), k: it.k, pos: it.pos || "", lastDate: date, lastKm: a, next, left, st: left <= 0 ? "over" : "soon" });
     }
