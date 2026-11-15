@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-15a">
+<meta name="app-ver" content="2026-11-15b">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1004,6 +1004,7 @@ a.ocard.oclink { color: inherit; text-decoration: none; cursor: pointer; } a.oca
 /* Truck round trip stages */
 .stg { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .stg-trip { background: #dce8f8; color: #1d4f8f; } .stg-over { background: #fde9cf; color: #8a4b00; } .stg-closed { background: #e9ece9; color: #44514a; }
+.bhclose.qkover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .stgdue { font-size: 12px; font-weight: 700; color: #8a4b00; } .rbtn.over { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .konTrip { display: flex; align-items: center; gap: 10px; background: #e8f0fb; border: 1px solid #b9cdea; border-radius: 8px; padding: 10px 14px; font-size: 14px; color: #142019; }
 .konTrip i { width: 10px; height: 10px; border-radius: 5px; background: #2f6fbf; flex: none; } .konTrip[hidden] { display: none; }
@@ -3989,7 +3990,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 </div>
 <aside class="drawer fullpage lgfull" id="lgDrawer" role="dialog" aria-modal="true" aria-labelledby="lgTitle" hidden>
   <header><div style="min-width:0"><h2 id="lgTitle">Round trip</h2><div class="vsub" id="lgSub"></div></div>
-    <span class="rthbtns"><button class="btn" type="button" id="rtCopy" title="Copy this round trip to another round trip or another truck">⧉ Copy</button><button class="btn" type="button" id="rtPrint" title="Print or download this round trip, as Excel or as an image">Print</button><button class="btn" type="button" id="rtLock"></button><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></span></header>
+    <span class="rthbtns"><button class="btn" type="button" id="rtCopy" title="Copy this round trip to another round trip or another truck">⧉ Copy</button><button class="btn" type="button" id="rtPrint" title="Print or download this round trip, as Excel or as an image">Print</button><button class="btn primary" type="button" id="rtOver" hidden>✓ Trip Over – Payment pending</button><button class="btn" type="button" id="rtLock"></button><button class="icon" type="button" id="lgClose" aria-label="Close">Close ✕</button></span></header>
   <nav class="rtnav" id="rtNav" role="tablist" aria-label="Round trip"></nav>
   <p class="lgshut" id="lgShut" hidden>🔒 This round trip is closed, so it is view-only. To change it, press <b>Reopen</b> at the top.</p>
   <form id="lgForm" novalidate><h3 class="rtlegh" id="rtLegH"></h3><div class="lgwiz" id="lgWizHd" hidden></div><div class="tfgrid"><div class="tfmain">
@@ -17322,7 +17323,7 @@ function qkRoundScr() {
       big("load", "＋", "Add trip", "The next load in this round trip", " pri") + `<div class="qkgrid qkg3">${big("dsl", "⛽", "Diesel")}${big("rec", "₹", "Payment received")}${big("giv", "💵", "Money to driver")}</div>`) +
     `<button type="button" class="bhbtn qkoff" data-qk="office" data-rnd="1"><span class="bhi" aria-hidden="true">🧾</span><span class="bht"><b>Trip Sheet (Office)</b><span class="${rtCalcOf(r).diff < 0 ? "due" : ""}">Owner's money · ${rtCalcOf(r).diff < 0 ? `to pay the driver ${rs(-rtCalcOf(r).diff)}` : `advance ${rs(rtCalcOf(r).diff)}`}</span></span></button>` +
     `<h3 class="qkadd">Trips (${r.legs.length})</h3>${r.legs.map(card).join("")}` +
-    (r.stage === "trip" ? `<button type="button" class="bhclose" data-qk="over">✓ Trip Over – Payment pending</button>` : `<button type="button" class="bhclose" data-qk="lock">${shut ? "Reopen round trip" : "🔒 Mark closed"}</button>` +
+    (r.stage === "trip" ? `<button type="button" class="bhclose qkover" data-qk="over">✓ Trip Over – Payment pending</button><button type="button" class="bhclose" data-qk="lock">🔒 Mark closed</button>` : `<button type="button" class="bhclose" data-qk="lock">${shut ? "Reopen round trip" : "🔒 Mark closed"}</button>` +
       (r.stage === "over" ? `<div class="qklinks"><button type="button" data-qk="totrip">↺ Back to On trip</button></div>` : "")) +
     `<div class="qklinks"><button type="button" data-qk="print">🖨 Print</button><button type="button" data-qk="send">📤 Send details</button></div></div>`;
 }
@@ -17764,7 +17765,7 @@ function renderTruck() {
       ${rtStageTag(r)}${r.stage === "trip" ? `<span class="sub">expected rent, not counted</span>` : r.stage === "over" && r.rent > r.received ? `<span class="stgdue">${rs(r.rent - r.received)} to collect</span>` : ""}${MF.get(r.id)?.low ? `<span class="pill mlow" title="${mileTxt(MF.get(r.id))}. Check the diesel fills and km.">⚠ Low mileage ${nf(MF.get(r.id).kmpl, 2)} km/L</span>` : ""}
       ${canTrips ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="copy" title="Copy this round trip to another round trip or another truck">⧉ Copy</button>` : ""}
       <button class="rbtn send" type="button" data-round="${r.id}" data-act="send" title="FASTag, payments, diesel and money given to the driver, as a picture to save or share">📤 Send details</button>
-      ${canTrips ? `${r.stage === "trip" ? `<button class="rbtn over" type="button" data-round="${r.id}" data-act="over">✓ Trip Over – Payment pending</button>` : r.stage === "over" ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="trip">↺ Back to On trip</button><button class="rbtn" type="button" data-round="${r.id}" data-act="close">Mark closed</button>` : `<button class="rbtn" type="button" data-round="${r.id}" data-act="open">Reopen</button>`}${r.status !== "Closed" ? `<button class="rbtn add" type="button" data-round="${r.id}" data-act="add">+ Add trip to this round</button><button class="rbtn del" type="button" data-round="${r.id}" data-act="del">Delete round trip</button>` : ""}` : ""}</span></td></tr>`;
+      ${canTrips ? `${r.stage === "trip" ? `<button class="rbtn over" type="button" data-round="${r.id}" data-act="over">✓ Trip Over – Payment pending</button><button class="rbtn" type="button" data-round="${r.id}" data-act="close">Mark closed</button>` : r.stage === "over" ? `<button class="rbtn" type="button" data-round="${r.id}" data-act="trip">↺ Back to On trip</button><button class="rbtn" type="button" data-round="${r.id}" data-act="close">Mark closed</button>` : `<button class="rbtn" type="button" data-round="${r.id}" data-act="open">Reopen</button>`}${r.status !== "Closed" ? `<button class="rbtn add" type="button" data-round="${r.id}" data-act="add">+ Add trip to this round</button><button class="rbtn del" type="button" data-round="${r.id}" data-act="del">Delete round trip</button>` : ""}` : ""}</span></td></tr>`;
     r.legs.forEach(l => {
       const c = legCalc(l), d1 = l.driver1Id ? (drivers.find(d => d.id === l.driver1Id)?.name || l.driver1Name) : l.driver1Name, d2 = l.driver2Id ? (drivers.find(d => d.id === l.driver2Id)?.name || l.driver2Name) : l.driver2Name;
       body += `<tr data-lid="${l.id}" tabindex="0" class="${c.bal < 0 ? "loss" : ""}"><td class="sticky"><span class="num">${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""}</span></td><td class="n">${fmtDays(c.days)}</td>
@@ -18416,7 +18417,7 @@ function rtShow() {
   if (rt.rid && !r) { closeLgDrawer(); return; }
   $("lgTitle").textContent = r ? `Round trip ${rtNo(r)}` : "New round trip";
   $("lgSub").textContent = [bus ? plateOf(bus) : "", r ? `${fmtShort(r.from)} – ${fmtShort(r.to)}` : "", r?.path].filter(Boolean).join(" · ");
-  $("rtPrint").hidden = !r; $("rtCopy").hidden = !r || !canTrips; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = !r ? "" : r.stage === "trip" ? "✓ Trip Over – Payment pending" : shut ? "Reopen" : "Mark closed"; $("lgShut").hidden = !shut;
+  $("rtPrint").hidden = !r; $("rtCopy").hidden = !r || !canTrips; $("rtLock").hidden = !r || !canTrips; $("rtLock").textContent = shut ? "Reopen" : "Mark closed"; $("rtOver").hidden = !r || !canTrips || r.stage !== "trip"; $("lgShut").hidden = !shut;
   rtNavRender();
   ["lgForm", "rtOv", "rtSum", "rtPay", "rtDsl", "rtFiles"].forEach(id => $(id).hidden = true);
   $("rtPaySave").hidden = true; $("lgSave").hidden = true; $("lgBack").hidden = $("lgNext").hidden = true;
@@ -18480,9 +18481,9 @@ async function rtDelLeg(id) {
   if (rt.pane === "leg") { rt.pane = "ov"; rt.leg = null; }
   rtShow();
 }
+$("rtOver").onclick = async () => { const r = rtGet(); if (r && canTrips && r.stage === "trip" && await rtSetStage(r, "over")) rtShow(); };
 $("rtLock").onclick = async () => {
   const r = rtGet(); if (!r || !canTrips) return;
-  if (r.stage === "trip") { if (await rtSetStage(r, "over")) rtShow(); return; }
   const closing = r.status !== "Closed"; if (closing && !await rtLeaveOk()) return;
   if (await rtSetLock(r, closing)) rtShow();
 };
