@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-15b">
+<meta name="app-ver" content="2026-11-15c">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -10969,8 +10969,9 @@ function xlSummarySheet(recs, fy, sheets, routeIds, run = []) {
   let r = RT + 3;
   if (run.length) {
     put(ws, "A" + r, "On trip · not counted (expected rent)", S.otTitle); ws.heights[r] = 33; r++;
-    ["Vehicle No", "Round trip", "From", "Route", "Expected rent"].forEach((h, i) => put(ws, col(i) + r, h, S.otHead)); ws.heights[r] = 31; r++;
-    run.forEach(x => { put(ws, "A" + r, C.plate(x.vid), S.otTxt); put(ws, "B" + r, `Round trip ${x.no}`, S.otTxt); put(ws, "C" + r, fmtShort(x.from), S.otTxt); put(ws, "D" + r, x.path, S.otTxt); put(ws, "E" + r, x.rent, S.otInt); ws.heights[r] = 23; r++; });
+    ["Vehicle No", "Round trip", "From", "Route", "Expected rent", "Expenses so far", "Balance"].forEach((h, i) => put(ws, col(i) + r, h, S.otHead)); ws.heights[r] = 31; r++;
+    run.forEach(x => { put(ws, "A" + r, C.plate(x.vid), S.otTxt); put(ws, "B" + r, `Round trip ${x.no}`, S.otTxt); put(ws, "C" + r, fmtShort(x.from), S.otTxt); put(ws, "D" + r, x.path, S.otTxt);
+      put(ws, "E" + r, x.rent, S.otInt); put(ws, "F" + r, x.exp, S.otInt); put(ws, "G" + r, x.rent - x.exp, S.otInt, `E${r}-F${r}`); ws.heights[r] = 23; r++; });
     r += 2;
   }
   // Month-wise tables
@@ -17969,14 +17970,16 @@ function dlSumParts(recs, fy) {
   const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets({ ...recs, truckTrips: legsCounted(recs.truckTrips, recs.truckRounds) }, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
   return { sheets, summary: xlSummarySheet(recs, fy, sheets, busIds, dlOnTrip(recs, fy)) };
 }
-// The truck round trips of a year still On trip: truck, its round trip number, start, route and expected rent.
+// The truck round trips of a year still On trip: truck, its round trip number, start, route, expected rent and the expenses
+// entered so far (its trips' expenses and the round trip's diesel, as on the Trucks page).
 function dlOnTrip(recs, fy) {
   const docs = new Map((recs.truckRounds || []).map(d => [d.id, d])), out = [];
   const legs = (recs.truckTrips || []).filter(l => l.vehicleId && l.from && fyOf(l.from) === fy).sort((a, b) => a.from.localeCompare(b.from) || String(a.id).localeCompare(String(b.id)));
   [...new Set(legs.map(l => l.vehicleId))].forEach(vid => {
     const G = new Map(); legs.filter(l => l.vehicleId === vid).forEach(l => { const k = l.roundId || l.id; if (!G.has(k)) G.set(k, []); G.get(k).push(l); });
     [...G].forEach(([k, L], i) => { if (rtStageOf(docs.get(k), L) !== "trip") return;
-      out.push({ vid, no: i + 1, from: L[0].from, rent: L.reduce((a, l) => a + num(l.rent), 0), path: [L[0].origin, ...L.map(l => l.dest)].filter(Boolean).map(lgPlace).join(" → ") }); });
+      const exp = L.reduce((a, l) => a + LG_EXP.reduce((b, f) => b + num(l[f]), 0), 0) + Math.round((docs.get(k)?.fuels || []).reduce((a, f) => a + num(f.amount), 0));
+      out.push({ vid, no: i + 1, from: L[0].from, rent: L.reduce((a, l) => a + num(l.rent), 0), exp, path: [L[0].origin, ...L.map(l => l.dest)].filter(Boolean).map(lgPlace).join(" → ") }); });
   });
   return out;
 }
@@ -18017,7 +18020,7 @@ function osRender() {
   let h = `<h3 class="ostitle">${osTxt(ws.rows[1]?.[0]?.v)}</h3>` + osGrid(ws, 3, RT, 0, 19, "top");
   for (let i = rows.indexOf(RT) + 1; i < rows.length; i++) {
     const r = rows[i];
-    if (ws.rows[r]?.[0]?.s === S.otTitle) { let end = r + 1; while (ws.rows[end + 1]?.[0]) end++; h += `<h4 class="osmt osot">${osTxt(ws.rows[r][0].v)}</h4>` + osGrid(ws, r + 1, end, 0, 4, "mon"); continue; }
+    if (ws.rows[r]?.[0]?.s === S.otTitle) { let end = r + 1; while (ws.rows[end + 1]?.[0]) end++; h += `<h4 class="osmt osot">${osTxt(ws.rows[r][0].v)}</h4>` + osGrid(ws, r + 1, end, 0, 6, "mon"); continue; }
     if (ws.rows[r]?.[0]?.s !== S.mTitle) continue;
     const head = r + 1, end = rows.find(x => x > head && ws.rows[x]?.[0]?.s === S.mTotL), c2 = Math.max(...Object.keys(ws.rows[head]).map(Number));
     h += `<h4 class="osmt">${osTxt(ws.rows[r][0].v)}</h4>` + osGrid(ws, head, end, 0, c2, "mon");
