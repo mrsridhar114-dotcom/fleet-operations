@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-17c">
+<meta name="app-ver" content="2026-11-17d">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -539,8 +539,9 @@ table.metable { border-collapse: collapse; width: 100%; min-width: 1180px; font-
 /* White table so the row colours stand out: white boxes on white rows, and see-through boxes on coloured rows. */
 .metable th, .metable th.sticky, .metable tfoot td, .metable tfoot td.sticky { background: var(--surface); }
 .metable .mein { background: var(--surface); border-color: color-mix(in srgb, var(--muted) 35%, var(--line)); }
-.metable .mein.auto { background: transparent; border-color: transparent; }
+.metable .mein.auto { background: transparent; border-style: dashed; border-color: color-mix(in srgb, var(--muted) 45%, var(--line)); } /* worked out by the app: a dashed box until typed over */
 .metable tr.loss .mein, .metable tr.part .mein { background: color-mix(in srgb, var(--surface) 55%, transparent); } .metable tr.loss .mein.auto, .metable tr.part .mein.auto { background: transparent; }
+.metable tr.empty td:not(.sticky) .mein.auto { background: transparent; }
 .metable tr.chg td.sticky { box-shadow: inset 4px 0 0 var(--warn), 1px 0 0 var(--line); }
 /* Whole-row colours: red = negative balance, amber = ran only some singles, grey = did not run. */
 .metable tr.loss td { background: color-mix(in srgb, var(--danger) 20%, var(--surface)); } .metable tr.loss td.sticky { box-shadow: inset 4px 0 0 var(--danger), 1px 0 0 var(--line); }
