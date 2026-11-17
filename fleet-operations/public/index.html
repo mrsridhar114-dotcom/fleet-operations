@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-17g">
+<meta name="app-ver" content="2026-11-17h">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1876,6 +1876,8 @@ html.bw-on, html.bw-on body { overflow: hidden; }
 .tpin.km { width: 180px; } .tpin.km input { font-family: var(--mono); font-size: 20px; }
 .tpin input { width: 100%; min-width: 0; }
 .tpfc { padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 48px 84px 56px minmax(0, 1fr) 26px; gap: 4px; align-items: end; }
+/* Route bus day sheet diesel: wider Litres and Amount, the place takes what is left. */
+.tpfc.rsdsl { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.2fr) 56px minmax(0, 1.25fr); } .tpfc.rsdsl .bwin input[type=number] { height: 100%; padding: 0 2px; font-size: 18px; text-align: center; } .tpfc.rsdsl .bwin > b { padding-left: 2px; }
 .tpfc label { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .tpfc label > span:first-child { font: 600 12px var(--body); color: var(--muted); white-space: nowrap; }
 .tpfc .tpin { width: 100%; height: 48px; padding: 0 5px; gap: 2px; } .tpfc .tpin input { font-size: 16px; } .tpfc .tpin b { font-size: 13px; } .tpfc .tpsel { height: 48px; padding: 0 4px; font-size: 15px; appearance: none; -webkit-appearance: none; text-align: center; text-align-last: center; }
 .tpfc input::-webkit-inner-spin-button, .tpfc input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } .tpfc input[type=number] { -moz-appearance: textfield; }
@@ -11609,11 +11611,11 @@ function rsPageHtml() {
         `<div class="tprow rstot"><span class="tpl"><b>Total collection</b><small class="rshow" id="rsTrips">${rsTripsText()}</small></span>${rsMoneyIn("coltot", rsh.colTot, "Total collection")}</div>` +
         `<p class="bwnote" id="rsColNote" style="margin:2px 0 4px">${rsColNote()}</p>`) +
       rsSec("3", `Crew and padi<button type="button" class="padibtn" data-padipop="rs" aria-label="How the padi is worked out" title="How the padi is worked out"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 6.5h8"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h3.5"/></svg></button>`, `<div id="rsCrew">${rsCrewHtml()}</div>`) +
-      rsSec("4", "Diesel", `<div class="tpfc">` +
+      rsSec("4", "Diesel", `<div class="tpfc rsdsl">` +
         `<label><span>Litres</span><span class="bwin tpin"><input type="number" inputmode="decimal" min="0" step="0.01" data-k="dsl:litres" value="${esc(rsh.dsl.litres)}" aria-label="Diesel litres"${ro}></span></label>` +
         `<label><span>Amount</span><span class="bwin tpin"><b>₹</b><input type="number" inputmode="numeric" min="0" data-k="dsl:amount" value="${esc(rsh.dsl.amount)}" aria-label="Diesel amount"${ro}></span></label>` +
         `<label><span>Paid</span><select class="tpsel" data-k="dsl:pay" aria-label="Diesel paid by"${rsh.edit ? "" : " disabled"}>${[["Fuel card", "Card"], ["Cash", "Cash"]].map(([v, l]) => `<option value="${v}"${rsh.dsl.pay === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>` +
-        `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="40" data-k="dsl:place" value="${esc(rsh.dsl.place)}" placeholder="Where" aria-label="Diesel place"${ro}></span></label><span></span></div>` +
+        `<label><span>Place</span><span class="bwin tpin pl"><input type="text" maxlength="40" data-k="dsl:place" value="${esc(rsh.dsl.place)}" placeholder="Where" aria-label="Diesel place"${ro}></span></label></div>` +
         (rsh.start && rsh.dsl.place && rsOpposite(rsh.start, rsh.ends).toLowerCase() === placeName(rsh.dsl.place).toLowerCase() && rsh.edit ? `<p class="bwnote" style="margin:4px 0 6px">Place is ${esc(rsh.dsl.place)} because the bus starts from ${esc(placeName(rsh.start))}. Change it if needed.</p>` : "") +
         "") +
       rsSec("5", `Route expenses<button type="button" class="padibtn" data-rxpop="rs" aria-label="Route expenses list from the master" title="Route expenses list from the master"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button>`, rsExpHtml(), rsh.start ? `default from ${esc(placeName(rsh.start))}` : "") +
