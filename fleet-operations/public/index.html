@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-17h">
+<meta name="app-ver" content="2026-11-17i">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -12017,13 +12017,14 @@ function rsDaysHtml(bus, ym, src) {
       const f = (k, v, cls = "") => `<span${cls ? ` class="${cls}"` : ""}><i>${k}</i>${v}</span>`;
       // A day that ran is green, a loss red, a part day yellow. Days in the trip sheet need no tag; who sent or entered them is in the sheet itself.
       const tone = S.money ? (S.bal < 0 ? "loss" : S.tone || "good") : "", sub = ["rejected", "idle", "draft"].includes(S.cls) ? S.sub : "";
-      return `<button type="button" class="rsday${tone ? " " + tone : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${S.cls === "completed" ? "" : chip(S)}` +
+      const ck = canTrips && S.money && routeChk?.date === day && routeChk.bus === bus;  // the "Checked up to here" day
+      return `<button type="button" class="rsday${tone ? " " + tone : ""}${ck ? " chkd" : ""}" data-rsopen="${day}"><span class="rsdh"><b>${new Date(day + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</b>${S.cls === "completed" ? "" : chip(S)}` +
         // The day's balance on the first line, like the month's total balance at the top.
         `${S.money ? `<span class="rsdbal${S.bal < 0 ? " neg" : ""}"><i>Balance</i>${S.bal < 0 ? "− " : ""}${rs(Math.abs(S.bal))}</span>` : ""}</span>` +
         (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Starting", esc(T?.start || "—"))}` +
           `${f("Kms", km != null ? `${km > KM_DAY_MAX ? "⚠ " : ""}${nf(km)}` : "—", km > KM_DAY_MAX ? "kmodd" : "")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
           `<span class="rsdc">${f("Driver", esc(crewName("driver", T) || "—"))}${f("Conductor", esc(crewName("conductor", T) || "—"))}</span>` : "") +
-        `${canTrips && S.money ? `<span class="rschk" data-mechk="${day}" data-mebus="${bus}" title="Mark this day as checked up to here"></span>` : ""}${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
+        `${canTrips && S.money ? `<span class="rschk${ck ? " on" : ""}" data-mechk="${day}" data-mebus="${bus}" title="${ck ? "Click again to remove the mark" : "Mark this day as checked up to here"}">${ck ? "✓ Checked up to here" : "○ Mark checked up to here"}</span>` : ""}${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
     `</div></section>`;
 }
 const rsWaiting = () => ops.routeSheets.filter(x => x.status === "submitted").sort((a, b) => String(a.submittedOn || "").localeCompare(String(b.submittedOn || "")));
