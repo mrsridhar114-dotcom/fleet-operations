@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-17e">
+<meta name="app-ver" content="2026-11-17f">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -550,7 +550,8 @@ table.metable { border-collapse: collapse; width: 100%; min-width: 1180px; font-
 /* "Checked up to here": the date is the button; the marked day is highlighted with a line under it. */
 .metable .mechkb { box-sizing: border-box; min-width: 22px; padding: 2px 3px; border: 0; border-radius: 4px; background: transparent; color: inherit; font: 700 12px var(--body); cursor: pointer; } .metable .mechkb:hover { background: var(--accent-soft); color: var(--accent); }
 .metable tr.mechk td { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); border-bottom: 3px solid var(--accent); } .metable tr.mechk td.sticky { box-shadow: inset 4px 0 0 var(--accent), 1px 0 0 var(--line); } .metable tr.mechk .mechkb { background: var(--accent); color: var(--accent-ink); }
-.mechknote { font-size: 13px; font-weight: 600; color: var(--accent); } .rsday.chkd { box-shadow: 0 0 0 3px var(--accent); } .rsday .rschk { font-size: 12px; font-weight: 700; color: var(--accent); }
+.mechknote { font-size: 13px; font-weight: 600; color: var(--accent); } .rsday.chkd { box-shadow: 0 0 0 3px var(--accent); } .rsday .rschk { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; } .rsday .rschk:hover { color: var(--accent); text-decoration: underline; } .rsday .rschk.on { color: var(--accent); font-weight: 700; }
+.dbchk { white-space: nowrap; } .dbchk[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .melegend { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-left: auto; } .melegend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; } .metable tr.future td { color: var(--muted); height: 22px; }
 .metable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); padding: 7px 3px; font-family: var(--mono); font-size: 12px; } .metable tfoot td.sticky { background: var(--bg); font-family: var(--body); }
 .metable .neg { color: var(--danger); } .metable td.medw { color: var(--muted); font-size: 11px; } .metable .mecum { font-weight: 600; } .mec { font-family: var(--mono); } .mebal { font-weight: 700; color: var(--ok); }
@@ -2747,6 +2748,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
               <label><input type="radio" name="dbMode" id="dbModeRan" value="ran"><span>Ran</span></label>
               <label><input type="radio" name="dbMode" id="dbModeIdle" value="idle"><span>Did not run</span></label></div></div>
             <span style="flex:1"></span>
+            <button class="btn dbchk" type="button" id="dbChk" data-mechk="" aria-pressed="false" hidden>Mark checked up to here</button>
             <button class="icon" type="button" id="dbClose" aria-label="Close">Close ✕</button>
           </div>
           <div class="dsbody" id="dbBody">
@@ -6805,16 +6807,22 @@ async function meOpenDay(date) {
    marking another day moves it, and marking the same day again removes it. Kept in appMeta "routeCheck". */
 let routeChk = null; const RCHK_LS = "fleet-routecheck";
 function meChkPaint() {
-  const c = routeChk?.date ? routeChk : null, on = d => !!c && c.date === d && c.bus === tBusId;
+  const c = routeChk?.date ? routeChk : null, on = (d, bus = tBusId) => !!c && c.date === d && c.bus === bus;
   document.querySelectorAll("#tRows tr[data-date]").forEach(tr => { const m = on(tr.dataset.date), b = tr.querySelector(".mechkb"); tr.classList.toggle("mechk", m);
     if (b) { b.setAttribute("aria-pressed", String(m)); b.title = m ? "Checked up to here. Click again to remove the mark" : "Mark as checked up to here"; } });
-  document.querySelectorAll("#tRsDays [data-rsopen]").forEach(b => { const m = on(b.dataset.rsopen); b.classList.toggle("chkd", m); b.querySelector(".rschk")?.remove(); if (m) b.insertAdjacentHTML("beforeend", '<span class="rschk">✓ Checked up to here</span>'); });
+  // Month view cards (office): a line at the bottom of each day; the marked day gets an outline.
+  document.querySelectorAll(".rsday .rschk").forEach(x => { const m = on(x.dataset.mechk, x.dataset.mebus); x.closest(".rsday").classList.toggle("chkd", m); x.classList.toggle("on", m);
+    x.textContent = m ? "✓ Checked up to here" : "○ Mark checked up to here"; x.title = m ? "Click again to remove the mark" : "Mark this day as checked up to here"; });
+  // Day sheet: a button by the day.
+  const d = $("dbChk"); if (d) { const m = on(opDate, dbBus); d.hidden = !canTrips || !dbBus || dbCond(); d.dataset.mechk = opDate; d.dataset.mebus = dbBus; d.setAttribute("aria-pressed", String(m));
+    d.textContent = m ? "✓ Checked up to here" : "Mark checked up to here"; d.title = m ? "Click again to remove the mark" : c ? `Now checked up to ${fmtDate(c.date)}. Click to move the mark to this day` : "Mark this day as checked up to here"; }
   const n = $("meChkNote"); if (n) { n.hidden = !c; n.innerHTML = c ? `✓ Checked up to ${fmtDate(c.date)}${c.bus !== tBusId ? ` (${esc(plateOf(vehicles.find(v => v.id === c.bus)))})` : ""}${c.byName ? ` <span class="hint">· ${esc(c.byName)}, ${fmtDate(c.on)}</span>` : ""}` : ""; }
 }
 document.addEventListener("click", async e => {
   const b = e.target.closest("[data-mechk]"); if (!b || !canTrips) return;
-  const date = b.dataset.mechk, same = routeChk?.date === date && routeChk.bus === tBusId, was = routeChk;
-  routeChk = { date: same ? "" : date, bus: same ? "" : tBusId, byName: whoAmI(), on: todayISO() }; meChkPaint();
+  e.preventDefault(); const date = b.dataset.mechk, bus = b.dataset.mebus || tBusId, same = routeChk?.date === date && routeChk.bus === bus, was = routeChk;
+  if (!date || !bus) return;
+  routeChk = { date: same ? "" : date, bus: same ? "" : bus, byName: whoAmI(), on: todayISO() }; meChkPaint();
   try {
     if (tripDb) await tripDb.collection("appMeta").doc("routeCheck").set(routeChk); else localStorage.setItem(RCHK_LS, JSON.stringify(routeChk));
     toast(same ? "Check mark removed" : `Checked up to ${fmtDate(date)}`);
@@ -12012,7 +12020,7 @@ function rsDaysHtml(bus, ym, src) {
         (S.money ? `<span class="rsdg">${f("Collection", rs(S.col))}${f("Expense", rs(S.col - S.bal))}${f("Starting", esc(T?.start || "—"))}` +
           `${f("Kms", km != null ? `${km > KM_DAY_MAX ? "⚠ " : ""}${nf(km)}` : "—", km > KM_DAY_MAX ? "kmodd" : "")}${f("Diesel", num(T?.fuelCost) ? `${rs(num(T.fuelCost))}${lit ? ` · ${nf(lit, lit % 1 ? 1 : 0)} L` : ""}` : "—")}${f("Mileage", km && lit ? `${nf(km / lit, 2)} km/L` : "—")}</span>` +
           `<span class="rsdc">${f("Driver", esc(crewName("driver", T) || "—"))}${f("Conductor", esc(crewName("conductor", T) || "—"))}</span>` : "") +
-        `${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
+        `${canTrips && S.money ? `<span class="rschk" data-mechk="${day}" data-mebus="${bus}" title="Mark this day as checked up to here"></span>` : ""}${sub || S.changed ? `<small>${esc(sub)}${S.changed ? `${sub ? " · " : ""}<span class="rschg">Changed by office after approval</span>` : ""}</small>` : ""}</button>`; }).join("") +
     `</div></section>`;
 }
 const rsWaiting = () => ops.routeSheets.filter(x => x.status === "submitted").sort((a, b) => String(a.submittedOn || "").localeCompare(String(b.submittedOn || "")));
@@ -12025,7 +12033,7 @@ function rsWaitHtml() {
     : `<p class="sub" style="margin:8px 0 0">Nothing waiting. Sheets sent by conductors appear here.</p>`;
 }
 document.addEventListener("click", e => {
-  const o = e.target.closest("[data-rsopen]"); if (o && ($("rsHome")?.contains(o) || $("tRsDays")?.contains(o))) {
+  const o = e.target.closest("[data-rsopen]"); if (o && !e.target.closest("[data-mechk]") && ($("rsHome")?.contains(o) || $("tRsDays")?.contains(o))) {
     // On a computer the day opens in the Day sheet; Close there comes back to these cards.
     const bus = $("tRsDays")?.contains(o) ? tBusId : rsBus;
     // On a phone the day opens in the phone form; on a computer in the Day sheet (the conductor's version for a conductor).
@@ -13015,7 +13023,7 @@ function fillDayForm() {
   $("dbDelete").textContent = "Delete entry"; delete $("dbDelete").dataset.confirm;
   $("dbForm").querySelectorAll(".err").forEach(e => e.textContent = ""); $("dbForm").querySelectorAll("[aria-invalid]").forEach(e => e.removeAttribute("aria-invalid"));
   dbDirty = false; $("dbDirty").hidden = true; $("dbSaved").textContent = "";
-  syncDbMode(); dbCalc(); syncDbSaveLabel();
+  syncDbMode(); dbCalc(); syncDbSaveLabel(); meChkPaint();
   if (view === "tday" && dbCanEdit) setTimeout(() => (idle ? $("dbIdleReason") : $("dbS1")).focus({ preventScroll: true }), 30);
 }
 const DB_PAY = [["dbPayD", "driver"], ["dbPayC", "conductor"], ["dbPayK", "checker"]];
