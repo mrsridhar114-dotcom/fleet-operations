@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-17f">
+<meta name="app-ver" content="2026-11-17g">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -549,9 +549,10 @@ table.metable { border-collapse: collapse; width: 100%; min-width: 1180px; font-
 .metable tr.idle td { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); } .metable tr.idle td.sticky { box-shadow: inset 4px 0 0 var(--muted), 1px 0 0 var(--line); }
 /* "Checked up to here": the date is the button; the marked day is highlighted with a line under it. */
 .metable .mechkb { box-sizing: border-box; min-width: 22px; padding: 2px 3px; border: 0; border-radius: 4px; background: transparent; color: inherit; font: 700 12px var(--body); cursor: pointer; } .metable .mechkb:hover { background: var(--accent-soft); color: var(--accent); }
-.metable tr.mechk td { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); border-bottom: 3px solid var(--accent); } .metable tr.mechk td.sticky { box-shadow: inset 4px 0 0 var(--accent), 1px 0 0 var(--line); } .metable tr.mechk .mechkb { background: var(--accent); color: var(--accent-ink); }
-.mechknote { font-size: 13px; font-weight: 600; color: var(--accent); } .rsday.chkd { box-shadow: 0 0 0 3px var(--accent); } .rsday .rschk { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; } .rsday .rschk:hover { color: var(--accent); text-decoration: underline; } .rsday .rschk.on { color: var(--accent); font-weight: 700; }
-.dbchk { white-space: nowrap; } .dbchk[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+/* Bright yellow, stronger than the pale yellow of a part day, so the marked day stands out. */
+.metable tr.mechk td { background: #ffe14d; color: #142019; border-top: 3px solid #f2b600; border-bottom: 3px solid #f2b600; } .metable tr.mechk td.sticky { box-shadow: inset 4px 0 0 #f2b600, 1px 0 0 var(--line); } .metable tr.mechk .mechkb { background: #f2b600; color: #142019; }
+.mechknote { font-size: 13px; font-weight: 600; color: var(--accent); } .rsday.chkd, .rsday.chkd.good, .rsday.chkd.loss, .rsday.chkd.part { background: #ffe14d; border-color: #f2b600; box-shadow: 0 0 0 3px #f2b600; color: #142019; } .rsday.chkd .rsdg i, .rsday.chkd .rsdc i { color: #44514a; } .rsday .rschk { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; } .rsday .rschk:hover { color: var(--accent); text-decoration: underline; } .rsday .rschk.on { color: #142019; font-weight: 700; }
+.dbchk { white-space: nowrap; } .dbchk[aria-pressed="true"] { background: #ffe14d; border-color: #f2b600; color: #142019; }
 .melegend { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-left: auto; } .melegend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; } .metable tr.future td { color: var(--muted); height: 22px; }
 .metable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); padding: 7px 3px; font-family: var(--mono); font-size: 12px; } .metable tfoot td.sticky { background: var(--bg); font-family: var(--body); }
 .metable .neg { color: var(--danger); } .metable td.medw { color: var(--muted); font-size: 11px; } .metable .mecum { font-weight: 600; } .mec { font-family: var(--mono); } .mebal { font-weight: 700; color: var(--ok); }
@@ -6884,7 +6885,7 @@ function renderTrips() {
   document.querySelectorAll('#tViewSeg input[name="tView"]').forEach(i => i.checked = i.value === tView);
   $("tEntryBar").innerHTML =
     `<span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} still to enter` : list.length ? "All days up to today are entered" : ""}${nTot ? ` · ${nTot} with the total only` : ""}</span><span class="mechknote" id="meChkNote" hidden></span>` +
-    (tView === "table" ? `<span class="melegend"><span><i style="background:color-mix(in srgb, var(--danger) 35%, var(--surface))"></i>Negative balance</span><span><i style="background:color-mix(in srgb, #f2c200 45%, var(--surface))"></i>Ran only some singles</span><span><i style="background:color-mix(in srgb, var(--muted) 30%, var(--surface))"></i>Did not run</span><span><b style="color:var(--warn)">●</b> Changed, not saved</span><span><i style="background:color-mix(in srgb, var(--accent) 30%, var(--surface));box-shadow:inset 0 -3px 0 var(--accent)"></i>Checked up to here${canTrips ? " (click the date)" : ""}</span></span>` : "");
+    (tView === "table" ? `<span class="melegend"><span><i style="background:color-mix(in srgb, var(--danger) 35%, var(--surface))"></i>Negative balance</span><span><i style="background:color-mix(in srgb, #f2c200 45%, var(--surface))"></i>Ran only some singles</span><span><i style="background:color-mix(in srgb, var(--muted) 30%, var(--surface))"></i>Did not run</span><span><b style="color:var(--warn)">●</b> Changed, not saved</span><span><i style="background:#ffe14d;box-shadow:inset 0 0 0 2px #f2b600"></i>Checked up to here${canTrips ? " (click the date)" : ""}</span></span>` : "");
   const R = routeFor(tFyStart), editingRoute = $("tRoute").dataset.editing === "1";
   $("tRoute").innerHTML = editingRoute
     ? `<label for="tRouteA">Starts on 1 April from</label><input id="tRouteA" value="${esc(R?.a || "")}" style="width:11em"><label for="tRouteB">alternating with</label><input id="tRouteB" value="${esc(R?.b || "")}" style="width:11em"><button class="btn" type="button" data-route="save" style="padding:4px 10px">Save</button><button class="icon" type="button" data-route="cancel">Cancel</button>`
