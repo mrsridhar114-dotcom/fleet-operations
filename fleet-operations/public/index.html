@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-17d">
+<meta name="app-ver" content="2026-11-17e">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -547,6 +547,10 @@ table.metable { border-collapse: collapse; width: 100%; min-width: 1180px; font-
 .metable tr.loss td { background: color-mix(in srgb, var(--danger) 20%, var(--surface)); } .metable tr.loss td.sticky { box-shadow: inset 4px 0 0 var(--danger), 1px 0 0 var(--line); }
 .metable tr.part td { background: color-mix(in srgb, #f2c200 30%, var(--surface)); } .metable tr.part td.sticky { box-shadow: inset 4px 0 0 #d9a900, 1px 0 0 var(--line); }
 .metable tr.idle td { background: color-mix(in srgb, var(--muted) 18%, var(--surface)); color: var(--muted); } .metable tr.idle td.sticky { box-shadow: inset 4px 0 0 var(--muted), 1px 0 0 var(--line); }
+/* "Checked up to here": the date is the button; the marked day is highlighted with a line under it. */
+.metable .mechkb { box-sizing: border-box; min-width: 22px; padding: 2px 3px; border: 0; border-radius: 4px; background: transparent; color: inherit; font: 700 12px var(--body); cursor: pointer; } .metable .mechkb:hover { background: var(--accent-soft); color: var(--accent); }
+.metable tr.mechk td { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); border-bottom: 3px solid var(--accent); } .metable tr.mechk td.sticky { box-shadow: inset 4px 0 0 var(--accent), 1px 0 0 var(--line); } .metable tr.mechk .mechkb { background: var(--accent); color: var(--accent-ink); }
+.mechknote { font-size: 13px; font-weight: 600; color: var(--accent); } .rsday.chkd { box-shadow: 0 0 0 3px var(--accent); } .rsday .rschk { font-size: 12px; font-weight: 700; color: var(--accent); }
 .melegend { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-left: auto; } .melegend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; } .metable tr.future td { color: var(--muted); height: 22px; }
 .metable tfoot td { font-weight: 700; background: var(--bg); border-top: 2px solid var(--line); padding: 7px 3px; font-family: var(--mono); font-size: 12px; } .metable tfoot td.sticky { background: var(--bg); font-family: var(--body); }
 .metable .neg { color: var(--danger); } .metable td.medw { color: var(--muted); font-size: 11px; } .metable .mecum { font-weight: 600; } .mec { font-family: var(--mono); } .mebal { font-weight: 700; color: var(--ok); }
@@ -6695,7 +6699,8 @@ function renderMonthEntry(ym, M) {
   let cum = 0;
   $("tRows").innerHTML = days.map(r => {
     const dw = DAYS[new Date(r.date + "T00:00:00").getDay()].slice(0, 3), open = r.future ? "" : `<button class="open" type="button" data-open="${r.date}" aria-label="Open the day sheet of ${fmtDate(r.date)}" title="Open the day sheet">↗</button>`;
-    const day = `<td class="sticky"><span class="medate">${r.changed ? '<span class="dot" title="Changed, not saved"></span>' : ""}<b>${pad2(r.d)}</b></span></td>`;
+    const dn = canTrips && !r.future ? `<button type="button" class="mechkb" data-mechk="${r.date}" aria-pressed="false" aria-label="Checked up to ${fmtDate(r.date)}" title="Mark as checked up to here">${pad2(r.d)}</button>` : `<b>${pad2(r.d)}</b>`;
+    const day = `<td class="sticky"><span class="medate">${r.changed ? '<span class="dot" title="Changed, not saved"></span>' : ""}${dn}</span></td>`;
     if (r.future) return `<tr class="future" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="21"></td></tr>`;
     if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="17"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td class="n mec mecum" data-c="cum">${nf(cum)}</td><td></td><td></td><td>${open}</td></tr>`;
     if (r.has) cum += r.bal;
@@ -6796,6 +6801,25 @@ async function meOpenDay(date) {
 }
 
 /* render */
+/* "Checked up to here": one day of the route trip sheet the office has checked against the manual record. Only a reminder:
+   marking another day moves it, and marking the same day again removes it. Kept in appMeta "routeCheck". */
+let routeChk = null; const RCHK_LS = "fleet-routecheck";
+function meChkPaint() {
+  const c = routeChk?.date ? routeChk : null, on = d => !!c && c.date === d && c.bus === tBusId;
+  document.querySelectorAll("#tRows tr[data-date]").forEach(tr => { const m = on(tr.dataset.date), b = tr.querySelector(".mechkb"); tr.classList.toggle("mechk", m);
+    if (b) { b.setAttribute("aria-pressed", String(m)); b.title = m ? "Checked up to here. Click again to remove the mark" : "Mark as checked up to here"; } });
+  document.querySelectorAll("#tRsDays [data-rsopen]").forEach(b => { const m = on(b.dataset.rsopen); b.classList.toggle("chkd", m); b.querySelector(".rschk")?.remove(); if (m) b.insertAdjacentHTML("beforeend", '<span class="rschk">✓ Checked up to here</span>'); });
+  const n = $("meChkNote"); if (n) { n.hidden = !c; n.innerHTML = c ? `✓ Checked up to ${fmtDate(c.date)}${c.bus !== tBusId ? ` (${esc(plateOf(vehicles.find(v => v.id === c.bus)))})` : ""}${c.byName ? ` <span class="hint">· ${esc(c.byName)}, ${fmtDate(c.on)}</span>` : ""}` : ""; }
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-mechk]"); if (!b || !canTrips) return;
+  const date = b.dataset.mechk, same = routeChk?.date === date && routeChk.bus === tBusId, was = routeChk;
+  routeChk = { date: same ? "" : date, bus: same ? "" : tBusId, byName: whoAmI(), on: todayISO() }; meChkPaint();
+  try {
+    if (tripDb) await tripDb.collection("appMeta").doc("routeCheck").set(routeChk); else localStorage.setItem(RCHK_LS, JSON.stringify(routeChk));
+    toast(same ? "Check mark removed" : `Checked up to ${fmtDate(date)}`);
+  } catch { routeChk = was; meChkPaint(); toast("Couldn't save the check mark. Try again."); }
+});
 function renderTrips() {
   if (!$("tRows")) return;
   if (typeof renderOps === "function" && $("oCards") && (VIEW_MOD[view] === "trips" || VIEW_MOD[view] === "bookings" || VIEW_MOD[view] === "tripsheets") && view !== "trips") renderOps();
@@ -6851,8 +6875,8 @@ function renderTrips() {
   const nTot = list.filter(totalOnly).length;
   document.querySelectorAll('#tViewSeg input[name="tView"]').forEach(i => i.checked = i.value === tView);
   $("tEntryBar").innerHTML =
-    `<span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} still to enter` : list.length ? "All days up to today are entered" : ""}${nTot ? ` · ${nTot} with the total only` : ""}</span>` +
-    (tView === "table" ? `<span class="melegend"><span><i style="background:color-mix(in srgb, var(--danger) 35%, var(--surface))"></i>Negative balance</span><span><i style="background:color-mix(in srgb, #f2c200 45%, var(--surface))"></i>Ran only some singles</span><span><i style="background:color-mix(in srgb, var(--muted) 30%, var(--surface))"></i>Did not run</span><span><b style="color:var(--warn)">●</b> Changed, not saved</span></span>` : "");
+    `<span class="hint">${missing.length ? `${missing.length} day${missing.length === 1 ? "" : "s"} still to enter` : list.length ? "All days up to today are entered" : ""}${nTot ? ` · ${nTot} with the total only` : ""}</span><span class="mechknote" id="meChkNote" hidden></span>` +
+    (tView === "table" ? `<span class="melegend"><span><i style="background:color-mix(in srgb, var(--danger) 35%, var(--surface))"></i>Negative balance</span><span><i style="background:color-mix(in srgb, #f2c200 45%, var(--surface))"></i>Ran only some singles</span><span><i style="background:color-mix(in srgb, var(--muted) 30%, var(--surface))"></i>Did not run</span><span><b style="color:var(--warn)">●</b> Changed, not saved</span><span><i style="background:color-mix(in srgb, var(--accent) 30%, var(--surface));box-shadow:inset 0 -3px 0 var(--accent)"></i>Checked up to here${canTrips ? " (click the date)" : ""}</span></span>` : "");
   const R = routeFor(tFyStart), editingRoute = $("tRoute").dataset.editing === "1";
   $("tRoute").innerHTML = editingRoute
     ? `<label for="tRouteA">Starts on 1 April from</label><input id="tRouteA" value="${esc(R?.a || "")}" style="width:11em"><label for="tRouteB">alternating with</label><input id="tRouteB" value="${esc(R?.b || "")}" style="width:11em"><button class="btn" type="button" data-route="save" style="padding:4px 10px">Save</button><button class="icon" type="button" data-route="cancel">Cancel</button>`
@@ -6865,7 +6889,7 @@ function renderTrips() {
   renderMonthEntry(ym, M);
 
   renderMileage(ym, M); renderExpenseSplit(M);
-
+  meChkPaint();
 }
 
 // Everything the month view and the year view need for one month.
@@ -7000,8 +7024,9 @@ const ncell = v => v ? `<td class="n">${nf(v)}</td>` : `<td class="n"><span clas
 const fyOptions = sel => { const y = fyOf(todayISO()); $(sel).innerHTML = fyYears().map(f => `<option value="${f}">FY ${fyLabel(f)}</option>`).join(""); $(sel).value = String(y); return y; };
 
 function subscribeOps() {
-  if (!tripDb) { Object.keys(OPS_LS).forEach(c => ops[c] = loadLS(OPS_LS[c])); return; }
+  if (!tripDb) { Object.keys(OPS_LS).forEach(c => ops[c] = loadLS(OPS_LS[c])); try { routeChk = JSON.parse(localStorage.getItem(RCHK_LS) || "null"); } catch {} return; }
   opsUnsubs.forEach(u => u?.()); opsUnsubs = [];
+  opsUnsubs.push(tripDb.collection("appMeta").doc("routeCheck").onSnapshot(s => { routeChk = s.exists ? s.data() : null; meChkPaint(); }, () => {}));
   const snap = (name, set) => opsUnsubs.push(tripDb.collection(name).onSnapshot(s => { set(s.docs.map(d => ({ id: d.id, ...d.data() }))); renderOps(); }, () => {}));
   Object.keys(OPS_LS).forEach(c => snap(c, a => ops[c] = a));
   snap("tripMonths", a => allTripMonths = a);
