@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-17b">
+<meta name="app-ver" content="2026-11-17c">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -2685,7 +2685,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
           <div class="tkm" id="tKm"></div>
           <div class="tscroll metwrap" id="tTableWrap">
             <table class="metable">
-              <colgroup><col style="width:2.26%"><col style="width:5.57%"><col style="width:2.56%"><col style="width:7.53%"><col style="width:7.53%"><col style="width:6.78%"><col style="width:5.2%"><col style="width:4.7%"><col style="width:4.95%"><col style="width:3.61%"><col style="width:3.61%"><col style="width:3.61%"><col style="width:3.77%"><col style="width:3.77%"><col style="width:3.77%"><col style="width:3.77%"><col style="width:3.77%"><col style="width:4.2%"><col style="width:3.75%"><col style="width:3.75%"><col style="width:4.82%"><col style="width:4.52%"><col style="width:2.22%"></colgroup>
+              <colgroup><col style="width:2.2%"><col style="width:5.57%"><col style="width:2.3%"><col style="width:7.0%"><col style="width:7.0%"><col style="width:6.3%"><col style="width:5.2%"><col style="width:4.7%"><col style="width:4.95%"><col style="width:3.45%"><col style="width:3.45%"><col style="width:3.45%"><col style="width:3.58%"><col style="width:3.58%"><col style="width:3.58%"><col style="width:3.58%"><col style="width:3.58%"><col style="width:4.2%"><col style="width:3.75%"><col style="width:3.75%"><col style="width:4.82%"><col style="width:4.52%"><col style="width:3.3%"><col style="width:2.2%"></colgroup>
               <thead id="tHead"></thead>
               <tbody id="tRows"></tbody>
               <tfoot id="tFoot"></tfoot>
@@ -6667,7 +6667,8 @@ function meDays(ym) {
     const parts = dsl + pay + route, unsplit = Math.max(0, told - parts), exp = parts + unsplit;
     const odo = num(f.odo), K = odo && prevOdo != null ? odoKm(V, prevD, prevOdo, date, odo) : null, run = K ? (K.split ? K.km : odo - prevOdo) : null;
     const changed = !!dr && Object.keys(dr.f).some(k => String(dr.f[k]) !== String(base[k] ?? ""));
-    out.push({ date, d, t, f, auto, touched, has, sum, col, exp, parts, dsl, pay, route, unsplit, bal: col - exp, odo, run, changed, idle: !!t?.notRun, future: date > todayISO(), routeLocked: meRouteLocked(t), notSplit: num(f.tot) ? num(f.tot) - sum : 0 });
+    const kmpl = K && K.act > 0 && lit > 0 ? K.act / lit : null; // the day's mileage: actual km run ÷ litres filled
+    out.push({ date, d, t, f, auto, touched, has, sum, col, exp, parts, dsl, pay, route, unsplit, bal: col - exp, odo, run, kmpl, act: K?.act || 0, changed, idle: !!t?.notRun, future: date > todayISO(), routeLocked: meRouteLocked(t), notSplit: num(f.tot) ? num(f.tot) - sum : 0 });
     if (odo) { prevOdo = odo; prevD = date; }
     if (rate && (t || dr)) prevRate = rate;
     if (t && !t.notRun) prevCrew = t;
@@ -6688,14 +6689,14 @@ function renderMonthEntry(ym, M) {
   if ($("tRows").contains(document.activeElement)) { meWaiting = true; return; }  // don't redraw under someone typing
   const ro = canTrips ? "" : " disabled", days = meDays(ym), inp = (r, k, cls = "", extra = "") => `<input class="mein${cls}" data-k="${k}" type="${k === "start" ? "text" : "number"}" inputmode="${k === "lit" || k === "rate" ? "decimal" : "numeric"}" value="${esc(k === "start" ? r.auto[k] ?? r.f[k] ?? "" : blank0(r.auto[k] ?? r.f[k]))}" aria-label="${k}"${extra}${ro}>`;
   // Columns in the order of the office sheet: Date, Starting, Day, crew, diesel, padi, S1–S5, Collection, Expense, Balance, Total Balance, KMS.
-  $("tHead").innerHTML = `<tr class="grp"><th colspan="6"></th><th colspan="3">Diesel</th><th colspan="3">Padi</th><th colspan="6">Collection</th><th colspan="3">Money</th><th></th><th></th></tr>` +
-    `<tr><th class="sticky">Date</th><th>Starting</th><th>Day</th><th>Driver</th><th>Conductor</th><th>Checker</th><th class="n">Diesel rate</th><th class="n">No. litre</th><th class="n">Fuel price</th><th class="n">Driver</th><th class="n">Cond.</th><th class="n">Checker</th><th class="n">S1</th><th class="n">S2</th><th class="n">S3</th><th class="n">S4</th><th class="n">S5</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Total bal.</th><th class="n">KMS</th><th></th></tr>`;
+  $("tHead").innerHTML = `<tr class="grp"><th colspan="6"></th><th colspan="3">Diesel</th><th colspan="3">Padi</th><th colspan="6">Collection</th><th colspan="3">Money</th><th></th><th></th><th></th></tr>` +
+    `<tr><th class="sticky">Date</th><th>Starting</th><th>Day</th><th>Driver</th><th>Conductor</th><th>Checker</th><th class="n">Diesel rate</th><th class="n">No. litre</th><th class="n">Fuel price</th><th class="n">Driver</th><th class="n">Cond.</th><th class="n">Checker</th><th class="n">S1</th><th class="n">S2</th><th class="n">S3</th><th class="n">S4</th><th class="n">S5</th><th class="n">Collection</th><th class="n">Expense</th><th class="n">Balance</th><th class="n">Total bal.</th><th class="n">KMS</th><th class="n" title="Km run ÷ litres filled that day">Mileage</th><th></th></tr>`;
   let cum = 0;
   $("tRows").innerHTML = days.map(r => {
     const dw = DAYS[new Date(r.date + "T00:00:00").getDay()].slice(0, 3), open = r.future ? "" : `<button class="open" type="button" data-open="${r.date}" aria-label="Open the day sheet of ${fmtDate(r.date)}" title="Open the day sheet">↗</button>`;
     const day = `<td class="sticky"><span class="medate">${r.changed ? '<span class="dot" title="Changed, not saved"></span>' : ""}<b>${pad2(r.d)}</b></span></td>`;
-    if (r.future) return `<tr class="future" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="20"></td></tr>`;
-    if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="17"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td class="n mec mecum" data-c="cum">${nf(cum)}</td><td></td><td>${open}</td></tr>`;
+    if (r.future) return `<tr class="future" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="21"></td></tr>`;
+    if (r.idle) return `<tr class="idle" data-date="${r.date}">${day}<td></td><td class="medw">${dw}</td><td colspan="17"><span class="pill off">Did not run</span> ${esc(r.t.idleReason || "")}${r.t.remarks ? ` · ${esc(r.t.remarks)}` : ""}</td><td class="n mec mecum" data-c="cum">${nf(cum)}</td><td></td><td></td><td>${open}</td></tr>`;
     if (r.has) cum += r.bal;
     const totCls = r.notSplit > 0 ? " part" : r.notSplit < 0 ? " over" : "", sel = (k, kind, l) => `<select class="mein t" data-k="${k}" aria-label="${l}"${ro}>${meCrewOpts(kind, r.f[k])}</select>`;
     return `<tr data-date="${r.date}" class="${r.has ? "" : "empty"}${r.changed ? " chg" : ""} ${meRowTone(r)}" title="${meRowTone(r) === "loss" ? "Balance is negative" : meRowTone(r) === "part" ? `Ran ${meSg(r)} of ${SINGLES_PER_DAY} singles` : ""}">${day}` +
@@ -6705,14 +6706,15 @@ function renderMonthEntry(ym, M) {
       [1, 2, 3, 4, 5].map(i => `<td>${inp(r, "s" + i)}</td>`).join("") + `<td>${inp(r, "tot", " tot" + totCls, ` placeholder="${r.sum || ""}" title="${r.notSplit > 0 ? `${rs(r.notSplit)} not split into singles` : r.notSplit < 0 ? `Singles are ${rs(-r.notSplit)} more than the total` : "Adds up S1–S5; type the total when the singles are not all known"}"`)}</td>` +
       `<td>${inp(r, "exp", " expt", ` placeholder="${r.parts || ""}" title="${meExpTitle(r)}"`)}</td>` +
       `<td class="n mec mebal${r.bal < 0 ? " neg" : ""}" data-c="bal">${r.has ? nf(r.bal) : ""}</td><td class="n mec mecum${cum < 0 ? " neg" : ""}" data-c="cum">${r.has ? nf(cum) : ""}</td>` +
-      `<td>${inp(r, "odo", kmOdd(r.run) ? " odobad" : "", ` title="${kmOdd(r.run) ? kmOddTitle(r.run) : r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day"}"`)}</td><td>${open}</td></tr>`;
+      `<td>${inp(r, "odo", kmOdd(r.run) ? " odobad" : "", ` title="${kmOdd(r.run) ? kmOddTitle(r.run) : r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day"}"`)}</td>` +
+      `<td class="n mec memile" data-c="mile" title="${r.kmpl ? `${nf(r.act)} km ÷ ${nf(num(r.f.lit), 2)} L` : ""}">${r.kmpl ? nf(r.kmpl, 1) : ""}</td><td>${open}</td></tr>`;
   }).join("");
   const ran = days.filter(r => r.has && !r.idle), sumK = k => ran.reduce((a, r) => a + num(r.auto[k] ?? r.f[k]), 0);
   const totCol = ran.reduce((a, r) => a + r.col, 0), totExp = ran.reduce((a, r) => a + r.exp, 0), km = M.km;
   $("tFoot").innerHTML = `<tr><td class="sticky">Total</td><td colspan="5">${ran.length} day${ran.length === 1 ? "" : "s"} · ${days.filter(r => r.idle).length} not run</td>` +
     `<td></td><td class="n">${nf(sumK("lit"))}</td><td class="n">${nf(sumK("dsl"))}</td><td class="n">${nf(sumK("pd"))}</td><td class="n">${nf(sumK("pc"))}</td><td class="n">${nf(sumK("pk"))}</td>` +
     `${[1, 2, 3, 4, 5].map(i => `<td class="n">${nf(sumK("s" + i))}</td>`).join("")}<td class="n">${nf(totCol)}</td><td class="n">${nf(totExp)}</td>` +
-    `<td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n" title="${M.odoK?.conv ? `Actual km this month. Meter km: ${M.mkm != null ? nf(M.mkm) : "—"}` : "Km run this month"}">${km != null ? nf(km) + " km" : "—"}</td><td></td></tr>`;
+    `<td class="n${totCol - totExp < 0 ? " neg" : ""}">${nf(totCol - totExp)}</td><td></td><td class="n" title="${M.odoK?.conv ? `Actual km this month. Meter km: ${M.mkm != null ? nf(M.mkm) : "—"}` : "Km run this month"}">${km != null ? nf(km) + " km" : "—"}</td><td class="n" title="This month: km run ÷ litres filled">${km && sumK("lit") ? nf(km / sumK("lit"), 1) : "—"}</td><td></td></tr>`;
 }
 // Typing updates the draft and the worked-out boxes of the month, without redrawing the box being typed in.
 function meInput(e) {
@@ -6738,6 +6740,7 @@ function meRefresh() {
     const od = tr.querySelector('[data-k="odo"]'); if (od) { od.title = kmOdd(r.run) ? kmOddTitle(r.run) : r.run > 0 ? `${nf(r.run)} km run` : "Odometer reading at the end of the day"; od.classList.toggle("odobad", kmOdd(r.run)); }
     const c = n => tr.querySelector(`[data-c="${n}"]`);
     c("bal").textContent = r.has ? nf(r.bal) : ""; c("bal").classList.toggle("neg", r.bal < 0);
+    if (c("mile")) { c("mile").textContent = r.kmpl ? nf(r.kmpl, 1) : ""; c("mile").title = r.kmpl ? `${nf(r.act)} km ÷ ${nf(num(r.f.lit), 2)} L` : ""; }
     tr.classList.toggle("chg", r.changed); tr.classList.toggle("empty", !r.has); const tone = meRowTone(r); tr.classList.toggle("loss", tone === "loss"); tr.classList.toggle("part", tone === "part"); tr.title = tone === "loss" ? "Balance is negative" : tone === "part" ? `Ran ${meSg(r)} of ${SINGLES_PER_DAY} singles` : "";
     if (r.has) cum += r.bal; const cc = tr.querySelector('[data-c="cum"]'); if (cc) { cc.textContent = r.has || r.idle ? nf(cum) : ""; cc.classList.toggle("neg", cum < 0); }
     const dt = tr.querySelector(".medate"), dot = dt.querySelector(".dot"); if (r.changed && !dot) dt.insertAdjacentHTML("afterbegin", '<span class="dot" title="Changed, not saved"></span>'); else if (!r.changed && dot) dot.remove();
