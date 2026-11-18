@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-18d">
+<meta name="app-ver" content="2026-11-18e">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -345,10 +345,9 @@ tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width:
   #view-vehicles.wrap { padding-inline: 18px; }
   #view-vehicles .exppill { font-size: 11px; padding: 2px 4px; } #view-vehicles td[data-label="Chassis number"] { max-width: 96px; }
   #view-vehicles td[data-label="Registration date"] .num { font-size: 13px; } #view-vehicles thead th { font-size: 10px; }
-  /* A smaller window (a laptop at 125%): no photo thumbnail and tighter cells, so the table fits without its own sideways scroll bar. */
-  #view-vehicles .lthumb { display: none; } #view-vehicles tbody td { font-size: 13px; }
-  #view-vehicles .cdue { left: auto; right: 2px; top: 1px; height: 22px; padding: 0 7px 0 5px; } /* the due badge moves off the plate, above the print button */
-  #view-vehicles thead th, #view-vehicles tbody td { padding-left: 4px; padding-right: 4px; } #view-vehicles tbody td.c-name { padding-right: 44px; }
+  /* A smaller window (a laptop at 125%): a smaller photo and tighter cells, so the table fits without its own sideways scroll bar. */
+  #view-vehicles .lthumb { width: 34px; height: 26px; } #view-vehicles tbody td { font-size: 13px; } #view-vehicles .idno.idno { font-size: 11px; }
+  #view-vehicles thead th, #view-vehicles tbody td { padding-left: 4px; padding-right: 4px; } #view-vehicles tbody td.c-name { padding-right: 40px; }
 }
 .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
 .stat { padding: 14px 16px; border-right: 1px solid var(--line); min-width: 0; }
