@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-18a">
+<meta name="app-ver" content="2026-11-18b">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1427,7 +1427,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 @media (max-width: 700px) { .dslcols { display: none; } .dslrow { grid-template-columns: 70px 1fr 1fr 56px; } .dslrow > .sub { grid-column: 1 / -1; grid-row: 2; } }
 /* booking window on phones */
 .bktabs .ts, .bkmore, .camonly { display: none; }
-.pf { display: contents; } .pf > span { display: none; }
+.pf { display: contents; } .pf > span:not(.dmy) { display: none; } /* the label text only; the date box (.dmy) stays */
 .telacts { display: flex; gap: 12px; font-size: 12px; font-weight: 600; } .telacts:empty { display: none; }
 .telacts a { color: var(--accent); text-decoration: none; padding: 2px 0; }
 .bkwarn .wh { all: unset; display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink); font-size: 12px; cursor: pointer; }
@@ -1448,7 +1448,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
   .bkwarn { margin: 8px -14px 0; padding: 8px 14px; }
   .bkappr { margin: 10px -14px 0; padding: 10px 14px; }
   .payrow.bk { grid-template-columns: 1fr 1fr; padding: 10px; border: 1px solid var(--line); border-radius: 8px; gap: 8px 10px; }
-  .pf { display: flex; flex-direction: column; gap: 3px; } .pf > span { display: block; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .pf { display: flex; flex-direction: column; gap: 3px; } .pf > span:not(.dmy) { display: block; font-size: 11px; font-weight: 600; color: var(--muted); }
   .payrow .prm { grid-column: 1 / -1; justify-self: start; border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; }
   .bksum { padding: 6px 14px; }
   #bkDrawer footer { flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
@@ -1507,6 +1507,7 @@ html:has(.drawer:not([hidden])) { overflow: hidden; }
 .bkpp { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .field.pp input { background: var(--chip-bg); }
 .payrow.bk { grid-template-columns: 1.1fr .9fr 1fr 1.4fr auto; }
+.payrow .dmy .dmyt { font-size: 13px; padding: 7px 30px 7px 8px; }
 .payrow input, .payrow select { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px; width: 100%; min-width: 0; }
 @media (max-width: 700px) {
   .bday { min-height: 58px; padding: 3px; }
