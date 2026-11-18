@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-18b">
+<meta name="app-ver" content="2026-11-18c">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -829,6 +829,7 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
 .attbtn[aria-expanded="true"] { background: var(--chip-bg); }
 /* On a computer the vehicle record opens as a full page beside the menu. The sections are shared between two
    columns of about equal height (vLayout), so the page has one scroll and no gaps. */
+@media (min-width: 1700px) { .drawer.edfull form { column-count: 3; } }
 @media (min-width: 1024px) {
   .drawer.fullpage { left: 248px; width: auto; box-shadow: none; border-left: 1px solid var(--line); }
   /* While the full-page record is open, the list behind it doesn't scroll, so there is only one scroll bar. */
@@ -842,6 +843,11 @@ details.older li { display: flex; flex-direction: column; gap: 1px; }
   .drawer.fullpage .dvphoto img { width: 200px; height: 240px; max-height: none; }
   .drawer.fullpage .docpop { left: auto; right: 40px; width: 460px; top: 76px; }
   .drawer.fullpage footer { padding-left: 40px; padding-right: 40px; }
+  /* Add / edit a vehicle, driver or conductor: the same full page, its sections flowing over two columns (three on a wide screen). */
+  .drawer.edfull { overflow-y: auto; } /* the page scrolls, so the two columns can balance; the title and the buttons stay in view */
+  .drawer.edfull header { position: sticky; top: 0; z-index: 3; background: var(--surface); } .drawer.edfull footer { position: sticky; bottom: 0; z-index: 3; background: var(--surface); margin-top: auto; }
+  .drawer.edfull form { flex: none; overflow: visible; display: block; column-count: 2; column-gap: 32px; padding: 24px 40px 32px; }
+  .drawer.edfull form > * { break-inside: avoid; margin: 0 0 18px; }
   /* Truck trip: the whole page. Trip and money side by side, diesel across, then kilometres and payments; the totals card on the right. */
   #lgDrawer.fullpage { width: auto; left: 0; border-left: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; }
   #lgDrawer > header { grid-column: 1 / -1; }
@@ -3424,7 +3430,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
 </div>
 
 <div class="scrim" id="scrim" hidden></div>
-<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" hidden>
+<aside class="drawer fullpage edfull" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" hidden>
   <header>
     <h2 id="dTitle">Add vehicle</h2>
     <button class="icon" type="button" id="closeBtn" aria-label="Close">Close ✕</button>
@@ -3641,7 +3647,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <button class="btn primary" type="submit" form="uForm" id="uSaveBtn">Save user</button>
   </footer>
 </aside>
-<aside class="drawer" id="dfDrawer" role="dialog" aria-modal="true" aria-labelledby="dfTitle" hidden>
+<aside class="drawer fullpage edfull" id="dfDrawer" role="dialog" aria-modal="true" aria-labelledby="dfTitle" hidden>
   <header>
     <h2 id="dfTitle">Add driver</h2>
     <button class="icon" type="button" id="dfClose" aria-label="Close">Close ✕</button>
@@ -3726,7 +3732,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <button class="btn primary" type="button" id="dvEdit">Edit driver</button>
   </footer>
 </aside>
-<aside class="drawer" id="cfDrawer" role="dialog" aria-modal="true" aria-labelledby="cfTitle" hidden>
+<aside class="drawer fullpage edfull" id="cfDrawer" role="dialog" aria-modal="true" aria-labelledby="cfTitle" hidden>
   <header>
     <h2 id="cfTitle">Add conductor</h2>
     <button class="icon" type="button" id="cfClose" aria-label="Close">Close ✕</button>
