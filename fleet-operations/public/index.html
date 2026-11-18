@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-18c">
+<meta name="app-ver" content="2026-11-18d">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -296,7 +296,7 @@ tr.rowlink:active { background: var(--accent-soft); }
 .toolbar input[type="search"] { flex: 1 1 200px; min-width: 0; }
 .toolbar select { flex: 0 1 auto; min-width: 0; max-width: 100%; }
 .count { font-size: 13px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
-.register { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+.register { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; overflow-y: hidden; } /* never a second, up-and-down scroll bar inside the table */
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 thead th { text-align: left; font-family: var(--mono); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 12px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 thead th button { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
@@ -345,6 +345,10 @@ tr.redit .rowact .btn { padding: 6px 14px; font-size: 13px; } @media (max-width:
   #view-vehicles.wrap { padding-inline: 18px; }
   #view-vehicles .exppill { font-size: 11px; padding: 2px 4px; } #view-vehicles td[data-label="Chassis number"] { max-width: 96px; }
   #view-vehicles td[data-label="Registration date"] .num { font-size: 13px; } #view-vehicles thead th { font-size: 10px; }
+  /* A smaller window (a laptop at 125%): no photo thumbnail and tighter cells, so the table fits without its own sideways scroll bar. */
+  #view-vehicles .lthumb { display: none; } #view-vehicles tbody td { font-size: 13px; }
+  #view-vehicles .cdue { left: auto; right: 2px; top: 1px; height: 22px; padding: 0 7px 0 5px; } /* the due badge moves off the plate, above the print button */
+  #view-vehicles thead th, #view-vehicles tbody td { padding-left: 4px; padding-right: 4px; } #view-vehicles tbody td.c-name { padding-right: 44px; }
 }
 .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
 .stat { padding: 14px 16px; border-right: 1px solid var(--line); min-width: 0; }
