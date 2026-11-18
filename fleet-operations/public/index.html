@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-17i">
+<meta name="app-ver" content="2026-11-18a">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -17443,8 +17443,9 @@ function qkForm() {
   let b = "";
   if (k === "load") {
     const lastAny = ops.truckTrips.filter(x => x.vehicleId === kBusId).sort((a, c) => (c.to || c.from).localeCompare(a.to || a.from))[0], dn = lastAny ? (lastAny.driver1Id ? drivers.find(d => d.id === lastAny.driver1Id)?.name || lastAny.driver1Name : lastAny.driver1Name) || "" : "";
-    // A new load starts a new round trip unless an open one is chosen here.
-    b = f("Add to", `<select id="qkR"><option value="new" selected>A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}">Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`) + qkLoadFields(lgPlace(lastAny?.dest || "")) +
+    // From the truck's New load: a new round trip unless an open one is chosen here. From a round trip's Add trip: that round trip.
+    const inR = qk.back === "round" ? qk.rid : "";
+    b = f("Add to", `<select id="qkR"><option value="new"${inR ? "" : " selected"}>A new round trip</option>${qkRounds(kBusId).map(x => `<option value="${x.id}"${x.id === inR ? " selected" : ""}>Round trip ${rtNo(x)} · from ${fmtShort(x.from)}</option>`).join("")}</select>`) + qkLoadFields(lgPlace(lastAny?.dest || "")) +
       f("Driver", ip("qkDrv", dn, 'list="lgDrvList"')) + f("Start km (meter)", ip("qkKm", lastAny?.endKm || "", 'type="number" inputmode="numeric"'));
   }
   if (k === "dsl") b = `<div class="qk2">${f("Date", ip("qkDate", todayISO(), 'type="date"'))}${f("For trip", `<select id="qkLeg">${qkLegOpts(r, qk.leg || qkLastLeg(r), true)}</select>`)}</div>` +
@@ -18411,7 +18412,7 @@ $("lgForm").addEventListener("submit", async e => {
   $("lgForm").querySelectorAll(".err").forEach(x => x.textContent = ""); $("lgForm").querySelectorAll("[aria-invalid]").forEach(x => x.removeAttribute("aria-invalid"));
   let ok = true; const err = (k, m) => { $("e-" + k).textContent = m; $(k).setAttribute("aria-invalid", "true"); ok = false; };
   const old = lgEditId ? ops.truckTrips.find(x => x.id === lgEditId) : null;
-  const l = { id: lgEditId || genId("tt"), vehicleId: old?.vehicleId || kBusId, ...lgRead() };
+  const l = { id: lgEditId || genId("tt"), vehicleId: old?.vehicleId || rt?.vid || kBusId, ...lgRead() };
   l.from = $("lgFrom").value; l.to = $("lgTo").value || l.from;
   if (!l.from) err("lgFrom", "Enter the loading date."); else if (l.to < l.from) err("lgTo", "Must be on or after the from date.");
   if (!(l.days > 0)) err("lgDays", "Enter the number of days.");
