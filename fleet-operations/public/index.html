@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-18e">
+<meta name="app-ver" content="2026-11-22a">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -6514,7 +6514,7 @@ function subscribeTrips() {
    sheet shows that bus's days, so there is no bus to choose. A month two buses ran shows the one with most days, with the other a tap away. */
 let tRoute = { fy: null, map: null }, tPick = {};
 const tFyRange = () => [`${tFyStart}-04-01`, `${tFyStart + 1}-03-31`];
-const tBusTag = v => v.status === "Sold / Scrapped" ? " (sold)" : v.opType === "Route" ? "" : v.opType === "Spare" ? " (now spare)" : " (not on the route now)";
+const tBusTag = v => v.status === "Sold / Scrapped" ? " (sold)" : v.opType === "Route" ? "" : isSpareOp(v) ? " (now spare)" : " (not on the route now)";
 async function tRouteLoad() {
   const fy = tFyStart; tRoute = { fy, map: null }; const [from, to] = tFyRange(); let list = [];
   if (!tripDb) list = tripsLocal.filter(t => t.date >= from && t.date <= to);
@@ -7037,7 +7037,9 @@ const loadLS = k => { try { return JSON.parse(localStorage.getItem(k) || "[]"); 
 const plateOf = v => v ? (v.plateNo || vName(v)) : "";
 const fmtShort = iso => iso ? fmtDate(iso) : "—";
 const activeOf = f => vehicles.filter(v => f(v) && v.status !== "Sold / Scrapped").sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo)));
-const spareBuses = () => activeOf(v => v.type === "Bus" && v.opType === "Spare");
+// Omni buses run like spare buses (booked trips), so they go with the spare buses everywhere.
+const isSpareOp = v => v?.opType === "Spare" || v?.opType === "Omni";
+const spareBuses = () => activeOf(v => v.type === "Bus" && isSpareOp(v));
 const truckList = () => activeOf(v => v.type === "12 Wheeler Truck");
 const inclDays = (a, b) => a && b && b >= a ? dayDiff(a, b) + 1 : "";
 const ostat = (k, v, sub = "", color = "") => `<div class="stat"><div class="k">${k}</div><div class="v"${color ? ` style="color:${color}"` : ""}>${v}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</div>`;
@@ -11255,7 +11257,7 @@ function xlBookings(recs) {
   const { put, S, sheet } = XL, C = xlCtx(recs), sheets = [];
   const all = (recs.bookings || []).slice().sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.no).localeCompare(String(b.no)));
   const done = all.filter(b => b.from && (b.status === "booked" || b.status === "ontrip" || b.status === "completed"));
-  const busIds = [...new Set([...C.veh.filter(v => v.type === "Bus" && v.opType === "Spare" && v.status !== "Sold / Scrapped").sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo))).map(v => v.id), ...done.map(b => b.vehicleId)])];
+  const busIds = [...new Set([...C.veh.filter(v => v.type === "Bus" && isSpareOp(v) && v.status !== "Sold / Scrapped").sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo))).map(v => v.id), ...done.map(b => b.vehicleId)])];
   const HEADS = ["From Date", "To Date", "Days", "Total Rent", "Driver", "Cleaner", "Driver ", "Cleaner", "Permit Exp.", "Toll Gate", "Litres", "Fuel Price", "Other Exp.", "Total Expense", "Collection", "Balance", "Avg Col", "Start KMs", "End Kms", "Kms Run", "Avg Kms/Day", "Mileage", "Remarks", "Other Remarks"];
   const EXTRA = ["Booking No.", "Party", "Phone", "Stage", "Received", "Due from party"];
   busIds.forEach(id => {
@@ -14137,9 +14139,9 @@ const twTotal = () => twSumMoney() + twDiesel() + twOtherSum();
 const twExtraList = () => tw.extras.filter(x => num(x.amt) > 0).map(x => ({ kind: x.kind, amt: Math.round(num(x.amt)), ...(String(x.note || "").trim() ? { note: String(x.note).trim().replace(/\s+/g, " ") } : {}) }));
 const twExtraSum = () => tw.extras.reduce((a, x) => a + Math.round(num(x.amt)), 0);
 const twCollect = () => { const b = twBk(); return b ? num(b.rent) + twExtraSum() + Math.round(num(tw.toll)) : 0; };
-// Special permit no. is TN + the trip's year + -SPL- + the running number from the government site; the driver types only the number.
-const splPrefix = b => `TN${String(b?.from || todayISO()).slice(0, 4)}-SPL-`;
-const splNum = v => String(v || "").replace(/^.*SPL-?/i, "").trim();
+// Special permit no. is TN + the trip's year + -SPL- (an Omni bus: -TEMP-) + the running number from the government site; the driver types only the number.
+const splPrefix = b => `TN${String(b?.from || todayISO()).slice(0, 4)}-${vehicles.find(v => v.id === b?.vehicleId)?.opType === "Omni" ? "TEMP" : "SPL"}-`;
+const splNum = v => String(v || "").replace(/^.*(SPL|TEMP)-?/i, "").trim();
 // Top of the sheet: the rent from the booking, then what the party gave over it (extra km, return diesel…), then the total.
 function twCollectHtml() {
   const b = twBk(), rd = tw.edit ? "" : " readonly";
