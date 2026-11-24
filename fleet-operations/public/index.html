@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-22a">
+<meta name="app-ver" content="2026-11-24a">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -212,7 +212,7 @@ h2.sec { font-family: var(--display); font-weight: 700; font-size: 22px; margin:
 .qk3 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } .qk3 .qkf input { font-size: 15px; padding: 8px 10px; } .qkhint { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
 .qkfadd { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; } .qkfadd select { font: inherit; font-weight: 600; min-height: 46px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; background: var(--surface); color: var(--ink); } .qkfadd .qkadd2 { padding: 0 16px; }
 .qkres { background: var(--side-bg); color: #fff; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; } .qkres span { font-size: 13px; color: var(--side-muted); font-weight: 600; } .qkres b { font: 700 28px var(--mono); color: #9BE08A; } .qkres.neg b { color: #FF9B8F; } .qkres small { font-size: 12.5px; color: var(--side-muted); }
-.qkoh { margin: 8px 0 0; font-size: 13px; color: var(--muted); } .qkol .qkamt { font-family: var(--mono); white-space: nowrap; } .qkol.pend { background: var(--warn-soft); border-radius: 8px; padding-left: 8px; padding-right: 8px; } .qkol.dim { opacity: .6; } .qkamt.neg, .qktot.neg b { color: var(--danger); } .qkamt.pos { color: var(--ok); }
+.qkoh { margin: 8px 0 0; font-size: 13px; color: var(--muted); } .qkol .qkamt { font-family: var(--mono); white-space: nowrap; } .qkol.pend { background: var(--warn-soft); border-radius: 8px; padding-left: 8px; padding-right: 8px; } .qkol.cashd, .qkol.cashd .qkamt { color: var(--danger); } /* diesel paid in cash */ .qkamt.neg, .qktot.neg b { color: var(--danger); } .qkamt.pos { color: var(--ok); }
 .qkreset { border: 0; background: none; color: var(--accent); font: inherit; font-weight: 700; padding: 0 0 0 4px; cursor: pointer; } .qkoff { flex-direction: row; justify-content: flex-start; text-align: left; min-height: 76px; gap: 14px; padding: 12px 16px; }
 .qkgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .qkgrid .qkbig { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 14.5px; min-height: 96px; }
 .qkli { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: var(--ink); text-align: left; width: 100%; font-size: 14px; }
@@ -777,7 +777,7 @@ input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-web
 .rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst .rtact.rtmeter { color: var(--muted); } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
-.rttab tr.adv td { background: var(--accent-soft); } .rttab tr.dim td { color: var(--muted); } .rtpendn { margin: 8px 0 0; color: var(--warn); }
+.rttab tr.adv td { background: var(--accent-soft); } .rttab tr.cashd td { color: var(--danger); } /* diesel paid in cash */ .rtpendn { margin: 8px 0 0; color: var(--warn); }
 .rttab td input { font: inherit; font-size: 13px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); box-sizing: border-box; } .rttab td.n input { text-align: right; width: 110px; }
 .rtadvin { display: inline-flex; align-items: center; gap: 4px; } .rtadvin.typed input { border-color: var(--warn); background: var(--warn-soft); } .rtadvn { margin: 8px 0 0; color: var(--warn); }
 .rttab td.num .dmy { width: 138px; }
@@ -10686,7 +10686,7 @@ const XL = (() => {
     mx: ["", "over", "soon"].reduce((a, k, i) => (a[k || "ok"] = { text: 99 + i * 3, int: 100 + i * 3, date: 101 + i * 3 }, a), {}),
     mh: MH_SHADES.map((_, i) => [0, 1].map(b => { const n = 108 + (i * 2 + b) * 3; return { text: n, int: n + 1, date: n + 2 }; })),
     tpl: { title: 144, head: 145, lab: 146, sum: 147, txt: 148, ctr: 149, int: 150, dec: 151, date: 152, calc: 153, help: 154, helpLab: 155, off: 156 },
-    mNeg: 157, mPos: 158, otTitle: 159, otHead: 160, otTxt: 161, otInt: 162 };
+    mNeg: 157, mPos: 158, otTitle: 159, otHead: 160, otTxt: 161, otInt: 162, red: { text: 163, int: 164, date: 165 } };
   const B = '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right><top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>';
   const xf = (nf, font, fill, border, al = "") => `<xf numFmtId="${nf}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"${al ? ` applyAlignment="1"><alignment ${al}/></xf>` : "/>"}`;
   const XFS = [xf(0, 0, 0, 0), xf(0, 2, 0, 0, 'vertical="center"'), xf(0, 1, 3, 1, 'vertical="center" shrinkToFit="1"'), xf(0, 1, 2, 1, 'horizontal="center" vertical="center" wrapText="1"'),
@@ -10729,12 +10729,14 @@ const XL = (() => {
     // 157–158: the Summary's month tables, balance after office expenses: below zero (light red), above zero (light green)
     xf(165, 8, 21, 2, 'vertical="center"'), xf(165, 8, 9, 2, 'vertical="center"'),
     // 159–162: the Summary's round trips still on trip (light blue): title, headings, text, number
-    xf(0, 11, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 13, 8, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 8, 8, 2, 'vertical="center"'), xf(165, 8, 8, 2, 'vertical="center"')];
+    xf(0, 11, 0, 0, 'horizontal="left" vertical="center"'), xf(0, 13, 8, 2, 'horizontal="center" vertical="center" wrapText="1"'), xf(0, 8, 8, 2, 'vertical="center"'), xf(165, 8, 8, 2, 'vertical="center"'),
+    // 163–165: red text, number and date (diesel paid in cash on the office truck sheet)
+    xf(0, 16, 0, 1, 'vertical="center"'), xf(165, 16, 0, 1), xf(164, 16, 0, 1, 'horizontal="center"')];
   const STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0"/><numFmt numFmtId="166" formatCode="#,##0.00"/></numFmts>` +
-    `<fonts count="16"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
+    `<fonts count="17"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF666666"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="22"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><name val="Calibri"/><family val="2"/></font>` +
     [[1, 28], [1, 24], [0, 16], [1, 16], [1, 36], [1, 24], [1, 72], [1, 18], [1, 20]].map(([b, z]) => `<font>${b ? "<b/>" : ""}<sz val="${z}"/><name val="Calibri"/><family val="2"/></font>`).join("") +
-    `<font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font></fonts>` +
+    `<font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font><font><sz val="11"/><color rgb="FFC00000"/><name val="Calibri"/><family val="2"/></font></fonts>` +
     `<fills count="29"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9E1F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F2F2"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill>` +
     ["FFEDEDED", "FFD9D9D9", "FFF8CBAD", "FFDDEBF7", "FFE2EFDA", "FFBFBFBF", "FFC55A11", "FFDBDBDB", "FFFFC000", "FF00B050", "FFF4B183", "FF1F4E78", "FF2F75B5", "FF548235", "FF7030A0", "FF44546A", "FFFFC7CE", "FFFFD8A8", ...MH_SHADES.map(c => "FF" + c)].map(c => `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`).join("") + `</fills>` +
     `<borders count="4"><border><left/><right/><top/><bottom/><diagonal/></border>${B}${B.replace(/FFBFBFBF/g, "FF000000")}${B.replace(/thin/g, "thick").replace(/FFBFBFBF/g, "FFFFFFFF")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
@@ -17522,7 +17524,7 @@ function qkOffice() {
       `${f("Total km", S.act ? nf(S.act) : "—")}${f("Diesel", S.litres ? `${nf(S.litres, S.litres % 1 ? 2 : 0)} L` : "—")}${f("Mileage", S.act && S.litres ? `${nf(S.act / S.litres, 2)} km/L` : "—")}${f("Vehicle balance", bkNetTxt(S.bal), S.bal < 0 ? " neg" : " pos")}</div>`) +
     sec("Loads", S.loads.map(({ l, c }, i) => `<div class="qkli qkol"><span><b>${i + 1} · ${esc(rtLegName(l))}</b><small>${fmtShort(l.from)}${l.to && l.to !== l.from ? ` – ${fmtShort(l.to)}` : ""} · rent ${rs(num(l.rent))} · expense ${rs(c.exp)}</small></span><b class="qkamt ${c.bal < 0 ? "neg" : "pos"}">${rs(c.bal)}</b></div>`).join("") +
       (S.rfuel ? `<div class="qkli qkol"><span><b>Diesel for the whole round trip</b></span><b class="qkamt neg">-${rs(S.rfuel)}</b></div>` : "") + tot("Vehicle balance", S.bal, S.bal < 0 ? " neg" : "")) +
-    sec("① Owner's money", grp("FASTag", S.fast, "No FASTag entered") + grp("Diesel paid by card", S.card, "No diesel by card") + (S.cash.length ? grp(RT_T.en.gCash, S.cash, "", " dim") : "") +
+    sec("① Owner's money", grp("FASTag", S.fast, "No FASTag entered") + grp("Diesel paid by card", S.card, "No diesel by card") + (S.cash.length ? grp(RT_T.en.gCash, S.cash, "", " cashd") : "") +
       `<h4 class="qkoh">Given to the driver</h4>` + advIn + S.giv.slice(1).map(x => line(x)).join("") + (S.loss ? "" : grp("Balance with the vehicle", [S.balLine], "")) + tot("Total ①", S.owner)) +
     sec("② Came to the owner", (S.rec.length ? S.rec.map(x => line(x)).join("") : `<p class="sub" style="margin:0">No payments yet.</p>`) + (S.loss ? grp("Vehicle balance (loss)", [S.balLine], "") : "") + tot("Total ②", S.came) +
       (S.pendAmt ? `<p class="sub" style="margin:0">Lines in orange are not settled yet and are counted in the total.</p>` : "")) +
@@ -18749,8 +18751,9 @@ function rtCalc(r, prev, lang = "en") {
   const last = legs[legs.length - 1], autoStart = prev?.end || r.from, autoEnd = r.to;
   const autoEK = num(last?.endKm) || (odo.length ? Math.max(...odo) : 0), autoSK = prev?.km || num(legs[0]?.startKm) || (odo.length ? Math.min(...odo) : 0);
   const startDate = D.startDate || autoStart, endDate = D.endDate || autoEnd, startKm = num(D.startKm) || autoSK, endKm = num(D.endKm) || autoEK;
-  // FASTag lines are the trips; diesel lines keep the place, litres and rate. Diesel paid by card is the owner's money;
-  // diesel paid in cash was paid by the driver, so it is listed but not added to ①.
+  // FASTag lines are the trips; diesel lines keep the place, litres and rate. Diesel by card and diesel paid in cash by the
+  // driver are both added to ①, so all the diesel is in the account; the cash lines are in red (the office adds the same
+  // amount to ② so it tallies).
   const fast = legs.filter(l => num(l.toll) > 0).map(l => ({ date: l.from, what: rtLegName(l), amt: num(l.toll) }));
   const dsl = cash => fills.filter(f => (f.pay === "Cash") === cash && num(f.amount) > 0).map(f => ({ date: f.date, place: f.place || "", litres: num(f.litres), rate: num(f.rate),
     what: [num(f.litres) ? `${nf(num(f.litres), num(f.litres) % 1 ? 2 : 0)} ${t.L}${f.rate ? ` @ ₹${nf(f.rate, 2)}` : ""}` : "", f.place].filter(Boolean).join(" · "), amt: Math.round(num(f.amount)) }))
@@ -18766,7 +18769,7 @@ function rtCalc(r, prev, lang = "en") {
   const pays = [...legs.flatMap(l => (l.payments || []).map(p => ({ ...p, l }))), ...(D.payments || [])]
     .sort((a, b) => (a.settled === false) - (b.settled === false) || String(a.date || "").localeCompare(String(b.date || "")));
   const rec = pays.map(p => ({ date: p.settled === false ? "" : p.date, what: `${p.desc || (p.l ? rtLegName(p.l) : r.path)}${pm(p.pay)}`, amt: num(p.amount), pend: p.settled === false }));
-  const owner = rtSum(fast) + rtSum(card) + rtSum(giv) + (loss ? 0 : bal), came = rtSum(rec) + (loss ? -bal : 0);
+  const owner = rtSum(fast) + rtSum(card) + rtSum(cash) + rtSum(giv) + (loss ? 0 : bal), came = rtSum(rec) + (loss ? -bal : 0);
   const K = odoKm(vehicles.find(v => v.id === r.vehicleId), startDate, startKm, endDate, endKm);
   return { startDate, endDate, autoStart, autoEnd, days: inclDays(startDate, endDate) || 0, startKm, endKm, autoSK, autoEK, km: K.km, act: K.act, odoK: K, litres, rfuel,
     fast, card, cash, giv, balLine, loss, rec, pendAmt: rtSum(rec.filter(x => x.pend)), bal, owner, came, diff: owner - came,
@@ -18840,7 +18843,7 @@ function rtSumRender() {
     (S.rfuel ? `<tr><td></td><td class="num">—</td><td>Diesel for the whole round trip</td><td class="n"></td><td class="n">${nf(S.rfuel)}</td><td class="n neg">-${nf(S.rfuel)}</td></tr>` : "") +
     `</tbody><tfoot><tr><td colspan="3" class="n">Total</td><td class="n">${nf(r.rent)}</td><td class="n">${nf(r.rent - S.bal)}</td><td class="n${S.bal < 0 ? " neg" : ""}">${nf(S.bal)}</td></tr></tfoot></table></div></div><div class="rtcols">` +
     `<div class="rtcard"><h3>① Owner's money</h3><div class="rttscroll"><table class="rttab"><tbody>` + sh("FASTag") + lines(S.fast, "No FASTag entered") + sh("Diesel paid by card") + lines(S.card, "No diesel by card") +
-    (S.cash.length ? sh(RT_T.en.gCash) + S.cash.map(x => row(x, { cls: "dim" })).join("") : "") +
+    (S.cash.length ? sh(RT_T.en.gCash) + S.cash.map(x => row(x, { cls: "cashd" })).join("") : "") +
     sh("Given to the driver") + advRow + S.giv.slice(1).map(x => row(x)).join("") + (S.loss ? "" : sh("Balance with the vehicle") + balRow) +
     `</tbody><tfoot><tr><td></td><td>Total ①</td><td class="n">${nf(S.owner)}</td></tr></tfoot></table></div>` +
     (A.adv === "typed" && edit ? `<p class="sub" style="margin:8px 0 0">This is the truck's first round trip in the app, so type the advance the driver already had.</p>` : "") +
@@ -18887,7 +18890,7 @@ const RT_T = {
     tot1: "Total ①", tot2: "Total ②", notSet: "Not settled", adv: "③ ADVANCE", ownerM: "Owner's Money", cameM: "Came to owner", balance: "Balance", next: "Advance for next trip",
     pend: n => `Came to owner includes ${n} not settled.`, sheets: ["Trip sheet", "Trip summary"],
     sum: ["Start date", "End date", "Total days", "Total rent", "Start km", "End km", "Total km", "Total diesel (L)", "Mileage (km/L)", "Vehicle balance"],
-    fast: "FASTag", L: "L", gCash: "Diesel paid in cash (by the driver) · not added to ①", dslCols: ["Date", "Place", "Litres", "Rate / L", "Amount"], advPrev: "Advance from the previous trip", given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {},
+    fast: "FASTag", L: "L", gCash: "Diesel paid in cash (by the driver)", dslCols: ["Date", "Place", "Litres", "Rate / L", "Amount"], advPrev: "Advance from the previous trip", given: "Given to the driver", vbal: "Vehicle balance", vbalLoss: "Vehicle balance (loss)", rfuel: "Diesel for the whole round trip", pay: {}, giv: {},
     details: "TRIP DETAILS", sFast: "FASTag", sRec: "Payments received", sDsl: "Diesel fill-ups", sGiv: "Money given to the driver", dCols: ["Date", "Details", "Amount"], whole: "Whole round trip",
     pendT: "NOT SETTLED PAYMENTS", pendSect: "Pending amount to owner", pendCols: ["Date", "Place", "Driver", "Status", "Days", "Amount"], pendOld: "Red: pending for more than 30 days.", pendOldH: "Over 30 days", pendAll: "Total for all trucks", asOn: d => `As on ${d}`, pendSum: "Summary", pendTruck: "Truck" },
   ta: { font: "'Noto Sans Tamil', 'Nirmala UI', Latha, Arial, sans-serif", sheet: "பயணக் கணக்கு", summary: "பயணச் சுருக்கம்", veh: "வண்டி எண்", drv: "ஓட்டுநர்", loads: "லோடு விவரம்",
@@ -18896,7 +18899,7 @@ const RT_T = {
     ownerM: "முதலாளி பணம்", cameM: "முதலாளிக்கு வந்தது", balance: "மீதம்", next: "அடுத்த பயணத்திற்கான முன்பணம்", pend: n => `முதலாளிக்கு வந்ததில் ${n} நிலுவை உள்ளது.`,
     sheets: ["பயணக் கணக்கு", "பயணச் சுருக்கம்"],
     sum: ["தொடக்க தேதி", "முடிவு தேதி", "மொத்த நாட்கள்", "மொத்த வாடகை", "தொடக்க கி.மீ", "முடிவு கி.மீ", "மொத்த கி.மீ", "மொத்த டீசல் (லி)", "மைலேஜ் (கி.மீ/லி)", "வண்டி மீதம்"],
-    fast: "ஃபாஸ்டேக்", L: "லி", gCash: "ரொக்கமாக டீசல் (ஓட்டுநர் செலுத்தியது) · ① இல் சேர்க்கப்படவில்லை", dslCols: ["தேதி", "இடம்", "லிட்டர்", "லிட்டர் விலை", "தொகை"], advPrev: "பயண முன்பணம்", given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்", vbalLoss: "வண்டி நஷ்டம்", rfuel: "முழு சுற்றுப் பயணத்திற்கான டீசல்",
+    fast: "ஃபாஸ்டேக்", L: "லி", gCash: "ரொக்கமாக டீசல் (ஓட்டுநர் செலுத்தியது)", dslCols: ["தேதி", "இடம்", "லிட்டர்", "லிட்டர் விலை", "தொகை"], advPrev: "பயண முன்பணம்", given: "ஓட்டுநரிடம் கொடுத்தது", vbal: "வண்டி மீதம்", vbalLoss: "வண்டி நஷ்டம்", rfuel: "முழு சுற்றுப் பயணத்திற்கான டீசல்",
     pay: { Cash: "ரொக்கம்", Card: "கார்டு", "Bank transfer": "வங்கி பரிமாற்றம்", Cheque: "காசோலை" },
     giv: { Advance: "முன்பணம்", "Sent during the trip": "பயணத்தின் போது அனுப்பியது", "Driver took": "ஓட்டுநர் எடுத்தது", "Diesel in cash": "டீசல் (ரொக்கம்)" },
     details: "பயண விவரம்", sFast: "ஃபாஸ்டேக்", sRec: "வந்த பணம்", sDsl: "டீசல் நிரப்பியது", sGiv: "ஓட்டுநரிடம் கொடுத்தது", dCols: ["தேதி", "விவரம்", "தொகை"], whole: "முழு சுற்றுப் பயணம்",
@@ -18999,11 +19002,11 @@ function rtPage1(r, S, sec, t = RT_T.en) {
         // Diesel is a table of its own: date, place, litres, rate a litre and amount, under a header line.
         const dc = [{ w: 128 }, { w: cw - 128 - 66 - 112 - 112 }, { w: 66, r: 1 }, { w: 112, r: 1 }, { w: 112, r: 1 }];
         const dRows = (list, grey) => [{ cells: t.dslCols, bold: true, bg: K.head, right: [2, 3, 4] },
-          ...(list.length ? list.map(x => ({ cells: [fmtShort(x.date), x.place, x.litres ? nf(x.litres, x.litres % 1 ? 2 : 0) : "", x.rate ? nf(x.rate, 2) : "", nf(x.amt)], ...(grey ? { color: "#667085" } : {}) })) : [{ cells: ["", t.none, "", "", ""] }])];
+          ...(list.length ? list.map(x => ({ cells: [fmtShort(x.date), x.place, x.litres ? nf(x.litres, x.litres % 1 ? 2 : 0) : "", x.rate ? nf(x.rate, 2) : "", nf(x.amt)], ...(grey ? { color: "#c00000" } : {}) })) : [{ cells: ["", t.none, "", "", ""] }])];
         if (k2 === "owner") {
           yy = K.table(x0, yy, cols, [{ group: t.gFast }, ...(S.fast.length ? S.fast.map(one) : [{ cells: ["", t.none, ""] }])], 15);
           yy = K.table(x0, yy, dc, [{ group: t.gCard }, ...dRows(S.card)], 15);
-          if (S.cash.length) yy = K.table(x0, yy, dc, [{ group: t.gCash }, ...dRows(S.cash, 1), { cells: ["", t.total, "", "", nf(S.cash.reduce((a, x) => a + x.amt, 0))], color: "#667085", right: [1] }], 15);
+          if (S.cash.length) yy = K.table(x0, yy, dc, [{ group: t.gCash }, ...dRows(S.cash, 1), { cells: ["", t.total, "", "", nf(S.cash.reduce((a, x) => a + x.amt, 0))], color: "#c00000", right: [1] }], 15);
           rows = [{ group: t.gGiv }, ...S.giv.map(one), ...(S.loss ? [] : [{ group: t.gBal }, one(S.balLine)]), { cells: ["", t.tot1, nf(S.owner)], bold: true, right: [1] }];
         }
         else rows = [...(S.rec.length ? S.rec.map(one) : [{ cells: ["", t.nopay, ""] }]), ...(S.loss ? [{ group: t.vbalLoss }, one({ ...S.balLine, red: 1 })] : []), { cells: ["", t.tot2, nf(S.came)], bold: true, right: [1] }];
@@ -19048,11 +19051,11 @@ function rtSheetXlsx(r, S, sec, withSum, t = RT_T.en) {
     }
     const side = (k, i) => {
       const [cD, cW, cA] = i ? ["E", "F", "G"] : ["A", "B", "C"]; let m = n;
-      const one = x => { put(`${cD}${m}`, x.pend ? t.notSet : x.date ? { d: x.date } : "", x.pend || !x.date ? st.text : st.date); put(`${cW}${m}`, x.what, st.text); put(`${cA}${m}`, x.amt, st.int); m++; };
+      const one = (x, R) => { const Z = R?.int ? R : st; put(`${cD}${m}`, x.pend ? t.notSet : x.date ? { d: x.date } : "", x.pend || !x.date ? Z.text : Z.date); put(`${cW}${m}`, x.what, Z.text); put(`${cA}${m}`, x.amt, Z.int); m++; };  // R: red styles (cash diesel)
       const grp = t => { put(`${cD}${m}`, t, st.label); ws.merges.push(`${cD}${m}:${cA}${m}`); m++; };
       const tot = (t, v) => { put(`${cW}${m}`, t, st.ttext); put(`${cA}${m}`, v, st.tint); m++; };
       put(`${cD}${m}`, k === "owner" ? t.owner : t.came, st.ttext); ws.merges.push(`${cD}${m}:${cW}${m}`); m++;
-      if (k === "owner") { grp(t.gFast); S.fast.forEach(one); grp(t.gCard); S.card.forEach(one); if (S.cash.length) { grp(t.gCash); S.cash.forEach(one); } grp(t.gGiv); S.giv.forEach(one); if (!S.loss) { grp(t.gBal); one(S.balLine); } tot(t.tot1, S.owner); }
+      if (k === "owner") { grp(t.gFast); S.fast.forEach(one); grp(t.gCard); S.card.forEach(one); if (S.cash.length) { grp(t.gCash); S.cash.forEach(x => one(x, st.red)); } grp(t.gGiv); S.giv.forEach(one); if (!S.loss) { grp(t.gBal); one(S.balLine); } tot(t.tot1, S.owner); }
       else { S.rec.forEach(one); if (S.loss) { grp(t.vbalLoss); one(S.balLine); } tot(t.tot2, S.came); }
       return m;
     };
