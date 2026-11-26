@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-26h">
+<meta name="app-ver" content="2026-11-26i">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -10727,8 +10727,8 @@ async function renderStorage(force) {
 const MH_SHADES = ["EDF2FB", "D6E1F5", "F4F0FA", "E6DBF4", "EBF6F5", "D0EAE7"];
 // The audit report's styles (Dashboard › Audit report), as in the auditor's template: fonts (bold, size) from font 17, and
 // [style name, number format, font, fill, alignment]. Fills: 0 none, 6 D9D9D9, 10 BFBFBF, 29 D0CECE. Number formats: 164 dd/mm/yyyy, 165 #,##0, 4 #,##0.00.
-const AU_FONTS = [[1, 24], [1, 18], [1, 14], [0, 24], [1, 26], [1, 28], [1, 16], [0, 16], [1, 20], [1, 36]];
-const AU_F = { b24: 17, b18: 18, b14: 19, r24: 20, b26: 21, b28: 22, b16: 23, r16: 24, b20: 25, b36: 26 };
+const AU_FONTS = [[1, 24], [1, 18], [1, 14], [0, 24], [1, 26], [1, 28], [1, 16], [0, 16], [1, 20], [1, 36], [0, 48]];
+const AU_F = { b24: 17, b18: 18, b14: 19, r24: 20, b26: 21, b28: 22, b16: 23, r16: 24, b20: 25, b36: 26, r48: 27 };
 const AU_DEF = [
   ["sTitle", 0, AU_F.b24, 10, 'horizontal="center" vertical="center"'], ["sHead", 0, AU_F.b18, 6, 'horizontal="center" vertical="center"'], ["sHeadR", 0, AU_F.b18, 6, 'horizontal="right" vertical="center"'],
   ["sTxt", 0, AU_F.b14, 0, 'vertical="center"'], ["sDays", 0, AU_F.b14, 0, 'horizontal="center" vertical="center"'], ["sNum", 165, AU_F.b14, 0, 'horizontal="right" vertical="center"'],
@@ -10745,7 +10745,12 @@ const AU_DEF = [
   ["rTxt", 0, AU_F.r16, 0, 'horizontal="left" vertical="center"'], ["rNum", 165, AU_F.r16, 0, 'horizontal="right" vertical="center"'], ["rDec", 4, AU_F.r16, 0, 'horizontal="right" vertical="center"'],
   ["oTitle", 0, AU_F.b28, 0, 'horizontal="center" vertical="center"'], ["oHead", 0, AU_F.b36, 0, 'horizontal="center" vertical="center"'], ["oSn", 0, AU_F.r24, 0, 'horizontal="center" vertical="center"'],
   ["oDate", 164, AU_F.r24, 0, 'horizontal="right" vertical="center"'], ["oDesc", 0, AU_F.r24, 0, 'vertical="center" wrapText="1"'], ["oVeh", 0, AU_F.r24, 0, 'horizontal="center" vertical="center"'],
-  ["oTxt", 0, AU_F.r24, 0, 'vertical="center"'], ["oAmt", 165, AU_F.r24, 0, 'horizontal="right" vertical="center"'], ["blank", 0, 0, 0, ""]];
+  ["oTxt", 0, AU_F.r24, 0, 'vertical="center"'], ["oAmt", 165, AU_F.r24, 0, 'horizontal="right" vertical="center"'], ["blank", 0, 0, 0, ""],
+  // Trucks (the "MRR Accounts" template): month table without shading; trip details in large print.
+  ["kTitle", 0, AU_F.b26, 0, 'horizontal="center" vertical="center"'], ["kHeadL", 0, AU_F.b24, 0, 'horizontal="left" vertical="center"'], ["kHeadC", 0, AU_F.b24, 0, 'horizontal="center" vertical="center"'],
+  ["kTotL", 0, AU_F.b24, 0, 'horizontal="left" vertical="center"'], ["kTotC", 0, AU_F.b24, 0, 'horizontal="center" vertical="center"'], ["kTotN", 165, AU_F.b24, 0, 'horizontal="right" vertical="center"'],
+  ["tTitle", 0, AU_F.b36, 29, 'horizontal="center" vertical="center"'], ["tHead", 0, AU_F.b24, 6, 'horizontal="center" vertical="center"'], ["tDate", 164, AU_F.r48, 0, 'horizontal="right" vertical="center"'],
+  ["tGen", 0, AU_F.r48, 0, 'vertical="center"'], ["tTxt", 0, AU_F.r24, 0, 'vertical="center"'], ["tNum", 165, AU_F.r48, 0, 'vertical="center"']];
 const AU_XF_KEYS = AU_DEF.map(d => d[0]), AU_XF = AU_DEF.map(d => d.slice(1));
 const XL = (() => {
   const crcT = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
@@ -18235,8 +18240,10 @@ function auRender() {
 }
 function auCount() { const n = auSel.size, el = $("auCount"); if (el) el.textContent = n ? `${n} vehicle${n === 1 ? "" : "s"} ticked` : "Tick at least one vehicle"; if ($("auGo")) $("auGo").disabled = !n; }
 /* The workbook, in the auditor's template ("Bus Accounts" file): Summary; Summary - Route Bus and Spare Bus - Summary (month by
-   month); Spare Bus - Details (one line per trip); one sheet per month of the route bus; for trucks the same as the spare bus
-   (Truck - Summary, Truck - Details); Office Expenses. Only the ticked vehicles; the totals are live formulas. */
+   month); Spare Bus - Details (one line per trip); one sheet per month of the route bus; Office Expenses. Trucks follow the
+   trucks' template ("MRR Accounts" file): "<number> - Summary" (month by month) and "<number> - Details" (one line per trip) for
+   each truck; a report of trucks only also takes that file's Summary and Office Expenses layout. Only the ticked vehicles; the
+   totals are live formulas. */
 const AU_MON = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
 function auSheets(recs, fy, ids, common, name) {
   const { put, sheet, col } = XL, A = XL.S.au, C = xlCtx(recs), sel = new Set(ids), V = recs.vehicles || [], today = todayISO(), run = fy >= fyOf(today);
@@ -18246,7 +18253,8 @@ function auSheets(recs, fy, ids, common, name) {
   // A merged range, every cell boxed in its style (so the outline shows all round).
   const box = (ws, a1, a2, v, st, f) => { const [c1, r1] = [XL.idx(a1.replace(/\d+/, "")), +a1.replace(/\D+/, "")], [c2, r2] = [XL.idx(a2.replace(/\d+/, "")), +a2.replace(/\D+/, "")];
     for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) put(ws, col(c) + r, r === r1 && c === c1 ? v : null, st, r === r1 && c === c1 ? f : undefined); if (a1 !== a2) ws.merges.push(`${a1}:${a2}`); };
-  const out = [], mSheets = [];
+  const out = [], mSheets = [], tOnly = ids.length && ids.every(isTruck);
+  const fmtL = d => { const x = new Date(d + "T00:00:00"); return `${pad2(x.getDate())}/${x.toLocaleDateString("en-GB", { month: "long" }).toUpperCase()}/${x.getFullYear()}`; };
   // Columns as wide as their values (and headings): the text as shown, at its style's font size; merged titles left out.
   const AU_ST = new Map(AU_DEF.map((d, i) => [A[d[0]], { sz: AU_FONTS[d[2] - 17]?.[1] || 11, b: !!AU_FONTS[d[2] - 17]?.[0], nf: d[1], wrap: /wrapText/.test(d[4]) }]));
   const fit = ws => { const inMerge = new Set(); ws.merges.forEach(m => { const [a, b] = m.split(":"), c1 = XL.idx(a.replace(/\d+/, "")), c2 = XL.idx(b.replace(/\d+/, "")), r1 = +a.replace(/\D+/, ""), r2 = +b.replace(/\D+/, "");
@@ -18257,7 +18265,7 @@ function auSheets(recs, fy, ids, common, name) {
       let t = v?.d ? "00/00/0000" : typeof v === "number" ? (st.nf === 4 ? v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : st.nf === 165 ? Math.round(v).toLocaleString("en-US") : String(v)) : String(v);
       if (st.wrap) t = t.split(/\s+/).reduce((a, x) => x.length > a.length ? x : a, "");
       const need = t.length * st.sz / 11 * (st.b ? 1.15 : 1.05) + 3; w[c] = Math.max(w[c] || 0, need); }));
-    Object.entries(w).forEach(([c, x]) => ws.widths[XL.col(+c)] = Math.round(Math.max(6, Math.min(80, x)) * 100) / 100); };
+    Object.entries(w).forEach(([c, x]) => ws.widths[XL.col(+c)] = Math.round(Math.max(ws.minW?.[XL.col(+c)] || 6, Math.min(80, x)) * 100) / 100); };
   // ---- route buses: one sheet per month (two buses in one month: one sheet each)
   const routeIds = [...new Set((recs.trips || []).filter(t => sel.has(t.vehicleId) && inFy(t.date) && vOf(t.vehicleId)?.type === "Bus").map(t => t.vehicleId))].sort((a, b) => pl(a).localeCompare(pl(b)));
   const keep = { trips, tripMonths, tripYears, tBusId, tFyStart };
@@ -18286,22 +18294,12 @@ function auSheets(recs, fy, ids, common, name) {
       });
     }
   } finally { ({ trips, tripMonths, tripYears, tBusId, tFyStart } = keep); }
-  // ---- spare buses and trucks: one line per trip, then month by month
-  const tripRows = kind => {
-    if (kind === "spare") return (recs.bookings || []).filter(b => sel.has(b.vehicleId) && !isTruck(b.vehicleId) && inFy(b.from) && ["booked", "ontrip", "completed"].includes(b.status))
-      .sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.no).localeCompare(String(b.no))).map(b => { const g = k => num(b[k]);
-        return { vid: b.vehicleId, from: b.from, to: b.to || b.from, days: g("days"), lit: g("litres"), fuel: g("fuelCost"), toll: g("toll"), drv: g("padiPaid"), cln: g("cleanerPadi"), permit: g("permit"), other: g("otherExp"), col: g("rent") + g("toll") }; });
-    const legs = legsCounted((recs.truckTrips || []).filter(l => sel.has(l.vehicleId) && isTruck(l.vehicleId) && l.from), recs.truckRounds || []).filter(l => inFy(l.from));
-    const rows = legs.map(l => { const g = k => num(l[k]); return { vid: l.vehicleId, from: l.from, to: l.to || l.from, days: inclDays(l.from, l.to || l.from) || 1, lit: g("litres"), fuel: g("fuelCost"), toll: g("toll"), drv: g("padi"), cln: 0, permit: g("rto"),
-      other: g("commission") + g("loading") + g("bridge") + g("otherExp") + g("billExp"), col: g("rent") }; });
-    // Diesel kept on the round trip itself (not on one trip): a line of its own, on the day it was filled.
-    const rIds = new Set(legs.map(l => l.roundId).filter(Boolean));
-    (recs.truckRounds || []).filter(d => rIds.has(d.id)).forEach(d => (d.fuels || []).forEach(f => { const vid = legs.find(l => l.roundId === d.id).vehicleId, dt = f.date || legs.find(l => l.roundId === d.id).from;
-      if (num(f.amount)) rows.push({ vid, from: dt, to: dt, days: 0, lit: num(f.litres), fuel: num(f.amount), toll: 0, drv: 0, cln: 0, permit: 0, other: 0, col: 0 }); }));
-    return rows.sort((a, b) => String(a.from).localeCompare(String(b.from)));
-  };
-  // One Summary and one Details sheet for each spare bus (and each truck), the vehicle number in front of the sheet name.
-  const groupSheets = (kind, label) => { const all = tripRows(kind);
+  // ---- spare buses: one line per trip, then month by month
+  const tripRows = () => (recs.bookings || []).filter(b => sel.has(b.vehicleId) && !isTruck(b.vehicleId) && inFy(b.from) && ["booked", "ontrip", "completed"].includes(b.status))
+    .sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.no).localeCompare(String(b.no))).map(b => { const g = k => num(b[k]);
+      return { vid: b.vehicleId, from: b.from, to: b.to || b.from, days: g("days"), lit: g("litres"), fuel: g("fuelCost"), toll: g("toll"), drv: g("padiPaid"), cln: g("cleanerPadi"), permit: g("permit"), other: g("otherExp"), col: g("rent") + g("toll") }; });
+  // One Summary and one Details sheet for each spare bus, the vehicle number in front of the sheet name.
+  const groupSheets = (kind, label) => { const all = tripRows();
     return [...new Set(all.map(x => x.vid))].sort((a, b) => pl(a).localeCompare(pl(b))).flatMap(v => groupOne(kind, label, all.filter(x => x.vid === v))); };
   const groupOne = (kind, label, rows) => {
     if (!rows.length) return [];
@@ -18311,7 +18309,6 @@ function auSheets(recs, fy, ids, common, name) {
     const rng = new Map(vids.map(v => [v, [5 + rows.findIndex(x => x.vid === v), 5 + rows.length - 1 - [...rows].reverse().findIndex(x => x.vid === v)]]));
     const det = Object.assign(sheet(`${plN(rows[0].vid)} ${label} - Details`), { auKind: kind + "-det", zoom: 70, fit: true }), F = 5, L = Math.max(F, F + rows.length - 1), T = L + 1, rg = c => `${c}${F}:${c}${L}`;
     Object.assign(det.widths, { A: 23.09, B: 23.09, C: 11.27, D: 21.27, E: 13.82, F: 11, G: 10.45, H: 10.45, I: 20.91, J: 15, K: 19.73, L: 16.18, M: 19.73 });
-    const fmtL = d => { const x = new Date(d + "T00:00:00"); return `${pad2(x.getDate())}/${x.toLocaleDateString("en-GB", { month: "long" }).toUpperCase()}/${x.getFullYear()}`; };
     box(det, "A3", "M3", `${vids.map(plN).join(" / ")} - ${up} DETAILS FROM ${fmtL(`${fy}-04-01`)} to ${fmtL(run ? today : `${fy + 1}-03-31`)}`, A.dTitle); det.heights[3] = 26;
     ["From Date", "To Date", "Days Run", "Diesel No.of Litres", "Diesel Price", "Toll Gate", "Driver ", "Cleaner", "Permit Exp.", "Other Expense", "Collection", "Expense", "Balance"].forEach((h, k) => put(det, col(k) + 4, h, k < 2 ? A.dHeadL : A.dHead)); det.heights[4] = 37;
     rows.forEach((x, i) => { const r = F + i, ex = x.fuel + x.toll + x.drv + x.cln + x.permit + x.other; det.heights[r] = 45;
@@ -18341,42 +18338,80 @@ function auSheets(recs, fy, ids, common, name) {
     put(ws, "A15", "Total", A.mTotL); put(ws, "B15", null, A.mTotL); ws.heights[15] = 31;
     t.forEach((x, k) => put(ws, col(2 + k) + 15, Math.round(x * 100) / 100, k ? A.mTotN : A.mTotC, `SUM(${col(2 + k)}3:${col(2 + k)}14)`));
   }
+  // ---- trucks, in the trucks' template: for each ticked truck "<number> - Summary" and "<number> - Details" (columns A–T, one
+  // line per trip from row 5). Trips counted as in the trip sheet (past On trip); diesel kept on the round trip goes with its last trip.
+  const rounds = recs.truckRounds || [], legsT = legsCounted((recs.truckTrips || []).filter(l => sel.has(l.vehicleId) && isTruck(l.vehicleId) && l.from), rounds)
+    .sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.id).localeCompare(String(b.id))), rLast = new Map();
+  legsT.forEach(l => rLast.set(l.roundId || l.id, l.id));
+  const truckGroup = vid => {
+    const ls = legsT.filter(l => l.vehicleId === vid && inFy(l.from)), P = pl(vid), F = 5, L = Math.max(F, F + ls.length - 1), vt = vOf(vid)?.type || "Truck";
+    const det = Object.assign(sheet(`${P} - Details`), { auKind: "truck-det", zoom: 20, fit: true,
+      minW: { A: 47.5, B: 47.5, C: 16, D: 61.2, E: 62.3, F: 37.5, G: 33.7, H: 36, I: 35.1, J: 29.5, K: 28.5, L: 28.5, M: 29.6, N: 36, O: 25.2, P: 39.6, Q: 29.5, R: 40.5, S: 38.5, T: 38.5 } });
+    box(det, "A3", "T3", `${P} - ${vt.toUpperCase()} DETAILS FROM ${fmtL(`${fy}-04-01`)} to ${fmtL(run ? today : `${fy + 1}-03-31`)}`, A.tTitle); det.heights[3] = 46;
+    ["From Date", "To Date", "Days", "Starting Place", "Destination", "Driver 1", "Driver 2", "Diesel Litres", "Diesel Price", "Commission", "Toll Gate", "Driver ", "Misc.Exp", "Loading Exp", "Bridge", "Other Bill.Exp", "Bill Exp", "Collection", " Expenses", "Balance"]
+      .forEach((h, k) => put(det, col(k) + 4, h, A.tHead)); det.heights[4] = 47.25;
+    const lines = ls.map((l, i) => { const r = F + i, g = k => num(l[k]), RF = rLast.get(l.roundId || l.id) === l.id ? (rounds.find(d => d.id === l.roundId)?.fuels || []) : [];
+      const lit = Math.round((g("litres") + RF.reduce((a, f) => a + num(f.litres), 0)) * 100) / 100, ex = [g("fuelCost") + Math.round(RF.reduce((a, f) => a + num(f.amount), 0)), g("commission"), g("toll"), g("padi"), g("otherExp"), g("loading"), g("bridge"), g("rto"), g("billExp")];
+      const days = g("days") || inclDays(l.from, l.to || l.from) || 1, tot = ex.reduce((a, x) => a + x, 0); det.heights[r] = 75;
+      put(det, "A" + r, { d: l.from }, A.tDate); put(det, "B" + r, { d: l.to || l.from }, A.tDate); put(det, "C" + r, days, A.tGen);
+      [lgPlace(l.origin), lgPlace(l.dest), C.driver(l.driver1Id, l.driver1Name), C.driver(l.driver2Id, l.driver2Name)].forEach((v, k) => put(det, col(3 + k) + r, v || "", A.tTxt));
+      put(det, "H" + r, lit || null, A.tGen); ex.forEach((v, k) => put(det, col(8 + k) + r, v || null, A.tNum));
+      put(det, "R" + r, g("rent"), A.tNum); put(det, "S" + r, tot, A.tNum, `SUM(I${r}:Q${r})`); put(det, "T" + r, g("rent") - tot, A.tNum, `R${r}-S${r}`);
+      return { from: l.from, days, col: g("rent"), exp: tot }; });
+    if (!ls.length) { det.heights[F] = 75; for (let c = 0; c < 20; c++) put(det, col(c) + F, null, c < 2 ? A.tDate : c < 3 || c === 7 ? A.tGen : c < 7 ? A.tTxt : A.tNum); }
+    const sum = Object.assign(sheet(`${P} - Summary`), { auKind: "truck-sum", zoom: 60, fit: true, minW: { B: 22.7, C: 10.7, D: 19.5, E: 33.5, F: 30.3, G: 24.8 } }), dq = q(det.name);
+    box(sum, "B3", "G3", `${P} (${vt}) - ${fy} / ${fy + 1}`, A.kTitle); sum.heights[3] = 33.5;
+    ["Month", "Year", "Days Run", "Route Collection", "Route Expense", "Route Gross"].forEach((h, k) => put(sum, col(1 + k) + 4, h, k ? A.kHeadC : A.kHeadL)); sum.heights[4] = 32.15;
+    const t = [0, 0, 0, 0];
+    AU_MON.forEach((m, i) => { const r = 5 + i, ym = monthYM(fy, i), [y, mo] = ym.split("-").map(Number), on = ym <= endYM, x = lines.filter(z => z.from.startsWith(ym)); sum.heights[r] = 32.15;
+      put(sum, "B" + r, m, A.mMonth); put(sum, "C" + r, String(y), A.mYear);
+      const sp = c => `SUMPRODUCT((YEAR(${dq}!$A$${F}:$A$${L})=${y})*(MONTH(${dq}!$A$${F}:$A$${L})=${mo})*N(+${dq}!$${c}$${F}:$${c}$${L}))`;
+      [[x.reduce((a, z) => a + z.days, 0), "C"], [x.reduce((a, z) => a + z.col, 0), "R"], [x.reduce((a, z) => a + z.exp, 0), "S"], [x.reduce((a, z) => a + z.col - z.exp, 0), "T"]]
+        .forEach(([v, c], k) => { if (on) t[k] += v; put(sum, col(3 + k) + r, on ? Math.round(v * 100) / 100 : null, k ? A.mNum : A.mDays, on ? sp(c) : undefined); }); });
+    put(sum, "B17", "Total", A.kTotL); put(sum, "C17", null, A.kTotL); sum.heights[17] = 32.15;
+    t.forEach((v, k) => put(sum, col(3 + k) + 17, Math.round(v * 100) / 100, k ? A.kTotN : A.kTotC, `SUM(${col(3 + k)}5:${col(3 + k)}16)`));
+    const sq = q(sum.name);
+    return { type: vt, truck: true, vids: [vid], sum, det, line: () => ["D", "E", "F", "G"].map((c, k) => [t[k], `${sq}!${c}17`]) };
+  };
+  const tGroups = ids.filter(isTruck).sort((a, b) => pl(a).localeCompare(pl(b))).map(truckGroup);
   const groups = [];
   if (mSheets.length) { const sum = Object.assign(sheet("Summary - Route Bus"), { auKind: "route-sum", zoom: 70, fit: true });
     auMonthTable(sum, `ROUTE BUS SUMMARY - ${routeIds.map(pl).join(" / ")}`, i => { const L = mSheets.filter(w => w.ym === monthYM(fy, i)); if (!L.length) return [[0, "0"], [0, "0"], [0, "0"], [0, "0"]];
       const g = r => [L.reduce((a, w) => a + (num(w.rows[r]?.[1]?.v) || 0), 0), L.map(w => `${q(w.name)}!B${r}`).join("+")]; return [g(3), g(4), g(5), g(6)]; });
     groups.push({ type: "Route Bus", vids: routeIds, sum, line: vid => { const L = mSheets.filter(w => w.vid === vid), g = r => [L.reduce((a, w) => a + (num(w.rows[r]?.[1]?.v) || 0), 0), L.map(w => `${q(w.name)}!B${r}`).join("+") || "0"];
       return [g(3), g(4), g(5), g(6)]; } }); }
-  groups.push(...groupSheets("spare", "Spare Bus"), ...groupSheets("truck", "Truck"));
+  groups.push(...groupSheets("spare", "Spare Bus"), ...tGroups);
   // ---- Office Expenses: the ticked vehicles' expenses (and common ones when ticked), oldest first
   const xs = (recs.expenses || []).filter(x => inFy(x.date) && num(x.amount) && (x.vehicleId ? sel.has(x.vehicleId) : x.plate && plates.has(plateKey(x.plate)) ? true : common && (ids.some(isTruck) || !/truck/i.test(x.vtype || "")) && (ids.some(id => !isTruck(id)) || /truck/i.test(x.vtype || ""))))
     .sort((a, b) => String(a.date).localeCompare(String(b.date)));
-  const off = Object.assign(sheet("Office Expenses"), { auKind: "off", zoom: 40 }), OF = 6, OL = Math.max(OF, OF + xs.length - 1), oTot = xs.reduce((a, x) => a + Math.round(num(x.amount)), 0);
-  Object.assign(off.widths, { A: 16.18, B: 24.82, C: 141.91, D: 44.45, E: 35.45, F: 39.27, G: 27 });
-  box(off, "A3", "G3", `EXPENSES - ${fy} / ${fy + 1}`, A.oTitle); off.heights[3] = 36;
-  box(off, "A4", "G4", `TOTAL EXPENSE :-    RS. ${oTot.toLocaleString("en-IN")} /-`, A.oTitle, `"TOTAL EXPENSE :-    RS. "&TEXT(SUM(G${OF}:G${OL}),"#,##,##0")&" /-"`); off.heights[4] = 36;
-  ["S.No", "Date", "Description", "Vehicle Number", "Category", "Payment Type", "Amount"].forEach((h, k) => put(off, col(k) + 5, h, A.oHead)); off.heights[5] = 46;
+  // Trucks' template: one row lower (title in row 4, headings in row 6), "Vehicle No", 50%.
+  const OT = tOnly ? 4 : 3, off = Object.assign(sheet("Office Expenses"), { auKind: "off", zoom: tOnly ? 50 : 40 }), OF = OT + 3, OL = Math.max(OF, OF + xs.length - 1), oTot = xs.reduce((a, x) => a + Math.round(num(x.amount)), 0);
+  Object.assign(off.widths, tOnly ? { A: 28.3, B: 31.7, C: 103.9, D: 34.4, E: 31.3, F: 43.7, G: 24.5 } : { A: 16.18, B: 24.82, C: 141.91, D: 44.45, E: 35.45, F: 39.27, G: 27 });
+  box(off, "A" + OT, "G" + OT, `EXPENSES - ${fy} / ${fy + 1}`, A.oTitle); off.heights[OT] = 36;
+  box(off, "A" + (OT + 1), "G" + (OT + 1), `TOTAL EXPENSE :-    RS. ${oTot.toLocaleString("en-IN")} /-`, A.oTitle, `"TOTAL EXPENSE :-    RS. "&TEXT(SUM(G${OF}:G${OL}),"#,##,##0")&" /-"`); off.heights[OT + 1] = 36;
+  ["S.No", "Date", "Description", tOnly ? "Vehicle No" : "Vehicle Number", "Category", "Payment Type", "Amount"].forEach((h, k) => put(off, col(k) + (OT + 2), h, A.oHead)); off.heights[OT + 2] = tOnly ? 70.5 : 46;
   xs.forEach((x, i) => { const r = OF + i; off.heights[r] = 31; put(off, "A" + r, i + 1, A.oSn); put(off, "B" + r, { d: x.date }, A.oDate); put(off, "C" + r, x.desc || "", A.oDesc);
-    put(off, "D" + r, x.vehicleId ? plN(x.vehicleId) : x.plate || "", A.oVeh); put(off, "E" + r, xpCatTxt(x), A.oTxt); put(off, "F" + r, x.pay || "", A.oTxt); put(off, "G" + r, Math.round(num(x.amount)), A.oAmt); });
+    put(off, "D" + r, x.vehicleId ? (tOnly ? pl(x.vehicleId) : plN(x.vehicleId)) : x.plate || "", A.oVeh); put(off, "E" + r, xpCatTxt(x), A.oTxt); put(off, "F" + r, x.pay || "", A.oTxt); put(off, "G" + r, Math.round(num(x.amount)), A.oAmt); });
   if (!xs.length) for (let c = 0; c < 7; c++) put(off, col(c) + OF, null, A.oTxt);
   // ---- Summary
-  const S0 = Object.assign(sheet("Summary"), { noGrid: true }); Object.assign(S0.widths, { B: 21.73, C: 30.18, D: 18.45, E: 25.27, F: 22.82, G: 19 });
-  box(S0, "B3", "G3", `${name || "Audit report"} - April ${fy} To ${endTxt}`, A.sTitle); S0.heights[3] = 31;
-  ["Vehicle Type", "Vehicle Number", "Days Run", "Route Collection", "Route Expense", "Route Gross"].forEach((h, k) => put(S0, col(1 + k) + 4, h, k < 3 ? A.sHead : A.sHeadR)); S0.heights[4] = 23.5;
+  // Trucks' template: starts a row higher (title in row 2), plain totals, and the expenses line named for EMIs too.
+  const S0 = Object.assign(sheet("Summary"), { noGrid: true }), H0 = tOnly ? 2 : 3, D0 = H0 + 2; Object.assign(S0.widths, tOnly ? { B: 21.7, C: 24.7, D: 18.5, E: 25.3, F: 22.8, G: 19 } : { B: 21.73, C: 30.18, D: 18.45, E: 25.27, F: 22.82, G: 19 });
+  box(S0, "B" + H0, "G" + H0, `${name || "Audit report"} - April ${fy} To ${endTxt}`, A.sTitle); S0.heights[H0] = 31;
+  ["Vehicle Type", "Vehicle Number", "Days Run", "Route Collection", "Route Expense", "Route Gross"].forEach((h, k) => put(S0, col(1 + k) + (H0 + 1), h, k < 3 ? A.sHead : A.sHeadR)); S0.heights[H0 + 1] = 23.5;
   // One line per vehicle: route buses, then spare buses, then trucks.
   const rowsS = groups.flatMap(g => g.vids.map(vid => ({ type: g.type, vid, v: g.line(vid) })));
   if (!rowsS.length) rowsS.push({ type: "Route Bus", vid: "", v: [[0, "0"], [0, "0"], [0, "0"], [0, "0"]] });
-  rowsS.forEach((x, i) => { const r = 5 + i; S0.heights[r] = 18.5;
-    put(S0, "B" + r, x.type, A.sTxt); put(S0, "C" + r, x.vid ? plN(x.vid) : "", A.sTxt);
+  rowsS.forEach((x, i) => { const r = D0 + i; S0.heights[r] = 18.5;
+    put(S0, "B" + r, x.type, A.sTxt); put(S0, "C" + r, x.vid ? (tOnly ? pl(x.vid) : plN(x.vid)) : "", A.sTxt);
     x.v.forEach(([v, f], k) => put(S0, col(3 + k) + r, Math.round((v || 0) * 100) / 100, k ? A.sNum : A.sDays, f)); });
-  const RT = 5 + rowsS.length; box(S0, "B" + RT, "D" + RT, "Total", A.sTotL); S0.heights[RT] = 23.5;
-  ["E", "F", "G"].forEach(c => put(S0, c + RT, rowsS.reduce((a, g, i) => a + (num(S0.rows[5 + i][XL.idx(c)].v) || 0), 0), A.sTotN, `SUM(${c}5:${c}${RT - 1})`));
+  const RT = D0 + rowsS.length; box(S0, "B" + RT, "D" + RT, "Total", A.sTotL); S0.heights[RT] = 23.5;
+  ["E", "F", "G"].forEach(c => put(S0, c + RT, rowsS.reduce((a, g, i) => a + (num(S0.rows[D0 + i][XL.idx(c)].v) || 0), 0), tOnly ? A.sNum : A.sTotN, `SUM(${c}${D0}:${c}${RT - 1})`));
   const gross = num(S0.rows[RT][6].v), L1 = RT + 3, L2 = RT + 4, L3 = RT + 6;
-  [[L1, "Total Route Gross Income", gross, `G${RT}`], [L2, "Other Maintenance / Office Expenses", oTot, `SUM(${q(off.name)}!G${OF}:G${OL})`], [L3, "Net Income", gross - oTot, `F${L1}-F${L2}`]]
+  [[L1, "Total Route Gross Income", gross, `G${RT}`], [L2, tOnly ? "Maintenance / Office Exp / Vehicle Loan EMIs" : "Other Maintenance / Office Expenses", oTot, `SUM(${q(off.name)}!G${OF}:G${OL})`], [L3, "Net Income", gross - oTot, `F${L1}-F${L2}`]]
     .forEach(([r, l, v, f]) => { box(S0, "C" + r, "E" + r, l, A.sLineL); put(S0, "F" + r, v, A.sTotN, f); S0.heights[r] = 23.5; });
   // The summaries of all the spare buses first, then their details (the same for trucks).
   const ofType = t => groups.filter(g => g.type === t);
-  out.push(S0, ...ofType("Route Bus").map(g => g.sum), ...["Spare Bus", "Truck"].flatMap(t => [...ofType(t).map(g => g.sum), ...ofType(t).map(g => g.det)]));
+  out.push(S0, ...ofType("Route Bus").map(g => g.sum), ...ofType("Spare Bus").map(g => g.sum), ...ofType("Spare Bus").map(g => g.det), ...tGroups.map(g => g.sum), ...tGroups.map(g => g.det));
   // the route bus month sheets after their summary
   const ri = out.findIndex(w => w.auKind === "route-sum"); if (ri >= 0) out.splice(ri + 1, 0, ...mSheets.filter(Boolean));
   // spare bus summary/details come right after the route summary in the template, before the month sheets
