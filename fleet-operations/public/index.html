@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-26g">
+<meta name="app-ver" content="2026-11-26h">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -18374,7 +18374,9 @@ function auSheets(recs, fy, ids, common, name) {
   const gross = num(S0.rows[RT][6].v), L1 = RT + 3, L2 = RT + 4, L3 = RT + 6;
   [[L1, "Total Route Gross Income", gross, `G${RT}`], [L2, "Other Maintenance / Office Expenses", oTot, `SUM(${q(off.name)}!G${OF}:G${OL})`], [L3, "Net Income", gross - oTot, `F${L1}-F${L2}`]]
     .forEach(([r, l, v, f]) => { box(S0, "C" + r, "E" + r, l, A.sLineL); put(S0, "F" + r, v, A.sTotN, f); S0.heights[r] = 23.5; });
-  out.push(S0, ...groups.flatMap(g => g.det ? [g.sum, g.det] : [g.sum]).filter(Boolean));
+  // The summaries of all the spare buses first, then their details (the same for trucks).
+  const ofType = t => groups.filter(g => g.type === t);
+  out.push(S0, ...ofType("Route Bus").map(g => g.sum), ...["Spare Bus", "Truck"].flatMap(t => [...ofType(t).map(g => g.sum), ...ofType(t).map(g => g.det)]));
   // the route bus month sheets after their summary
   const ri = out.findIndex(w => w.auKind === "route-sum"); if (ri >= 0) out.splice(ri + 1, 0, ...mSheets.filter(Boolean));
   // spare bus summary/details come right after the route summary in the template, before the month sheets
