@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-26a">
+<meta name="app-ver" content="2026-11-26b">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -782,7 +782,15 @@ input[data-fp]::-webkit-calendar-picker-indicator, input[list="rtGivList"]::-web
 .rtst .rtact { font: 600 11.5px var(--mono); color: var(--accent); white-space: nowrap; } .rtst .rtact.rtmeter { color: var(--muted); } .rtst.ed .dmy .dmyt { width: 100%; } .rtst.ed.typed input { border-color: var(--warn); background: var(--warn-soft); }
 .rtrst { border: 0; background: none; color: var(--warn); font-size: 13px; padding: 0 2px; cursor: pointer; line-height: 1; } .rttab tr.loss td { color: var(--danger); }
 .rttab tr.pend td { background: var(--warn-soft); color: var(--warn); } .rttab tr.pend td:first-child { font-family: var(--body); font-weight: 700; font-size: 12px; }
-.rttab tr.adv td { background: var(--accent-soft); } .rttab tr.cashd td { color: var(--danger); } /* diesel paid in cash */ .rtpendn { margin: 8px 0 0; color: var(--warn); }
+.rttab tr.adv td { background: var(--accent-soft); } .rttab tr.cashd td { color: var(--danger); }
+/* Dashboard › Audit report */
+.au { display: grid; gap: 16px; } .au .aurow { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.au .aupicks { display: flex; flex-wrap: wrap; gap: 8px; }
+.au .augrps { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.au .augrp { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; align-content: start; }
+.au .augrp h3 { margin: 0 0 4px; font-size: 13px; display: flex; align-items: center; gap: 8px; } .au .augrp h3 .sub { font-weight: 400; }
+.au .augrp .chk { font-family: var(--mono); font-size: 13px; } .au .augrp .chk .sub { font-family: var(--body); }
+.au .aufoot { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; } /* diesel paid in cash */ .rtpendn { margin: 8px 0 0; color: var(--warn); }
 .rttab td input { font: inherit; font-size: 13px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); box-sizing: border-box; } .rttab td.n input { text-align: right; width: 110px; }
 .rtadvin { display: inline-flex; align-items: center; gap: 4px; } .rtadvin.typed input { border-color: var(--warn); background: var(--warn-soft); } .rtadvn { margin: 8px 0 0; color: var(--warn); }
 .rttab td.num .dmy { width: 138px; }
@@ -2547,6 +2555,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       </header>
       <nav class="ttabs dstabs" id="dsTabs" role="tablist" aria-label="Dashboard" hidden></nav>
       <div id="ds-details" class="dstab" hidden></div>
+      <div id="ds-audit" class="dstab" hidden></div>
       <div id="ds-money" class="dstab" hidden></div>
       <div id="ds-vehicles" class="dstab" hidden></div>
       <div id="ds-insights" class="dstab" hidden></div>
@@ -11040,7 +11049,7 @@ function xlExpenseSheet(recs, fy, kind) {
    app's expense entries (the Bus and Truck Expenses sheets; entries with no vehicle get their own row), Gross = Balance − Office
    Expense. "+" and "=" lead to the overall gross. Below, each route bus month by month (April to March, the template's columns,
    from its month sheets), each spare bus month by month (from its sheet) and each truck month by month (from its sheet). Figures are formulas over those sheets. */
-function xlSummarySheet(recs, fy, sheets, routeIds, run = []) {
+function xlSummarySheet(recs, fy, sheets, routeIds, run = [], title = "") {
   const { put, S, sheet, col } = XL, C = xlCtx(recs), ws = sheet("Summary");
   const q = w => `'${w.name.replace(/'/g, "''")}'`, gv = (w, ref) => { const m = /^([A-Z]+)(\d+)$/.exec(ref), c = w.rows[+m[2]]?.[XL.idx(m[1])]; return typeof c?.v === "number" && isFinite(c.v) ? c.v : 0; };
   const of = k => sheets.filter(w => w.kind === k), route = of("route"), spare = of("spare"), trucks = of("truck");
@@ -11060,7 +11069,7 @@ function xlSummarySheet(recs, fy, sheets, routeIds, run = []) {
   const n = Math.max(5, busRows.length, trRows.length), R0 = 4, RT = R0 + n, last = RT - 1;
   // Title: the year and the vehicles
   const plates = [...busRows, ...trRows].filter(r => r.f[0]).map(r => r.lab.replace(/\s+/g, ""));
-  put(ws, "A1", `Summary - FY ${fyLabel(fy)}${plates.length ? " : " + plates.join(", ") : ""}`, S.smTitle); ws.merges.push("A1:U1");
+  put(ws, "A1", title || `Summary - FY ${fyLabel(fy)}${plates.length ? " : " + plates.join(", ") : ""}`, S.smTitle); ws.merges.push("A1:U1");
   ["Vehicle No", "Days", "Coll.", "Exp", "Bal", "Off.Exp", "Gross"].forEach((h, i) => put(ws, col(i) + 3, h, S.smHead));
   ["Vehicle No", "Days", "Kms", "Coll.", "Exp", "Bal", "Off.Exp", "Gross"].forEach((h, i) => put(ws, col(8 + i) + 3, h, S.smHead));
   const side = (rows, c0, X, nv) => { // c0: first column; nv: figures before Off.Exp
@@ -12442,7 +12451,7 @@ $("view-tyw").addEventListener("change", e => {
    balances (collection less trip expenses), the same as the Year wise history; office expenses are shown on their own and
    taken off where a chart says "after office expenses". Charts are inline SVG drawn to the width of their box. */
 const DS_BIZ = [["route", "Route bus", "var(--accent)"], ["spare", "Spare bus", "#3b82f6"], ["truck", "Trucks", "#e08a1e"]];
-const DS_TABS = [["details", "Details"], ["today", "Today"], ["money", "Money"], ["vehicles", "Vehicles"], ["insights", "Insights"]];
+const DS_TABS = [["details", "Details"], ["audit", "Audit report"], ["today", "Today"], ["money", "Money"], ["vehicles", "Vehicles"], ["insights", "Insights"]];
 // Details is for the admin only, and is the tab the admin's dashboard opens on.
 const dsDetailsOk = () => acc.users === "edit";
 let dsOpened = false;
@@ -12541,8 +12550,8 @@ const dsBizSeg = () => `<div><span class="sub">Business</span><div class="seg" r
 function dsRender() {
   const ok = dsMoneyOk(); $("dsTabs").hidden = !ok; if (!ok) dsTab = "today";
   if (!dsOpened) { dsOpened = true; if (dsDetailsOk()) dsTab = "details"; }
-  if (dsTab === "details" && !dsDetailsOk()) dsTab = "today";
-  $("dsTabs").innerHTML = DS_TABS.filter(([k]) => k !== "details" || dsDetailsOk()).map(([k, l]) => `<button type="button" role="tab" data-dstab="${k}" aria-selected="${k === dsTab}">${l}</button>`).join("");
+  if ((dsTab === "details" || dsTab === "audit") && !dsDetailsOk()) dsTab = "today";
+  $("dsTabs").innerHTML = DS_TABS.filter(([k]) => (k !== "details" && k !== "audit") || dsDetailsOk()).map(([k, l]) => `<button type="button" role="tab" data-dstab="${k}" aria-selected="${k === dsTab}">${l}</button>`).join("");
   DS_TABS.forEach(([k]) => { const el = $("ds-" + k); if (el) el.hidden = k !== dsTab; });
   if (ok && !dsData && !dsBusy) dsLoad();
   // One financial year for the whole dashboard, chosen at the top (the Vehicles tab can still show every year).
@@ -12552,6 +12561,7 @@ function dsRender() {
   $("oSumRe").hidden = $("oSumAt").hidden = dsTab !== "details" || !dsDetailsOk();
   if (dsTab === "today") return dsToday();
   if (dsTab === "details") return dsDetails();
+  if (dsTab === "audit") return auRender();
   const box = $("ds-" + dsTab);
   if (!dsData) { box.innerHTML = `<div class="empty panel"><strong>Reading every year's records…</strong>The charts appear in a moment.</div>`; return; }
   if (!dsData.fys.length) { box.innerHTML = `<div class="empty panel"><strong>No records yet</strong>Trip sheets, bookings, truck trips and expenses show here once entered.</div>`; return; }
@@ -18169,6 +18179,75 @@ function dsDetails() {
   if (!$("oSumBody")) box.innerHTML = `<section class="panel osum"><div id="oSumBody"></div></section>`;
   osAt(); osLoad(dsFy, false);
 }
+/* Dashboard › Audit report (admin): the Download all workbook (Summary, route bus month sheets, spare bus and truck sheets,
+   Bus / Truck Expenses) for the vehicles ticked here, e.g. all the buses in one report and the trucks of each owner in their
+   own. The financial year is the one chosen at the top; the running year covers April up to today, so it can be made any day.
+   Expenses go with their vehicle; expenses with no vehicle (common) only when "Include common expenses" is ticked. */
+let auSel = null, auName = "", auCommon = true;
+const auVeh = () => vehicles.filter(v => v.type === "Bus" || /truck/i.test(v.type || "")).sort((a, b) => String(a.plateNo).localeCompare(String(b.plateNo)));
+const auOwner = v => (v.ownerName || "").trim() || "Owner not entered";
+function auGroups() {
+  const V = auVeh(), out = [], bus = V.filter(v => v.type === "Bus"), trk = V.filter(v => v.type !== "Bus");
+  const route = bus.filter(v => v.opType === "Route"), spare = bus.filter(v => v.opType !== "Route");
+  if (route.length) out.push({ k: "route", title: "Route buses", list: route });
+  if (spare.length) out.push({ k: "spare", title: "Spare / Omni buses", list: spare });
+  [...new Set(trk.map(auOwner))].sort().forEach(o => out.push({ k: "t:" + o, title: "Trucks", owner: o, list: trk.filter(v => auOwner(v) === o) }));
+  return out;
+}
+function auRender() {
+  const box = $("ds-audit"), fy = dsFy ?? fyOf(todayISO()), run = fy >= fyOf(todayISO()), G = auGroups();
+  if (!auSel) auSel = new Set();
+  const per = run ? `April ${fy} to ${fmtDate(todayISO())} (the year so far)` : `April ${fy} to March ${fy + 1}`;
+  const owners = [...new Set(G.filter(g => g.owner).map(g => g.owner))];
+  const pick = (k, l) => `<button type="button" class="btn" data-aupick="${esc(k)}">${esc(l)}</button>`;
+  box.innerHTML = `<section class="panel au"><div class="sechead"><h2 class="sec">Audit report · FY ${fyLabel(fy)}</h2><p>${per}. Tick the vehicles that go in this report, then download it. Make one report for the buses, one for each owner's trucks, and so on.</p></div>
+    <div class="aurow"><div class="field" style="flex:1;min-width:16em;max-width:32em"><label for="auName">Report name</label><input id="auName" maxlength="80" autocomplete="off" value="${esc(auName)}" placeholder="e.g. company or owner name"><span class="hint">Shown as the title of the Summary sheet and in the file name.</span></div></div>
+    <div><span class="sub">Quick choice</span><div class="aupicks">${G.some(g => g.k === "route" || g.k === "spare") ? pick("bus", "All buses") : ""}${owners.map(o => pick("o:" + o, `Trucks · ${o}`)).join("")}${owners.length > 1 ? pick("trucks", "All trucks") : ""}${pick("none", "Clear")}</div></div>
+    <div class="augrps">${G.map(g => `<div class="augrp"><h3>${esc(g.title)}${g.owner ? ` <span class="sub">· ${esc(g.owner)}</span>` : ""}</h3>${g.list.map(v => `<label class="chk"><input type="checkbox" data-auv="${v.id}"${auSel.has(v.id) ? " checked" : ""}> ${esc(plateOf(v))}${v.status === "Sold / Scrapped" ? ` <span class="sub">(sold)</span>` : v.opType === "Omni" ? ` <span class="sub">(Omni)</span>` : ""}</label>`).join("")}</div>`).join("") || `<p class="sub">No buses or trucks in the vehicle master yet.</p>`}</div>
+    <label class="chk"><input type="checkbox" id="auCommon"${auCommon ? " checked" : ""}> Include common expenses (office expenses with no vehicle number)</label>
+    <div class="aufoot"><button type="button" class="btn primary" id="auGo">⬇ Download audit report</button><span class="sub" id="auCount"></span></div></section>`;
+  auCount();
+}
+function auCount() { const n = auSel.size, el = $("auCount"); if (el) el.textContent = n ? `${n} vehicle${n === 1 ? "" : "s"} ticked` : "Tick at least one vehicle"; if ($("auGo")) $("auGo").disabled = !n; }
+// The workbook: the records of the ticked vehicles only, then the same sheets as Download all.
+function auSheets(recs, fy, ids, common, name) {
+  const sel = new Set(ids), V = recs.vehicles || [], plates = new Map(V.filter(v => sel.has(v.id)).map(v => [plateKey(v.plateNo || ""), v.id]));
+  const legs = (recs.truckTrips || []).filter(l => sel.has(l.vehicleId)), rIds = new Set(legs.map(l => l.roundId).filter(Boolean));
+  const R = { ...recs, trips: (recs.trips || []).filter(t => sel.has(t.vehicleId)), tripMonths: (recs.tripMonths || []).filter(m => sel.has(m.vehicleId)), tripYears: (recs.tripYears || []).filter(y => sel.has(y.vehicleId)),
+    bookings: (recs.bookings || []).filter(b => sel.has(b.vehicleId)), truckTrips: legs, truckRounds: (recs.truckRounds || []).filter(d => rIds.has(d.id) || sel.has(d.vehicleId)),
+    expenses: (recs.expenses || []).filter(x => x.vehicleId ? sel.has(x.vehicleId) : x.plate && plates.has(plateKey(x.plate)) ? true : common) };
+  const kinds = new Set(V.filter(v => sel.has(v.id)).map(v => /truck/i.test(v.type || "") ? "truck" : "bus"));
+  const busIds = [...new Set(R.trips.filter(t => t.date && fyOf(t.date) === fy).map(t => t.vehicleId))];
+  const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, R, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(R, fy), ...xlTruckSheets({ ...R, truckTrips: legsCounted(R.truckTrips, R.truckRounds) }, fy),
+    ...[...kinds].sort().map(k => xlExpenseSheet(R, fy, k))]);
+  const run = fy >= fyOf(todayISO()), per = `April ${fy} To ${run ? fmtDate(todayISO()) : `March ${fy + 1}`}`;
+  return [xlSummarySheet(R, fy, sheets, busIds, dlOnTrip(R, fy), `${name ? name + " - " : "Audit report - "}${per}`), ...sheets];
+}
+async function auGo(btn) {
+  const ids = [...auSel].filter(id => vehicles.some(v => v.id === id)); if (!ids.length) return;
+  let dl = null; try { dl = await auDownloads(); } catch { dl = null; }
+  if (!dl) { toast("Saving files isn't available in this view."); return; }
+  const fy = dsFy ?? fyOf(todayISO()), was = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…";
+  try {
+    const recs = await dlAllRead(), file = `Audit_${(auName || "Report").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "") || "Report"}_FY${fyLabel(fy)}.xlsx`;
+    await dl.save({ filename: file, data: XL.build(auSheets(recs, fy, ids, auCommon, auName)) });
+    toast(`Downloaded ${file}`);
+  } catch (er) { if (er?.code !== "declined") toast(er?.code === "rate_limited" ? "A save is already waiting for your answer." : "Couldn't make the file. Try again."); }
+  finally { btn.disabled = false; btn.textContent = was; }
+}
+$("ds-audit").addEventListener("click", e => {
+  const p = e.target.closest("[data-aupick]"); if (p) { const k = p.dataset.aupick, G = auGroups();
+    const list = k === "bus" ? G.filter(g => g.k === "route" || g.k === "spare") : k === "trucks" ? G.filter(g => g.owner) : k.startsWith("o:") ? G.filter(g => g.owner === k.slice(2)) : [];
+    auSel = new Set(list.flatMap(g => g.list.map(v => v.id)));
+    if (k === "bus") auName = auName || "Buses"; else if (k.startsWith("o:")) auName = k.slice(2);
+    auRender(); return; }
+  if (e.target.closest("#auGo")) auGo(e.target.closest("#auGo"));
+});
+$("ds-audit").addEventListener("change", e => {
+  const c = e.target.closest("[data-auv]"); if (c) { c.checked ? auSel.add(c.dataset.auv) : auSel.delete(c.dataset.auv); auCount(); return; }
+  if (e.target.id === "auCommon") auCommon = e.target.checked;
+});
+$("ds-audit").addEventListener("input", e => { if (e.target.id === "auName") auName = e.target.value.trim(); });
 // A year with no trips, bookings, truck trips or expenses (All financial years leaves it out).
 const dlFyHasData = (recs, fy) => recs.trips.some(t => t.date && fyOf(t.date) === fy) || recs.bookings.some(b => b.from && fyOf(b.from) === fy)
   || recs.truckTrips.some(l => l.from && fyOf(l.from) === fy) || recs.expenses.some(x => x.date && fyOf(x.date) === fy);
