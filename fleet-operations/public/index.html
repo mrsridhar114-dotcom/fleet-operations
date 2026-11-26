@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-26f">
+<meta name="app-ver" content="2026-11-26g">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -18300,13 +18300,16 @@ function auSheets(recs, fy, ids, common, name) {
       if (num(f.amount)) rows.push({ vid, from: dt, to: dt, days: 0, lit: num(f.litres), fuel: num(f.amount), toll: 0, drv: 0, cln: 0, permit: 0, other: 0, col: 0 }); }));
     return rows.sort((a, b) => String(a.from).localeCompare(String(b.from)));
   };
-  const groupSheets = (kind, label) => {
-    const rows = tripRows(kind); if (!rows.length) return [];
+  // One Summary and one Details sheet for each spare bus (and each truck), the vehicle number in front of the sheet name.
+  const groupSheets = (kind, label) => { const all = tripRows(kind);
+    return [...new Set(all.map(x => x.vid))].sort((a, b) => pl(a).localeCompare(pl(b))).flatMap(v => groupOne(kind, label, all.filter(x => x.vid === v))); };
+  const groupOne = (kind, label, rows) => {
+    if (!rows.length) return [];
     const vids = [...new Set(rows.map(x => x.vid))].sort((a, b) => pl(a).localeCompare(pl(b))), up = label.toUpperCase();
     // Each vehicle's trips together (date order within), so the Summary can give every vehicle its own line.
     rows.sort((a, b) => vids.indexOf(a.vid) - vids.indexOf(b.vid) || String(a.from).localeCompare(String(b.from)));
     const rng = new Map(vids.map(v => [v, [5 + rows.findIndex(x => x.vid === v), 5 + rows.length - 1 - [...rows].reverse().findIndex(x => x.vid === v)]]));
-    const det = Object.assign(sheet(`${label} - Details`), { auKind: kind + "-det", zoom: 70, fit: true }), F = 5, L = Math.max(F, F + rows.length - 1), T = L + 1, rg = c => `${c}${F}:${c}${L}`;
+    const det = Object.assign(sheet(`${plN(rows[0].vid)} ${label} - Details`), { auKind: kind + "-det", zoom: 70, fit: true }), F = 5, L = Math.max(F, F + rows.length - 1), T = L + 1, rg = c => `${c}${F}:${c}${L}`;
     Object.assign(det.widths, { A: 23.09, B: 23.09, C: 11.27, D: 21.27, E: 13.82, F: 11, G: 10.45, H: 10.45, I: 20.91, J: 15, K: 19.73, L: 16.18, M: 19.73 });
     const fmtL = d => { const x = new Date(d + "T00:00:00"); return `${pad2(x.getDate())}/${x.toLocaleDateString("en-GB", { month: "long" }).toUpperCase()}/${x.getFullYear()}`; };
     box(det, "A3", "M3", `${vids.map(plN).join(" / ")} - ${up} DETAILS FROM ${fmtL(`${fy}-04-01`)} to ${fmtL(run ? today : `${fy + 1}-03-31`)}`, A.dTitle); det.heights[3] = 26;
@@ -18319,7 +18322,7 @@ function auSheets(recs, fy, ids, common, name) {
     box(det, "A" + T, "J" + T, "Total", A.dTotL); det.heights[T] = 45;
     [["K", rows.reduce((a, x) => a + x.col, 0)], ["L", rows.reduce((a, x) => a + x.fuel + x.toll + x.drv + x.cln + x.permit + x.other, 0)]].forEach(([c, v]) => put(det, c + T, v, A.dTotN, `SUM(${rg(c)})`));
     put(det, "M" + T, det.rows[T][10].v - det.rows[T][11].v, A.dTotN, `SUM(${rg("M")})`);
-    const sum = Object.assign(sheet(`${label} - Summary`), { auKind: kind + "-sum", zoom: 70, fit: true }), dq = q(det.name);
+    const sum = Object.assign(sheet(`${plN(rows[0].vid)} ${label} - Summary`), { auKind: kind + "-sum", zoom: 70, fit: true }), dq = q(det.name);
     auMonthTable(sum, `${up} SUMMARY - ${vids.map(pl).join(" / ")}`, i => { const ym = monthYM(fy, i), m = rows.filter(x => x.from.startsWith(ym)), [y, mo] = ym.split("-").map(Number);
       const sp = c => `SUMPRODUCT((YEAR(${dq}!$A$${F}:$A$${L})=${y})*(MONTH(${dq}!$A$${F}:$A$${L})=${mo})*N(+${dq}!$${c}$${F}:$${c}$${L}))`;
       return [[m.reduce((a, x) => a + x.days, 0), sp("C")], [m.reduce((a, x) => a + x.col, 0), sp("K")], [m.reduce((a, x) => a + x.fuel + x.toll + x.drv + x.cln + x.permit + x.other, 0), sp("L")], [m.reduce((a, x) => a + x.col - (x.fuel + x.toll + x.drv + x.cln + x.permit + x.other), 0), sp("M")]]; });
