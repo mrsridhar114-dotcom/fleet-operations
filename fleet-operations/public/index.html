@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-26e">
+<meta name="app-ver" content="2026-11-26f">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -18267,7 +18267,7 @@ function auSheets(recs, fy, ids, common, name) {
       here.forEach(id => {
         trips = (recs.trips || []).filter(t => t.vehicleId === id); tripMonths = (recs.tripMonths || []).filter(m => m.vehicleId === id); tripYears = (recs.tripYears || []).filter(y => y.vehicleId === id); tBusId = id; tFyStart = fy;
         const M = monthStats(ym), n = daysIn(ym), mName = AU_MON[i], yr = ym.slice(0, 4), k = here.indexOf(id), ws = sheet(`${mName} ${yr}${k ? ` (${k + 1})` : ""}`), r0 = 9, rN = 8 + n;
-        Object.assign(ws, { auKind: "month", ym, vid: id, zoom: 70, fit: true });
+        Object.assign(ws, { auKind: "month", ym, vid: id, zoom: 50, fit: true });
         Object.assign(ws.widths, { A: 32.82, B: 15.36, C: 15.27, D: 15.82, E: 16, F: 13, G: 15.27, H: 11.73, I: 13.09, J: 7.36, K: 7.36, L: 7.36, M: 7.36, N: 7.36, O: 13.45, P: 11.27, Q: 10.73 });
         box(ws, "A2", "Q2", `${pl(id).replace(/^(\w+)\s+(\d+)\s+/, "$1$2 ")} - ROUTE BUS DETAILS FOR MONTH OF ${mName.toUpperCase()}-${yr}`, A.rTitle); ws.heights[2] = 36;
         [["Days Run", Math.round(M.days * 100) / 100, undefined, Number.isInteger(Math.round(M.days * 100) / 100) ? A.rVal : A.rValD], ["Route Collection", M.tot.col, `SUM(O${r0}:O${rN})`, A.rVal], ["Route Expense", M.tot.exp, `SUM(P${r0}:P${rN})`, A.rVal], ["Balance", M.tot.col - M.tot.exp, "B4-B5", A.rVal]]
