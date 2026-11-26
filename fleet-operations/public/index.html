@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-24a">
+<meta name="app-ver" content="2026-11-26a">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -695,6 +695,11 @@ table.ttable tr.idle td .pill { margin-right: 8px; }
 .odoch .ochr label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
 .odoch .ochr input { width: 100%; font-family: var(--mono); }
 .odoch .ochr button { margin-bottom: 4px; }
+/* SIM cards: used in, number, network, valid till, remove */
+.simch .ochr { grid-template-columns: minmax(90px, .8fr) minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1.2fr) auto; }
+.simch .ochr label:first-child { grid-column: auto; grid-row: auto; max-width: none; } .simch .ochr button { grid-column: auto; grid-row: auto; }
+.simch .ochr select { width: 100%; }
+@media (max-width: 760px) { .simch .ochr { grid-template-columns: 1fr 1fr auto; } .simch .ochr label:nth-child(4) { grid-column: 1 / 3; } }
 .rtodo { margin: 0; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.5; }
 .rtstats { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); }
 .rtst { padding: 9px 9px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; min-width: 0; } .rtst:last-child { border-right: 0; }
@@ -3537,6 +3542,14 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
       <div class="docblocks" id="docFields"></div>
     </fieldset>
     <fieldset class="docs">
+      <legend>SIM cards (camera &amp; GPS)</legend>
+      <span class="hint">The SIM in each camera or GPS device and how long its recharge is valid. It shows as due like the other renewals.</span>
+      <div id="simList" class="odoch simch"></div>
+      <button type="button" class="btn" id="simAdd" style="align-self:flex-start">+ Add SIM card</button>
+      <datalist id="simNets"><option>Airtel</option><option>Jio</option><option>Vi</option><option>BSNL</option></datalist>
+      <span class="err" id="e-sims"></span>
+    </fieldset>
+    <fieldset class="docs">
       <legend>Remarks</legend>
       <div class="field"><label for="remarks" class="vh">Remarks</label><textarea id="remarks" rows="3" maxlength="1000" placeholder="Anything else worth knowing about this vehicle, e.g. body rebuilt in 2024, AC not working"></textarea><span class="hint">Visible to everyone who can see this vehicle.</span></div>
     </fieldset>
@@ -3572,6 +3585,7 @@ div.twcard { padding: 0; gap: 0; align-items: stretch; overflow: hidden; cursor:
     <section><h3>Owner</h3><dl class="dl" id="vOwner"></dl></section>
     <section><h3>Finance</h3><dl class="dl" id="vFin"></dl></section>
     <section><h3>Compliance &amp; renewals</h3><dl class="dl" id="vDocs"></dl></section>
+    <section id="vSimSec"><h3>SIM cards (camera &amp; GPS)</h3><dl class="dl" id="vSims"></dl></section>
     <section id="vRemSec"><h3>Remarks</h3><div class="vremarks" id="vRemarks"></div></section>
   </div>
   <footer>
@@ -4200,6 +4214,13 @@ const DOCS = [
   ["speedGovExp", "Speed governor certificate expiry", "Speed governor"],
   ["gpsExp", "GPS tracker (AIS-140) certificate expiry", "GPS tracker"]
 ];
+// SIM cards in the vehicle's cameras and GPS devices. Each recharge's "valid till" date is a renewal like the documents
+// above: it shows in the renewals list, the due badge, the reminders and the daily email (key "sim_" + the SIM's id).
+const SIM_USES = ["GPS", "Camera", "Other"];
+const simsOf = v => (v?.sims || []).filter(x => x && (x.no || x.validTill));
+const simLabel = x => `${x.use || "SIM"} SIM recharge${x.no ? ` (…${String(x.no).slice(-4)})` : ""}`;
+const simText = x => [x.use, x.no, x.provider, x.validTill ? `valid till ${fmtDate(x.validTill)}` : ""].filter(Boolean).join(" · ");
+const simDocs = v => simsOf(v).filter(x => x.validTill).map(x => ({ k: "sim_" + x.id, short: simLabel(x), date: x.validTill, sim: x }));
 // Details recorded alongside each document's expiry date (all optional).
 const DOC_DETAILS = {
   fcDate: [{ k: "fcCertNo", label: "FC certificate number", full: "FC certificate number" }],
@@ -4398,7 +4419,7 @@ const TRACKED = [
   ["seats", "Seating capacity"], ["staffSeats", "Seating capacity (+ staff)"], ["gvw", "Gross vehicle weight", "kg"], ["ulw", "Unladen weight", "kg"], ["fuelTank", "Fuel tank capacity", "litres"],
   ["tyreCount", "No. of tyres"], ["tyreSize", "Tyre size"], ["batteryMake", "Battery make & model"], ["batteryDate", "Battery installed on", "date"],
   ["usage", "Usage category", "usage"], ["opType", "Operation type"], ["odoStart", "Odometer when added", "km"],
-  ["odoPairs", "Meter and actual km", "text"],
+  ["odoPairs", "Meter and actual km", "text"], ["sims", "SIM cards", "text"],
   ["ownerName", "Owner name"], ["ownerAddress", "Owner address", "text"], ["remarks", "Remarks", "text"], ["extraDocFileName", "Other document", "file"]
 ];
 const FIELD_INFO = Object.fromEntries([
@@ -4414,7 +4435,7 @@ const COMPLIANCE_KEYS = () => DOCS.flatMap(([k]) => [k, ...(DOC_DETAILS[k] || []
 const ALL_KEYS = () => [...TRACKED.map(t => t[0]), ...COMPLIANCE_KEYS(), ...FIN_FIELDS.map(f => f[0])];
 const fieldLabel = (k, info = FIELD_INFO) => k === "_created" ? "Record" : info[k]?.label || k;
 // A list (the meter and actual km readings) is kept in the history as text.
-const histVal = v => v == null ? "" : Array.isArray(v) ? v.map(odoPairText).join("; ") : String(v);
+const histVal = v => v == null ? "" : Array.isArray(v) ? v.map(x => x && "use" in x ? simText(x) : odoPairText(x)).join("; ") : String(v);
 const odoPairText = p => `${fmtShort(p.date)}: meter ${nf(num(p.meter))} = actual ${nf(num(p.actual))}, ${num(p.ratio)} meter km for 1 actual km`;
 const MON_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function fmtMfg(v) { const m = v?.mfgMonth; if (m && /^\d{4}-\d{2}$/.test(m)) return `${MON_SHORT[Number(m.slice(5)) - 1] || ""} ${m.slice(0, 4)}`.trim(); return v?.mfgYear ? String(v.mfgYear) : ""; }
@@ -4688,6 +4709,7 @@ function vehItems() {
   inService().forEach(v => DOCS.forEach(([k, , short]) => {
     if (v[k] && docApplies(k, v.type, v.usage)) { const days = daysUntil(v[k]); out.push({ kind: "vehicle", v, rec: v, k, short, date: v[k], days, band: band(days) }); }
   }));
+  inService().forEach(v => simDocs(v).forEach(d => { const days = daysUntil(d.date); out.push({ kind: "vehicle", v, rec: v, k: d.k, short: d.short, date: d.date, days, band: band(days), sim: d.sim }); }));
   return out;
 }
 function allItems() {
@@ -4702,7 +4724,7 @@ const rKey = i => `${i.kind}:${i.rec.id}:${i.k}`;
 // Where the copy of each document is kept in its master: a vehicle document sits under its own date's name; a driver's
 // licence dates go with the licence front; a conductor's licence and first-aid dates with their own copies.
 const R_SLOT = { valTR: "dlFront", valNT: "dlFront", clValid: "clCopy", faValid: "faCopy" };
-const rSlot = (kind, k) => kind === "vehicle" ? k : R_SLOT[k];
+const rSlot = (kind, k) => kind === "vehicle" ? (k.startsWith("sim_") ? null : k) : R_SLOT[k];  // a SIM recharge has no copy
 let rFile = null;
 const rCan = kind => kind === "vehicle" ? canWrite : kind === "driver" ? canDrivers : canConductors;
 let rEdit = "";
@@ -4713,7 +4735,7 @@ function renderDash() {
   const total = inService().reduce((s, v) => s + DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).length, 0);
   const c = { expired: 0, d7: 0, d30: 0, ok: 0 };
   items.forEach(i => c[i.band]++);
-  const missing = total - vItems.length;
+  const missing = total - vItems.filter(i => !i.sim).length;
   const vehAffected = b => new Set(items.filter(i => b.includes(i.band)).map(i => i.kind + i.rec.id)).size;
 
   const win = $("rWin").value;
@@ -4753,7 +4775,14 @@ function renderDash() {
         ${seg(cc.expired, "--danger", "Expired")}${seg(cc.d7, "--hot", "Within 7 days")}${seg(cc.d30, "--warn", "8–30 days")}${seg(cc.ok, "--ok", "Valid")}${seg(miss, "--none", "Not recorded")}
       </div>
       <span class="tally">${attention ? `<b style="color:var(--danger)">${attention}</b> due` : `${cc.ok}/${elig} ok`}</span></div>`;
-  }).join("");
+  }).join("") + (() => { // SIM recharges: one bar for all the SIM cards with a recharge date
+    const its = vItems.filter(i => i.sim); if (!its.length) return "";
+    const cc = { expired: 0, d7: 0, d30: 0, ok: 0 }; its.forEach(i => cc[i.band]++); const n = its.length, attention = cc.expired + cc.d7 + cc.d30;
+    const seg = (cnt, col, lbl) => cnt ? `<span style="width:${cnt / n * 100}%;background:var(${col})" title="${lbl}: ${cnt}"></span>` : "";
+    return `<div class="docrow"><span class="name">SIM recharge<span class="sub" style="display:block;font-weight:400">Camera and GPS SIM cards</span></span>
+      <div class="stack" role="img" aria-label="SIM recharge: ${cc.expired} expired, ${cc.d7} within 7 days, ${cc.d30} within 30 days, ${cc.ok} valid">
+        ${seg(cc.expired, "--danger", "Expired")}${seg(cc.d7, "--hot", "Within 7 days")}${seg(cc.d30, "--warn", "8–30 days")}${seg(cc.ok, "--ok", "Valid")}</div>
+      <span class="tally">${attention ? `<b style="color:var(--danger)">${attention}</b> due` : `${cc.ok}/${n} ok`}</span></div>`; })();
 
   // schedule table
   const q = $("rq").value.trim().toLowerCase(), doc = $("rDoc").value, ty = $("rType").value;
@@ -4762,7 +4791,7 @@ function renderDash() {
     d90: i.days >= 0 && i.days <= 90, all: true
   })[win];
   const hit = i => i.kind === "vehicle" ? vFull(i.v).toLowerCase().includes(q) || plateKey(i.v.plateNo).toLowerCase().includes(plateKey(q).toLowerCase() || "\u0000") : String(i.rec.name || "").toLowerCase().includes(q);
-  const list = items.filter(i => (inWin(i) || rKey(i) === rEdit) && (!doc || i.k === doc) && (!ty || (ty === "_driver" || ty === "_conductor" ? "_" + i.kind === ty : i.kind === "vehicle" && i.v.type === ty)) && (!q || hit(i)));
+  const list = items.filter(i => (inWin(i) || rKey(i) === rEdit) && (!doc || i.k === doc || (doc === "sim" && !!i.sim)) && (!ty || (ty === "_driver" || ty === "_conductor" ? "_" + i.kind === ty : i.kind === "vehicle" && i.v.type === ty)) && (!q || hit(i)));
   $("rCount").textContent = `${list.length} renewal${list.length === 1 ? "" : "s"}`;
   if (!vehicles.length) {
     $("rRows").innerHTML = `<tr><td colspan="5"><div class="empty"><strong>No vehicles yet</strong>Add vehicles and their renewal dates under Masters › Vehicle.</div></td></tr>`;
@@ -5123,6 +5152,9 @@ function fillVDrawer(v) {
     const d = daysUntil(v[k]);
     return dt + `<dd><div class="vdoc"><span class="num">${fmtDate(v[k])}</span><span class="pill ${band(d)}">${whenText(d)}</span>${docExtra(v, k)}</div></dd>`;
   }).join("");
+  $("vSims").innerHTML = simsOf(v).length ? simsOf(v).map(x => { const d = x.validTill ? daysUntil(x.validTill) : null;
+    return `<dt>${esc(x.use || "SIM")}${x.provider ? ` <span class="sub">· ${esc(x.provider)}</span>` : ""}</dt><dd><div class="vdoc">${x.no ? `<span class="num">${esc(x.no)}</span>` : ""}${x.validTill ? `<span class="sub">Recharge valid till</span><span class="num">${fmtDate(x.validTill)}</span><span class="pill ${band(d)}">${whenText(d)}</span>` : `<span class="sub">Recharge date not recorded</span>`}</div></dd>`; }).join("")
+    : `<dt>SIM cards</dt><dd class="nr">None recorded</dd>`;
   const loanLeft = v.loanEndDate ? daysUntil(v.loanEndDate) : null;
   const ph = fileOf(v, "photo"), oldPhotos = earlierHtml(v.id, "photo");
   $("vPhoto").hidden = !ph && !oldPhotos;
@@ -5489,7 +5521,7 @@ function buildForm() {
   $("hClear").onclick = () => { $("vHistDoc").value = ""; $("hPeriod").value = "all"; $("hWho").value = ""; $("hFrom").value = ""; $("hTo").value = ""; $("hText").value = ""; renderHist(); };
   $("regDate").max = todayISO();
   $("rType").innerHTML += TYPES.map(t => `<option>${t}</option>`).join("") + `<optgroup label="People"><option value="_driver">Drivers</option><option value="_conductor">Conductors</option></optgroup>`;
-  $("rDoc").innerHTML += `<optgroup label="Vehicle">${DOCS.map(([k, , s]) => `<option value="${k}">${s}</option>`).join("")}</optgroup>` +
+  $("rDoc").innerHTML += `<optgroup label="Vehicle">${DOCS.map(([k, , s]) => `<option value="${k}">${s}</option>`).join("")}<option value="sim">SIM recharge</option></optgroup>` +
     `<optgroup label="Driver and conductor">${[...P_CFG.driver.dates, ...P_CFG.conductor.dates].map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>`;
   $("type").addEventListener("change", syncOp);
 }
@@ -5536,7 +5568,7 @@ function openDrawer(v, focusKey) {
   DETAIL_FIELDS.forEach(d => $(d.k).value = v?.[d.k] ?? "");
   syncPermitTypes(v?.permitType ?? "");
   ["rto", "fastag", "bodyType", "bodyColour", "fuelTank", "tyreCount", "tyreSize", "batteryMake", "batteryDate", "odoStart", "remarks"].forEach(id => $(id).value = v?.[id] ?? "");
-  odoPrRender(v?.odoPairs || []);
+  odoPrRender(v?.odoPairs || []); simRender(v?.sims || []);
   pendingFiles = {}; renderFileLines();
   $("finYes").checked = v?.financed === "yes"; $("finNo").checked = v?.financed === "no";
   $("financier").value = v?.financier || ""; $("loanEndDate").value = v?.loanEndDate || "";
@@ -5564,7 +5596,7 @@ function openDrawer(v, focusKey) {
   }, 30);
 }
 function closeDrawer() { $("drawer").hidden = true; editingId = null; if (!anyDrawerOpen()) $("scrim").hidden = true; }
-function clearErrors() { ["staffSeats", "permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "odoPairs", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
+function clearErrors() { ["sims", "staffSeats", "permitFrom", "permitType", "fastag", "fuelTank", "tyreCount", "batteryDate", "odoStart", "odoPairs", "financier", "loanEndDate", "plateNo", "status", "chassisNo", "engineNo", "seats", "gvw", "ulw", "mfgYear","ownerName", "ownerAddress", "make", "model", "fuel", "emission", "usage", "type", "opType", "regDate", ...DOCS.map(d => d[0])].forEach(k => { if ($("e-" + k)) $("e-" + k).textContent = ""; $(k)?.removeAttribute("aria-invalid"); }); }
 function setErr(k, msg) { $("e-" + k).textContent = msg; $(k)?.setAttribute("aria-invalid", "true"); }
 
 // Meter and actual km in the vehicle form: one line per reading noted (date, meter reading, actual km, meter km for 1 actual km),
@@ -5597,6 +5629,25 @@ function odoPrRead() {
 $("odoPrAdd").onclick = () => { const L = odoPrRows(), last = L[L.length - 1]; odoPrRender([...L, { date: todayISO(), ratio: last?.ratio || "" }]); $("odoPrList").querySelector('.ochr:last-child [data-op="meter"]')?.focus(); };
 $("odoPrList").addEventListener("click", e => { if (e.target.closest("[data-opdel]")) { e.target.closest(".ochr").remove(); } });
 $("odoPrList").addEventListener("input", odoPrEx);
+// SIM cards in the vehicle form: one line each (used in, number, network, recharge valid till).
+function simRender(list) {
+  $("simList").innerHTML = list.map(x => `<div class="ochr" data-simid="${esc(x.id || genId("sim"))}"><label>Used in<select data-sm="use">${SIM_USES.map(u => `<option${u === (x.use || "GPS") ? " selected" : ""}>${u}</option>`).join("")}</select></label>` +
+    `<label>SIM / mobile no.<input data-sm="no" inputmode="numeric" autocomplete="off" maxlength="20" value="${esc(x.no || "")}" placeholder="e.g. 9876543210"></label>` +
+    `<label>Network<input data-sm="provider" list="simNets" autocomplete="off" maxlength="30" value="${esc(x.provider || "")}" placeholder="e.g. Airtel"></label>` +
+    `<label>Recharge valid till<input type="date" data-sm="validTill" min="1900-01-01" max="2100-12-31" value="${esc(x.validTill || "")}"></label>` +
+    `<button type="button" class="icon" data-smdel title="Remove this SIM card" aria-label="Remove this SIM card">✕</button></div>`).join("");
+}
+const simRows = () => [...$("simList").querySelectorAll(".ochr")].map(r => { const g = k => r.querySelector(`[data-sm="${k}"]`).value.trim(); return { id: r.dataset.simid, use: g("use"), no: g("no").replace(/\s+/g, ""), provider: g("provider"), validTill: g("validTill") }; });
+function simRead() {
+  const list = simRows().filter(x => x.no || x.provider || x.validTill);
+  for (const x of list) {
+    if (!x.no && !x.validTill) return { err: "Enter the SIM number or its recharge date for each line." };
+    if (x.validTill && (x.validTill < "1900-01-01" || x.validTill > "2100-12-31")) return { err: "Enter a valid recharge date." };
+  }
+  return { list: list.map(x => Object.fromEntries(Object.entries(x).filter(([, val]) => val !== ""))) };
+}
+$("simAdd").onclick = () => { simRender([...simRows(), { id: genId("sim"), use: simRows().some(x => x.use === "GPS") ? "Camera" : "GPS" }]); $("simList").querySelector('.ochr:last-child [data-sm="no"]')?.focus(); };
+$("simList").addEventListener("click", e => { if (e.target.closest("[data-smdel]")) e.target.closest(".ochr").remove(); });
 $("form").addEventListener("submit", async e => {
   e.preventDefault(); clearErrors();
   const v = {
@@ -5691,6 +5742,7 @@ $("form").addEventListener("submit", async e => {
   intField("odoStart", 0, 9999999, "Enter the odometer reading in km.");
   // Odometer: the meter and actual km readings.
   { const L = odoPrRead(); if (L.err) { setErr("odoPairs", L.err); ok = false; } else if (L.list.length) v.odoPairs = L.list; }
+  { const L = simRead(); if (L.err) { setErr("sims", L.err); ok = false; } else if (L.list.length) v.sims = L.list; }
   if (tx("tyreSize")) v.tyreSize = tx("tyreSize").toUpperCase();
   if (tx("batteryMake")) v.batteryMake = tx("batteryMake");
   if ($("batteryDate").value) { if ($("batteryDate").value > todayISO()) { setErr("batteryDate", "The date can't be in the future."); ok = false; } else v.batteryDate = $("batteryDate").value; }
@@ -5805,7 +5857,7 @@ $("rRows").addEventListener("keydown", e => {
 });
 // Optional new copy of the document, attached while the date is updated; it replaces the copy in the master (the old one stays in history).
 function rFileHtml(i) {
-  if (!assetsCap) return "";
+  if (!assetsCap || !rSlot(i.kind, i.k)) return "";
   const cur = fileOf(i.rec, rSlot(i.kind, i.k));
   return `<div class="rfile"><label class="btn filebtn">📎 ${rFile ? "Change file" : cur ? "Attach new copy" : "Attach copy"}<input type="file" id="rFile" accept="${FILE_TYPES.join(",")}" hidden></label>` +
     `<span class="sub" id="rFileName">${rFile ? `New: ${esc(rFile.name)}` : cur ? `Now: ${esc(cur.name)}` : "No copy attached yet"}</span>${rFile ? `<button type="button" class="icon" data-act="rfilex" aria-label="Don't attach this file">✕</button>` : ""}</div>`;
@@ -5824,6 +5876,7 @@ async function rSave(btn) {
   const list = kind === "vehicle" ? vehicles : kind === "driver" ? drivers : conductors, cur = list.find(x => x.id === id); if (!cur) { rEdit = ""; renderDash(); return; }
   if (!val || val < "1900-01-01" || val > "2100-12-31") return err("Enter a valid date.");
   if (kind === "vehicle" && k === "permitExp" && cur.permitFrom && cur.permitFrom > val) return err("Can't be before the permit's Valid from date.");
+  if (kind === "vehicle" && k.startsWith("sim_")) return rSaveSim(btn, cur, k.slice(4), val);
   if (val === cur[k] && !rFile) { rEdit = ""; renderDash(); return; }
   const next = { ...cur, [k]: val }, who = { at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", note: "Updated from the renewal schedule" };
   const label = kind === "vehicle" ? vName(cur) : cur.name, slot = rSlot(kind, k), idKey = { vehicle: "vehicleId", driver: "driverId", conductor: "conductorId" }[kind];
@@ -5844,6 +5897,19 @@ async function rSave(btn) {
     const filed = !!(rFile && slot);
     rEdit = ""; rFile = null; renderDash();
     toast(`${label}: ${val !== cur[k] ? `date updated to ${fmtDate(val)}` : "date unchanged"}${filed ? " · new copy attached" : ""}`);
+  } catch { btn.disabled = false; btn.textContent = "Save"; toast("Couldn't save. Check your connection and try again."); }
+}
+// A SIM card's new recharge date from the renewal schedule: saved into that SIM in the vehicle, with history.
+async function rSaveSim(btn, cur, simId, val) {
+  const old = (cur.sims || []).find(x => x.id === simId); if (!old) { rEdit = ""; renderDash(); return; }
+  if (val === old.validTill) { rEdit = ""; renderDash(); return; }
+  const next = { ...cur, sims: cur.sims.map(x => x.id === simId ? { ...x, validTill: val } : x) };
+  const hist = [{ vehicleId: cur.id, field: "sims", from: histVal(cur.sims), to: histVal(next.sims), at: new Date().toISOString(), byUser: myUserId || "", byAccount: myId() || "", note: "Updated from the renewal schedule" }];
+  btn.disabled = true;
+  try {
+    await saveVehicle(next); await addHistory(hist).catch(() => {});
+    const i = vehicles.findIndex(x => x.id === cur.id); if (i >= 0) vehicles[i] = next;
+    rEdit = ""; rFile = null; renderDash(); toast(`${vName(cur)}: ${simLabel(old)} updated to ${fmtDate(val)}`);
   } catch { btn.disabled = false; btn.textContent = "Save"; toast("Couldn't save. Check your connection and try again."); }
 }
 /* ================= Driver master ================= */
@@ -9081,7 +9147,8 @@ function remRenewals() {
   const soon = shiftDay(todayISO(), 30), out = [], due = (x, list) => list.filter(([k]) => x[k] && x[k] <= soon).map(([k, what]) => ({ k, what, date: x[k], n: daysUntil(x[k]) }));
   [[drivers, P_CFG.driver, "Driver"], [conductors, P_CFG.conductor, "Conductor"]].forEach(([list, cfg, kind]) => list.filter(pActive).forEach(p => {
     const items = due(p, cfg.dates); if (items.length) out.push({ kind, name: p.name || kind, mobile: p.mobile || "", items, p, cfg }); }));
-  vehicles.filter(v => v.status !== "Sold / Scrapped").forEach(v => { const items = due(v, DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).map(([k, , short]) => [k, short]));
+  vehicles.filter(v => v.status !== "Sold / Scrapped").forEach(v => { const items = [...due(v, DOCS.filter(([k]) => docApplies(k, v.type, v.usage)).map(([k, , short]) => [k, short])),
+      ...simDocs(v).filter(d => d.date <= soon).map(d => ({ k: d.k, what: d.short, date: d.date, n: daysUntil(d.date) }))];
     if (items.length) out.push({ kind: "Vehicle", name: plateOf(v), items, v }); });
   out.forEach(x => x.items.sort((a, b) => a.n - b.n));
   return out.sort((a, b) => a.items[0].n - b.items[0].n || a.name.localeCompare(b.name));
@@ -11155,13 +11222,13 @@ function xlVehicleSheet(recs) {
     ["Owner Name", "t"], ["Owner Address", "t"], ["Make", "t"], ["Model", "t"], ["Usage", "t"], ["Fuel", "t"], ["Emission", "t"], ["Manufactured", "t"],
     ["Chassis No.", "t"], ["Engine No.", "t"], ["RTO", "t"], ["Seats", "t"], ["Staff Seats", "t"], ["GVW (kg)", "t"], ["ULW (kg)", "t"], ["Body Type", "t"], ["Body Colour", "t"],
     ["FASTag", "t"], ["Fuel Tank (L)", "t"], ["Tyres", "t"], ["Tyre Size", "t"], ["Battery Make", "t"], ["Battery Date", "date"], ["Odometer at Start", "t"], ["Financed", "t"], ["Financier", "t"],
-    ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => [d.full, d.date ? "date" : "t"])), ["Remarks", "t"]];
+    ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => [d.full, d.date ? "date" : "t"])), ["SIM Cards", "t"], ["Remarks", "t"]];
   const rows = [...(recs.vehicles || [])].sort((a, b) => order(a) - order(b) || String(a.plateNo).localeCompare(String(b.plateNo))).map(v => [v.plateNo || vName(v), v.type, v.regDate, vAge(v.regDate),
     ...DOCS.map(([k]) => dd(v, k)), v.financed === "yes" ? v.loanEndDate || "" : "",
     v.ownerName, v.ownerAddress, v.make, v.model, v.usage, v.fuel, v.emission, fmtMfg(v), v.chassisNo, v.engineNo, v.rto, v.seats, v.staffSeats, v.gvw, v.ulw, v.bodyType, v.bodyColour,
     v.fastag, v.fuelTank, v.tyreCount, v.tyreSize, v.batteryMake, v.batteryDate, v.odoStart, fin(v), v.financier,
-    ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => docApplies(k, v.type, v.usage) ? v[d.k] ?? "" : "")), v.remarks]);
-  return xlMasterSheet("Vehicle Master Data", [{ heads, rows }], { "Plate No.": 16, Class: 17, Age: 19, "Owner Name": 26, "Owner Address": 40, Remarks: 40 });
+    ...DOCS.flatMap(([k]) => (DOC_DETAILS[k] || []).map(d => docApplies(k, v.type, v.usage) ? v[d.k] ?? "" : "")), simsOf(v).map(simText).join("; "), v.remarks]);
+  return xlMasterSheet("Vehicle Master Data", [{ heads, rows }], { "Plate No.": 16, Class: 17, Age: 19, "Owner Name": 26, "Owner Address": 40, "SIM Cards": 40, Remarks: 40 });
 }
 /* Download all: Maintenance Summary (every vehicle in the vehicle master with maintenance: each job's last service and the next one
    due, as on today, with the vehicle's current km on its heading) and Maintenance History (every job in the system, all years). */
@@ -16159,8 +16226,9 @@ async function datesPdf(L, list, masked) {
 }
 // One vehicle's renewal dates as a JPG, sized for sharing on a phone. Non-admins get a masked vehicle number.
 // Renewals due within a month (or already expired) for one vehicle, soonest first.
-const dueSoonOf = v => v.status === "Sold / Scrapped" ? [] : DOCS.filter(([k]) => v[k] && docApplies(k, v.type, v.usage) && daysUntil(v[k]) <= 30)
-  .map(([k, label]) => ({ k, label: label.replace(/ expiry$/i, "").replace(/^FC date$/, "FC (fitness)"), date: v[k], n: daysUntil(v[k]) })).sort((a, b) => a.n - b.n);
+const dueSoonOf = v => v.status === "Sold / Scrapped" ? [] : [...DOCS.filter(([k]) => v[k] && docApplies(k, v.type, v.usage) && daysUntil(v[k]) <= 30)
+  .map(([k, label]) => ({ k, label: label.replace(/ expiry$/i, "").replace(/^FC date$/, "FC (fitness)"), date: v[k], n: daysUntil(v[k]) })),
+  ...simDocs(v).filter(d => daysUntil(d.date) <= 30).map(d => ({ k: d.k, label: d.short, date: d.date, n: daysUntil(d.date) }))].sort((a, b) => a.n - b.n);
 function dueSoonBtn(v) {
   const n = dueSoonOf(v).length; if (!n) return "";
   return `<button type="button" class="cdue" data-vdue="${v.id}" aria-label="${n} renewal${n === 1 ? "" : "s"} due within a month" title="${n} renewal${n === 1 ? "" : "s"} due within a month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>${n}</button>`;
