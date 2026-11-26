@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-26d">
+<meta name="app-ver" content="2026-11-26e">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -18247,6 +18247,17 @@ function auSheets(recs, fy, ids, common, name) {
   const box = (ws, a1, a2, v, st, f) => { const [c1, r1] = [XL.idx(a1.replace(/\d+/, "")), +a1.replace(/\D+/, "")], [c2, r2] = [XL.idx(a2.replace(/\d+/, "")), +a2.replace(/\D+/, "")];
     for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) put(ws, col(c) + r, r === r1 && c === c1 ? v : null, st, r === r1 && c === c1 ? f : undefined); if (a1 !== a2) ws.merges.push(`${a1}:${a2}`); };
   const out = [], mSheets = [];
+  // Columns as wide as their values (and headings): the text as shown, at its style's font size; merged titles left out.
+  const AU_ST = new Map(AU_DEF.map((d, i) => [A[d[0]], { sz: AU_FONTS[d[2] - 17]?.[1] || 11, b: !!AU_FONTS[d[2] - 17]?.[0], nf: d[1], wrap: /wrapText/.test(d[4]) }]));
+  const fit = ws => { const inMerge = new Set(); ws.merges.forEach(m => { const [a, b] = m.split(":"), c1 = XL.idx(a.replace(/\d+/, "")), c2 = XL.idx(b.replace(/\d+/, "")), r1 = +a.replace(/\D+/, ""), r2 = +b.replace(/\D+/, "");
+      for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) inMerge.add(r + ":" + c); });
+    const w = {};
+    Object.entries(ws.rows).forEach(([r, cells]) => Object.entries(cells).forEach(([c, cell]) => { if (!cell || cell.v == null || cell.v === "" || inMerge.has(r + ":" + c)) return;
+      const st = AU_ST.get(cell.s) || { sz: 11 }, v = cell.v;
+      let t = v?.d ? "00/00/0000" : typeof v === "number" ? (st.nf === 4 ? v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : st.nf === 165 ? Math.round(v).toLocaleString("en-US") : String(v)) : String(v);
+      if (st.wrap) t = t.split(/\s+/).reduce((a, x) => x.length > a.length ? x : a, "");
+      const need = t.length * st.sz / 11 * (st.b ? 1.15 : 1.05) + 3; w[c] = Math.max(w[c] || 0, need); }));
+    Object.entries(w).forEach(([c, x]) => ws.widths[XL.col(+c)] = Math.round(Math.max(6, Math.min(80, x)) * 100) / 100); };
   // ---- route buses: one sheet per month (two buses in one month: one sheet each)
   const routeIds = [...new Set((recs.trips || []).filter(t => sel.has(t.vehicleId) && inFy(t.date) && vOf(t.vehicleId)?.type === "Bus").map(t => t.vehicleId))].sort((a, b) => pl(a).localeCompare(pl(b)));
   const keep = { trips, tripMonths, tripYears, tBusId, tFyStart };
@@ -18256,7 +18267,7 @@ function auSheets(recs, fy, ids, common, name) {
       here.forEach(id => {
         trips = (recs.trips || []).filter(t => t.vehicleId === id); tripMonths = (recs.tripMonths || []).filter(m => m.vehicleId === id); tripYears = (recs.tripYears || []).filter(y => y.vehicleId === id); tBusId = id; tFyStart = fy;
         const M = monthStats(ym), n = daysIn(ym), mName = AU_MON[i], yr = ym.slice(0, 4), k = here.indexOf(id), ws = sheet(`${mName} ${yr}${k ? ` (${k + 1})` : ""}`), r0 = 9, rN = 8 + n;
-        Object.assign(ws, { auKind: "month", ym, vid: id, zoom: 70 });
+        Object.assign(ws, { auKind: "month", ym, vid: id, zoom: 70, fit: true });
         Object.assign(ws.widths, { A: 32.82, B: 15.36, C: 15.27, D: 15.82, E: 16, F: 13, G: 15.27, H: 11.73, I: 13.09, J: 7.36, K: 7.36, L: 7.36, M: 7.36, N: 7.36, O: 13.45, P: 11.27, Q: 10.73 });
         box(ws, "A2", "Q2", `${pl(id).replace(/^(\w+)\s+(\d+)\s+/, "$1$2 ")} - ROUTE BUS DETAILS FOR MONTH OF ${mName.toUpperCase()}-${yr}`, A.rTitle); ws.heights[2] = 36;
         [["Days Run", Math.round(M.days * 100) / 100, undefined, Number.isInteger(Math.round(M.days * 100) / 100) ? A.rVal : A.rValD], ["Route Collection", M.tot.col, `SUM(O${r0}:O${rN})`, A.rVal], ["Route Expense", M.tot.exp, `SUM(P${r0}:P${rN})`, A.rVal], ["Balance", M.tot.col - M.tot.exp, "B4-B5", A.rVal]]
@@ -18295,7 +18306,7 @@ function auSheets(recs, fy, ids, common, name) {
     // Each vehicle's trips together (date order within), so the Summary can give every vehicle its own line.
     rows.sort((a, b) => vids.indexOf(a.vid) - vids.indexOf(b.vid) || String(a.from).localeCompare(String(b.from)));
     const rng = new Map(vids.map(v => [v, [5 + rows.findIndex(x => x.vid === v), 5 + rows.length - 1 - [...rows].reverse().findIndex(x => x.vid === v)]]));
-    const det = Object.assign(sheet(`${label} - Details`), { auKind: kind + "-det", zoom: 60 }), F = 5, L = Math.max(F, F + rows.length - 1), T = L + 1, rg = c => `${c}${F}:${c}${L}`;
+    const det = Object.assign(sheet(`${label} - Details`), { auKind: kind + "-det", zoom: 70, fit: true }), F = 5, L = Math.max(F, F + rows.length - 1), T = L + 1, rg = c => `${c}${F}:${c}${L}`;
     Object.assign(det.widths, { A: 23.09, B: 23.09, C: 11.27, D: 21.27, E: 13.82, F: 11, G: 10.45, H: 10.45, I: 20.91, J: 15, K: 19.73, L: 16.18, M: 19.73 });
     const fmtL = d => { const x = new Date(d + "T00:00:00"); return `${pad2(x.getDate())}/${x.toLocaleDateString("en-GB", { month: "long" }).toUpperCase()}/${x.getFullYear()}`; };
     box(det, "A3", "M3", `${vids.map(plN).join(" / ")} - ${up} DETAILS FROM ${fmtL(`${fy}-04-01`)} to ${fmtL(run ? today : `${fy + 1}-03-31`)}`, A.dTitle); det.heights[3] = 26;
@@ -18308,7 +18319,7 @@ function auSheets(recs, fy, ids, common, name) {
     box(det, "A" + T, "J" + T, "Total", A.dTotL); det.heights[T] = 45;
     [["K", rows.reduce((a, x) => a + x.col, 0)], ["L", rows.reduce((a, x) => a + x.fuel + x.toll + x.drv + x.cln + x.permit + x.other, 0)]].forEach(([c, v]) => put(det, c + T, v, A.dTotN, `SUM(${rg(c)})`));
     put(det, "M" + T, det.rows[T][10].v - det.rows[T][11].v, A.dTotN, `SUM(${rg("M")})`);
-    const sum = Object.assign(sheet(`${label} - Summary`), { auKind: kind + "-sum" }), dq = q(det.name);
+    const sum = Object.assign(sheet(`${label} - Summary`), { auKind: kind + "-sum", zoom: 70, fit: true }), dq = q(det.name);
     auMonthTable(sum, `${up} SUMMARY - ${vids.map(pl).join(" / ")}`, i => { const ym = monthYM(fy, i), m = rows.filter(x => x.from.startsWith(ym)), [y, mo] = ym.split("-").map(Number);
       const sp = c => `SUMPRODUCT((YEAR(${dq}!$A$${F}:$A$${L})=${y})*(MONTH(${dq}!$A$${F}:$A$${L})=${mo})*N(+${dq}!$${c}$${F}:$${c}$${L}))`;
       return [[m.reduce((a, x) => a + x.days, 0), sp("C")], [m.reduce((a, x) => a + x.col, 0), sp("K")], [m.reduce((a, x) => a + x.fuel + x.toll + x.drv + x.cln + x.permit + x.other, 0), sp("L")], [m.reduce((a, x) => a + x.col - (x.fuel + x.toll + x.drv + x.cln + x.permit + x.other), 0), sp("M")]]; });
@@ -18328,7 +18339,7 @@ function auSheets(recs, fy, ids, common, name) {
     t.forEach((x, k) => put(ws, col(2 + k) + 15, Math.round(x * 100) / 100, k ? A.mTotN : A.mTotC, `SUM(${col(2 + k)}3:${col(2 + k)}14)`));
   }
   const groups = [];
-  if (mSheets.length) { const sum = Object.assign(sheet("Summary - Route Bus"), { auKind: "route-sum" });
+  if (mSheets.length) { const sum = Object.assign(sheet("Summary - Route Bus"), { auKind: "route-sum", zoom: 70, fit: true });
     auMonthTable(sum, `ROUTE BUS SUMMARY - ${routeIds.map(pl).join(" / ")}`, i => { const L = mSheets.filter(w => w.ym === monthYM(fy, i)); if (!L.length) return [[0, "0"], [0, "0"], [0, "0"], [0, "0"]];
       const g = r => [L.reduce((a, w) => a + (num(w.rows[r]?.[1]?.v) || 0), 0), L.map(w => `${q(w.name)}!B${r}`).join("+")]; return [g(3), g(4), g(5), g(6)]; });
     groups.push({ type: "Route Bus", vids: routeIds, sum, line: vid => { const L = mSheets.filter(w => w.vid === vid), g = r => [L.reduce((a, w) => a + (num(w.rows[r]?.[1]?.v) || 0), 0), L.map(w => `${q(w.name)}!B${r}`).join("+") || "0"];
@@ -18366,6 +18377,7 @@ function auSheets(recs, fy, ids, common, name) {
   // spare bus summary/details come right after the route summary in the template, before the month sheets
   const sp = out.filter(w => /^spare-/.test(w.auKind || "")); if (sp.length && ri >= 0) { sp.forEach(w => out.splice(out.indexOf(w), 1)); out.splice(ri + 1, 0, ...sp); }
   out.push(off);
+  out.forEach(w => { if (w.fit) fit(w); });
   return out;
 }
 async function auGo(btn) {
