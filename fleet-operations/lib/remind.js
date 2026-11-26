@@ -1,6 +1,6 @@
 // Daily reminders for the office: renewals due within 30 days (drivers, conductors, vehicles) and maintenance overdue or
 // due within 5,000 km (extended jobs count from their new km, or wait until their date). Worked out here the same way as
-// the app's Renewals and Maintenance summary pages: keep in step with the app (DOCS, DOC_RULES, MT_TYPES, mtNow, mtDue).
+// the app's Renewals and Maintenance summary pages: keep in step with the app (DOCS, simDocs, DOC_RULES, MT_TYPES, mtNow, mtDue).
 import { q } from "./db.js";
 
 const num = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
@@ -60,6 +60,9 @@ export function computeReminders(D, today = todayIST()) {
   const fleet = D.vehicles.filter(v => v.status !== "Sold / Scrapped");
   for (const v of fleet) for (const [k, what] of DOCS)
     if (docApplies(k, v.type, v.usage) && ISO.test(v[k] || "") && v[k] <= soon) renewals.push({ kind: "Vehicle", id: v.id, name: plate(v), what, k, date: v[k], n: dayDiff(today, v[k]) });
+  // SIM cards in the cameras and GPS devices: each recharge's "valid till" date (the app's simDocs).
+  for (const v of fleet) for (const x of v.sims || [])
+    if (x && ISO.test(x.validTill || "") && x.validTill <= soon) renewals.push({ kind: "Vehicle", id: v.id, name: plate(v), what: `${x.use || "SIM"} SIM recharge${x.no ? ` (…${String(x.no).slice(-4)})` : ""}`, k: "sim_" + x.id, date: x.validTill, n: dayDiff(today, x.validTill) });
   renewals.sort((a, b) => a.n - b.n || a.name.localeCompare(b.name));
 
   // Maintenance: the app's mtDue for every vehicle in service that has maintenance entered.
