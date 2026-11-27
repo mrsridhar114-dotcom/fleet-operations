@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-27a">
+<meta name="app-ver" content="2026-11-27b">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -1049,6 +1049,8 @@ table.osg { width: auto; } table.osg tbody tr:last-child td:not(.e) { border-bot
 .osg td { border: 1px solid #000; padding: 6px 10px; white-space: nowrap; } .osg td.n { text-align: right; } .osg td.e { border: 0; background: transparent; min-width: 18px; }
 .osg td.h { background: #C55A11; text-align: center; } .osg td.v { background: #DBDBDB; } .osg td.t { background: #FFC000; }
 .osg td.sg { border: 0; text-align: center; font-size: 40px; padding: 0 14px; } .osg td.gl { background: #00B050; text-align: center; } .osg td.gv { background: #00B050; text-align: center; font-size: 40px; padding: 0 28px; }
+/* Overall gross below zero: light red instead of green. */
+.osg.gneg td.gl, .osg.gneg td.gv { background: #FFC7CE; color: #9C0006; }
 .osg.top td { height: 36px; box-sizing: border-box; } .osg.mon td { padding: 6px 10px; } .osg td.neg { background: #FFC7CE; color: #9C0006; font-weight: 700; } .osg td.pos { background: #E2EFDA; color: #1E6B30; } .osg td.m { font-weight: 400; } .osg td.mh { background: #F4B183; text-align: center; white-space: normal; min-width: 70px; } .osg.mon td.t { font-weight: 700; }
 .otodo .orow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .otodo .orow:last-child { border-bottom: 0; }
@@ -18193,7 +18195,9 @@ function osGrid(ws, r1, r2, c1, c2, cls) {
     }
     h += "</tr>";
   }
-  return `<div class="osx"><table class="osg ${cls || ""}">${h}</table></div>`;
+  // The overall gross (style 76) below zero turns its box light red.
+  const neg = Object.values(ws.rows).some(row => Object.values(row || {}).some(x => x?.s === 76 && typeof x.v === "number" && x.v < 0));
+  return `<div class="osx"><table class="osg ${cls || ""}${neg && cls === "top" ? " gneg" : ""}">${h}</table></div>`;
 }
 function osRender() {
   const el = $("oSumBody"), ws = oSum.ws; if (!el) return;
