@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f16">
-<meta name="app-ver" content="2026-11-27b">
+<meta name="app-ver" content="2026-11-27c">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -11083,7 +11083,7 @@ function xlExpenseSheet(recs, fy, kind) {
    app's expense entries (the Bus and Truck Expenses sheets; entries with no vehicle get their own row), Gross = Balance − Office
    Expense. "+" and "=" lead to the overall gross. Below, each route bus month by month (April to March, the template's columns,
    from its month sheets), each spare bus month by month (from its sheet) and each truck month by month (from its sheet). Figures are formulas over those sheets. */
-function xlSummarySheet(recs, fy, sheets, routeIds, run = [], title = "") {
+function xlSummarySheet(recs, fy, sheets, routeIds, run = [], title = "", spOpen = []) {
   const { put, S, sheet, col } = XL, C = xlCtx(recs), ws = sheet("Summary");
   const q = w => `'${w.name.replace(/'/g, "''")}'`, gv = (w, ref) => { const m = /^([A-Z]+)(\d+)$/.exec(ref), c = w.rows[+m[2]]?.[XL.idx(m[1])]; return typeof c?.v === "number" && isFinite(c.v) ? c.v : 0; };
   const of = k => sheets.filter(w => w.kind === k), route = of("route"), spare = of("spare"), trucks = of("truck");
@@ -11136,6 +11136,14 @@ function xlSummarySheet(recs, fy, sheets, routeIds, run = [], title = "") {
     ["Vehicle No", "Round trip", "From", "Route", "Expected rent", "Expenses so far", "Balance"].forEach((h, i) => put(ws, col(i) + r, h, S.otHead)); ws.heights[r] = 31; r++;
     run.forEach(x => { put(ws, "A" + r, C.plate(x.vid), S.otTxt); put(ws, "B" + r, `Round trip ${x.no}`, S.otTxt); put(ws, "C" + r, fmtShort(x.from), S.otTxt); put(ws, "D" + r, x.path, S.otTxt);
       put(ws, "E" + r, x.rent, S.otInt); put(ws, "F" + r, x.exp, S.otInt); put(ws, "G" + r, x.rent - x.exp, S.otInt, `E${r}-F${r}`); ws.heights[r] = 23; r++; });
+    r += 2;
+  }
+  // Spare bus trips not closed yet: listed the same way, left out of every figure.
+  if (spOpen.length) {
+    put(ws, "A" + r, "Spare bus trips not closed · not counted", S.otTitle); ws.heights[r] = 33; r++;
+    ["Vehicle No", "Booking", "From", "Places", "Collection", "Expenses so far", "Balance"].forEach((h, i) => put(ws, col(i) + r, h, S.otHead)); ws.heights[r] = 31; r++;
+    spOpen.forEach(x => { put(ws, "A" + r, C.plate(x.vid), S.otTxt); put(ws, "B" + r, x.no ? `No. ${x.no}` : "", S.otTxt); put(ws, "C" + r, fmtShort(x.from), S.otTxt); put(ws, "D" + r, x.places, S.otTxt);
+      put(ws, "E" + r, x.col, S.otInt); put(ws, "F" + r, x.exp, S.otInt); put(ws, "G" + r, x.col - x.exp, S.otInt, `E${r}-F${r}`); ws.heights[r] = 23; r++; });
     r += 2;
   }
   // Month-wise tables
@@ -18150,10 +18158,21 @@ $("tsDl").onclick = e => { const fy = +$("tsDlFy").value || fyOf(todayISO());
 // Utility › Data upload & download (admin): the route buses month by month, the spare buses, the trucks, then Bus and Truck Expenses, for the year chosen.
 const dlAllRead = async () => ({ ...(await dlRead(["trips", "tripMonths", "tripYears", "bookings", "truckTrips", "truckRounds", "expenses"])), vehicles, drivers });
 // The route bus, spare bus, truck and expense sheets of a year, and the Summary made from them (Download all and the Summary screen).
-function dlSumParts(recs, fy) {
+// closedSpare (Dashboard › Details): spare bus trips not yet closed are left out of every figure and listed on their own.
+function dlSumParts(recs, fy, closedSpare) {
+  const spOpen = closedSpare ? dlSpareOpen(recs, fy) : [];
+  if (closedSpare) recs = { ...recs, bookings: (recs.bookings || []).filter(b => !spOpen.some(x => x.b === b)) };
   const busIds = [...new Set([...dlRouteBuses().map(v => v.id), ...recs.trips.filter(t => t.vehicleId && t.date && fyOf(t.date) === fy).map(t => t.vehicleId)])];
   const sheets = XL.names([...busIds.flatMap(id => routeFySheets(id, fy, recs, dlPlateKey(id).slice(-4) + " ")), ...xlSpareSheets(recs, fy), ...xlTruckSheets({ ...recs, truckTrips: legsCounted(recs.truckTrips, recs.truckRounds) }, fy), xlExpenseSheet(recs, fy, "bus"), xlExpenseSheet(recs, fy, "truck")]);
-  return { sheets, summary: xlSummarySheet(recs, fy, sheets, busIds, dlOnTrip(recs, fy)) };
+  return { sheets, summary: xlSummarySheet(recs, fy, sheets, busIds, dlOnTrip(recs, fy), "", spOpen) };
+}
+// The spare bus trips of a year not closed yet (booked, on trip or completed, without Close trip): bus, booking number, start,
+// places, collection (rent and toll), the expenses entered so far and the balance, as on the spare bus sheet.
+function dlSpareOpen(recs, fy) {
+  return (recs.bookings || []).filter(b => b.vehicleId && b.from && fyOf(b.from) === fy && ["booked", "ontrip", "completed"].includes(b.status) && !tripClosed(b))
+    .sort((a, b) => String(a.from).localeCompare(String(b.from)) || String(a.no).localeCompare(String(b.no)))
+    .map(b => { const g = k => num(b[k]); return { b, vid: b.vehicleId, no: b.no, from: b.from, places: b.places || b.party || "", col: g("rent") + g("toll"),
+      exp: ["padiPaid", "cleanerPadi", "permit", "toll", "fuelCost", "otherExp"].reduce((a, k) => a + g(k), 0) }; });
 }
 // The truck round trips of a year still On trip: truck, its round trip number, start, route, expected rent and the expenses
 // entered so far (its trips' expenses and the round trip's diesel, as on the Trucks page).
@@ -18174,7 +18193,8 @@ function dlAllSheets(recs, fy) {
   return [xlHomeSheet(fy, all), ...all];
 }
 /* Dashboard › Details: the Summary sheet of Download all on the screen, cell for cell, in its colours (orange headings, grey
-   vehicle rows, yellow totals, green overall gross). It reads every record of the year once, so it is kept until Refresh or
+   vehicle rows, yellow totals, green overall gross), except that spare bus trips not closed yet are left out of the figures and
+   listed under them, like the truck round trips still On trip. It reads every record of the year once, so it is kept until Refresh or
    another year is chosen. */
 const oSum = { fy: null, ws: null, at: null, busy: false, err: "" };
 // Excel style → screen class, and the styles written as #,##0 (the others as Excel's General).
@@ -18222,7 +18242,7 @@ window.addEventListener("resize", () => { if (view === "renewals" && dsTab === "
 async function osLoad(fy, force) {
   if (!force && oSum.fy === fy && (oSum.ws || oSum.busy)) { osRender(); return; }
   Object.assign(oSum, { fy, ws: null, busy: true, err: "" }); osRender(); if ($("oSumRe")) $("oSumRe").disabled = true;
-  try { const ws = dlSumParts(await dlAllRead(), fy).summary; if (oSum.fy === fy) Object.assign(oSum, { ws, at: new Date() }); }
+  try { const ws = dlSumParts(await dlAllRead(), fy, true).summary; if (oSum.fy === fy) Object.assign(oSum, { ws, at: new Date() }); }
   catch { if (oSum.fy === fy) oSum.err = "Couldn't work out the details. Check the connection and tap Refresh."; }
   finally { if (oSum.fy === fy) { oSum.busy = false; if ($("oSumRe")) $("oSumRe").disabled = false; osRender(); osAt(); } }
 }
